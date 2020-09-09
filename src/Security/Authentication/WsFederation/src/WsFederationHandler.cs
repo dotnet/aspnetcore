@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                 Logger.ExceptionProcessingMessage(exception);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-                if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                if (Options.RefreshOnIssuerKeyNotFound && exception is SecurityTokenSignatureKeyNotFoundException)
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }

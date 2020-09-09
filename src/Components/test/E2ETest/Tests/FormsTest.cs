@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -302,65 +303,79 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24850")]
         public void InputRadioGroupWithoutNameInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
-            var airlineInputs = appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
-            var unknownAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("Unknown"));
-            var bestAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("BestAirline"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
-            // Validate unselected inputs
-            Assert.All(airlineInputs.Where(i => i != unknownAirlineInput), i => Browser.False(() => i.Selected));
-
             // Validate selected inputs
-            Browser.True(() => unknownAirlineInput.Selected);
+            Browser.True(() => FindUnknownAirlineInput().Selected);
+            Browser.False(() => FindBestAirlineInput().Selected);
 
             // InputRadio emits additional attributes
-            Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
+            Browser.True(() => FindUnknownAirlineInput().GetAttribute("extra").Equals("additional"));
 
             // Validates on edit
-            Assert.All(airlineInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
-            bestAirlineInput.Click();
-            Assert.All(airlineInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+            Browser.Equal("valid", () => FindUnknownAirlineInput().GetAttribute("class"));
+            Browser.Equal("valid", () => FindBestAirlineInput().GetAttribute("class"));
+
+            FindBestAirlineInput().Click();
+
+            Browser.Equal("modified valid", () => FindUnknownAirlineInput().GetAttribute("class"));
+            Browser.Equal("modified valid", () => FindBestAirlineInput().GetAttribute("class"));
 
             // Can become invalid
-            unknownAirlineInput.Click();
-            Assert.All(airlineInputs, i => Browser.Equal("modified invalid", () => i.GetAttribute("class")));
+            FindUnknownAirlineInput().Click();
+
+            Browser.Equal("modified invalid", () => FindUnknownAirlineInput().GetAttribute("class"));
+            Browser.Equal("modified invalid", () => FindBestAirlineInput().GetAttribute("class"));
             Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
+
+            IReadOnlyCollection<IWebElement> FindAirlineInputs()
+                => appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
+
+            IWebElement FindUnknownAirlineInput()
+                => FindAirlineInputs().First(i => string.Equals("Unknown", i.GetAttribute("value")));
+
+            IWebElement FindBestAirlineInput()
+                => FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetAttribute("value")));
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24850")]
         public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
             var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
             var group = appElement.FindElement(By.ClassName("nested-radio-group"));
-            var countryInputs = group.FindElements(By.Name("country"));
-            var colorInputs = group.FindElements(By.Name("color"));
-
-            // Validate group counts
-            Assert.Equal(3, countryInputs.Count);
-            Assert.Equal(4, colorInputs.Count);
 
             // Validate unselected inputs
-            Assert.All(countryInputs, i => Browser.False(() => i.Selected));
-            Assert.All(colorInputs, i => Browser.False(() => i.Selected));
+            Browser.True(() => FindCountryInputs().All(i => !i.Selected));
+            Browser.True(() => FindColorInputs().All(i => !i.Selected));
 
             // Invalidates on submit
-            Assert.All(countryInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
-            Assert.All(colorInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            Browser.True(() => FindCountryInputs().All(i => string.Equals("valid", i.GetAttribute("class"))));
+            Browser.True(() => FindColorInputs().All(i => string.Equals("valid", i.GetAttribute("class"))));
+
             submitButton.Click();
-            Assert.All(countryInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
-            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            Browser.True(() => FindCountryInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
+            Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
 
             // Validates on edit
-            countryInputs.First().Click();
-            Assert.All(countryInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
-            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+            FindCountryInputs().First().Click();
 
-            colorInputs.First().Click();
-            Assert.All(colorInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+            Browser.True(() => FindCountryInputs().All(i => string.Equals("modified valid", i.GetAttribute("class"))));
+            Browser.True(() => FindColorInputs().All(i => string.Equals("invalid", i.GetAttribute("class"))));
+
+            FindColorInputs().First().Click();
+
+            Browser.True(() => FindColorInputs().All(i => string.Equals("modified valid", i.GetAttribute("class"))));
+
+            IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.Name("country"));
+
+            IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.Name("color"));
         }
 
         [Fact]
@@ -528,6 +543,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
             Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void RespectsCustomFieldCssClassProvider()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var socksInput = appElement.FindElement(By.ClassName("socks")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            Browser.Equal("valid-socks", () => socksInput.GetAttribute("class"));
+            socksInput.SendKeys("Purple\t");
+            Browser.Equal("modified valid-socks", () => socksInput.GetAttribute("class"));
+
+            // Can become invalid
+            socksInput.SendKeys(" with yellow spots\t");
+            Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
+        }
+
+        [Fact]
+        public void NavigateOnSubmitWorks()
+        {
+            var app = Browser.MountTestComponent<NavigateOnSubmit>();
+            var input = app.FindElement(By.Id("text-input"));
+
+            input.SendKeys("Enter");
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)

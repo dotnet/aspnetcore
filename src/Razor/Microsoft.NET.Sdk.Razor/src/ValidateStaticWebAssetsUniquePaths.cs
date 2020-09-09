@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
                 else
                 {
-                    var webRootPath = GetWebRootPath(
+                    var webRootPath = GetWebRootPath("/wwwroot",
                         contentRootDefinition.GetMetadata(BasePath),
                         contentRootDefinition.GetMetadata(RelativePath));
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var webRootFile = WebRootFiles[i];
                 var relativePath = webRootFile.GetMetadata(TargetPath);
-                var webRootFileWebRootPath = GetWebRootPath("/", relativePath);
+                var webRootFileWebRootPath = GetWebRootPath("", "/", relativePath);
                 if (assetsByWebRootPaths.TryGetValue(webRootFileWebRootPath, out var existingAsset))
                 {
                     Log.LogError($"The static web asset '{existingAsset.ItemSpec}' has a conflicting web root path '{webRootFileWebRootPath}' with the project file '{webRootFile.ItemSpec}'.");
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         // Normalizes /base/relative \base\relative\ base\relative and so on to /base/relative
-        private string GetWebRootPath(string basePath, string relativePath) => $"/{Path.Combine(basePath, relativePath.TrimStart('.').TrimStart('/')).Replace("\\", "/").Trim('/')}";
+        private string GetWebRootPath(string webRoot, string basePath, string relativePath) => $"{webRoot}/{Path.Combine(basePath, relativePath.TrimStart('.').TrimStart('/')).Replace("\\", "/").Trim('/')}";
 
         private bool EnsureRequiredMetadata(ITaskItem item, string metadataName)
         {

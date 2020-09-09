@@ -4,20 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
-#endif
-#if (OrganizationalAuth)
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
-#if (MultiOrgAuth)
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-#endif
 using Microsoft.AspNetCore.Authorization;
-#endif
-#if (IndividualB2CAuth)
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 #endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
@@ -68,34 +58,41 @@ namespace Company.WebApplication1
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
 #if (GenerateApiOrGraph)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   "AzureAd")
-                    .AddInMemoryTokenCaches();
-#else
-                    ;
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+
 #endif
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+#if (GenerateApiOrGraph)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
 #if (GenerateApi)
-            services.AddDownstreamWebApiService(Configuration);
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
 #endif
 #if (GenerateGraph)
-            services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
-                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+                        .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+#endif
+                        .AddInMemoryTokenCaches();
+#else
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
 #if (GenerateApi)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   "AzureAdB2C")
-                    .AddInMemoryTokenCaches();
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
-            services.AddDownstreamWebApiService(Configuration);
+#endif
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+#if (GenerateApi)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddInMemoryTokenCaches();
 #else
-                    ;
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
 #endif
 #endif
 #if (OrganizationalAuth)
@@ -106,11 +103,11 @@ namespace Company.WebApplication1
                 options.FallbackPolicy = options.DefaultPolicy;
             });
             services.AddRazorPages()
-                    .AddMvcOptions(options => {})
-                    .AddMicrosoftIdentityUI();
+                .AddMvcOptions(options => {})
+                .AddMicrosoftIdentityUI();
 #elif (IndividualB2CAuth)
             services.AddRazorPages()
-                    .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 #else
             services.AddRazorPages();
 #endif
@@ -122,9 +119,6 @@ namespace Company.WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
-                app.UseDatabaseErrorPage();
-#endif
             }
             else
             {

@@ -6,19 +6,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -85,7 +81,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void UseStartupThrowsWhenFactoryReturnsNull(IWebHostBuilder builder)
         {
             var server = new TestServer();
-            var ex = Assert.Throws<InvalidOperationException>(() => builder.UseServer(server).UseStartup(context => null).Build());
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.UseServer(server).UseStartup<object>(context => null).Build());
             Assert.Equal("The specified factory returned null startup instance.", ex.Message);
         }
 
@@ -96,7 +92,7 @@ namespace Microsoft.AspNetCore.Hosting
             var server = new TestServer();
             var host = builder.UseServer(server)
                               .UseStartup<StartupCtorThrows>()
-                              .UseStartup(context => throw new InvalidOperationException("This doesn't run"))
+                              .UseStartup<object>(context => throw new InvalidOperationException("This doesn't run"))
                               .Configure(app =>
                               {
                                   throw new InvalidOperationException("This doesn't run");

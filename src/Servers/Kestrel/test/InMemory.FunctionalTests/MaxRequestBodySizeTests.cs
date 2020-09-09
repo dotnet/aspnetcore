@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
@@ -29,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using (var server = new TestServer(async context =>
             {
+                Assert.True(context.Request.CanHaveBody());
                 var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
                 requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(

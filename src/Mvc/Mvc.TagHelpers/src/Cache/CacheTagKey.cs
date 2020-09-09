@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
@@ -180,12 +179,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             // The key is typically too long to be useful, so we use a cryptographic hash
             // as the actual key (better randomization and key distribution, so small vary
             // values will generate dramatically different keys).
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
-            {
-                var contentBytes = Encoding.UTF8.GetBytes(key);
-                var hashedBytes = sha256.ComputeHash(contentBytes);
-                return Convert.ToBase64String(hashedBytes);
-            }
+            var contentBytes = Encoding.UTF8.GetBytes(key);
+            var hashedBytes = SHA256.HashData(contentBytes);
+            return Convert.ToBase64String(hashedBytes);
         }
 
         /// <inheritdoc />

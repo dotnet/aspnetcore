@@ -18,12 +18,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
     {
         public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
         {
-            var frames = new List<StackFrameInfo>();
-
             if (exception == null)
             {
                 error = default;
-                return frames;
+                return Array.Empty<StackFrameInfo>();
             }
 
             var needFileInfo = true;
@@ -33,8 +31,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
             if (stackFrames == null)
             {
                 error = default;
-                return frames;
+                return Array.Empty<StackFrameInfo>();
             }
+
+            var frames = new List<StackFrameInfo>(stackFrames.Length);
 
             List<Exception>? exceptions = null;
 

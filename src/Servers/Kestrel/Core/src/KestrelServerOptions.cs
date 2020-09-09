@@ -12,9 +12,12 @@ using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -138,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
             listenOptions.KestrelServerOptions = this;
-            ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
+            ConfigurationLoader?.ApplyEndpointDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }
 
@@ -153,6 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal void ApplyHttpsDefaults(HttpsConnectionAdapterOptions httpsOptions)
         {
+            ConfigurationLoader?.ApplyHttpsDefaults(httpsOptions);
             HttpsDefaults(httpsOptions);
         }
 
@@ -240,7 +244,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
         public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
         {
-            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);
+            if (ApplicationServices is null)
+            {
+                throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
+            }
+
+            var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+
+            var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger, httpsLogger);
             ConfigurationLoader = loader;
             return loader;
         }

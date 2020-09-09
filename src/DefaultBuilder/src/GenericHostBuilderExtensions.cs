@@ -25,6 +25,11 @@ namespace Microsoft.Extensions.Hosting
         /// <returns>The <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder ConfigureWebHostDefaults(this IHostBuilder builder, Action<IWebHostBuilder> configure)
         {
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             return builder.ConfigureWebHost(webHostBuilder =>
             {
                 WebHost.ConfigureWebDefaults(webHostBuilder);

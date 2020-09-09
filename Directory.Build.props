@@ -88,8 +88,12 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <!-- Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props -->
+    <!--
+      Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props and
+      the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
+    -->
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
@@ -100,9 +104,6 @@
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-
-    <!-- Ignore specific Roslyn warnings for now, https://github.com/dotnet/aspnetcore/issues/22090 -->
-    <NoWarn Condition="'$(IsAnalyzersProject)' == 'true'">$(NoWarn);RS1024;RS1025;RS1026</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
@@ -139,20 +140,6 @@
     -->
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
-
-  <ItemGroup
-    Condition="'$(DisablePubternalApiCheck)' != 'true'
-      AND '$(IsTestProject)' != 'true'
-      AND '$(IsBenchmarkProject)' != 'true'
-      AND '$(IsTestAssetProject)' != 'true'
-      AND '$(MSBuildProjectName)' != 'Internal.AspNetCore.Analyzers'
-      AND '$(MSBuildProjectExtension)' == '.csproj'">
-    <ProjectReference
-      Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj"
-      ReferenceOutputAssembly="false"
-      OutputItemType="Analyzer"
-      PrivateAssets="All" />
-  </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>

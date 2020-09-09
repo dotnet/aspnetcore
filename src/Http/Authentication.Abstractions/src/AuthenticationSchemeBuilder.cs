@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// The <see cref="IAuthenticationHandler"/> type responsible for this scheme.
         /// </summary>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         public Type? HandlerType { get; set; }
 
         /// <summary>

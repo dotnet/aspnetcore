@@ -885,7 +885,7 @@ namespace Microsoft.JSInterop.Infrastructure
             public string LastCompletionCallId { get; private set; }
             public DotNetInvocationResult LastCompletionResult { get; private set; }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 LastInvocationAsyncHandle = asyncHandle;
                 LastInvocationIdentifier = identifier;
@@ -894,7 +894,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 _nextInvocationTcs = new TaskCompletionSource<object>();
             }
 
-            protected override string InvokeJS(string identifier, string argsJson)
+            protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 LastInvocationAsyncHandle = default;
                 LastInvocationIdentifier = identifier;

@@ -89,8 +89,6 @@ namespace OpenIdConnectSample
 
         public void ConfigureServices(IServiceCollection services)
         {
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
             services.Configure<CookiePolicyOptions>(options =>
             {
                 options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
@@ -112,7 +110,7 @@ namespace OpenIdConnectSample
                 o.Authority = Configuration["oidc:authority"];
                 */
                 // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-                o.ClientId = "server.hybrid";
+                o.ClientId = "hybrid";
                 o.ClientSecret = "secret"; // for code flow
                 o.Authority = "https://demo.identityserver.io/";
 
@@ -120,6 +118,7 @@ namespace OpenIdConnectSample
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
                 o.AccessDeniedPath = "/access-denied-from-remote";
+                o.MapInboundClaims = false;
 
                 // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 

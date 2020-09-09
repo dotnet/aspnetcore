@@ -4,16 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 #endif
 #if (OrganizationalAuth)
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 #if (MultiOrgAuth)
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 #endif
 using Microsoft.AspNetCore.Authorization;
-#endif
-#if (IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -42,6 +41,9 @@ using Microsoft.IdentityModel.Tokens;
 using BlazorServerWeb_CSharp.Areas.Identity;
 #endif
 using BlazorServerWeb_CSharp.Data;
+#if (GenerateGraph)
+using Microsoft.Graph;
+#endif
 
 namespace BlazorServerWeb_CSharp
 {
@@ -70,59 +72,42 @@ namespace BlazorServerWeb_CSharp
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
-                .AddAzureAD(options => Configuration.Bind("AzureAd", options));
-#pragma warning restore CS0618 // Type or member is obsolete
-#if (MultiOrgAuth)
+#if (GenerateApiOrGraph)
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
-#pragma warning restore CS0618 // Type or member is obsolete
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    // Instead of using the default validation (validating against a single issuer value, as we do in
-                    // line of business apps), we inject our own multitenant validation logic
-                    ValidateIssuer = false,
-
-                    // If the app is meant to be accessed by entire organizations, add your issuer validation logic here.
-                    //IssuerValidator = (issuer, securityToken, validationParameters) => {
-                    //    if (myIssuerValidationLogic(issuer)) return issuer;
-                    //}
-                };
-
-                options.Events = new OpenIdConnectEvents
-                {
-                    OnTicketReceived = context =>
-                    {
-                         // If your authentication logic is based on users then add your logic here
-                         return Task.CompletedTask;
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.Response.Redirect("/Error");
-                        context.HandleResponse(); // Suppress the exception
-                         return Task.CompletedTask;
-                    },
-                    // If your application needs to authenticate single users, add your user validation below.
-                    //OnTokenValidated = context =>
-                    //{
-                    //    return myUserValidationLogic(context.Ticket.Principal);
-                    //}
-                };
-            });
 #endif
-
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+#if (GenerateApiOrGraph)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+#if (GenerateApi)
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+#endif
+#if (GenerateGraph)
+                        .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+#endif
+                        .AddInMemoryTokenCaches();
+#else
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+#endif
 #elif (IndividualB2CAuth)
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
-                .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
-#pragma warning restore CS0618 // Type or member is obsolete
+#if (GenerateApi)
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 #endif
-#if (OrganizationalAuth)
-            services.AddControllersWithViews();
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+#if (GenerateApi)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddInMemoryTokenCaches();
+#else
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
+#endif
+#endif
+#if (OrganizationalAuth || IndividualB2CAuth)
+            services.AddControllersWithViews()
+                .AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {
@@ -132,9 +117,15 @@ namespace BlazorServerWeb_CSharp
 
 #endif
             services.AddRazorPages();
+#if (OrganizationalAuth || IndividualB2CAuth)
+            services.AddServerSideBlazor()
+                .AddMicrosoftIdentityConsentHandler();
+#else
             services.AddServerSideBlazor();
+#endif
 #if (IndividualLocalAuth)
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            services.AddDatabaseDeveloperPageExceptionFilter();
 #endif
             services.AddSingleton<WeatherForecastService>();
         }
@@ -145,9 +136,6 @@ namespace BlazorServerWeb_CSharp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
-                app.UseDatabaseErrorPage();
-#endif
             }
             else
             {

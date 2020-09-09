@@ -22,14 +22,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPackable>false</IsPackable>
 
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+
+    <!-- Turn off symbol publishing by default -->
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- Determines if this Sdk is responsible for importing Microsoft.NET.Sdk.Razor. Temporary workaround until we can create a SDK. -->
-    <_RazorSdkImportsMicrosoftNetSdkRazor Condition="'$(UsingMicrosoftNETSdkRazor)' != 'true'">true</_RazorSdkImportsMicrosoftNetSdkRazor>
-  </PropertyGroup>
-
-  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" Condition="'$(_RazorSdkImportsMicrosoftNetSdkRazor)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
 

@@ -12,6 +12,7 @@ namespace CodeGenerator
             var alwaysFeatures = new[]
             {
                 "IHttpRequestFeature",
+                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",
@@ -58,6 +59,7 @@ namespace CodeGenerator
             var implementedFeatures = new[]
             {
                 "IHttpRequestFeature",
+                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",

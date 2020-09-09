@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        string Action(UrlActionContext actionContext);
+        string? Action(UrlActionContext actionContext);
 
         /// <summary>
         /// Converts a virtual (relative, starting with ~/) path to an application absolute path.
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </remarks>
         /// <param name="contentPath">The virtual path of the content.</param>
         /// <returns>The application absolute path.</returns>
-        string Content(string contentPath);
+        string? Content(string? contentPath);
 
         /// <summary>
         /// Returns a value that indicates whether the URL is local. A URL is considered local if it does not have a
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </code>
         /// </para>
         /// </example>
-        bool IsLocalUrl(string url);
+        bool IsLocalUrl(string? url);
 
         /// <summary>
         /// Generates a URL with an absolute path, which contains the route name, route values, protocol to use, host
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        string RouteUrl(UrlRouteContext routeContext);
+        string? RouteUrl(UrlRouteContext routeContext);
 
         /// <summary>
         /// Generates an absolute URL for the specified <paramref name="routeName"/> and route
@@ -99,11 +99,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// <para>
         /// This method uses the value of <see cref="HttpRequest.Host"/> to populate the host section of the generated URI.
-        /// Relying on the value of the current request can allow untrusted input to influence the resulting URI unless 
-        /// the <c>Host</c> header has been validated. See the deployment documentation for instructions on how to properly 
+        /// Relying on the value of the current request can allow untrusted input to influence the resulting URI unless
+        /// the <c>Host</c> header has been validated. See the deployment documentation for instructions on how to properly
         /// validate the <c>Host</c> header in your deployment environment.
         /// </para>
         /// </remarks>
-        string Link(string routeName, object values);
+        string? Link(string? routeName, object? values);
     }
 }

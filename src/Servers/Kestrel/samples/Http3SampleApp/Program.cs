@@ -28,7 +28,7 @@ namespace Http3SampleApp
                     .UseQuic(options =>
                     {
                         options.Certificate = cert; // Shouldn't need this either here.
-                        options.Alpn = "h3-25"; // Shouldn't need to populate this as well.
+                        options.Alpn = "h3-29"; // Shouldn't need to populate this as well.
                         options.IdleTimeout = TimeSpan.FromHours(1);
                     })
                     .ConfigureKestrel((context, options) =>
@@ -42,7 +42,7 @@ namespace Http3SampleApp
                             {
                                 httpsOptions.ServerCertificate = cert;
                             });
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                            listenOptions.Protocols = HttpProtocols.Http3;
                         });
                     })
                     .UseStartup<Startup>();

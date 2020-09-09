@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -169,16 +170,22 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task RefreshSignInAsync(TUser user)
         {
             var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            var claims = new List<Claim>();
+            IList<Claim> claims = Array.Empty<Claim>();
+
             var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-            if (authenticationMethod != null)
-            {
-                claims.Add(authenticationMethod);
-            }
             var amr = auth?.Principal?.FindFirst("amr");
-            if (amr != null)
+
+            if (authenticationMethod != null || amr != null)
             {
-                claims.Add(amr);
+                claims = new List<Claim>();
+                if (authenticationMethod != null)
+                {
+                    claims.Add(authenticationMethod);
+                }
+                if (amr != null)
+                {
+                    claims.Add(amr);
+                }
             }
 
             await SignInWithClaimsAsync(user, auth?.Properties, claims);
@@ -191,6 +198,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatibility")]
         public virtual Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null)
             => SignInAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, authenticationMethod);
 
@@ -201,11 +209,13 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatibility")]
         public virtual Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
-            var additionalClaims = new List<Claim>();
+            IList<Claim> additionalClaims = Array.Empty<Claim>();
             if (authenticationMethod != null)
             {
+                additionalClaims = new List<Claim>();
                 additionalClaims.Add(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
             }
             return SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);
@@ -378,8 +388,8 @@ namespace Microsoft.AspNetCore.Identity
             if (await UserManager.CheckPasswordAsync(user, password))
             {
                 var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
-                // Only reset the lockout when TFA is not enabled when not in quirks mode
-                if (alwaysLockout || !await IsTfaEnabled(user))
+                // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
+                if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
                 {
                     await ResetLockout(user);
                 }

@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Pipelines;
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _waitForAbortApplication;
         protected readonly RequestDelegate _waitForAbortFlushingApplication;
         protected readonly RequestDelegate _readRateApplication;
-        protected readonly RequestDelegate _echoMethod;
+        protected readonly RequestDelegate _echoMethodNoBody;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
         protected readonly RequestDelegate _appAbort;
@@ -345,8 +346,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await stalledReadTask;
             };
 
-            _echoMethod = context =>
+            _echoMethodNoBody = context =>
             {
+                Assert.False(context.Request.CanHaveBody());
                 context.Response.Headers["Method"] = context.Request.Method;
 
                 return Task.CompletedTask;
@@ -408,6 +410,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var nameStr = name.GetHeaderName();
             _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector);
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            ref readonly var entry = ref H2StaticTable.Get(index - 1);
+            ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
@@ -1269,16 +1286,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // null means that we have no back pressure
             return bufferSize ?? 0;
-        }
-
-        public void OnStaticIndexedHeader(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-        {
-            throw new NotImplementedException();
         }
 
         internal class Http2FrameWithPayload : Http2Frame

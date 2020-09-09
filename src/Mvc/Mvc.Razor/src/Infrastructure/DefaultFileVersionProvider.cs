@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 
         private static string GetHashForFile(IFileInfo fileInfo)
         {
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
+            using (var sha256 = SHA256.Create())
             {
                 using (var readStream = fileInfo.CreateReadStream())
                 {

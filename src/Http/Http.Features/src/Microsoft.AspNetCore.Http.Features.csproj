@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP feature interface definitions.</Description>
-    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -14,7 +14,15 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
     <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
+    <!-- Dependency (now in shared Fx) was removed in 5.0. Suppression can be removed after 5.0 RTM is released. -->
+    <SuppressBaselineReference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

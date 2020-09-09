@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="model">The model value. May be <c>null.</c></param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a successful model bind.</returns>
-        public static ModelBindingResult Success(object model)
+        public static ModelBindingResult Success(object? model)
         {
             return new ModelBindingResult(model, isModelSet: true);
         }

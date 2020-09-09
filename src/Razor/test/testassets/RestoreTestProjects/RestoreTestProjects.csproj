@@ -7,9 +7,6 @@
     <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" />
     <ProjectReference Include="..\SimpleMvc31\SimpleMvc31.csproj" />
     <ProjectReference Include="..\blazor31\blazor31.csproj" />
-    <ProjectReference Include="..\blazorhosted\blazorhosted.csproj" />
-    <ProjectReference Include="..\blazorhosted-rid\blazorhosted-rid.csproj" />
-    <ProjectReference Include="..\blazorwasm\blazorwasm.csproj" />
     <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
     <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
     <ProjectReference Include="..\AppWithPackageAndP2PReferenceAndRID\AppWithPackageAndP2PReferenceAndRID.csproj" />

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <returns>A list of the loaded <see cref="Assembly"/></returns>
         public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
             {
                 return await LoadAssembliesInClientAsync(assembliesToLoad);
             }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var newAssembliesToLoad = assembliesToLoad.Where(assembly => !_loadedAssemblyCache.Contains(assembly));
             var loadedAssemblies = new List<Assembly>();
 
-            var count = (int)await ((WebAssemblyJSRuntime)_jsRuntime).InvokeUnmarshalled<string[], object, object, Task<object>>(
+            var count = (int)await ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string[], object, object, Task<object>>(
                GetDynamicAssemblies,
                newAssembliesToLoad.ToArray(),
                null,
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 return loadedAssemblies;
             }
 
-            var assemblies = ((WebAssemblyJSRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, object[]>(
+            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, object[]>(
                 ReadDynamicAssemblies,
                 null,
                 null,

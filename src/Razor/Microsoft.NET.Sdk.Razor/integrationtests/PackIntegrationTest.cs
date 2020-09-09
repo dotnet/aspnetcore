@@ -182,6 +182,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
+        {
+            Project.AddProjectFileContent(@"
+<ItemGroup>
+  <StaticWebAsset Include=""bundle\js\pkg-direct-dep.js"">
+    <SourceType></SourceType>
+    <SourceId>PackageLibraryDirectDependency</SourceId>
+    <ContentRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)\bundle\'))</ContentRoot>
+    <BasePath>_content/PackageLibraryDirectDependency</BasePath>
+    <RelativePath>js/pkg-direct-dep.js</RelativePath>
+  </StaticWebAsset>
+</ItemGroup>");
+
+            Directory.CreateDirectory(Path.Combine(Project.DirectoryPath, "bundle", "js"));
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "bundle", "js", "pkg-direct-dep.js"), "console.log('bundle');");
+
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildFailed(result);
+        }
+
+        // If you modify this test, make sure you also modify the test below this one to assert that things are not included as content.
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
         public async Task Pack_IncludesStaticWebAssets()
         {
             var result = await DotnetMSBuild("Pack");
@@ -197,10 +221,60 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_DoesNotInclude_TransitiveBundleOrScopedCssAsStaticWebAsset()
+        {
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgDoesNotContain(
+                result,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    // This is to make sure we don't include the scoped css files on the package when bundling is enabled.
+                    Path.Combine("staticwebassets", "Components", "App.razor.rz.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.styles.css"),
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_DoesNotIncludeStaticWebAssetsAsContent()
+        {
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgDoesNotContain(
+                result,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("content", "js", "pkg-direct-dep.js"),
+                    Path.Combine("content", "css", "site.css"),
+                    Path.Combine("content", "Components", "App.razor.css"),
+                    // This is to make sure we don't include the unscoped css file on the package.
+                    Path.Combine("content", "Components", "App.razor.css"),
+                    Path.Combine("content", "Components", "App.razor.rz.scp.css"),
+                    Path.Combine("contentFiles", "js", "pkg-direct-dep.js"),
+                    Path.Combine("contentFiles", "css", "site.css"),
+                    Path.Combine("contentFiles", "Components", "App.razor.css"),
+                    Path.Combine("contentFiles", "Components", "App.razor.rz.scp.css"),
                 });
         }
 
@@ -246,7 +320,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 filePaths: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
-                    Path.Combine("staticwebassets", "Components", "App.razor.rz.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),

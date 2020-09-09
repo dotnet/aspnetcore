@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _connectionPair = DuplexPipe.CreateConnectionPair(options, options);
 
             _httpRequestHeaders = new HttpRequestHeaders();
-            _httpRequestHeaders.Append(HeaderNames.Method, new StringValues("GET"));
-            _httpRequestHeaders.Append(HeaderNames.Path, new StringValues("/"));
-            _httpRequestHeaders.Append(HeaderNames.Scheme, new StringValues("http"));
-            _httpRequestHeaders.Append(HeaderNames.Authority, new StringValues("localhost:80"));
+            _httpRequestHeaders.HeaderMethod = new StringValues("GET");
+            _httpRequestHeaders.HeaderPath = new StringValues("/");
+            _httpRequestHeaders.HeaderScheme = new StringValues("http");
+            _httpRequestHeaders.HeaderAuthority = new StringValues("localhost:80");
 
             _headersBuffer = new byte[1024 * 16];
             _hpackEncoder = new HPackEncoder();

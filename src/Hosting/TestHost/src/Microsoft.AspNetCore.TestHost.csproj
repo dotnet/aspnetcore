@@ -10,8 +10,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="System.IO.Pipelines" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' ">
+    <!-- Dependency (now in shared Fx) was removed in 5.0. Suppression can be removed after 5.0 RTM is released. -->
+    <SuppressBaselineReference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

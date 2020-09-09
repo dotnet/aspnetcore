@@ -8,7 +8,6 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -433,6 +432,88 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }
         }
 
+        [Fact]
+        public void ConfigureEndpoint_ThrowsWhen_HttpsConfigIsDeclaredInNonHttpsEndpoints()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                // We shouldn't need to specify a real cert, because KestrelConfigurationLoader should check whether the endpoint requires a cert before trying to load it.
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", "fakecert.pfx"),
+            }).Build();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+            Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Certificate"), ex.Message);
+
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Subject", "example.org"),
+            }).Build();
+
+            ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+            Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Certificate"), ex.Message);
+
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+            }).Build();
+
+            ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+            Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "ClientCertificateMode"), ex.Message);
+
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", SslProtocols.Tls13.ToString()),
+            }).Build();
+
+            ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+            Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "SslProtocols"), ex.Message);
+
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:Protocols", HttpProtocols.Http1.ToString()),
+            }).Build();
+
+            ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
+            Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Sni"), ex.Message);
+        }
+
+        [Fact]
+        public void ConfigureEndpoint_DoesNotThrowWhen_HttpsConfigIsDeclaredInEndpointDefaults()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+            }).Build();
+
+            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
+            var end1 = Assert.Single(endpointsToStart);
+            Assert.NotNull(end1?.EndpointConfig);
+            Assert.Null(end1.EndpointConfig.ClientCertificateMode);
+
+            serverOptions = CreateServerOptions();
+
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", SslProtocols.Tls13.ToString()),
+            }).Build();
+
+            (_, endpointsToStart) = serverOptions.Configure(config).Reload();
+            end1 = Assert.Single(endpointsToStart);
+            Assert.NotNull(end1?.EndpointConfig);
+            Assert.Null(end1.EndpointConfig.SslProtocols);
+        }
+
         [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
@@ -673,7 +754,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
         }
 
-
         [Fact]
         public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideSslProtocols()
         {
@@ -748,6 +828,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
         }
 
+
+        [Fact]
+        public void EndpointConfigureSection_CanConfigureSni()
+        {
+            var serverOptions = CreateServerOptions();
+            var certPath = Path.Combine("shared", "TestCertificates", "https-ecdsa.pem");
+            var keyPath = Path.Combine("shared", "TestCertificates", "https-ecdsa.key");
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", HttpProtocols.None.ToString()),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", SslProtocols.Tls13.ToString()),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", certPath),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:KeyPath", keyPath),
+            }).Build();
+
+            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
+            var end1 = Assert.Single(endpointsToStart);
+            var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
+
+            Assert.Equal("*.example.org", name);
+            Assert.Equal(HttpProtocols.None, sniConfig.Protocols);
+            Assert.Equal(SslProtocols.Tls13, sniConfig.SslProtocols);
+            Assert.Equal(ClientCertificateMode.RequireCertificate, sniConfig.ClientCertificateMode);
+            Assert.Equal(certPath, sniConfig.Certificate.Path);
+            Assert.Equal(keyPath, sniConfig.Certificate.KeyPath);
+        }
+
         [Fact]
         public void EndpointConfigureSection_CanOverrideClientCertificateModeFromConfigureHttpsDefaults()
         {
@@ -802,7 +912,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             Assert.True(ran1);
         }
-
 
         [Fact]
         public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideClientCertificateMode()

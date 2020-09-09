@@ -6,11 +6,11 @@
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>
-  <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
+  <!--#if (OrganizationalAuth || IndividualB2CAuth || EnableOpenAPI) -->
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
-    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' "/>
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCorePackageVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
   <!--#endif -->
 

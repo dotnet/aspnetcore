@@ -612,6 +612,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // This tests what happens you put invalid (unconvertable) input in. This is separate from the
         // other tests because it requires type="text" - the other tests use type="number"
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24756")]
         public void CanBindTextbox_Decimal_InvalidInput()
         {
             var target = Browser.FindElement(By.Id("textbox-decimal-invalid"));
@@ -978,8 +979,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected, () => DateTime.Parse(target.GetAttribute("value")));
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
@@ -1016,8 +1017,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(target.GetAttribute("value")).DateTime);
             Assert.Equal(expected.DateTime, DateTimeOffset.Parse(boundValue.Text).DateTime);

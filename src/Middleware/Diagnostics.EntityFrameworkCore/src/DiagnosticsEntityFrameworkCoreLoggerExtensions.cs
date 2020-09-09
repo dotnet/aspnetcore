@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,11 +13,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             LogLevel.Error,
             new EventId(1, "NoContextType"),
             "No context type was specified. Ensure the form data from the request includes a 'context' value, specifying the context type name to apply migrations for.");
-
-        private static readonly Action<ILogger, string, Exception> _invalidContextType = LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(2, "InvalidContextType"),
-            "The context type '{ContextTypeName}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.");
 
         private static readonly Action<ILogger, string, Exception> _contextNotRegistered = LoggerMessage.Define<string>(
             LogLevel.Error,
@@ -83,11 +78,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         public static void NoContextType(this ILogger logger)
         {
             _noContextType(logger, null);
-        }
-
-        public static void InvalidContextType(this ILogger logger, string contextTypeName)
-        {
-            _invalidContextType(logger, contextTypeName, null);
         }
 
         public static void ContextNotRegistered(this ILogger logger, string contextTypeName)

@@ -176,6 +176,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             context.CodeWriter.WriteLine(";");
                         }
                         break;
+
+                    case DirectiveTokenKind.Boolean:
+                        // global::System.Boolean __typeHelper = {node.Content};
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
+                        {
+                            context.CodeWriter
+                            .Write("global::")
+                            .Write(typeof(bool).FullName)
+                            .Write(" ")
+                            .WriteStartAssignment(TypeHelper);
+
+                            context.AddSourceMappingFor(node);
+                            context.CodeWriter.Write(node.Content);
+                            context.CodeWriter.WriteLine(";");
+                        }
+                        break;
                 }
                 context.CodeWriter.CurrentIndent = originalIndent;
             }

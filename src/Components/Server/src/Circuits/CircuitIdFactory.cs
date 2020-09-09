@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new CircuitId(Base64UrlTextEncoder.Encode(secret), Base64UrlTextEncoder.Encode(id));
         }
 
-        public bool TryParseCircuitId(string text, out CircuitId circuitId)
+        public bool TryParseCircuitId(string? text, out CircuitId circuitId)
         {
             if (text is null)
             {

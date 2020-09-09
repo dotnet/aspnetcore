@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     {
         private const string ContentRoot = "ContentRoot";
         private const string BasePath = "BasePath";
+        private const string NodePath = "Path";
         private const string SourceId = "SourceId";
 
         [Required]
@@ -82,8 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // single trailing separator.
                 var normalizedContentRoot = $"{contentRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
 
-                // At this point we already know that there are no elements with different base paths and same content roots
-                // or viceversa. Here we simply skip additional items that have the same base path and same content root.
+                // Here we simply skip additional items that have the same base path and same content root.
                 if (!nodes.Exists(e => e.Attribute("BasePath").Value.Equals(normalizedBasePath, StringComparison.OrdinalIgnoreCase) &&
                     e.Attribute("Path").Value.Equals(normalizedContentRoot, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             // Its important that we order the nodes here to produce a manifest deterministically.
-            return nodes.OrderBy(e=>e.Attribute(BasePath).Value);
+            return nodes.OrderBy(e=>e.Attribute(BasePath).Value).ThenBy(e => e.Attribute(NodePath).Value);
         }
 
         private XmlWriter GetXmlWriter(XmlWriterSettings settings)
@@ -113,78 +113,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     !EnsureRequiredMetadata(contentRootDefinition, SourceId))
                 {
                     return false;
-                }
-            }
-
-            // We want to validate that there are no different item groups that share either the same base path
-            // but different content roots or that share the same content root but different base paths.
-            // We pass in all the static web assets that we discovered to this task without making any distinction for
-            // duplicates, so here we skip elements for which we are already tracking an element with the same
-            // content root path and same base path.
-
-            // Case-sensitivity depends on the underlying OS so we are not going to do anything to enforce it here.
-            // Any two items that match base path and content root in a case-insensitive way won't produce an error.
-            // Any other two items will produce an error even if there is only a casing difference between either the
-            // base paths or the content roots.
-            var basePaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
-            var contentRootPaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
-
-            for (var i = 0; i < ContentRootDefinitions.Length; i++)
-            {
-                var contentRootDefinition = ContentRootDefinitions[i];
-                var basePath = contentRootDefinition.GetMetadata(BasePath);
-                var contentRoot = contentRootDefinition.GetMetadata(ContentRoot);
-                var sourceId = contentRootDefinition.GetMetadata(SourceId);
-
-                if (basePaths.TryGetValue(basePath, out var existingBasePath))
-                {
-                    var existingBasePathContentRoot = existingBasePath.GetMetadata(ContentRoot);
-                    var existingSourceId = existingBasePath.GetMetadata(SourceId);
-                    if (!string.Equals(contentRoot, existingBasePathContentRoot, StringComparison.OrdinalIgnoreCase) &&
-                        // We want to check this case to allow for client-side blazor projects to have multiple different content
-                        // root sources exposed under the same base path while still requiring unique base paths/content roots across
-                        // project/package boundaries.
-                        !string.Equals(sourceId, existingSourceId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Case:
-                        // Item2: /_content/Library, project:/project/aspnetContent2
-                        // Item1: /_content/Library, package:/package/aspnetContent1
-                        Log.LogError($"Duplicate base paths '{basePath}' for content root paths '{contentRoot}' and '{existingBasePathContentRoot}'. " +
-                            $"('{contentRootDefinition.ItemSpec}', '{existingBasePath.ItemSpec}')");
-                        return false;
-                    }
-
-                    // It was a duplicate, so we skip it.
-                    // Case:
-                    // Item1: /_content/Library, project:/project/aspnetContent
-                    // Item2: /_content/Library, project:/project/aspnetContent
-
-                    // It was a separate content root exposed from the same project/package, so we skip it.
-                    // Case:
-                    // Item1: /_content/Library, project:/project/aspnetContent/bin/debug/netstandard2.1/dist
-                    // Item2: /_content/Library, project:/project/wwwroot
-                }
-                else
-                {
-                    if (contentRootPaths.TryGetValue(contentRoot, out var existingContentRoot))
-                    {
-                        // Case:
-                        // Item1: /_content/Library1, /package/aspnetContent
-                        // Item2: /_content/Library2, /package/aspnetContent
-                        Log.LogError($"Duplicate content root paths '{contentRoot}' for base paths '{basePath}' and '{existingContentRoot.GetMetadata(BasePath)}' " +
-                            $"('{contentRootDefinition.ItemSpec}', '{existingContentRoot.ItemSpec}')");
-                        return false;
-                    }
-                }
-
-                if (!basePaths.ContainsKey(basePath))
-                {
-                    basePaths.Add(basePath, contentRootDefinition);
-                }
-
-                if (!contentRootPaths.ContainsKey(contentRoot))
-                {
-                    contentRootPaths.Add(contentRoot, contentRootDefinition);
                 }
             }
 

@@ -337,18 +337,9 @@ namespace Microsoft.AspNetCore.Builder
             EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var dataSource = GetOrCreateDataSource(endpoints);
 
-            endpoints.Map(
-                pattern,
-                context =>
-                {
-                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
-                })
-                .Add(b =>
-                {
-                    b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(typeof(TTransformer), state));
-                });
+            dataSource.AddDynamicPageEndpoint(endpoints, pattern, typeof(TTransformer), state);
         }
 
         private static DynamicPageMetadata CreateDynamicPageMetadata(string page, string area)

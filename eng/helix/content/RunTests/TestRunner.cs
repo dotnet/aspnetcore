@@ -126,13 +126,16 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    foreach (var restoreSource in Options.Source)
+                    {
+                        await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                            $"nuget add source {restoreSource} --configfile NuGet.config",
+                            environmentVariables: EnvironmentVariables,
+                            outputDataReceived: Console.WriteLine,
+                            errorDataReceived: Console.Error.WriteLine,
+                            throwOnError: false,
+                            cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    }
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -247,7 +250,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
+                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -330,6 +333,22 @@ namespace RunTests
             else
             {
                 Console.WriteLine("No logs found in artifacts/log");
+            }
+            Console.WriteLine($"Copying TestResults/**/*.dmp to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("TestResults"))
+            {
+                foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
+                {
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No dmps found in TestResults");
             }
         }
     }

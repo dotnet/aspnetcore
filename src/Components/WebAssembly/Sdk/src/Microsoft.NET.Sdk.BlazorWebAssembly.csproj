@@ -12,6 +12,8 @@
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +24,6 @@
       Include="..\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj"
       Targets="Publish"
       ReferenceOutputAssembly="false"
-      IsImplicityDefined="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
   </ItemGroup>

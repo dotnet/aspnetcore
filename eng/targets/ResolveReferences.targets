@@ -1,5 +1,4 @@
 <!--
-
   The targets in this file are used to implement custom <Reference> resolution.
   For more details, see /docs/ReferenceResolution.md.
 
@@ -76,8 +75,6 @@
     <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
 
-    <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
-
     <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'"
         Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
 
@@ -91,24 +88,55 @@
         @(Reference->WithMetadataValue('IsSharedSource', 'true'));
         @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
     <_OriginalReferences Include="@(Reference)" />
-
-    <!--
-      Turn Reference items into a ProjectReference when UseProjectReferences is true.
-      Order matters. This comes before package resolution because projects should be used when possible instead of packages.
-    -->
-    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
-      Include="@(ProjectReferenceProvider)"
-      Exclude="@(_UnusedProjectReferenceProvider)" />
-
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
-    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
-    This target helps ensure projects within the shared framework do no unintentionally add new references,
-    and that assemblies outside the shared framework reference the framework as a whole instead of using
-    individual assemblies.
+      Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
+      comes before package resolution because projects should be used when possible instead of packages.
+    -->
+  <ItemGroup Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND '$(UseProjectReferences)' == 'true' ">
+    <!-- Copy then Update / Copy to intersect the ProjectReferenceProvider and Reference item groups. -->
+    <_AllProjectReference Include="@(ProjectReferenceProvider)" />
+
+    <!-- Use only Reference items when project is a reference provider. Simplifies project moves and shortens files. -->
+    <_AllProjectReference Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
+
+    <_AllProjectReference Update="@(Reference)" Use="1">
+      <!--
+        Metadata list is long because (a) Update defaults to copying no metadata and (b) ProjectReference metadata
+        may include (real) Reference metadata and MSBuild task parameters. Even so, the list below is not exhaustive.
+      -->
+      <Aliases>%(Reference.Aliases)</Aliases>
+      <BuildInParallel>%(Reference.BuildInParallel)</BuildInParallel>
+      <DoNotHarvest>%(Reference.DoNotHarvest)</DoNotHarvest>
+      <ExcludeAssets>%(Reference.ExcludeAssets)</ExcludeAssets>
+      <IncludeAssets>%(Reference.IncludeAssets)</IncludeAssets>
+      <IsNativeImage>%(Reference.IsNativeImage)</IsNativeImage>
+      <LinkBase>%(Reference.LinkBase)</LinkBase>
+      <Name>%(Reference.Name)</Name>
+      <OutputItemType>%(Reference.OutputItemType)</OutputItemType>
+      <Package>%(Reference.Package)</Package>
+      <Private>%(Reference.Private)</Private>
+      <PrivateAssets>%(Reference.PrivateAssets)</PrivateAssets>
+      <Project>%(Reference.Project)</Project>
+      <Properties>%(Reference.Properties)</Properties>
+      <Publish>%(Reference.Publish)</Publish>
+      <ReferenceOutputAssembly>%(Reference.ReferenceOutputAssembly)</ReferenceOutputAssembly>
+      <SetPlatform>%(Reference.SetPlatform)</SetPlatform>
+      <SkipGetTargetFrameworkProperties>%(Reference.SkipGetTargetFrameworkProperties)</SkipGetTargetFrameworkProperties>
+      <Targets>%(Reference.Targets)</Targets>
+      <UndefineProperties>%(Reference.UndefineProperties)</UndefineProperties>
+      <Watch>%(Reference.Watch)</Watch>
+    </_AllProjectReference>
+
+    <ProjectReference Include="@(_AllProjectReference->WithMetadataValue('Use', '1')->'%(ProjectPath)')" Use="" />
+    <Reference Remove="@(_AllProjectReference->WithMetadataValue('Use', '1'))" />
+  </ItemGroup>
+
+  <!--
+    This target helps ensure projects within the shared framework do no unintentionally add new references, and that
+    assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
+    In addition, enforce use of Reference items for projects reference providers.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
     <Error
@@ -118,6 +146,10 @@
     <Error
         Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
         Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
+
+    <Error
+        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(_AllProjectReference->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
+        Text="Cannot reference &quot;%(_AllProjectReference.Identity)&quot; with a ProjectReference item; use a Reference item." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
@@ -127,14 +159,15 @@
   </Target>
 
   <!--
-    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
-    This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
+    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference
+    items for the SDK to resolve. This executes on NuGet restore and during DesignTimeBuild. It should not run in
+    outer, cross-targeting build.
    -->
   <Target Name="ResolveCustomReferences"
       BeforeTargets="CheckForImplicitPackageReferenceOverrides;CollectPackageReferences;ResolvePackageAssets"
       Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
-      <!-- Ensure only content asset are consumed from .Sources packages -->
+      <!-- Ensure only content assets are consumed from .Sources packages. -->
       <Reference>
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
@@ -142,9 +175,15 @@
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
-          Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
-      <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+          Exclude="@(Reference);@(PackageReference);@(ProjectReference->'%(Filename)')" />
+
+      <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
+          Condition=" '$(IsServicingBuild)' == 'true' " />
+
+      <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
+          Condition=" '$(IsServicingBuild)' != 'true' " />
     </ItemGroup>
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
@@ -197,6 +236,16 @@
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
+
+    <Warning
+        Condition=" '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != '' "
+        Code="BUILD001"
+        Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
+
+    <Error
+        Condition=" '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0 "
+        Code="BUILD002"
+        Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A - ')" />
 
     <Error
         Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
@@ -285,6 +334,8 @@
         Text="Only implementation projects should set IsAspNetCoreApp=true." />
     <Error Condition=" '$(IsAspNetCoreApp)' != 'true' AND $(HasReferenceAssembly) "
         Text="Only projects in the shared framework i.e. IsAspNetCoreApp==true should produce a reference assembly." />
+    <Warning Condition=" '$(IsProjectReferenceProvider)' == 'true' AND '$(AssemblyName)' != '$(MSBuildProjectName)' "
+        Text="Project name &quot;$(MSBuildProjectName)&quot; is confusing; assembly is named &quot;$(AssemblyName)&quot;." />
 
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">

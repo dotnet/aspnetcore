@@ -30,16 +30,7 @@
   <ItemGroup>
     <Reference Include="rzc" />
     <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
-
-    <ProjectReference Include="..\src\Microsoft.NET.Sdk.Razor.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\src\BootJsonData.cs" LinkBase="Wasm" />
-    <Compile Include="..\src\AssetsManifestFile.cs" LinkBase="Wasm" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes">

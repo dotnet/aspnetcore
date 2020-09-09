@@ -1,9 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
 
     <!-- Must be defined before ReferenceFromSource.props is imported -->
     <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
@@ -17,6 +15,7 @@
     <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage" />
     <Reference Include="Microsoft.AspNetCore.Components.Web.Extensions" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
@@ -32,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json" />
-    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage" />
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
   </ItemGroup>
 
 </Project>

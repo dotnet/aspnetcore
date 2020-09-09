@@ -25,7 +25,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' "/>
   </ItemGroup>
   <!--#endif -->
 

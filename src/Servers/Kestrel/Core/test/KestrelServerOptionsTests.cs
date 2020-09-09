@@ -3,6 +3,11 @@
 
 using System;
 using System.Net;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -52,9 +57,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesIsNotSet()
+        {
+            var options = new KestrelServerOptions();
+            Assert.Throws<InvalidOperationException>(() => options.Configure());
+        }
+
+        [Fact]
+        public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesDoesntHaveRequiredServices()
+        {
+            var options = new KestrelServerOptions
+            {
+                ApplicationServices = new ServiceCollection().BuildServiceProvider()
+            };
+
+            Assert.Throws<InvalidOperationException>(() => options.Configure());
+        }
+
+        [Fact]
         public void CanCallListenAfterConfigure()
         {
             var options = new KestrelServerOptions();
+
+            // Ensure configure doesn't throw because of missing services.
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+            options.ApplicationServices = serviceCollection.BuildServiceProvider();
+
             options.Configure();
 
             // This is a regression test to verify the Listen* methods don't throw a NullReferenceException if called after Configure().
@@ -63,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void SettingRequestHeaderEncodingSelecterThrowsArgumentNullException()
+        public void SettingRequestHeaderEncodingSelecterToNullThrowsArgumentNullException()
         {
             var options = new KestrelServerOptions();
 

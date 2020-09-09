@@ -12,5 +12,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <PropertyGroup>
     <_BlazorWebAssemblyPropsFile>$(MSBuildThisFileDirectory)..\..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.props</_BlazorWebAssemblyPropsFile>
+    <_BlazorWebAssemblyTargetsFile>$(MSBuildThisFileDirectory)..\..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets</_BlazorWebAssemblyTargetsFile>
   </PropertyGroup>
 </Project>

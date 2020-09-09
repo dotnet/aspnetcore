@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
@@ -22,8 +23,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
-
-        private static readonly RNGCryptoServiceProvider _keyGenerator = new RNGCryptoServiceProvider();
 
         private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections =
             new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>(StringComparer.Ordinal);
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _ = ExecuteTimerLoop();
         }
 
-        internal bool TryGetConnection(string id, out HttpConnectionContext connection)
+        internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
         {
             connection = null;
 
@@ -113,7 +112,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // 128 bit buffer / 8 bits per byte = 16 bytes
             Span<byte> buffer = stackalloc byte[16];
             // Generate the id with RNGCrypto because we want a cryptographically random id, which GUID is not
-            _keyGenerator.GetBytes(buffer);
+            RandomNumberGenerator.Fill(buffer);
             return WebEncoders.Base64UrlEncode(buffer);
         }
 
@@ -181,7 +180,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Stop firing the timer
             _nextHeartbeat.Stop();
 
-            var tasks = new List<Task>();
+            var tasks = new List<Task>(_connections.Count);
 
             // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
             // for a certain time frame then after some grace period we shutdown more aggressively

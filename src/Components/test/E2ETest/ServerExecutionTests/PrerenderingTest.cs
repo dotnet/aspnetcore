@@ -9,6 +9,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
@@ -82,48 +83,36 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanInfluenceHeadDuringPrerender()
         {
             Navigate("/prerendered/prerendered-head");
 
-            var metaWithBindings = Browser.FindElement(By.Id("meta-with-bindings"));
-            var metaNoBindings = Browser.FindElement(By.Id("meta-no-bindings"));
-
             // Validate updated head during prerender
             Browser.Equal("Initial title", () => Browser.Title);
-            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
-            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
 
             BeginInteractivity();
 
-            // Wait for elements to be recreated with internal ids to permit mutation
-            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
-            metaNoBindings = WaitForNewElement(metaNoBindings, "meta-no-bindings");
+            // Wait until the component has rerendered
+            Browser.Exists(By.Id("interactive-indicator"));
 
             // Validate updated head after prerender
             Browser.Equal("Initial title", () => Browser.Title);
-            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
-            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
 
             // Change parameter of meta component
             var inputMetaBinding = Browser.FindElement(By.Id("input-meta-binding"));
             inputMetaBinding.Clear();
             inputMetaBinding.SendKeys("Updated meta content\n");
 
-            // Wait for meta tag to be recreated with new attributes
-            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
-
             // Validate new meta content attribute
-            Browser.Equal("Updated meta content", () => metaWithBindings.GetAttribute("content"));
+            Browser.Equal("Updated meta content", () => GetMetaWithBindings().GetAttribute("content"));
 
-            IWebElement WaitForNewElement(IWebElement existingElement, string id)
-            {
-                var newElement = existingElement;
-
-                Browser.NotEqual(existingElement, () => newElement = Browser.FindElement(By.Id(id)) ?? newElement);
-
-                return newElement;
-            }
+            IWebElement GetMetaWithBindings() => Browser.FindElement(By.Id("meta-with-bindings"));
+            IWebElement GetMetaWithoutBindings() => Browser.FindElement(By.Id("meta-no-bindings"));
         }
 
         [Fact]

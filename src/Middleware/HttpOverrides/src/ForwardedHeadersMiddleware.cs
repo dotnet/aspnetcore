@@ -152,14 +152,14 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             var request = context.Request;
             var requestHeaders = context.Request.Headers;
-            if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedFor) == ForwardedHeaders.XForwardedFor)
+            if (_options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedFor))
             {
                 checkFor = true;
                 forwardedFor = requestHeaders.GetCommaSeparatedValues(_options.ForwardedForHeaderName);
                 entryCount = Math.Max(forwardedFor.Length, entryCount);
             }
 
-            if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedProto) == ForwardedHeaders.XForwardedProto)
+            if (_options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedProto))
             {
                 checkProto = true;
                 forwardedProto = requestHeaders.GetCommaSeparatedValues(_options.ForwardedProtoHeaderName);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 entryCount = Math.Max(forwardedProto.Length, entryCount);
             }
 
-            if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedHost) == ForwardedHeaders.XForwardedHost)
+            if (_options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedHost))
             {
                 checkHost = true;
                 forwardedHost = requestHeaders.GetCommaSeparatedValues(_options.ForwardedHostHeaderName);

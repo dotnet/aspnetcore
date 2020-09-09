@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <summary>
         /// If set this will be used by the CookieAuthenticationHandler for data protection.
         /// </summary>
-        public IDataProtectionProvider DataProtectionProvider { get; set; }
+        public IDataProtectionProvider? DataProtectionProvider { get; set; }
 
         /// <summary>
         /// The SlidingExpiration is set to true to instruct the handler to re-issue a new cookie with a new
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         public new CookieAuthenticationEvents Events
         {
-            get => (CookieAuthenticationEvents)base.Events;
+            get => (CookieAuthenticationEvents)base.Events!;
             set => base.Events = value;
         }
 
@@ -119,20 +119,20 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// The TicketDataFormat is used to protect and unprotect the identity and other properties which are stored in the
         /// cookie value. If not provided one will be created using <see cref="DataProtectionProvider"/>.
         /// </summary>
-        public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; }
+        public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; } = default!;
 
         /// <summary>
         /// The component used to get cookies from the request or set them on the response.
         ///
         /// ChunkingCookieManager will be used by default.
         /// </summary>
-        public ICookieManager CookieManager { get; set; }
+        public ICookieManager CookieManager { get; set; } = default!;
 
         /// <summary>
         /// An optional container in which to store the identity across requests. When used, only a session identifier is sent
         /// to the client. This can be used to mitigate potential problems with very large identities.
         /// </summary>
-        public ITicketStore SessionStore { get; set; }
+        public ITicketStore? SessionStore { get; set; }
 
         /// <summary>
         /// <para>

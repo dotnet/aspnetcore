@@ -1022,12 +1022,13 @@ namespace Microsoft.AspNetCore.Http2Cat
 
         public void OnStaticIndexedHeader(int index)
         {
-            throw new NotImplementedException();
+            ref readonly var entry = ref H2StaticTable.Get(index - 1);
+            ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
-            throw new NotImplementedException();
+            ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
         }
 
         internal class Http2FrameWithPayload : Http2Frame

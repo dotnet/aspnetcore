@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .WithAllHostingModels();
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
         public async Task CheckStdoutLoggingToFile(TestVariant variant)
         {
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
         public async Task CheckStdoutErrLoggingToFile(TestVariant variant)
         {
@@ -53,10 +55,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
 
             Assert.Contains("TEST MESSAGE", contents);
+            Assert.DoesNotContain("\r\n\r\n", contents);
+            Assert.Contains("\r\n", contents);
         }
 
         // Move to separate file
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
         public async Task InvalidFilePathForLogs_ServerStillRuns(TestVariant variant)
         {
@@ -126,6 +131,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [MemberData(nameof(TestVariants))]
         public async Task StartupMessagesLogFileSwitchedWhenLogFilePresentInWebConfig(TestVariant variant)
@@ -158,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
 
         public async Task DebugLogsAreWrittenToEventLog(TestVariant variant)
@@ -170,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2200")]
         public async Task CheckUTF8File(TestVariant variant)
@@ -204,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(TestVariants))]
         public async Task OnlyOneFileCreatedWithProcessStartTime(TestVariant variant)
         {
@@ -220,6 +229,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
@@ -234,6 +244,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewShim]
         public async Task DisableRedirectionNoLogs()
         {
@@ -250,6 +261,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart30KbMax()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);

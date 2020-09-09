@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <summary>
         /// Notifies when a rendering exception occurred.
         /// </summary>
-        public event EventHandler<Exception> UnhandledException;
+        public event EventHandler<Exception>? UnhandledException;
 
         /// <summary>
         /// Creates a new <see cref="RemoteRenderer"/>.
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
-                    new TaskCompletionSource<object>(),
+                    new TaskCompletionSource(),
                     ValueStopwatch.StartNew());
 
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // disposed.
         }
 
-        public Task OnRenderCompletedAsync(long incomingBatchId, string errorMessageOrNull)
+        public Task OnRenderCompletedAsync(long incomingBatchId, string? errorMessageOrNull)
         {
             if (_disposing)
             {
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry)
+        private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
         {
             var elapsedTime = entry.ValueStopwatch.GetElapsedTime();
             if (errorMessageOrNull == null)
@@ -324,11 +324,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
-        private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
+        private void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
         {
             if (errorMessageOrNull == null)
             {
-                pendingRenderInfo.TrySetResult(null);
+                pendingRenderInfo.TrySetResult();
             }
             else
             {
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         internal readonly struct UnacknowledgedRenderBatch
         {
-            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource, ValueStopwatch valueStopwatch)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource completionSource, ValueStopwatch valueStopwatch)
             {
                 BatchId = batchId;
                 Data = data;
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public long BatchId { get; }
             public ArrayBuilder<byte> Data { get; }
-            public TaskCompletionSource<object> CompletionSource { get; }
+            public TaskCompletionSource CompletionSource { get; }
             public ValueStopwatch ValueStopwatch { get; }
         }
 

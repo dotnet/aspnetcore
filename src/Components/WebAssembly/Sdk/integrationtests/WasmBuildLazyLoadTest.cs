@@ -4,6 +4,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.NET.Sdk.BlazorWebAssembly;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -88,6 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 

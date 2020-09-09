@@ -94,6 +94,8 @@ namespace MusicStore
                         authBuilder.RequireClaim("ManageStore", "Allowed");
                     });
             });
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -114,7 +116,6 @@ namespace MusicStore
             // request pipeline.
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
-            app.UseDatabaseErrorPage();
 
             app.Use((context, next) =>
             {

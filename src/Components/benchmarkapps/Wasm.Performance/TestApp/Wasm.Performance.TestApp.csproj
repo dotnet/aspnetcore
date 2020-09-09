@@ -1,10 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <!--
+      Chrome in docker appears to run in to cache corruption issues when the cache is read multiple times over.
+      Clien caching isn't part of our performance measurement, so we'll skip it.
+    -->
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
   </PropertyGroup>
 
   <ItemGroup>

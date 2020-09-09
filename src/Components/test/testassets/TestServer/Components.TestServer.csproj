@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -22,8 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,19 +36,4 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <Target Name="CopyClientAssetsForTest" BeforeTargets="Build"
-          Inputs="..\BasicTestApp\wwwroot\js\jsinteroptests.js;
-                  ..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;
-                  ..\BasicTestApp\wwwroot\NotAComponent.html;
-                  ..\BasicTestApp\wwwroot\style.css"
-          Outputs="wwwroot\js\jsinteroptests.js;
-                   wwwroot\js\webComponentPerformingJsInterop.js;
-                   wwwroot\NotAComponent.html;
-                   wwwroot\style.css">
-
-    <MakeDir Directories="wwwroot" />
-
-    <Copy SourceFiles="..\BasicTestApp\wwwroot\js\jsinteroptests.js;..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;..\BasicTestApp\wwwroot\NotAComponent.html;..\BasicTestApp\wwwroot\style.css"
-          DestinationFiles="wwwroot\js\jsinteroptests.js;wwwroot\js\webComponentPerformingJsInterop.js;wwwroot\NotAComponent.html;wwwroot\style.css" />
-  </Target>
 </Project>

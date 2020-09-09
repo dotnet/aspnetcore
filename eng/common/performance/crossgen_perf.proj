@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+
+  <ItemGroup>
+    <HelixCorrelationPayload Include="$(CorrelationPayloadDirectory)">
+      <PayloadDirectory>%(Identity)</PayloadDirectory>
+    </HelixCorrelationPayload>
+  </ItemGroup>
+
+  <!-- 
+    Crossgen and Crossgen2 Scenario WorkItems 
+  -->
+  <PropertyGroup Condition="'$(AGENT_OS)' == 'Windows_NT'">
+    <Python>py -3</Python>
+    <HelixPreCommands>$(HelixPreCommands)</HelixPreCommands>
+    <CoreRoot>%HELIX_CORRELATION_PAYLOAD%\Core_Root</CoreRoot>
+    <ScenarioDirectory>%HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\</ScenarioDirectory>
+    <CrossgenDirectory>$(ScenarioDirectory)crossgen\</CrossgenDirectory>
+    <Crossgen2Directory>$(ScenarioDirectory)crossgen2\</Crossgen2Directory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AGENT_OS)' != 'Windows_NT'">
+    <Python>python3</Python>
+    <HelixPreCommands>$(HelixPreCommands);chmod +x $HELIX_WORKITEM_PAYLOAD/startup/Startup;chmod +x $HELIX_WORKITEM_PAYLOAD/startup/perfcollect;sudo apt update</HelixPreCommands>
+    <CoreRoot>$HELIX_CORRELATION_PAYLOAD/Core_Root</CoreRoot>
+    <ScenarioDirectory>$HELIX_CORRELATION_PAYLOAD/performance/src/scenarios/</ScenarioDirectory>
+    <CrossgenDirectory>$(ScenarioDirectory)crossgen/</CrossgenDirectory>
+    <Crossgen2Directory>$(ScenarioDirectory)crossgen2/</Crossgen2Directory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SingleAssembly Include="System.Private.Xml.dll"/>
+    <SingleAssembly Include="System.Linq.Expressions.dll"/>
+    <SingleAssembly Include="Microsoft.CodeAnalysis.VisualBasic.dll"/>
+    <SingleAssembly Include="Microsoft.CodeAnalysis.CSharp.dll"/>
+    <SingleAssembly Include="System.Private.CoreLib.dll"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Composite Include="framework-r2r.dll.rsp"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <CrossgenWorkItem Include="@(SingleAssembly)">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <Command>$(Python) $(CrossgenDirectory)test.py crossgen --core-root $(CoreRoot) --test-name %(Identity)</Command>
+    </CrossgenWorkItem>
+  </ItemGroup>
+
+  <ItemGroup> 
+    <Crossgen2WorkItem Include="@(SingleAssembly)">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <Command>$(Python) $(Crossgen2Directory)test.py crossgen2 --core-root $(CoreRoot) --single %(Identity)</Command>
+    </Crossgen2WorkItem>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Enable crossgen tests on Windows x64 and Windows x86 -->
+    <HelixWorkItem Include="@(CrossgenWorkItem -> 'Crossgen %(Identity)')" Condition="'$(AGENT_OS)' == 'Windows_NT'">
+      <Timeout>4:00</Timeout>
+    </HelixWorkItem>
+    <!-- Enable crossgen2 tests on Windows x64 and Linux x64 -->
+    <HelixWorkItem Include="@(Crossgen2WorkItem -> 'Crossgen2 %(Identity)')" Condition="'$(Architecture)' == 'x64'">
+      <Timeout>4:00</Timeout>
+    </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen2 Composite Framework R2R" Condition="'$(Architecture)' == 'x64'">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>	
+      <Command>$(Python) $(Crossgen2Directory)test.py crossgen2 --core-root $(CoreRoot) --composite $(Crossgen2Directory)framework-r2r.dll.rsp</Command>
+      <Timeout>1:00</Timeout>  
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>

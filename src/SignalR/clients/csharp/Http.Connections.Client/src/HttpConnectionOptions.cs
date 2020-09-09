@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
@@ -28,7 +29,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public HttpConnectionOptions()
         {
             _headers = new Dictionary<string, string>();
-            _clientCertificates = new X509CertificateCollection();
+
+            // System.Security.Cryptography isn't supported on WASM currently
+            if (!Utils.IsRunningInBrowser())
+            {
+                _clientCertificates = new X509CertificateCollection();
+            }
+
             _cookies = new CookieContainer();
 
             Transports = HttpTransports.All;

@@ -1,5 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Collections.Generic;
+using System.Net.Security;
 
 namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
@@ -21,14 +23,14 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         {
             if (!_opened)
             {
-                OpenSession(options.ClientAuthenticationOptions!.ApplicationProtocols![0].Protocol.ToArray(),
+                OpenSession(options.ClientAuthenticationOptions!.ApplicationProtocols!,
                     (ushort)options.MaxBidirectionalStreams,
                     (ushort)options.MaxUnidirectionalStreams);
             }
 
             QuicExceptionHelpers.ThrowIfFailed(MsQuicApi.Api.ConnectionOpenDelegate(
                 _nativeObjPtr,
-                MsQuicConnection.NativeCallbackHandler,
+                MsQuicConnection.s_connectionDelegate,
                 IntPtr.Zero,
                 out IntPtr connectionPtr),
                 "Could not open the connection.");
@@ -36,7 +38,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
             return connectionPtr;
         }
 
-        private void OpenSession(byte[] alpn, ushort bidirectionalStreamCount, ushort undirectionalStreamCount)
+        private void OpenSession(List<SslApplicationProtocol> alpn, ushort bidirectionalStreamCount, ushort undirectionalStreamCount)
         {
             _opened = true;
             _nativeObjPtr = MsQuicApi.Api.SessionOpen(alpn);
@@ -49,14 +51,14 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         {
             if (!_opened)
             {
-                OpenSession(options.ServerAuthenticationOptions!.ApplicationProtocols![0].Protocol.ToArray(),
+                OpenSession(options.ServerAuthenticationOptions!.ApplicationProtocols!,
                                     (ushort)options.MaxBidirectionalStreams,
                                     (ushort)options.MaxUnidirectionalStreams);
             }
 
             QuicExceptionHelpers.ThrowIfFailed(MsQuicApi.Api.ListenerOpenDelegate(
                 _nativeObjPtr,
-                MsQuicListener.NativeCallbackHandler,
+                MsQuicListener.s_listenerDelegate,
                 IntPtr.Zero,
                 out IntPtr listenerPointer),
                 "Could not open listener.");
@@ -83,15 +85,15 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 
         public void SetPeerBiDirectionalStreamCount(ushort count)
         {
-            SetUshortParamter(QUIC_PARAM_SESSION.PEER_BIDI_STREAM_COUNT, count);
+            SetUshortParameter(QUIC_PARAM_SESSION.PEER_BIDI_STREAM_COUNT, count);
         }
 
         public void SetPeerUnidirectionalStreamCount(ushort count)
         {
-            SetUshortParamter(QUIC_PARAM_SESSION.PEER_UNIDI_STREAM_COUNT, count);
+            SetUshortParameter(QUIC_PARAM_SESSION.PEER_UNIDI_STREAM_COUNT, count);
         }
 
-        private unsafe void SetUshortParamter(QUIC_PARAM_SESSION param, ushort count)
+        private unsafe void SetUshortParameter(QUIC_PARAM_SESSION param, ushort count)
         {
             var buffer = new MsQuicNativeMethods.QuicBuffer()
             {

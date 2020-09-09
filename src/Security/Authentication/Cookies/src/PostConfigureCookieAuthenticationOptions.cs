@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="options">The options instance to configure.</param>
         public void PostConfigure(string name, CookieAuthenticationOptions options)
         {
-            options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
+            options.DataProtectionProvider ??= _dp;
 
             if (string.IsNullOrEmpty(options.Cookie.Name))
             {
-                options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + name;
+                options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + Uri.EscapeDataString(name);
             }
             if (options.TicketDataFormat == null)
             {

@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return false;
             }
 
-            if (propertyReference.Member.ContainingType != symbolCache.ModelStateDictionary)
+            if (!SymbolEqualityComparer.Default.Equals(propertyReference.Member.ContainingType, symbolCache.ModelStateDictionary))
             {
                 return false;
             }

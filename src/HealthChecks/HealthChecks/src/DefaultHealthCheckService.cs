@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 {
                     var duration = stopwatch.GetElapsedTime();
                     entry = new HealthReportEntry(
-                        status: HealthStatus.Unhealthy,
+                        status: registration.FailureStatus,
                         description: "A timeout occurred while running check.",
                         duration: duration,
                         exception: ex,
@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 {
                     var duration = stopwatch.GetElapsedTime();
                     entry = new HealthReportEntry(
-                        status: HealthStatus.Unhealthy,
+                        status: registration.FailureStatus,
                         description: ex.Message,
                         duration: duration,
                         exception: ex,
@@ -254,7 +254,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         break;
 
                     case HealthStatus.Unhealthy:
-                        _healthCheckEndUnhealthy(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, null);
+                        _healthCheckEndUnhealthy(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, entry.Exception);
                         break;
                 }
             }

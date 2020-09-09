@@ -1,6 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -51,7 +49,5 @@
     <!-- The content from my-prod-service-worker.js should be published under the name my-service-worker.js -->
     <ServiceWorker Include="wwwroot\serviceworkers\my-service-worker.js" PublishedContent="wwwroot\serviceworkers\my-prod-service-worker.js" />
   </ItemGroup>
-
-  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.targets" />
 
 </Project>

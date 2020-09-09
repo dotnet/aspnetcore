@@ -29,7 +29,7 @@
     <BuildOutputFiles Include="dist\**\*.js" />
   </ItemGroup>
 
-  <Target Name="_CheckForInvalidConfiguration">
+  <Target Name="_CheckForInvalidConfiguration" Condition=" '$(DisableYarnCheck)' != 'true' ">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
 
     <Exec ContinueOnError="true" Command="node -v" StandardOutputImportance="Low">
@@ -76,7 +76,7 @@
     DependsOnTargets="GetBuildInputCacheFile"
     Inputs="@(TSFiles);$(BaseIntermediateOutputPath)tsfiles.cache"
     Outputs="@(BuildOutputFiles)">
-    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 
@@ -102,9 +102,9 @@
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
-    <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js&quot; &quot;$(PackageJson)&quot; $(PackageVersion)" />
-    <Yarn Command="pack --filename $(PackageFileName)" />
+    <Yarn Command="pack --filename $(PackageFileName)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
@@ -115,6 +115,19 @@
 
   <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)" />
 
+  <!-- This target is used to get the package versions of projects. A variant also exists in Packaging.targets. -->
+  <Target Name="_GetPackageVersionInfo" Returns="@(_ProjectPathWithVersion)">
+    <ItemGroup>
+      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
+        <PackageId>$(PackageId)</PackageId>
+        <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
+        <!-- Fill in the item though variable names like "@microsoft/signalrPackageVersion" are likely invalid. -->
+        <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
+      </_ProjectPathWithVersion>
+    </ItemGroup>
+  </Target>
+
   <Target Name="_RestoreBackupPackageJsonFile">
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
@@ -122,7 +135,7 @@
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
   </Target>
 
 </Project>

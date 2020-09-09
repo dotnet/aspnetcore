@@ -605,12 +605,45 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
 
-            // Navigating from one page to another should
-            // cancel the previous OnNavigate Task
             SetUrlViaPushState("/Other");
 
             var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
             Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForSyncExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Should capture exception from synchronously thrown
+            SetUrlViaPushState("/WithLazyAssembly");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_DoesNotRenderWhileOnNavigateExecuting()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigate to a route
+            SetUrlViaPushState("/WithParameters/name/Abc");
+
+            // Click the button to trigger a re-render
+            var button = app.FindElement(By.Id("trigger-rerender"));
+            button.Click();
+
+            // Assert that the parameter route didn't render
+            Browser.DoesNotExist(By.Id("test-info"));
+
+            // Navigate to another page to cancel the previous `OnNavigateAsync`
+            // task and trigger a re-render on its completion
+            SetUrlViaPushState("/LongPage1");
+
+            // Confirm that the route was rendered
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
         }
 
         private long BrowserScrollY

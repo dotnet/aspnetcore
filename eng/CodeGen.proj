@@ -33,7 +33,7 @@
 -->
 <Project>
   <ItemGroup>
-    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
+    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" />', '%0A    ')
   </ItemGroup>
 </Project>
 ]]></ProjectListContent>

@@ -62,6 +62,10 @@ export class EventDelegator {
     }
   }
 
+  public getHandler(eventHandlerId: number) {
+    return this.eventInfoStore.get(eventHandlerId);
+  }
+
   public removeListener(eventHandlerId: number) {
     // This method gets called whenever the .NET-side code reports that a certain event handler
     // has been disposed. However we will already have disposed the info about that handler if
@@ -168,6 +172,10 @@ class EventInfoStore {
     this.infosByEventHandlerId[info.eventHandlerId] = info;
 
     this.addGlobalListener(info.eventName);
+  }
+
+  public get(eventHandlerId: number) {
+    return this.infosByEventHandlerId[eventHandlerId];
   }
 
   public addGlobalListener(eventName: string) {

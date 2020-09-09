@@ -143,8 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             static bool IsRecordType(Type type)
             {
                 // Based on the state of the art as described in https://github.com/dotnet/roslyn/issues/45777
-                var cloneMethod = type.GetMethod("<Clone>$", BindingFlags.Public | BindingFlags.Instance) ??
-                    type.GetMethod("<>Clone", BindingFlags.Public | BindingFlags.Instance);
+                var cloneMethod = type.GetMethod("<Clone>$", BindingFlags.Public | BindingFlags.Instance);
                 return cloneMethod != null && cloneMethod.ReturnType == type;
             }
         }

@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// User friendly error message for the error.
         /// </summary>
-        public Exception Failure { get; set; }
+        public Exception? Failure { get; set; }
 
         /// <summary>
         /// Additional state values for the authentication session.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
     }
 }
