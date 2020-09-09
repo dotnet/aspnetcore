@@ -64,9 +64,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public TimeSpan ClaimsCacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
-        /// How many user claim results to store in the cache, defaults to 1024.
+        /// The maximum size of the claim results cache, defaults to 100 MB.
         /// </summary>
-        public int ClaimsCacheSize { get; set; } = 1024;
+        public int ClaimsCacheSize { get; set; } = 100 * 1024 * 1024;
 
         internal MemoryCache ClaimsCache { get; set; }
 
