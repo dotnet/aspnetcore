@@ -4,6 +4,6 @@ This is required to provide dependencies for samples and tests.
  -->
 <Project>
   <ItemGroup>
-    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.1.1" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.1.7" />
   </ItemGroup>
 </Project>
