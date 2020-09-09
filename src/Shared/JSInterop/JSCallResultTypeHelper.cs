@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Reflection;
 
 namespace Microsoft.JSInterop
@@ -13,22 +12,12 @@ namespace Microsoft.JSInterop
 
         public static JSCallResultType FromGeneric<TResult>()
         {
-            var resultType = typeof(TResult);
-
-            if (resultType.Assembly == _currentAssembly)
+            if (typeof(TResult).Assembly == _currentAssembly
+                && (typeof(TResult) == typeof(IJSObjectReference)
+                || typeof(TResult) == typeof(IJSInProcessObjectReference)
+                || typeof(TResult) == typeof(IJSUnmarshalledObjectReference)))
             {
-                if (resultType == typeof(IJSObjectReference)
-                    || resultType == typeof(IJSInProcessObjectReference)
-                    || resultType == typeof(IJSUnmarshalledObjectReference))
-                {
-                    return JSCallResultType.JSObjectReference;
-                }
-                else
-                {
-                    throw new ArgumentException(
-                        $"JS interop cannot supply an instance of type '{resultType}'. Consider using " +
-                        $"'{typeof(IJSObjectReference)}' instead.");
-                }
+                return JSCallResultType.JSObjectReference;
             }
             else
             {

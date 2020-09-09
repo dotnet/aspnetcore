@@ -48,8 +48,6 @@
     <p id="@nameof(AsyncExceptionFromAsyncMethod)">@AsyncExceptionFromAsyncMethod?.Message</p>
     <h2>@nameof(JSObjectReferenceInvokeNonFunctionException)</h2>
     <p id="@nameof(JSObjectReferenceInvokeNonFunctionException)">@JSObjectReferenceInvokeNonFunctionException?.Message</p>
-    <h2>@nameof(JSObjectReferenceInvalidTypeArgumentException)</h2>
-    <p id="@nameof(JSObjectReferenceInvalidTypeArgumentException)">@JSObjectReferenceInvalidTypeArgumentException?.Message</p>
 </div>
 @if (DoneWithInterop)
 {
@@ -64,7 +62,6 @@
     public JSException SyncExceptionFromAsyncMethod { get; set; }
     public JSException AsyncExceptionFromAsyncMethod { get; set; }
     public JSException JSObjectReferenceInvokeNonFunctionException { get; set; }
-    public ArgumentException JSObjectReferenceInvalidTypeArgumentException { get; set; }
 
     public IDictionary<string, object> ReceiveDotNetObjectByRefResult { get; set; } = new Dictionary<string, object>();
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
@@ -156,15 +153,6 @@
 
         var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
         ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
-
-        try
-        {
-            await JSRuntime.InvokeAsync<Microsoft.JSInterop.Implementation.JSObjectReference>("returnJSObjectReference");
-        }
-        catch (ArgumentException e)
-        {
-            JSObjectReferenceInvalidTypeArgumentException = e;
-        }
 
         if (shouldSupportSyncInterop)
         {
