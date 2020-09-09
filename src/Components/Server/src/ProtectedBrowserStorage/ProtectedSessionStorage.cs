@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
+namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 {
     /// <summary>
     /// Provides mechanisms for storing and retrieving data in the browser's
@@ -16,8 +15,7 @@ namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
     ///
     /// See: https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
     /// </summary>
-    [UnsupportedOSPlatform("browser")]
-    public class ProtectedSessionStorage : ProtectedBrowserStorage
+    public sealed class ProtectedSessionStorage : ProtectedBrowserStorage
     {
         /// <summary>
         /// Constructs an instance of <see cref="ProtectedSessionStorage"/>.

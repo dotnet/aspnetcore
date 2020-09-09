@@ -111,9 +111,7 @@
       "src\\Components\\WebAssembly\\Sdk\\src\\Microsoft.NET.Sdk.BlazorWebAssembly.csproj",
       "src\\Components\\WebAssembly\\Sdk\\test\\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj",
       "src\\Components\\WebAssembly\\Sdk\\integrationtests\\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj",
-      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
-      "src\\Components\\ProtectedBrowserStorage\\src\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.csproj",
-      "src\\Components\\ProtectedBrowserStorage\\test\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests.csproj"
+      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj"
     ]
   }
 }
