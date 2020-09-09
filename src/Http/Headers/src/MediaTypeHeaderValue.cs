@@ -726,9 +726,9 @@ namespace Microsoft.Net.Http.Headers
                 suffix = subType.Subsegment(startOfSuffix + 1);
             }
 
-            if (suffix.HasValue)
+            if (Suffix.HasValue)
             {
-                if (Suffix.HasValue)
+                if (suffix.HasValue)
                 {
                     return MatchesSubtypeWithoutSuffix(subType, startOfSuffix) && MatchesSubtypeSuffix(suffix);
                 }
@@ -742,7 +742,7 @@ namespace Microsoft.Net.Http.Headers
                 // If this subtype or suffix matches the subtype of the mediaType,
                 // it is considered a subtype.
                 // Ex: application/json > application/val+json
-                return MatchesEitherSubtypeOrSuffix(subType);
+                return MatchesEitherSubtypeOrSuffix(subType, suffix);
             }
         }
 
@@ -773,10 +773,10 @@ namespace Microsoft.Net.Http.Headers
                 set.SubType.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool MatchesEitherSubtypeOrSuffix(StringSegment subType)
+        private bool MatchesEitherSubtypeOrSuffix(StringSegment subType, StringSegment suffix)
         {
-            return SubType.Equals(subType, StringComparison.OrdinalIgnoreCase) ||
-                Suffix.Equals(subType, StringComparison.OrdinalIgnoreCase);
+            return subType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
+                SubType.Equals(suffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesParameters(MediaTypeHeaderValue set)
