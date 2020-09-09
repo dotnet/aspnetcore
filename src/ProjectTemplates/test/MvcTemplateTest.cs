@@ -142,10 +142,10 @@ namespace Templates.Test
                     Url = PageUrls.ForgotPassword,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -154,10 +154,10 @@ namespace Templates.Test
                     Url = PageUrls.HomeUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
                     }
@@ -167,10 +167,10 @@ namespace Templates.Test
                     Url = PageUrls.PrivacyFullUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -179,10 +179,10 @@ namespace Templates.Test
                     Url = PageUrls.LoginUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
                         PageUrls.ResendEmailConfirmation,
@@ -194,10 +194,10 @@ namespace Templates.Test
                     Url = PageUrls.RegisterUrl,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
                     }
