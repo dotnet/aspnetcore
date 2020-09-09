@@ -722,6 +722,7 @@ namespace Microsoft.Net.Http.Headers
 
         [Theory]
         [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*+json", "application/*+json")]
         [InlineData("application/problem+json", "application/json")]
@@ -743,6 +744,7 @@ namespace Microsoft.Net.Http.Headers
 
         [Theory]
         [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/json")]
         [InlineData("application/entity+json", "application/entity.v2+json")]
         [InlineData("application/*+json", "application/entity+txt")]
         [InlineData("application/*+*", "application/json")]
