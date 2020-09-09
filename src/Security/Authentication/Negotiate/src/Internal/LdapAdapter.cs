@@ -73,18 +73,19 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 }
 
-                var entrySize = Encoding.Default.GetByteCount(user);
+                var entrySize = user.Length * 2; //Approximate the size of stored key in memory cache.
                 foreach (var claim in retrievedClaims)
                 {
                     identity.AddClaim(new Claim(identity.RoleClaimType, claim));
-                    entrySize += Encoding.Default.GetByteCount(claim);
+                    entrySize += claim.Length * 2; //Approximate the size of stored value in memory cache.
                 }
 
                 settings.ClaimsCache.Set(user,
                     retrievedClaims,
                     new MemoryCacheEntryOptions()
                         .SetSize(entrySize)
-                        .SetSlidingExpiration(settings.ClaimsCacheEntryExpiration));
+                        .SetSlidingExpiration(settings.ClaimsCacheEntrySlidingExpiration)
+                        .SetAbsoluteExpiration(settings.ClaimsCacheEntryAbsoluteExpiration));
             }
             else
             {
