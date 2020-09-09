@@ -27,7 +27,7 @@ public class LongPollingTransportTest {
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
-        Throwable exception = assertThrows(RuntimeException.class, () -> transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait());
+        Throwable exception = assertThrows(RuntimeException.class, () -> transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals(Exception.class, exception.getCause().getClass());
         assertEquals("Failed to connect.", exception.getCause().getMessage());
         assertFalse(transport.isActive());
@@ -41,7 +41,7 @@ public class LongPollingTransportTest {
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("First");
-        Throwable exception = assertThrows(RuntimeException.class, () -> transport.send(sendBuffer).timeout(1, TimeUnit.SECONDS).blockingAwait());
+        Throwable exception = assertThrows(RuntimeException.class, () -> transport.send(sendBuffer).timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals(Exception.class, exception.getCause().getClass());
         assertEquals("Cannot send unless the transport is active.", exception.getCause().getMessage());
         assertFalse(transport.isActive());
@@ -69,7 +69,7 @@ public class LongPollingTransportTest {
         });
 
         assertFalse(onClosedRan.get());
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
         assertTrue(onClosedRan.get());
         assertFalse(transport.isActive());
@@ -98,7 +98,7 @@ public class LongPollingTransportTest {
             blocker.onComplete();
         });
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
         assertFalse(transport.isActive());
         assertTrue(onClosedRan.get());
@@ -155,7 +155,7 @@ public class LongPollingTransportTest {
 
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(block.blockingAwait(1,TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("TEST", message.get());
@@ -200,7 +200,7 @@ public class LongPollingTransportTest {
 
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("FIRSTSECONDTHIRD", message.get());
@@ -230,7 +230,7 @@ public class LongPollingTransportTest {
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         close.onComplete();
@@ -262,7 +262,7 @@ public class LongPollingTransportTest {
         LongPollingTransport transport = new LongPollingTransport(headers, client, tokenProvider);
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
@@ -298,7 +298,7 @@ public class LongPollingTransportTest {
         LongPollingTransport transport = new LongPollingTransport(headers, client, tokenProvider);
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         secondGet.blockingAwait(1, TimeUnit.SECONDS);
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
@@ -307,7 +307,7 @@ public class LongPollingTransportTest {
     }
 
     @Test
-    public void After204StopDoesNotTriggerOnClose() {
+    public void After204StopDoesNotTriggerOnCloseAgain() {
         AtomicBoolean firstPoll = new AtomicBoolean(true);
         CompletableSubject block = CompletableSubject.create();
         TestHttpClient client = new TestHttpClient()
@@ -317,6 +317,9 @@ public class LongPollingTransportTest {
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
+                })
+                .on("DELETE", (req) -> {
+                    return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -330,7 +333,7 @@ public class LongPollingTransportTest {
         });
 
         assertFalse(onClosedRan.get());
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(1, onCloseCount.get());
         assertTrue(onClosedRan.get());
@@ -356,7 +359,7 @@ public class LongPollingTransportTest {
                 })
                 .on("DELETE", (req) ->{
                     //Unblock the last poll when we sent the DELETE request.
-                   block.onComplete();
+                    block.onComplete();
                     return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
@@ -368,9 +371,30 @@ public class LongPollingTransportTest {
         });
 
         assertEquals(0, onCloseCount.get());
-        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(transport.stop().blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(1, onCloseCount.get());
         assertFalse(transport.isActive());
+    }
+
+    @Test
+    public void ErrorFromClosePropagatesOnSecondStopCall() {
+        AtomicBoolean firstPoll = new AtomicBoolean(true);
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> {
+                    if (firstPoll.get()) {
+                        firstPoll.set(false);
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
+                    }
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
+                });
+
+        Map<String, String> headers = new HashMap<>();
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+
+        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.stop().blockingAwait(100, TimeUnit.SECONDS));
+        assertEquals("Request has no handler: DELETE http://example.com", exception.getMessage());
     }
 }

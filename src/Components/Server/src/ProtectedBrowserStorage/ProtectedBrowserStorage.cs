@@ -4,19 +4,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
+namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 {
 
     /// <summary>
     /// Provides mechanisms for storing and retrieving data in the browser storage.
     /// </summary>
-    [UnsupportedOSPlatform("browser")]
     public abstract class ProtectedBrowserStorage
     {
         private readonly string _storeName;
@@ -31,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
         /// <param name="storeName">The name of the store in which the data should be stored.</param>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
-        protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
+        private protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
         {
             // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
@@ -155,8 +153,8 @@ namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
         private ValueTask SetProtectedJsonAsync(string key, string protectedJson)
            => _jsRuntime.InvokeVoidAsync($"{_storeName}.setItem", key, protectedJson);
 
-        private ValueTask<string> GetProtectedJsonAsync(string key)
-            => _jsRuntime.InvokeAsync<string>($"{_storeName}.getItem", key);
+        private ValueTask<string?> GetProtectedJsonAsync(string key)
+            => _jsRuntime.InvokeAsync<string?>($"{_storeName}.getItem", key);
 
         // IDataProtect isn't disposable, so we're fine holding these indefinitely.
         // Only a bounded number of them will be created, as the 'key' values should

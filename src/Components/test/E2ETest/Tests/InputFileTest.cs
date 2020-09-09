@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
-using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -50,11 +49,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             inputFile.SendKeys(file.Path);
 
             var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+            var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+            var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
             var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+            var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-            // Validate that the file was uploaded correctly
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
             Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
 
@@ -77,11 +82,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             inputFile.SendKeys(file.Path);
 
             var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+            var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+            var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
             var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+            var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-            // Validate that the file was uploaded correctly
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
             Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
 
@@ -97,14 +108,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var inputFile = Browser.FindElement(By.Id("input-file"));
             inputFile.SendKeys(string.Join("\n", files.Select(f => f.Path)));
 
-            // VAlidate that each file was uploaded correctly
+            // Validate that each file was uploaded correctly
             Assert.All(files, file =>
             {
                 var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+                var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+                var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
                 var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+                var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
                 var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
+                // Validate that the file was uploaded correctly and all fields are present
+                Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
                 Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+                Browser.Equal("text/plain", () => fileContentTypeElement.Text);
                 Browser.Equal(file.Text, () => fileContentElement.Text);
             });
         }

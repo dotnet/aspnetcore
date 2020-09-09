@@ -1,14 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
-
-namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
+namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 {
     /// <summary>
     /// Contains the result of a protected browser storage operation.
     /// </summary>
-    public readonly struct ProtectedBrowserStorageResult<T>
+    public readonly struct ProtectedBrowserStorageResult<TValue>
     {
         /// <summary>
         /// Gets whether the operation succeeded.
@@ -18,11 +16,9 @@ namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
         /// <summary>
         /// Gets the result value of the operation.
         /// </summary>
-        [MaybeNull]
-        [AllowNull]
-        public T Value { get; }
+        public TValue? Value { get; }
 
-        internal ProtectedBrowserStorageResult(bool success, [AllowNull] T value)
+        internal ProtectedBrowserStorageResult(bool success, TValue? value)
         {
             Success = success;
             Value = value;
