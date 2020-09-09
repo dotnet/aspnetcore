@@ -27,9 +27,11 @@ Max allowed files:
 @foreach (var (file, content) in loadedFiles)
 {
     <p id="file-@(file.Name)">
-        <strong>File name:</strong> @(file.Name)<br />
-        <strong>File size (bytes):</strong> <span id="file-size">@(file.Size)</span><br />
-        <strong>File content:</strong> <span id="file-content">@content</span><br />
+        <strong>Name:</strong> <span id="file-name">@(file.Name)</span><br />
+        <strong>Last modified:</strong> <span id="file-last-modified">@(file.LastModified.ToString())</span><br />
+        <strong>Size (bytes):</strong> <span id="file-size">@(file.Size)</span><br />
+        <strong>Content type:</strong> <span id="file-content-type">@(file.ContentType)</span><br />
+        <strong>Content:</strong> <span id="file-content">@content</span><br />
     </p>
 }
 
