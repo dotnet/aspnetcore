@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -58,8 +57,7 @@ namespace Microsoft.AspNetCore.Builder
 
         public IDictionary<string, object?> Properties { get; }
 
-        [return: MaybeNull]
-        private T GetProperty<T>(string key)
+        private T? GetProperty<T>(string key)
         {
             return Properties.TryGetValue(key, out var value) ? (T)value : default(T);
         }

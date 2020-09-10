@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Headers
         // Cache-Control headers, only one instance of CacheControlHeaderValue is created (if all headers contain valid
         // values, otherwise we may have multiple strings containing the invalid values).
         private static readonly HttpHeaderParser<CacheControlHeaderValue> Parser
-            = new GenericHeaderParser<CacheControlHeaderValue>(true, GetCacheControlLength!);
+            = new GenericHeaderParser<CacheControlHeaderValue>(true, GetCacheControlLength);
 
         private static readonly Action<StringSegment> CheckIsValidTokenAction = CheckIsValidToken;
 
