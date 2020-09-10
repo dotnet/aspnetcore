@@ -90,11 +90,22 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        /// <param name="replace">If true, will replace the uri in the current browser history state, instead of pushing the new uri onto the browser history stack</param>
-        public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
+        public void NavigateTo(string uri, bool forceLoad = false)
         {
             AssertInitialized();
-            NavigateToCore(uri, forceLoad, replace);
+            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
+        }
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// (as returned by <see cref="BaseUri"/>).</param>
+        /// <param name="options">Add additional navigation options <see cref="NavigationOptions"/>.</param>
+        public void NavigateTo(string uri, NavigationOptions options)
+        {
+            AssertInitialized();
+            NavigateToCore(uri, options);
         }
 
         /// <summary>
@@ -103,8 +114,20 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        /// <param name="replace">If true, will replace the uri in the current browser history state, instead of pushing the new uri onto the browser history stack</param>
-        protected abstract void NavigateToCore(string uri, bool forceLoad, bool replace);
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// (as returned by <see cref="BaseUri"/>).</param>
+        /// <param name="options">Add additional navigation options <see cref="NavigationOptions"/>.</param>
+        protected virtual void NavigateToCore(string uri, NavigationOptions options)
+        {
+            //We call NavigateToCore(uri, options.ForceLoad) so to not introduce a breaking change.
+            //derived classes should override this function to implement routing
+            NavigateToCore(uri, options.ForceLoad);
+        }
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before these values are used for the first time.
