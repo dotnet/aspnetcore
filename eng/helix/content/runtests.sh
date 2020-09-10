@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo Verifying ulimit -c
+ulimit -c
+
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
 
