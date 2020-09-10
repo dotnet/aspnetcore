@@ -35,10 +35,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <example>
         /// @bind-Value="model.PropertyName"
         /// </example>
-        [AllowNull]
-        [MaybeNull]
         [Parameter]
-        public TValue Value { get; set; } = default;
+        public TValue? Value { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
@@ -69,17 +67,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the current value of the input.
         /// </summary>
-        [AllowNull]
-        protected TValue CurrentValue
+        protected TValue? CurrentValue
         {
-            [return: MaybeNull]
-            get => Value!;
+            get => Value;
             set
             {
                 var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
                 if (hasChanged)
                 {
-                    Value = value!;
+                    Value = value;
                     _ = ValueChanged.InvokeAsync(Value);
                     EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
@@ -148,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected virtual string? FormatValueAsString([AllowNull] TValue value)
+        protected virtual string? FormatValueAsString(TValue? value)
             => value?.ToString();
 
         /// <summary>
@@ -159,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="result">An instance of <typeparamref name="TValue"/>.</param>
         /// <param name="validationErrorMessage">If the value could not be parsed, provides a validation error message.</param>
         /// <returns>True if the value could be parsed; otherwise false.</returns>
-        protected abstract bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
+        protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
         /// <summary>
         /// Gets a string that indicates the status of the field being edited. This will include
