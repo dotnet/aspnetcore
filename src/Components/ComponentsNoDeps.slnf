@@ -44,10 +44,9 @@
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
       "src\\Components\\test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
+      "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj",
-      "src\\Components\\ProtectedBrowserStorage\\src\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.csproj",
-      "src\\Components\\ProtectedBrowserStorage\\test\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests.csproj"
+      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj"
     ]
   }
 }

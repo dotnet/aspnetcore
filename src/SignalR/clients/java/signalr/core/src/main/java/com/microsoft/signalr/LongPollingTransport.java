@@ -19,7 +19,7 @@ import io.reactivex.subjects.CompletableSubject;
 
 class LongPollingTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
-    private TransportOnClosedCallback onClose;
+    private TransportOnClosedCallback onClose = (reason) -> {};
     private String url;
     private final HttpClient client;
     private final HttpClient pollingClient;
@@ -30,6 +30,7 @@ class LongPollingTransport implements Transport {
     private String pollUrl;
     private String closeError;
     private CompletableSubject receiveLoop = CompletableSubject.create();
+    private CompletableSubject closeSubject = CompletableSubject.create();
     private ExecutorService threadPool;
     private ExecutorService onReceiveThread;
     private AtomicBoolean stopCalled = new AtomicBoolean(false);
@@ -157,7 +158,7 @@ class LongPollingTransport implements Transport {
     public Completable stop() {
         if (stopCalled.compareAndSet(false, true)) {
             this.active = false;
-            return this.updateHeaderToken().andThen(Completable.defer(() -> {
+            Completable stopCompletable = this.updateHeaderToken().andThen(Completable.defer(() -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
                 return this.pollingClient.delete(this.url, request).ignoreElement()
@@ -168,8 +169,10 @@ class LongPollingTransport implements Transport {
             })).doOnError(e -> {
                 cleanup(e.getMessage());
             });
+
+            stopCompletable.subscribe(closeSubject);
         }
-        return Completable.complete();
+        return closeSubject;
     }
 
     private void cleanup(String error) {

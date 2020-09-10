@@ -83,4 +83,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
     }
+
+    public class ServerVirtualizationTest : VirtualizationTest
+    {
+        public ServerVirtualizationTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
 }

@@ -296,12 +296,11 @@ if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
 # managed and native projects.
-$performDesktopBuild = ($BuildInstallers -or $BuildNative) -and `
-    -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase)
+$performDesktopBuild = ($BuildInstallers -and $Architecture -ne "arm") -or `
+    ($BuildNative -and -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase))
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
-
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
 $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
