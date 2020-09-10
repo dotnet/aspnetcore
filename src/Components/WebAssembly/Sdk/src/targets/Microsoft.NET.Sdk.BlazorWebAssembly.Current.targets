@@ -500,6 +500,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
 
+    <PropertyGroup>
+      <_BlazorOutputContent>@(_BlazorPublishBootResourceWithHash)</_BlazorOutputContent>
+    </PropertyGroup>
+    
+    <Error
+      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
+      Code="BLAZORSDK1001"
+      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
+
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorPublishBootResourceWithHash)"
