@@ -14,7 +14,7 @@ namespace Microsoft.JSInterop.Implementation
     {
         private readonly JSRuntime _jsRuntime;
 
-        internal bool Disposed { get; set; }
+        internal bool Disposed { get; private set; }
 
         /// <summary>
         /// The unique identifier assigned to this instance.
@@ -48,9 +48,22 @@ namespace Microsoft.JSInterop.Implementation
 
             return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
         }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            Disposed = true;
+        }
 
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore();
+            
+            Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+        
+        protected virtual async ValueTask DisposeAsyncCore()
         {
             if (!Disposed)
             {
@@ -67,6 +80,11 @@ namespace Microsoft.JSInterop.Implementation
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
+        }
+        
+        ~JSObjectReference()
+        {
+            Dispose(false);
         }
     }
 }
