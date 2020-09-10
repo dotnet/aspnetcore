@@ -10,12 +10,8 @@ set $queue=%5
 set $arch=%6
 set $quarantined=%7
 set $ef=%8
-set $aspnetruntime=%9
-REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
-shift
-set $aspnetref=%9
-shift
 set $helixTimeout=%9
+REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
 shift
 set $feedCred=%9
 
@@ -40,8 +36,8 @@ set exit_code=0
 echo "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
-echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%"
-dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%
+echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
+dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
 if errorlevel neq 0 (
     set exit_code=%errorlevel%
 )

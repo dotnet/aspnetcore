@@ -36,14 +36,14 @@ InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
   Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
   ExitWithExitCode $exit_code
 }
-if [[ -z "${11:-}" ]]; then
+if [[ -z "${10:-}" ]]; then
     InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code
     }
 else
-    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${11} || {
+    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code
@@ -65,8 +65,8 @@ exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 
-echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --aspnetruntime $9 --aspnetref ${10} --helixTimeout ${11}"
-$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --aspnetruntime $9 --aspnetref ${10} --helixTimeout ${11}
+echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
+$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
