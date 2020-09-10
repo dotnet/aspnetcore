@@ -29,14 +29,24 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad, bool replace)
+        protected override void NavigateToCore(string uri, bool forceLoad)
+        {
+            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, forceLoad, replace);
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options.ForceLoad, options.Replace);
         }
     }
 }

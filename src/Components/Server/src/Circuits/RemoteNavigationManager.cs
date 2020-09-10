@@ -65,17 +65,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad, bool replace)
+        protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            Log.RequestingNavigation(_logger, uri, forceLoad, replace);
+            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            Log.RequestingNavigation(_logger, uri, options.ForceLoad, options.Replace);
 
             if (_jsRuntime == null)
             {
                 var absoluteUriString = ToAbsoluteUri(uri).ToString();
                 throw new NavigationException(absoluteUriString);
             }
-
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad, replace).Preserve();
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, options.ForceLoad, options.Replace).Preserve();
         }
 
         private static class Log
