@@ -286,7 +286,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Error
       Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later (are you missing an assembly reference?)"
       Code="BLAZORSDK1001"
-      Condition="!Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
+      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
     
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
@@ -500,9 +500,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetFileHash>
 
     <Error
-        Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later (are you missing an assembly reference?)"
+        Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded. (are you missing an assembly reference?)"
         Code="BLAZORSDK1001"
-        Condition="!Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
+        Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"

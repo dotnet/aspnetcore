@@ -207,6 +207,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildFailed(result);
         }
 
+        [Fact]
+        public async Task Build_Without_LazyLoadExplicitAssembly_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            // Act
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            // Assert
+            Assert.BuildPassed(result);
+        }
+
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
         {
             return JsonSerializer.Deserialize<BootJsonData>(
