@@ -1,31 +1,28 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.AspNetCore.Http.Features
 {
     public struct FeatureReference<T>
     {
-        private T _feature;
+        private T? _feature;
         private int _revision;
 
-        private FeatureReference(T feature, int revision)
+        private FeatureReference(T? feature, int revision)
         {
             _feature = feature;
             _revision = revision;
         }
 
-        public static readonly FeatureReference<T> Default = new FeatureReference<T>(default(T)!, -1);
+        public static readonly FeatureReference<T> Default = new FeatureReference<T>(default(T), -1);
 
-        [return: MaybeNull]
-        public T Fetch(IFeatureCollection features)
+        public T? Fetch(IFeatureCollection features)
         {
             if (_revision == features.Revision)
             {
                 return _feature;
             }
-            _feature = (T)features[typeof(T)]!;
+            _feature = (T)features[typeof(T)];
             _revision = features.Revision;
             return _feature;
         }

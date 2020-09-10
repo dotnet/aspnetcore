@@ -13,7 +13,7 @@ namespace Microsoft.Net.Http.Headers
     public class RangeHeaderValue
     {
         private static readonly HttpHeaderParser<RangeHeaderValue> Parser
-            = new GenericHeaderParser<RangeHeaderValue>(false, GetRangeLength!);
+            = new GenericHeaderParser<RangeHeaderValue>(false, GetRangeLength);
 
         private StringSegment _unit;
         private ICollection<RangeItemHeaderValue>? _ranges;

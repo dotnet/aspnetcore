@@ -33,9 +33,9 @@ namespace Microsoft.Net.Http.Headers
         private const string ExpiresDateFormat = "r";
 
         private static readonly HttpHeaderParser<SetCookieHeaderValue> SingleValueParser
-            = new GenericHeaderParser<SetCookieHeaderValue>(false, GetSetCookieLength!);
+            = new GenericHeaderParser<SetCookieHeaderValue>(false, GetSetCookieLength);
         private static readonly HttpHeaderParser<SetCookieHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<SetCookieHeaderValue>(true, GetSetCookieLength!);
+            = new GenericHeaderParser<SetCookieHeaderValue>(true, GetSetCookieLength);
 
         private StringSegment _name;
         private StringSegment _value;

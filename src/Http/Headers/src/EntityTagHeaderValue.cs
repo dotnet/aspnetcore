@@ -14,13 +14,13 @@ namespace Microsoft.Net.Http.Headers
         // Note that the ETag header does not allow a * but we're not that strict: We allow both '*' and ETag values in a single value.
         // We can't guarantee that a single parsed value will be used directly in an ETag header.
         private static readonly HttpHeaderParser<EntityTagHeaderValue> SingleValueParser
-            = new GenericHeaderParser<EntityTagHeaderValue>(false, GetEntityTagLength!);
+            = new GenericHeaderParser<EntityTagHeaderValue>(false, GetEntityTagLength);
         // Note that if multiple ETag values are allowed (e.g. 'If-Match', 'If-None-Match'), according to the RFC
         // the value must either be '*' or a list of ETag values. It's not allowed to have both '*' and a list of
         // ETag values. We're not that strict: We allow both '*' and ETag values in a list. If the server sends such
         // an invalid list, we want to be able to represent it using the corresponding header property.
         private static readonly HttpHeaderParser<EntityTagHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<EntityTagHeaderValue>(true, GetEntityTagLength!);
+            = new GenericHeaderParser<EntityTagHeaderValue>(true, GetEntityTagLength);
 
         private static EntityTagHeaderValue? AnyType;
 
