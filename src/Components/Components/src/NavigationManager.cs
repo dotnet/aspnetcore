@@ -90,10 +90,11 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        public void NavigateTo(string uri, bool forceLoad = false)
+        /// <param name="suppressLocationChanged">If true, navigation will not trigger the <see cref="LocationChanged" /> event.</param>
+        public void NavigateTo(string uri, bool forceLoad = false, bool suppressLocationChanged = false)
         {
             AssertInitialized();
-            NavigateToCore(uri, forceLoad);
+            NavigateToCore(uri, forceLoad, suppressLocationChanged);
         }
 
         /// <summary>
@@ -102,7 +103,8 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        /// <param name="suppressLocationChanged">If true, navigation will not trigger the <see cref="LocationChanged" /> event.</param>
+        protected abstract void NavigateToCore(string uri, bool forceLoad, bool suppressLocationChanged);
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before these values are used for the first time.

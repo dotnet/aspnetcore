@@ -56,16 +56,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsRuntime = jsRuntime;
         }
 
-        public void NotifyLocationChanged(string uri, bool intercepted)
+        public void NotifyLocationChanged(string uri, bool intercepted, bool suppressLocationChanged)
         {
             Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
             Uri = uri;
-            NotifyLocationChanged(intercepted);
+
+            if (!suppressLocationChanged)
+            {
+                NotifyLocationChanged(intercepted);
+            }
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override void NavigateToCore(string uri, bool forceLoad, bool suppressLocationChanged)
         {
             Log.RequestingNavigation(_logger, uri, forceLoad);
 
@@ -75,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad, suppressLocationChanged);
         }
 
         private static class Log

@@ -6,7 +6,7 @@ let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangedCallback: ((uri: string, intercepted: boolean, suppressLocationChanged: boolean) => Promise<void>) | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -72,12 +72,12 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
   });
 }
 
-export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
+export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false, suppressLocationChanged: boolean = false) {
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     // It's an internal URL, so do client-side navigation
-    performInternalNavigation(absoluteUri, false, replace);
+    performInternalNavigation(absoluteUri, false, replace, suppressLocationChanged);
   } else if (forceLoad && location.href === uri) {
     // Force-loading the same URL you're already on requires special handling to avoid
     // triggering browser-specific behavior issues.
@@ -93,7 +93,7 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean = false) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean = false, suppressLocationChanged: boolean = false) {
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -106,12 +106,12 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   }else{
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   }
-  notifyLocationChanged(interceptedLink);
+  notifyLocationChanged(interceptedLink, suppressLocationChanged);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean) {
+async function notifyLocationChanged(interceptedLink: boolean, suppressLocationChanged: boolean = false) {
   if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, interceptedLink);
+    await notifyLocationChangedCallback(location.href, interceptedLink, suppressLocationChanged);
   }
 }
 

@@ -279,8 +279,8 @@ namespace Microsoft.AspNetCore.Components
         public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> LocationChanged { add { } remove { } }
         protected virtual void EnsureInitialized() { }
         protected void Initialize(string baseUri, string uri) { }
-        public void NavigateTo(string uri, bool forceLoad = false) { }
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        public void NavigateTo(string uri, bool forceLoad = false, bool suppressLocationChanged = false) { }
+        protected abstract void NavigateToCore(string uri, bool forceLoad, bool suppressLocationChanged);
         protected void NotifyLocationChanged(bool isInterceptedLink) { }
         public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
         public string ToBaseRelativePath(string uri) { throw null; }

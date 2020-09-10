@@ -22,21 +22,25 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             Initialize(baseUri, uri);
         }
 
-        public void SetLocation(string uri, bool isInterceptedLink)
+        public void SetLocation(string uri, bool isInterceptedLink, bool suppressLocationChanged)
         {
             Uri = uri;
-            NotifyLocationChanged(isInterceptedLink);
+
+            if (!suppressLocationChanged)
+            {
+                NotifyLocationChanged(isInterceptedLink);
+            }
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override void NavigateToCore(string uri, bool forceLoad, bool suppressLocationChanged)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad, suppressLocationChanged);
         }
     }
 }
