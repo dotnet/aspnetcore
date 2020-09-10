@@ -69,6 +69,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             private static readonly Action<ILogger, Exception> _serverSentEventsNotSupportedByBrowser =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(19, "ServerSentEventsNotSupportedByBrowser"), "Skipping ServerSentEvents because they are not supported by the browser.");
 
+            private static readonly Action<ILogger, Exception> _cookiesNotSupported =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(20, "CookiesNotSupported"), "Cookies are not supported on this platform.");
+
             public static void Starting(ILogger logger)
             {
                 _starting(logger, null);
@@ -174,6 +177,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             public static void ServerSentEventsNotSupportedByBrowser(ILogger logger)
             {
                 _serverSentEventsNotSupportedByBrowser(logger, null);
+            }
+
+            public static void CookiesNotSupported(ILogger logger)
+            {
+                _cookiesNotSupported(logger, null);
             }
         }
     }
