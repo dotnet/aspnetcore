@@ -845,12 +845,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJsonPath = Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(result, bootJsonPath);
 
+            Assert.Equal(ICUDataMode.Invariant, bootJsonData.icuDataMode);
             var runtime = bootJsonData.resources.runtime.Keys;
             Assert.Contains("dotnet.wasm", runtime);
             Assert.DoesNotContain("icudt.dat", runtime);
+            Assert.DoesNotContain("icudt_EFIGS.dat", runtime);
 
             Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
             Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat");
         }
 
         private static void AddWasmProjectContent(ProjectDirectory project, string content)

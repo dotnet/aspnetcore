@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -49,6 +49,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// Config files for the application
         /// </summary>
         public List<string> config { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ICUDataMode"/> that determines how icu files are loaded.
+        /// </summary>
+        public ICUDataMode icuDataMode { get; set; }
     }
 
     public class ResourcesData
@@ -80,6 +85,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public ResourceHashesByNameDictionary lazyAssembly { get; set; }
+    }
+
+    public enum ICUDataMode
+    {
+        /// <summary>
+        /// Load optimized icu data file based on the user's locale
+        /// </summary>
+        Sharded,
+
+        /// <summary>
+        /// Use the combined icudt.dat file
+        /// </summary>
+        All,
+
+        /// <summary>
+        /// Do not load any icu data files.
+        /// </summary>
+        Invariant,
     }
 #pragma warning restore IDE1006 // Naming Styles
 }

@@ -14,6 +14,11 @@ export interface WebAssemblyStartOptions {
    * Override built-in environment setting on start.
    */
   environment?: string;
+
+  /**
+   * Gets the application culture. This is a name specified in the BCP 47 format. See https://tools.ietf.org/html/bcp47
+   */
+  applicationCulture?: string;
 }
 
 // This type doesn't have to align with anything in BootConfig.
