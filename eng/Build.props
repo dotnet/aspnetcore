@@ -60,7 +60,7 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' ">
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')  ">
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
@@ -74,6 +74,10 @@
         <!-- Build the targeting pack installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
+        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targetting pack installer logic
+        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
+        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
@@ -85,6 +89,14 @@
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+      </ItemGroup>
+
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
+        <!-- We don't build the bundle here because we'd have to bundle the x86 installer which gets built in a different leg.
+        Instead we only provide the ARM64 MSI-->
+
+        <!-- Build the SharedFramework wixlib -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
 
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetRuntimeIdentifier)' == 'linux-x64'">
