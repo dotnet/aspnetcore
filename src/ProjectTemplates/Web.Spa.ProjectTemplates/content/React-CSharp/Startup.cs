@@ -74,6 +74,9 @@ namespace Company.WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+#if (IndividualLocalAuth)
+                app.UseMigrationsEndPoint();
+#endif
             }
             else
             {

@@ -55,6 +55,7 @@ try {
   --publishing-infra-version $PublishingInfraVersion `
   --default-channels `
   --source-branch master `
+  --publish-installers-and-checksums `
   --azdev-pat $AzdoToken `
   --bar-uri $MaestroApiEndPoint `
   --password $MaestroToken `

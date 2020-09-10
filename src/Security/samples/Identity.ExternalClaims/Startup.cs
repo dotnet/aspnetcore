@@ -74,6 +74,7 @@ namespace Identity.ExternalClaims
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {
