@@ -281,13 +281,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
+      <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
     </PropertyGroup>
 
     <Error
-      Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later (are you missing an assembly reference?)"
+      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
       Code="BLAZORSDK1001"
-      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
-    
+      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
+
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorOutputWithHash)"
@@ -498,11 +499,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
-
-    <Error
-        Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded. (are you missing an assembly reference?)"
-        Code="BLAZORSDK1001"
-        Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
