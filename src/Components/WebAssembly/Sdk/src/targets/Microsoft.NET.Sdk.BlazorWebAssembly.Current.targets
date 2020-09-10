@@ -283,6 +283,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
     </PropertyGroup>
 
+    <Error
+      Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later (are you missing an assembly reference?)"
+      Code="BLAZORSDK1001"
+      Condition="!Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
+    
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorOutputWithHash)"
@@ -493,6 +498,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
+
+    <Error
+        Text="Unable to find $(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later (are you missing an assembly reference?)"
+        Code="BLAZORSDK1001"
+        Condition="!Exists('$(OutDir)$(_BlazorOutputPath)%(BlazorWebAssemblyLazyLoad.Identity)')" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"

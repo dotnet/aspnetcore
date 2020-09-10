@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -163,6 +165,48 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // App assembly should not be lazy loaded
             Assert.DoesNotContain("blazorwasm.dll", lazyAssemblies.Keys);
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
+        }
+
+        [Fact]
+        public async Task Build_LazyLoadExplicitAssembly_InvalidAssembly()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibraryInvalid.dll' />
+</ItemGroup>
+");
+            // Act
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            // Assert
+            Assert.BuildError(result, "BLAZORSDK1001");
+            Assert.BuildFailed(result);
+        }
+
+        [Fact]
+        public async Task Publish_LazyLoadExplicitAssembly_InvalidAssembly()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibraryInvalid.dll' />
+</ItemGroup>
+");
+            // Act
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            // Assert
+            Assert.BuildError(result, "BLAZORSDK1001");
+            Assert.BuildFailed(result);
         }
 
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
