@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(19, "ServerSentEventsNotSupportedByBrowser"), "Skipping ServerSentEvents because they are not supported by the browser.");
 
             private static readonly Action<ILogger, Exception> _cookiesNotSupported =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(20, "CookiesNotSupported"), "Cookies are not supported on this platform.");
+                LoggerMessage.Define(LogLevel.Trace, new EventId(20, "CookiesNotSupported"), "Cookies are not supported on this platform.");
 
             public static void Starting(ILogger logger)
             {

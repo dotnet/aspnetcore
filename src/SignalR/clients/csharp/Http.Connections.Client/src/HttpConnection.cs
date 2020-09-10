@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private static readonly int _maxRedirects = 100;
         private static readonly int _protocolVersionNumber = 1;
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
-        private static bool _hasLoggedCookieError;
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
@@ -544,11 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // Also WASM doesn't support some settings in the browser
                 catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
                 {
-                    if (!_hasLoggedCookieError)
-                    {
-                        _hasLoggedCookieError = true;
-                        Log.CookiesNotSupported(_logger);
-                    }
+                    Log.CookiesNotSupported(_logger);
                 }
 
                 // Only access HttpClientHandler.ClientCertificates
