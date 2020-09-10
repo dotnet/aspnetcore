@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
@@ -146,6 +147,7 @@ namespace Microsoft.AspNetCore.SignalR
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
@@ -182,6 +184,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="message">The serialization cache to use.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
