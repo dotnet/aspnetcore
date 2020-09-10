@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     TimeoutControl.CancelTimeout();
                     TimeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
 
-                    await _frameWriter.CompleteAsync();
+                    _frameWriter.Complete();
                 }
                 catch
                 {
@@ -1019,6 +1019,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // fields is malformed (Section 8.1.2.6).
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
                 }
+
                 if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
                 {
                     // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
@@ -1031,7 +1032,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Refused streams can be retried, by which time the client must have received our settings frame with our limit information.
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
                 }
-                
+
                 // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
                 // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
                 // Also, we care about the dictionary size for too much memory consumption.

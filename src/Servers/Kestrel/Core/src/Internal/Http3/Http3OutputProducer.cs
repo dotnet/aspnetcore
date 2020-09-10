@@ -233,7 +233,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _completed = true;
 
                 _pipeWriter.Complete(new OperationCanceledException());
-
             }
         }
 
@@ -365,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         // Headers have already been written and there is no other content to write
                         // TODO complete something here.
                         flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
-                        await _frameWriter.CompleteAsync();
+                        _frameWriter.Complete();
                     }
                     else
                     {

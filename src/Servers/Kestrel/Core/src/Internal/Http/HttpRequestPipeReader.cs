@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _body.Complete(exception);
         }
 
-        public override async ValueTask CompleteAsync(Exception exception = null)
+        public override ValueTask CompleteAsync(Exception exception = null)
         {
             ValidateState();
 
-            await _body.CompleteAsync(exception);
+            return _body.CompleteAsync(exception);
         }
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)

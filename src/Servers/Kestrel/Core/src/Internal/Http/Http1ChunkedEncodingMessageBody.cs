@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _completed = true;
             _context.ReportApplicationError(exception);
         }
-        
+
         public override void CancelPendingRead()
         {
             _requestBodyPipe.Reader.CancelPendingRead();
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // At this point both the request body pipe reader and writer should be completed.
                 _requestBodyPipe.Reset();
-                return new ValueTask();
+                return default;
             }
 
             // Should I call complete here?

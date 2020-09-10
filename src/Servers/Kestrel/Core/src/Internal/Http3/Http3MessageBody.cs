@@ -100,14 +100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void Complete(Exception exception)
         {
-            _context.RequestBodyPipe.Reader.Complete();
             _context.ReportApplicationError(exception);
+            _context.RequestBodyPipe.Reader.Complete();
         }
 
-        public override async ValueTask CompleteAsync(Exception exception)
+        public override ValueTask CompleteAsync(Exception exception)
         {
-            await _context.RequestBodyPipe.Reader.CompleteAsync();
             _context.ReportApplicationError(exception);
+            return _context.RequestBodyPipe.Reader.CompleteAsync();
         }
 
         public override void CancelPendingRead()
@@ -119,12 +119,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return new ValueTask();
+                return default;
             }
 
             _context.RequestBodyPipe.Reader.Complete();
 
-            return new ValueTask();
+            return default;
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public virtual ValueTask CompleteAsync(Exception exception)
         {
             Complete(exception);
-            return new ValueTask();
+            return default;
         }
 
         public abstract void CancelPendingRead();
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
-        protected virtual ValueTask OnStopAsync() => new ValueTask();
+        protected virtual ValueTask OnStopAsync() => default;
 
         public virtual void Reset()
         {

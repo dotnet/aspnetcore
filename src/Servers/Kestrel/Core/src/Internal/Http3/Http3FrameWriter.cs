@@ -309,22 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
 
                 _completed = true;
-                _outputWriter.Complete();
             }
-        }
-
-        public ValueTask CompleteAsync()
-        {
-            lock (_writeLock)
-            {
-                if (_completed)
-                {
-                    return default;
-                }
-
-                _completed = true;
-            }
-            return _outputWriter.CompleteAsync();
         }
 
         public void Abort(ConnectionAbortedException error)
