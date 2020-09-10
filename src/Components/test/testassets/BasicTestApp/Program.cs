@@ -19,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.ProtectedBrowserStorage;
 
 namespace BasicTestApp
 {
@@ -39,11 +38,6 @@ namespace BasicTestApp
                 options.AddPolicy("NameMustStartWithB", policy =>
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
-
-            builder.Services.AddDataProtection();
-
-            builder.Services.AddTransient<ProtectedLocalStorage>();
-            builder.Services.AddTransient<ProtectedSessionStorage>();
 
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 

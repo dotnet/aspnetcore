@@ -34,7 +34,6 @@ namespace RunTests
                 }
 
                 EnvironmentVariables.Add("PATH", Options.Path);
-                EnvironmentVariables.Add("DOTNET_ROOT", Options.DotnetRoot);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
                 Console.WriteLine($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
@@ -126,17 +125,6 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    foreach (var restoreSource in Options.Source)
-                    {
-                        await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            $"nuget add source {restoreSource} --configfile NuGet.config",
-                            environmentVariables: EnvironmentVariables,
-                            outputDataReceived: Console.WriteLine,
-                            errorDataReceived: Console.Error.WriteLine,
-                            throwOnError: false,
-                            cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                    }
-
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget list source",
@@ -202,8 +190,7 @@ namespace RunTests
             try
             {
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} " +
-                              "--version 5.0.0-* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json",
+                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
                             environmentVariables: EnvironmentVariables,
                             outputDataReceived: Console.WriteLine,
                             errorDataReceived: Console.Error.WriteLine,

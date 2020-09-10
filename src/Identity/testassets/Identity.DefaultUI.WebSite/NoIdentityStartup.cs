@@ -49,6 +49,7 @@ namespace Identity.DefaultUI.WebSite
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {

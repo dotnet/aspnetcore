@@ -24,6 +24,20 @@
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
     <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
+    <Content Include="$(RepoRoot)NuGet.config" />
+    <Content Include="$(RepoRoot)global.json" />
+    <ContentWithTargetPath Include="
+        $(RepoRoot)eng\common\pipeline-logging-functions.*;
+        $(RepoRoot)eng\common\tools.*">
+      <TargetPath>eng\common\%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(RepoRoot)eng\common\dotnet-install-scripts\*">
+      <TargetPath>eng\common\dotnet-install-scripts\%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </ContentWithTargetPath>
   </ItemGroup>
 
 <!--

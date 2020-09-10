@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? GetPathByName(
             this LinkGenerator generator,
             HttpContext httpContext,
@@ -74,6 +76,7 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? GetPathByName(
             this LinkGenerator generator,
             string endpointName,
@@ -126,6 +129,7 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? GetUriByName(
             this LinkGenerator generator,
             HttpContext httpContext,
@@ -190,6 +194,7 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? GetUriByName(
             this LinkGenerator generator,
             string endpointName,

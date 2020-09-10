@@ -288,7 +288,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- Crossgen symbols for Linux include a GUID in the file name which cannot be predicted. -->
       <BuiltProjectOutputGroupOutput Include="$(TargetDir)*.map" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
 
-      <NuGetPackInput Include="@(BuiltProjectOutputGroupOutput)" />
+      <!-- Strip duplicate Files by checking for distinct %(FileName)%(Extension) -->
+      <OutputFileNames Include="%(BuiltProjectOutputGroupOutput.FileName)%(BuiltProjectOutputGroupOutput.Extension)">
+        <ItemPath>%(BuiltProjectOutputGroupOutput.Identity)</ItemPath>
+      </OutputFileNames>
+
+      <DistinctOutputFileNames Include="@(OutputFileNames->Distinct())"></DistinctOutputFileNames>
+
+      <NuGetPackInput Include="%(DistinctOutputFileNames.ItemPath)" />
     </ItemGroup>
   </Target>
 

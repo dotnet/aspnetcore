@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
@@ -15,8 +17,26 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
         {
             var user = identity.Name;
-            var userAccountName = user.Substring(0, user.IndexOf('@'));
+            var userAccountNameIndex = user.IndexOf('@');
+            var userAccountName = userAccountNameIndex == -1 ? user : user.Substring(0, userAccountNameIndex);
+
+            if (settings.ClaimsCache == null)
+            {
+                settings.ClaimsCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = settings.ClaimsCacheSize });
+            }
+
+            if (settings.ClaimsCache.TryGetValue<IEnumerable<string>>(user, out var cachedClaims))
+            {
+                foreach (var claim in cachedClaims)
+                {
+                    identity.AddClaim(new Claim(identity.RoleClaimType, claim));
+                }
+
+                return;
+            }
+
             var distinguishedName = settings.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
+            var retrievedClaims = new List<string>();
 
             var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
@@ -45,13 +65,27 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                     if (!settings.IgnoreNestedGroups)
                     {
-                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger);
+                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims);
                     }
                     else
                     {
-                        AddRole(identity, groupCN);
+                        retrievedClaims.Add(groupCN);
                     }
                 }
+
+                var entrySize = user.Length * 2; //Approximate the size of stored key in memory cache.
+                foreach (var claim in retrievedClaims)
+                {
+                    identity.AddClaim(new Claim(identity.RoleClaimType, claim));
+                    entrySize += claim.Length * 2; //Approximate the size of stored value in memory cache.
+                }
+
+                settings.ClaimsCache.Set(user,
+                    retrievedClaims,
+                    new MemoryCacheEntryOptions()
+                        .SetSize(entrySize)
+                        .SetSlidingExpiration(settings.ClaimsCacheSlidingExpiration)
+                        .SetAbsoluteExpiration(settings.ClaimsCacheAbsoluteExpiration));
             }
             else
             {
@@ -59,10 +93,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             }
         }
 
-        private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger)
+        private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<string> retrievedClaims)
         {
             var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
-            var searchRequest = new SearchRequest(distinguishedName, filter, System.DirectoryServices.Protocols.SearchScope.Subtree, null);
+            var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
             var searchResponse = (SearchResponse)connection.SendRequest(searchRequest);
 
             if (searchResponse.Entries.Count > 0)
@@ -74,7 +108,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 var group = searchResponse.Entries[0]; //Get the object that was found on ldap
                 string name = group.DistinguishedName;
-                AddRole(principal, name);
+                retrievedClaims.Add(name);
 
                 var memberof = group.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
                 if (memberof != null)
@@ -83,15 +117,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         var groupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
                         var nestedGroupCN = groupDN.Split(',')[0].Substring("CN=".Length);
-                        GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger);
+                        GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims);
                     }
                 }
             }
-        }
-
-        private static void AddRole(ClaimsIdentity identity, string role)
-        {
-            identity.AddClaim(new Claim(identity.RoleClaimType, role));
         }
     }
 }

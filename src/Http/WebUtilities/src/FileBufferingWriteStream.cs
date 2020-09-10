@@ -180,6 +180,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="destination">The <see cref="Stream" /> to drain buffered contents to.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
         /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task DrainBufferAsync(Stream destination, CancellationToken cancellationToken = default)
         {
             // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"
@@ -199,6 +200,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             await PagedByteBuffer.MoveToAsync(destination, cancellationToken);
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task DrainBufferAsync(PipeWriter destination, CancellationToken cancellationToken = default)
         {
             // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"

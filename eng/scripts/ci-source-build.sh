@@ -33,10 +33,76 @@ reporoot="$(dirname "$(dirname "$scriptroot")")"
 #    mv "$reporoot/global.bak.json" "$reporoot/global.json"
 #}" EXIT
 
+dotnet_runtime_source_feed=''
+dotnet_runtime_source_feed_key=''
+other_args=()
+
+#
+# Functions
+#
+__usage() {
+    echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <Arguments>...]
+
+Arguments:
+    <Arguments>...                    Arguments passed to the command. Variable number of arguments allowed.
+
+    --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
+    --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
+
+Description:
+   This script is meant for testing source build by imitating some of the input parameters and conditions.
+"
+
+    if [[ "${1:-}" != '--no-exit' ]]; then
+        exit 2
+    fi
+}
+
+__error() {
+    echo -e "${RED}error: $*${RESET}" 1>&2
+}
+
+#
+# main
+#
+
+while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    case "$opt" in
+        -\?|-h|-help)
+            __usage --no-exit
+            exit 0
+            ;;
+        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
+            dotnet_runtime_source_feed="${1:-}"
+            ;;
+        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed-key" && __usage
+            dotnet_runtime_source_feed_key="${1:-}"
+            ;;
+        *)
+            other_args[${#other_args[*]}]="$1"
+            ;;
+    esac
+    shift
+done
+
+# Set up additional runtime args
+runtime_feed_args=()
+if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
+    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
+    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
+    runtime_feed_args[${#runtime_feed_args[*]}]=$runtimeFeedArg
+    runtime_feed_args[${#runtime_feed_args[*]}]=$runtimeFeedKeyArg
+fi
+
 # Build repo tasks
-"$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj
+"$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}
 
 export DotNetBuildFromSource='true'
 
 # Build projects
-"$reporoot/eng/common/build.sh" --restore --build --pack "$@"
+"$reporoot/eng/common/build.sh" --restore --build --pack ${other_args[@]+"${other_args[@]}"} ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}

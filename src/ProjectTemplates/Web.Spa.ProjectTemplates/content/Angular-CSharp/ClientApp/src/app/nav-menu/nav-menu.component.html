@@ -16,12 +16,9 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div
-        class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
+        class="navbar-collapse collapse d-sm-inline-flex justify-content-end"
         [ngClass]="{ show: isExpanded }"
       >
-        <!--#if (IndividualLocalAuth) -->
-        <app-login-menu></app-login-menu>
-        <!--#endif -->
         <ul class="navbar-nav flex-grow">
           <li
             class="nav-item"
@@ -41,6 +38,9 @@
             >
           </li>
         </ul>
+        <!--#if (IndividualLocalAuth) -->
+        <app-login-menu></app-login-menu>
+        <!--#endif -->
       </div>
     </div>
   </nav>

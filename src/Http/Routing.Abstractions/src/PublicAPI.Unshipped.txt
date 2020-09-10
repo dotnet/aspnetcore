@@ -1,0 +1,119 @@
+#nullable enable
+Microsoft.AspNetCore.Http.Endpoint (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Endpoint.DisplayName.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Endpoint.Metadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Count.get -> int (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(System.Collections.Generic.IEnumerable<object!>! items) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(params object![]! items) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Dispose() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Enumerator() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.MoveNext() -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Reset() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetMetadata<T>() -> T? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetOrderedMetadata<T>() -> System.Collections.Generic.IReadOnlyList<T!>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.this[int index].get -> object! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IEndpointFeature (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IEndpointFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IEndpointFeature.Endpoint.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.IOutboundParameterTransformer
+Microsoft.AspNetCore.Routing.IOutboundParameterTransformer.TransformOutbound(object? value) -> string?
+Microsoft.AspNetCore.Routing.IParameterPolicy
+Microsoft.AspNetCore.Routing.IRouteConstraint
+Microsoft.AspNetCore.Routing.IRouteConstraint.Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route, string! routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
+Microsoft.AspNetCore.Routing.IRouteHandler
+Microsoft.AspNetCore.Routing.IRouteHandler.GetRequestHandler(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.RouteData! routeData) -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.Routing.IRouter
+Microsoft.AspNetCore.Routing.IRouter.GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext! context) -> Microsoft.AspNetCore.Routing.VirtualPathData?
+Microsoft.AspNetCore.Routing.IRouter.RouteAsync(Microsoft.AspNetCore.Routing.RouteContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Routing.IRoutingFeature
+Microsoft.AspNetCore.Routing.IRoutingFeature.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData?
+Microsoft.AspNetCore.Routing.IRoutingFeature.RouteData.set -> void
+Microsoft.AspNetCore.Routing.LinkGenerator
+Microsoft.AspNetCore.Routing.LinkGenerator.LinkGenerator() -> void
+Microsoft.AspNetCore.Routing.LinkOptions
+Microsoft.AspNetCore.Routing.LinkOptions.AppendTrailingSlash.get -> bool?
+Microsoft.AspNetCore.Routing.LinkOptions.AppendTrailingSlash.set -> void
+Microsoft.AspNetCore.Routing.LinkOptions.LinkOptions() -> void
+Microsoft.AspNetCore.Routing.LinkOptions.LowercaseQueryStrings.get -> bool?
+Microsoft.AspNetCore.Routing.LinkOptions.LowercaseQueryStrings.set -> void
+Microsoft.AspNetCore.Routing.LinkOptions.LowercaseUrls.get -> bool?
+Microsoft.AspNetCore.Routing.LinkOptions.LowercaseUrls.set -> void
+Microsoft.AspNetCore.Routing.RouteContext
+Microsoft.AspNetCore.Routing.RouteContext.Handler.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Routing.RouteContext.Handler.set -> void
+Microsoft.AspNetCore.Routing.RouteContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Routing.RouteContext.RouteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.Routing.RouteContext.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData!
+Microsoft.AspNetCore.Routing.RouteContext.RouteData.set -> void
+Microsoft.AspNetCore.Routing.RouteData
+Microsoft.AspNetCore.Routing.RouteData.DataTokens.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Routing.RouteData.PushState(Microsoft.AspNetCore.Routing.IRouter? router, Microsoft.AspNetCore.Routing.RouteValueDictionary? values, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens) -> Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot
+Microsoft.AspNetCore.Routing.RouteData.RouteData() -> void
+Microsoft.AspNetCore.Routing.RouteData.RouteData(Microsoft.AspNetCore.Routing.RouteData! other) -> void
+Microsoft.AspNetCore.Routing.RouteData.RouteData(Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> void
+Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot
+Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot.Restore() -> void
+Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot.RouteDataSnapshot(Microsoft.AspNetCore.Routing.RouteData! routeData, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens, System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter!>? routers, Microsoft.AspNetCore.Routing.RouteValueDictionary? values) -> void
+Microsoft.AspNetCore.Routing.RouteData.Routers.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter!>!
+Microsoft.AspNetCore.Routing.RouteData.Values.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Routing.RouteDirection
+Microsoft.AspNetCore.Routing.RouteDirection.IncomingRequest = 0 -> Microsoft.AspNetCore.Routing.RouteDirection
+Microsoft.AspNetCore.Routing.RouteDirection.UrlGeneration = 1 -> Microsoft.AspNetCore.Routing.RouteDirection
+Microsoft.AspNetCore.Routing.RouteValueDictionary (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Add(string! key, object? value) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Clear() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Comparer.get -> System.Collections.Generic.IEqualityComparer<string!>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.ContainsKey(string! key) -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Count.get -> int (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, object?> (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Dispose() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Routing.RouteValueDictionary! dictionary) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.MoveNext() -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Reset() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.GetEnumerator() -> Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key) -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key, out object? value) -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(object? values) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object! value) -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.TryGetValue(string! key, out object? value) -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Values.get -> System.Collections.Generic.ICollection<object?>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.this[string! key].get -> object? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RouteValueDictionary.this[string! key].set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Routing.RoutingHttpContextExtensions
+Microsoft.AspNetCore.Routing.VirtualPathContext
+Microsoft.AspNetCore.Routing.VirtualPathContext.AmbientValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Routing.VirtualPathContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Routing.VirtualPathContext.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.VirtualPathContext.Values.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Routing.VirtualPathContext.Values.set -> void
+Microsoft.AspNetCore.Routing.VirtualPathContext.VirtualPathContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary! ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> void
+Microsoft.AspNetCore.Routing.VirtualPathContext.VirtualPathContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary! ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, string? routeName) -> void
+Microsoft.AspNetCore.Routing.VirtualPathData
+Microsoft.AspNetCore.Routing.VirtualPathData.DataTokens.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Routing.VirtualPathData.Router.get -> Microsoft.AspNetCore.Routing.IRouter!
+Microsoft.AspNetCore.Routing.VirtualPathData.Router.set -> void
+Microsoft.AspNetCore.Routing.VirtualPathData.VirtualPath.get -> string!
+Microsoft.AspNetCore.Routing.VirtualPathData.VirtualPath.set -> void
+Microsoft.AspNetCore.Routing.VirtualPathData.VirtualPathData(Microsoft.AspNetCore.Routing.IRouter! router, string! virtualPath) -> void
+Microsoft.AspNetCore.Routing.VirtualPathData.VirtualPathData(Microsoft.AspNetCore.Routing.IRouter! router, string! virtualPath, Microsoft.AspNetCore.Routing.RouteValueDictionary! dataTokens) -> void
+abstract Microsoft.AspNetCore.Routing.LinkGenerator.GetPathByAddress<TAddress>(Microsoft.AspNetCore.Http.HttpContext! httpContext, TAddress address, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteValueDictionary? ambientValues = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+abstract Microsoft.AspNetCore.Routing.LinkGenerator.GetPathByAddress<TAddress>(TAddress address, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+abstract Microsoft.AspNetCore.Routing.LinkGenerator.GetUriByAddress<TAddress>(Microsoft.AspNetCore.Http.HttpContext! httpContext, TAddress address, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteValueDictionary? ambientValues = null, string? scheme = null, Microsoft.AspNetCore.Http.HostString? host = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+abstract Microsoft.AspNetCore.Routing.LinkGenerator.GetUriByAddress<TAddress>(TAddress address, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, string! scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+override Microsoft.AspNetCore.Http.Endpoint.ToString() -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+static Microsoft.AspNetCore.Routing.RouteValueDictionary.FromArray(System.Collections.Generic.KeyValuePair<string!, object?>[]! items) -> Microsoft.AspNetCore.Routing.RouteValueDictionary! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+static Microsoft.AspNetCore.Routing.RoutingHttpContextExtensions.GetRouteData(this Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Routing.RouteData!
+static Microsoft.AspNetCore.Routing.RoutingHttpContextExtensions.GetRouteValue(this Microsoft.AspNetCore.Http.HttpContext! httpContext, string! key) -> object?
+static readonly Microsoft.AspNetCore.Http.EndpointMetadataCollection.Empty -> Microsoft.AspNetCore.Http.EndpointMetadataCollection! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
