@@ -54,14 +54,7 @@ class Utils {
         }
     }
     
-    @SuppressWarnings("unchecked")
 	public static <T> T cast(Type returnType, Object obj) {
-    	Class<?> returnClass = typeToClass(returnType);
-        // Primitive types can't be cast with the Class cast function
-        if (returnClass.isPrimitive()) {
-            return (T) obj;
-        } else {
-            return (T)returnClass.cast(obj);
-        }
+    	return cast(typeToClass(returnType), obj);
     }
 }
