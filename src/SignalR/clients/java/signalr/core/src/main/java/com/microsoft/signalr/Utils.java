@@ -45,7 +45,7 @@ class Utils {
     }
     
     @SuppressWarnings("unchecked")
-	public static <T> T cast(Class<?> returnClass, Object obj) {
+    public static <T> T cast(Class<?> returnClass, Object obj) {
         // Primitive types can't be cast with the Class cast function
         if (returnClass.isPrimitive()) {
             return (T) obj;
@@ -54,7 +54,7 @@ class Utils {
         }
     }
     
-	public static <T> T cast(Type returnType, Object obj) {
-    	return cast(typeToClass(returnType), obj);
+    public static <T> T cast(Type returnType, Object obj) {
+        return cast(typeToClass(returnType), obj);
     }
 }
