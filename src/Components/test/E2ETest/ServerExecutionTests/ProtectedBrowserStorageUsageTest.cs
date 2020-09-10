@@ -5,25 +5,24 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BasicTestApp;
+using Components.TestServer;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ProtectedBrowserStorageUsageTest : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
+    public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionModeServerFixture<BasicTestApp.Program>>
     {
         public ProtectedBrowserStorageUsageTest(
             BrowserFixture browserFixture,
-            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
 

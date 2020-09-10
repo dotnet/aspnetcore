@@ -71,16 +71,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/");
             WaitUntilLoaded();
             var cacheEntryUrls1 = GetCacheEntryUrls();
-            var cacheEntryForMsCorLib = cacheEntryUrls1.Single(url => url.Contains("/mscorlib.dll"));
+            var cacheEntryForComponentsDll = cacheEntryUrls1.Single(url => url.Contains("/Microsoft.AspNetCore.Components.dll"));
             var cacheEntryForDotNetWasm = cacheEntryUrls1.Single(url => url.Contains("/dotnet.wasm"));
             var cacheEntryForDotNetWasmWithChangedHash = cacheEntryForDotNetWasm.Replace(".sha256-", ".sha256-different");
 
             // Remove some items we do need, and add an item we don't need
-            RemoveCacheEntry(cacheEntryForMsCorLib);
+            RemoveCacheEntry(cacheEntryForComponentsDll);
             RemoveCacheEntry(cacheEntryForDotNetWasm);
             AddCacheEntry(cacheEntryForDotNetWasmWithChangedHash, "ignored content");
             var cacheEntryUrls2 = GetCacheEntryUrls();
-            Assert.DoesNotContain(cacheEntryForMsCorLib, cacheEntryUrls2);
+            Assert.DoesNotContain(cacheEntryForComponentsDll, cacheEntryUrls2);
             Assert.DoesNotContain(cacheEntryForDotNetWasm, cacheEntryUrls2);
             Assert.Contains(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls2);
 
@@ -91,13 +91,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".dll")),
-                requestedDll => Assert.Contains("/mscorlib.dll", requestedDll));
+                requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.dll", requestedDll));
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".wasm")),
                 requestedDll => Assert.Contains("/dotnet.wasm", requestedDll));
 
             // We also update the cache (add new items, remove unnecessary items)
             var cacheEntryUrls3 = GetCacheEntryUrls();
-            Assert.Contains(cacheEntryForMsCorLib, cacheEntryUrls3);
+            Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
             Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
             Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);
         }

@@ -117,6 +117,8 @@ namespace MusicStore
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
 
+            app.UseMigrationsEndPoint();
+
             app.Use((context, next) =>
             {
                 context.Response.Headers["Arch"] = RuntimeInformation.ProcessArchitecture.ToString();

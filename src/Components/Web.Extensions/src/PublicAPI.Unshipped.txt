@@ -1,0 +1,18 @@
+﻿#nullable enable
+Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase
+Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.Attributes.set -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.Dispose() -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.HeadTagBase() -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Link
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Link.Link() -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Meta
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Meta.Meta() -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Title
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Title.Title() -> void
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Title.Value.get -> string!
+Microsoft.AspNetCore.Components.Web.Extensions.Head.Title.Value.set -> void
+abstract Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.TagName.get -> string!
+override Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.Web.Extensions.Head.HeadTagBase.OnParametersSet() -> void
