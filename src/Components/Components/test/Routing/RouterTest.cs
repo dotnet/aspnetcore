@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             public TestNavigationManager() =>
                 Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/jan");
 
-            protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotImplementedException();
+            protected override void NavigateToCore(string uri, bool forceLoad, bool replace) => throw new NotImplementedException();
 
             public void NotifyLocationChanged(string uri, bool intercepted)
             {
