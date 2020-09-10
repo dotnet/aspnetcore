@@ -281,21 +281,22 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <!-- This target resolves files into the BuiltProjectOutputGroupOutput which NuGet uses to generate the package files. -->
   <Target Name="_ResolveRuntimePackBuildOutput" DependsOnTargets="ResolveReferences;Crossgen">
     <ItemGroup>
-      <BuiltProjectOutputGroupOutput Include="$(ProjectDepsFilePath)" />
-      <BuiltProjectOutputGroupOutput Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
+      <BuildOutputFiles Include="$(ProjectDepsFilePath)" />
+      <BuildOutputFiles Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
       <!-- Include all .pdbs in build output. Some .pdb files are part of ReferenceCopyLocalPaths, but this can change when running /t:Pack /p:NoBuild=true. -->
-      <BuiltProjectOutputGroupOutput Include="$(TargetDir)*.pdb" Exclude="@(ReferenceCopyLocalPaths)" />
+      <BuildOutputFiles Include="$(TargetDir)*.pdb" Exclude="@(ReferenceCopyLocalPaths)" />
       <!-- Crossgen symbols for Linux include a GUID in the file name which cannot be predicted. -->
-      <BuiltProjectOutputGroupOutput Include="$(TargetDir)*.map" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
+      <BuildOutputFiles Include="$(TargetDir)*.map" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
 
       <!-- Strip duplicate Files by checking for distinct %(FileName)%(Extension) -->
-      <OutputFileNames Include="%(BuiltProjectOutputGroupOutput.FileName)%(BuiltProjectOutputGroupOutput.Extension)">
-        <ItemPath>%(BuiltProjectOutputGroupOutput.Identity)</ItemPath>
+      <OutputFileNames Include="%(BuildOutputFiles.FileName)%(BuildOutputFiles.Extension)">
+        <ItemPath>%(BuildOutputFiles.Identity)</ItemPath>
       </OutputFileNames>
-
       <DistinctOutputFileNames Include="@(OutputFileNames->Distinct())"></DistinctOutputFileNames>
 
-      <NuGetPackInput Include="%(DistinctOutputFileNames.ItemPath)" />
+      <!--BuiltProjectOutputGroupOuput is the item actually used by Nuget -->
+      <BuiltProjectOutputGroupOutput Include="%(DistinctOutputFileNames.ItemPath)" />
+      <NuGetPackInput Include="@(BuiltProjectOutputGroupOutput)" />
     </ItemGroup>
   </Target>
 
