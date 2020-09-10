@@ -233,7 +233,7 @@
     <SystemIdentityModelTokensJwtPackageVersion>5.5.0</SystemIdentityModelTokensJwtPackageVersion>
     <!-- Packages from 2.1/2.2 branches used for site extension build -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.5</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
