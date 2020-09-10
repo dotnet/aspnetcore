@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     {
         void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
 
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override void NavigateToCore(string uri, bool forceLoad, bool suppressLocationChanged)
         {
             throw new NavigationException(uri);
         }

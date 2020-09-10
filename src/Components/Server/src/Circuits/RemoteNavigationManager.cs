@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsRuntime = jsRuntime;
         }
 
-        public void NotifyLocationChanged(string uri, bool intercepted, bool suppressLocationChanged)
+        public void NotifyLocationChanged(string uri, bool intercepted, bool suppressLocationChanged = false)
         {
             Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
