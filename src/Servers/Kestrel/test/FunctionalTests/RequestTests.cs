@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionResetEventId = 19;
         private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
-        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
+        public static TheoryData<Func<ListenOptions>> ConnectionMiddlewareData => new TheoryData<Func<ListenOptions>>
         {
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
+            () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
+            () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23043")]
-        public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
+        public async Task ConnectionClosedTokenFiresOnClientFIN(Func<ListenOptions> listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
+        public async Task ConnectionClosedTokenFiresOnServerFIN(Func<ListenOptions> listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
+        public async Task ConnectionClosedTokenFiresOnServerAbort(Func<ListenOptions> listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context.Abort();
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
+        public async Task RequestsCanBeAbortedMidRead(Func<ListenOptions> listenOptions)
         {
             // This needs a timeout.
             const int applicationAbortedConnectionId = 34;
@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     readTcs.SetException(new Exception("This shouldn't be reached."));
                 }
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ServerCanAbortConnectionAfterUnobservedClose(ListenOptions listenOptions)
+        public async Task ServerCanAbortConnectionAfterUnobservedClose(Func<ListenOptions> listenOptions)
         {
             const int connectionPausedEventId = 4;
             const int connectionFinSentEventId = 7;
@@ -773,7 +773,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await serverClosedConnection.Task;
 
                 appFuncCompleted.SetResult();
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -800,7 +800,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
+        public async Task AppCanHandleClientAbortingConnectionMidRequest(Func<ListenOptions> listenOptions)
         {
             var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -826,7 +826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 readTcs.SetException(new Exception("This shouldn't be reached."));
 
-            }, testContext, listenOptions))
+            }, testContext, listenOptions()))
             {
                 using (var connection = server.CreateConnection())
                 {
