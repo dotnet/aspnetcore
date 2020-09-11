@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     internal sealed class PagedByteBuffer : IDisposable
     {
-        internal const int PageSize = 1024;
+        internal const int PageSize = 4096;
         private readonly ArrayPool<byte> _arrayPool;
         private byte[]? _currentPage;
         private int _currentPageIndex;
@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 offset += copyLength;
                 count -= copyLength;
             }
+
+            ClearBuffers();
         }
 
         public void MoveTo(Stream stream)
