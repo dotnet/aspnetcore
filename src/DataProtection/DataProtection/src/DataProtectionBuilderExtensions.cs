@@ -529,6 +529,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
@@ -557,6 +558,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)

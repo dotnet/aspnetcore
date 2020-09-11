@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Versioning;
 using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// A descriptor which can create an authenticated encryption system based upon the
     /// configuration provided by an <see cref="CngCbcAuthenticatedEncryptorConfiguration"/> object.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public sealed class CngCbcAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
         public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
