@@ -27,6 +27,11 @@
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftNetCompilersToolsetPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNetCompilersToolsetPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>RazorSdkDirectoryRoot</_Parameter1>
       <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</_Parameter2>
     </AssemblyAttribute>
