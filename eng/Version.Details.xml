@@ -35,31 +35,31 @@
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.9">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>44ed5f37a1328617f4a1f1eb292be9dc03e36249</Sha>
+      <Sha>fdb563f717937309b15d765a37e6f77f9a8afe38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.9-servicing.20458.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
