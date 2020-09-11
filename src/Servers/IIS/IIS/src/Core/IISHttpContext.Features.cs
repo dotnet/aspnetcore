@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
+        private static readonly Type IHttpRequestBodyDetectionFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
         private static readonly Type IHttpResponseBodyFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature);
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
 
         private object _currentIHttpRequestFeature;
+        private object _currentIHttpRequestBodyDetectionFeature;
         private object _currentIHttpResponseFeature;
         private object _currentIHttpResponseBodyFeature;
         private object _currentIHttpRequestIdentifierFeature;
@@ -56,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private void Initialize()
         {
             _currentIHttpRequestFeature = this;
+            _currentIHttpRequestBodyDetectionFeature = this;
             _currentIHttpResponseFeature = this;
             _currentIHttpResponseBodyFeature = this;
             _currentIHttpUpgradeFeature = this;
@@ -76,6 +79,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpRequestFeatureType)
             {
                 return _currentIHttpRequestFeature;
+            }
+            if (key == IHttpRequestBodyDetectionFeature)
+            {
+                return _currentIHttpRequestBodyDetectionFeature;
             }
             if (key == IHttpResponseFeatureType)
             {
@@ -172,6 +179,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpRequestFeatureType)
             {
                 _currentIHttpRequestFeature = feature;
+                return;
+            }
+            if (key == IHttpRequestBodyDetectionFeature)
+            {
+                _currentIHttpRequestBodyDetectionFeature = feature;
                 return;
             }
             if (key == IHttpResponseFeatureType)
@@ -283,6 +295,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpRequestFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
+            }
+            if (_currentIHttpRequestBodyDetectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpRequestBodyDetectionFeature, _currentIHttpRequestBodyDetectionFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature);
             }
             if (_currentIHttpResponseFeature != null)
             {
