@@ -6,8 +6,6 @@
     <IsTestProject>true</IsTestProject>
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
-    <!-- Skipping on Helix for now -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>
@@ -37,8 +35,7 @@
       <Files Include="../**/gradle-wrapper.jar" />
       <Files Include="../**/gradle-wrapper.properties" />
       <Files Include="../gradlew" />
-      <Files Include="build.gradle" />
-      <Files Include="../build.gradle" />
+      <Files Include="../**/build.gradle" />
       <Files Include="../gradlew.bat" />
       <Files Include="../settings.gradle" />
       <Files Include="@(Content)" />
@@ -52,8 +49,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
   </ItemGroup>
 
 </Project>
