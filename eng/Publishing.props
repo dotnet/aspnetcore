@@ -3,6 +3,7 @@
     <PublishingVersion>3</PublishingVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
     <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
     <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
 
