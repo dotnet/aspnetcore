@@ -2936,7 +2936,6 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        assertEquals(TransportEnum.WEBSOCKETS, hubConnection.getTransportEnum());
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
@@ -2955,11 +2954,40 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
         assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
+    public void ConnectionRestartDoesNotResetUserTransportEnum() {
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            })
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},"
+                        + "{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer(""))));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -3121,10 +3149,10 @@ class HubConnectionTest {
             closed.onComplete();
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         hubConnection.stop();
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
         blockGet.onComplete();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
@@ -3159,12 +3187,12 @@ class HubConnectionTest {
         hubConnection.onClosed((ex) -> {
             closed.onComplete();
         });
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         blockGet.onComplete();
 
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }

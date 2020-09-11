@@ -33,7 +33,6 @@ public class HubConnection implements AutoCloseable {
     private static final List<Type> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private String baseUrl;
     private final CallbackMap handlers = new CallbackMap();
     private final HubProtocol protocol;
     private final boolean skipNegotiate;
@@ -41,12 +40,13 @@ public class HubConnection implements AutoCloseable {
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
     private final HttpClient httpClient;
-    private Completable start;
     private final Transport customTransport;
     private final OnReceiveCallBack callback;
     private final Single<String> accessTokenProvider;
+    private final TransportEnum transportEnum;
 
     // These are all user-settable properties
+    private String baseUrl;
     private List<OnClosedCallback> onClosedCallbackList;
     private long keepAliveInterval = 15 * 1000;
     private long serverTimeout = 30 * 1000;
@@ -55,7 +55,6 @@ public class HubConnection implements AutoCloseable {
     // Private property, modified for testing
     private long tickRate = 1000;
 
-    private TransportEnum transportEnum = TransportEnum.ALL;
 
     // Holds all mutable state other than user-defined handlers and settable properties.
     private final ReconnectingConnectionState state;
@@ -116,7 +115,7 @@ public class HubConnection implements AutoCloseable {
 
     // For testing purposes
     TransportEnum getTransportEnum() {
-        return this.transportEnum;
+        return this.state.currentTransport;
     }
 
     // For testing purposes
@@ -148,6 +147,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         if (transport != null) {
+            this.transportEnum = TransportEnum.ALL;
             this.customTransport = transport;
         } else if (transportEnum != null) {
             this.transportEnum = transportEnum;
@@ -233,11 +233,11 @@ public class HubConnection implements AutoCloseable {
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.DISCONNECTED) {
                 logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", this.state.getHubConnectionState());
-                return start;
+                return this.state.startTask;
             }
 
             this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTING);
-            start = localStart;
+            this.state.startTask = localStart;
 
             CompletableSubject tokenCompletable = CompletableSubject.create();
             Map<String, String> localHeaders = new HashMap<>();
@@ -269,7 +269,7 @@ public class HubConnection implements AutoCloseable {
                 Transport transport = customTransport;
                 if (transport == null) {
                     Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
-                    switch (transportEnum) {
+                    switch (this.state.currentTransport) {
                         case LONG_POLLING:
                             transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                             break;
@@ -296,7 +296,7 @@ public class HubConnection implements AutoCloseable {
                                 logger.info("HubConnection started.");
                                 connectionState.resetServerTimeout();
                                 // Don't send pings if we're using long polling.
-                                if (transportEnum != TransportEnum.LONG_POLLING) {
+                                if (this.state.currentTransport != TransportEnum.LONG_POLLING) {
                                     connectionState.activatePingTimer();
                                 }
                             } finally {
@@ -337,15 +337,17 @@ public class HubConnection implements AutoCloseable {
                 Set<String> transports = response.getAvailableTransports();
                 if (this.transportEnum == TransportEnum.ALL) {
                     if (transports.contains("WebSockets")) {
-                        this.transportEnum = TransportEnum.WEBSOCKETS;
+                        this.state.currentTransport = TransportEnum.WEBSOCKETS;
                     } else if (transports.contains("LongPolling")) {
-                        this.transportEnum = TransportEnum.LONG_POLLING;
+                        this.state.currentTransport = TransportEnum.LONG_POLLING;
                     } else {
                         throw new RuntimeException("There were no compatible transports on the server.");
                     }
                 } else if (this.transportEnum == TransportEnum.WEBSOCKETS && !transports.contains("WebSockets") ||
                         (this.transportEnum == TransportEnum.LONG_POLLING && !transports.contains("LongPolling"))) {
                     throw new RuntimeException("There were no compatible transports on the server.");
+                } else {
+                    this.state.currentTransport = this.transportEnum;
                 }
 
                 String connectionToken = "";
@@ -501,7 +503,6 @@ public class HubConnection implements AutoCloseable {
 
             logger.info("HubConnection stopped.");
             this.state.changeState(HubConnectionState.CONNECTED, HubConnectionState.DISCONNECTED);
-            transportEnum = TransportEnum.ALL;
         } finally {
             this.state.unlock();
         }
@@ -1430,6 +1431,8 @@ public class HubConnection implements AutoCloseable {
         private final Lock lock = new ReentrantLock();
         private ConnectionState state;
         private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
+        public Completable startTask;
+        public TransportEnum currentTransport;
 
         public ReconnectingConnectionState(Logger logger) {
             this.logger = logger;
