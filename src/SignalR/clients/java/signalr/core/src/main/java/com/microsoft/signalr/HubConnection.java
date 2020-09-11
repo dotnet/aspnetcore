@@ -101,7 +101,7 @@ public class HubConnection implements AutoCloseable {
      * @return A string representing the the client's connectionId.
      */
     public String getConnectionId() {
-        ConnectionState state = this.state.getConnectionStateUnsynchronized();
+        ConnectionState state = this.state.getConnectionStateUnsynchronized(true);
         if (state != null) {
             return state.connectionId;
         }
@@ -233,11 +233,10 @@ public class HubConnection implements AutoCloseable {
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.DISCONNECTED) {
                 logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", this.state.getHubConnectionState());
-                return this.state.startTask;
+                return this.state.getConnectionStateUnsynchronized(false).startTask;
             }
 
             this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTING);
-            this.state.startTask = localStart;
 
             CompletableSubject tokenCompletable = CompletableSubject.create();
             Map<String, String> localHeaders = new HashMap<>();
@@ -247,6 +246,7 @@ public class HubConnection implements AutoCloseable {
             }
             ConnectionState connectionState = new ConnectionState(this);
             this.state.setConnectionState(connectionState);
+            connectionState.startTask = localStart;
 
             accessTokenProvider.subscribe(token -> {
                 if (token != null && !token.isEmpty()) {
@@ -288,10 +288,22 @@ public class HubConnection implements AutoCloseable {
                                 new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
                     return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
-                        connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                        this.state.lock();
+                        try {
+                            if (this.state.getConnectionStateUnsynchronized(true) != null) {
+                                connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                            } else {
+                                return Completable.error(new RuntimeException("Connection closed while sending handshake."));
+                            }
+                        } finally {
+                            this.state.unlock();
+                        }
                         return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
-                            connectionState.lock.lock();
+                            this.state.lock();
                             try {
+                                if (this.state.getConnectionStateUnsynchronized(true) == null) {
+                                    return Completable.error(new RuntimeException("Connection closed while waiting for handshake."));
+                                }
                                 this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
                                 logger.info("HubConnection started.");
                                 connectionState.resetServerTimeout();
@@ -300,7 +312,7 @@ public class HubConnection implements AutoCloseable {
                                     connectionState.activatePingTimer();
                                 }
                             } finally {
-                                connectionState.lock.unlock();
+                                this.state.unlock();
                             }
 
                             return Completable.complete();
@@ -311,9 +323,10 @@ public class HubConnection implements AutoCloseable {
             }).subscribe(() -> {
                 localStart.onComplete();
             }, error -> {
-                this.state.lock.lock();
-                this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
-                this.state.lock.unlock();
+                try {
+                    this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
+                // this error is already logged and we want the user to see the original error
+                } catch(Exception ex) { }
                 localStart.onError(error);
             });
         } finally {
@@ -384,13 +397,13 @@ public class HubConnection implements AutoCloseable {
             }
 
             if (errorMessage != null) {
-                this.state.getConnectionStateUnsynchronized().stopError = errorMessage;
+                this.state.getConnectionStateUnsynchronized(false).stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
                 logger.debug("Stopping HubConnection.");
             }
 
-            transport = this.state.getConnectionStateUnsynchronized().transport;
+            transport = this.state.getConnectionStateUnsynchronized(false).transport;
         } finally {
             this.state.unlock();
         }
@@ -402,15 +415,22 @@ public class HubConnection implements AutoCloseable {
 
     private void ReceiveLoop(ByteBuffer payload)
     {
-        ConnectionState connectionState = this.state.getConnectionState();
-        connectionState.resetServerTimeout();
-        connectionState.handleHandshake(payload);
-        // The payload only contained the handshake response so we can return.
-        if (!payload.hasRemaining()) {
-            return;
-        }
+        List<HubMessage> messages;
+        ConnectionState connectionState;
+        this.state.lock();
+        try {
+            connectionState = this.state.getConnectionState();
+            connectionState.resetServerTimeout();
+            connectionState.handleHandshake(payload);
+            // The payload only contained the handshake response so we can return.
+            if (!payload.hasRemaining()) {
+                return;
+            }
 
-        List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
+            messages = protocol.parseMessages(payload, connectionState);
+        } finally {
+            this.state.unlock();
+        }
 
         for (HubMessage message : messages) {
             logger.debug("Received message of type {}.", message.getMessageType());
@@ -486,15 +506,15 @@ public class HubConnection implements AutoCloseable {
         try {
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
-            if (this.state.getConnectionStateUnsynchronized().stopError != null) {
-                errorMessage = this.state.getConnectionStateUnsynchronized().stopError;
+            if (this.state.getConnectionStateUnsynchronized(false).stopError != null) {
+                errorMessage = this.state.getConnectionStateUnsynchronized(false).stopError;
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
             if (connectionState != null) {
                 connectionState.cancelOutstandingInvocations(exception);
                 connectionState.close();
@@ -606,7 +626,7 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             String id = connectionState.getNextInvocationId();
 
             CompletableSubject subject = CompletableSubject.create();
@@ -664,7 +684,7 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             String id = connectionState.getNextInvocationId();
             InvocationRequest irq = new InvocationRequest(returnType, id);
             connectionState.addInvocation(irq);
@@ -724,7 +744,7 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             invocationId = connectionState.getNextInvocationId();
             irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
@@ -743,10 +763,7 @@ public class HubConnection implements AutoCloseable {
                 if (subscriptionCount.decrementAndGet() == 0) {
                     CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
                     sendHubMessageWithLock(cancelInvocationMessage);
-                    ConnectionState connectionStateInner = this.state.getConnectionState();
-                    if (connectionStateInner != null) {
-                        connectionStateInner.tryRemoveInvocation(invocationId);
-                    }
+                    connectionState.tryRemoveInvocation(invocationId);
                     subject.onComplete();
                 }
             });
@@ -767,7 +784,7 @@ public class HubConnection implements AutoCloseable {
                 logger.debug("Sending {} message.", message.getMessageType().name());
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             connectionState.transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
             connectionState.resetKeepAlive();
         } finally {
@@ -1247,6 +1264,7 @@ public class HubConnection implements AutoCloseable {
         public Transport transport;
         public String connectionId;
         public String stopError;
+        public Completable startTask;
 
         public ConnectionState(HubConnection connection) {
             this.connection = connection;
@@ -1431,7 +1449,6 @@ public class HubConnection implements AutoCloseable {
         private final Lock lock = new ReentrantLock();
         private ConnectionState state;
         private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-        public Completable startTask;
         public TransportEnum currentTransport;
 
         public ReconnectingConnectionState(Logger logger) {
@@ -1447,7 +1464,10 @@ public class HubConnection implements AutoCloseable {
             }
         }
 
-        public ConnectionState getConnectionStateUnsynchronized() {
+        public ConnectionState getConnectionStateUnsynchronized(Boolean allowNull) {
+            if (allowNull != true && this.state == null) {
+                throw new RuntimeException("Connection is not active.");
+            }
             return this.state;
         }
 
