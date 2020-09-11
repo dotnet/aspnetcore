@@ -62,7 +62,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.8.0-2.20428.3</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.8.0-3.20458.6</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-alpha.1.20459.20</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>6.0.0-alpha.1.20459.20</MicrosoftNETCoreAppInternalPackageVersion>
