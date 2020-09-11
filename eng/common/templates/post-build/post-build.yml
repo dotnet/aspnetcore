@@ -19,7 +19,7 @@ parameters:
   enableSigningValidation: true
   enableSymbolValidation: false
   enableNugetValidation: true
-  publishInstallersAndChecksums: false
+  publishInstallersAndChecksums: true
   SDLValidationParameters:
     enable: false
     continueOnError: false

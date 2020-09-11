@@ -4,7 +4,7 @@ parameters:
   artifactsPublishingAdditionalParameters: ''
   dependsOn:
   - Validate
-  publishInstallersAndChecksums: false
+  publishInstallersAndChecksums: true
   symbolPublishingAdditionalParameters: ''
   stageName: ''
   channelName: ''
@@ -158,7 +158,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/'
             /p:Configuration=Release
-            /p:PublishInstallersAndChecksums=true
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
             /p:ChecksumsTargetStaticFeed=$(InternalChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(InternalChecksumsBlobFeedKey)
             /p:InstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
