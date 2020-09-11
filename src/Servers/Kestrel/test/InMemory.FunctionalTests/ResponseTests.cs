@@ -2555,24 +2555,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24164")]
+        [Repeat(100)]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var closeTask = Task.CompletedTask;
+            var closeTaskTcs = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            await using (var server = new TestServer(httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
+                var closeTask = await closeTaskTcs.Task.DefaultTimeout();
                 var feature = httpContext.Features.Get<IConnectionLifetimeFeature>();
                 feature.Abort();
 
                 // Ensure the response doesn't get flush before the abort is observed.
-                return closeTask;
+                await closeTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    closeTask = connection.TransportConnection.WaitForCloseTask;
+                    closeTaskTcs.SetResult(connection.TransportConnection.WaitForCloseTask);
 
                     await connection.Send(
                         "GET / HTTP/1.1",
