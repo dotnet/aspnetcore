@@ -1959,7 +1959,7 @@ class HubConnectionTest {
 
             value1.set(param1);
             value2.set(param2);
-        }, String.class, Double.class);
+        }, String.class, double.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\", 12]}" + RECORD_SEPARATOR);
@@ -1967,7 +1967,7 @@ class HubConnectionTest {
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("Hello World", value1.get());
-        assertEquals(Double.valueOf(12), value2.get());
+        assertEquals(12d, value2.get().doubleValue());
     }
 
     @Test
@@ -2054,7 +2054,7 @@ class HubConnectionTest {
             value3.set(param3);
             value4.set(param4);
             value5.set(param5);
-        }, String.class, String.class, String.class, Boolean.class, Double.class);
+        }, String.class, String.class, String.class, boolean.class, double.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12 ]}" + RECORD_SEPARATOR);
@@ -2063,8 +2063,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
     }
 
     @Test
@@ -2093,7 +2093,7 @@ class HubConnectionTest {
             value4.set(param4);
             value5.set(param5);
             value6.set(param6);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\"]}" + RECORD_SEPARATOR);
@@ -2102,8 +2102,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
     }
 
@@ -2136,7 +2136,7 @@ class HubConnectionTest {
             value5.set(param5);
             value6.set(param6);
             value7.set(param7);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\"]}" + RECORD_SEPARATOR);
@@ -2145,8 +2145,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
     }
@@ -2183,7 +2183,7 @@ class HubConnectionTest {
             value6.set(param6);
             value7.set(param7);
             value8.set(param8);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\",\"F\"]}" + RECORD_SEPARATOR);
@@ -2191,8 +2191,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
         assertEquals("F", value8.get());
