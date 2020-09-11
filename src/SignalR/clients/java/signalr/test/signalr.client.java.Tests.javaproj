@@ -49,8 +49,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
   </ItemGroup>
 
 </Project>
