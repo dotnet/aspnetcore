@@ -15,7 +15,7 @@
   <ItemGroup>
     <Compile Include="..\..\shared\src\*.cs" />
     <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs"
-             Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>
