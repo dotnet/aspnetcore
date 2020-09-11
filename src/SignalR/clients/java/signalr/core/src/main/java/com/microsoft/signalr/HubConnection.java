@@ -226,7 +226,7 @@ public class HubConnection implements AutoCloseable {
                                 try {
                                     handler.getAction().invoke(invocationMessage.getArguments());
                                 } catch (Exception e) {
-                                    logger.error("Invoking client side method '{}' failed: {}", invocationMessage.getTarget(), e.getMessage());
+                                    logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
                                 }
                             }
                         } else {

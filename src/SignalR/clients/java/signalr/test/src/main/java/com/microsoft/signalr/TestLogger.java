@@ -26,16 +26,15 @@ class TestLogger implements AutoCloseable {
         this.logger.addAppender(this.appender);
     }
 
-    public void assertLog(String logMessage) {
-        boolean foundLog = false;
+    public ILoggingEvent assertLog(String logMessage) {
         for (ILoggingEvent log : appender.list) {
-            if (log.getFormattedMessage().contentEquals(logMessage)) {
-                foundLog = true;
-                break;
+            if (log.getFormattedMessage().startsWith(logMessage)) {
+                return log;
             }
         }
 
-        assertTrue(foundLog, String.format("Log message '%s' not found", logMessage));
+        assertTrue(false, String.format("Log message '%s' not found", logMessage));
+        return null;
     }
 
     @Override

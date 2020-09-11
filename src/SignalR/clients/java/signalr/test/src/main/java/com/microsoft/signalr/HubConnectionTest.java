@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -2591,7 +2592,8 @@ class HubConnectionTest {
 
             hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-            logger.assertLog("Invoking client side method 'inc' failed: throw from on handler");
+            ILoggingEvent log = logger.assertLog("Invoking client side method 'inc' failed:");
+            assertEquals("throw from on handler", log.getThrowableProxy().getMessage());
         }
     }
 
