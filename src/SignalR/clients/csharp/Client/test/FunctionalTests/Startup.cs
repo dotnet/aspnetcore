@@ -58,6 +58,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.Use(next =>
+            {
+                return context =>
+                {
+                    if (context.Request.Path.Value.EndsWith("/negotiate"))
+                    {
+                        context.Response.Cookies.Append("fromNegotiate", "a value");
+                    }
+                    return next(context);
+                };
+            });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<TestHub>("/default");

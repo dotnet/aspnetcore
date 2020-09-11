@@ -1514,6 +1514,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [ConditionalFact]
+        [WebSocketsSupportedCondition]
+        public async Task CookiesFromNegotiateAreAppliedToWebSockets()
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.WebSockets)
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var cookieValue = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetCookieValue), "fromNegotiate").OrTimeout();
+                    Assert.Equal("a value", cookieValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
         [Fact(Skip = "Returning object from Hub method not support by System.Text.Json yet")]
         public async Task CheckHttpConnectionFeatures()
         {
