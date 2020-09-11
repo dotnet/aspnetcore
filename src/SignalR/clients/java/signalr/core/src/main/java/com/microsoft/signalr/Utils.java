@@ -43,4 +43,18 @@ class Utils {
             throw new UnsupportedOperationException("Cannot handle type class: " + type.getClass());
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Class<?> returnClass, Object obj) {
+        // Primitive types can't be cast with the Class cast function
+        if (returnClass.isPrimitive()) {
+            return (T) obj;
+        } else {
+            return (T)returnClass.cast(obj);
+        }
+    }
+    
+    public static <T> T cast(Type returnType, Object obj) {
+        return cast(typeToClass(returnType), obj);
+    }
 }

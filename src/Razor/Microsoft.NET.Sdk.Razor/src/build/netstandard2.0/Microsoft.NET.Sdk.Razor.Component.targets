@@ -107,6 +107,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorGenerate
       Debug="$(_RazorDebugGenerateCodeTask)"
       DebugTool="$(_RazorDebugGenerateCodeTool)"
+      ToolExe="$(_RazorSdkDotNetHostFileName)"
+      ToolPath="$(_RazorSdkDotNetHostDirectory)"
       ToolAssembly="$(_RazorSdkToolAssembly)"
       UseServer="$(UseRazorBuildServer)"
       ForceServer="$(_RazorForceBuildServer)"

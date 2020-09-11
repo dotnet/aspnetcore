@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -64,10 +65,10 @@ namespace Microsoft.AspNetCore.Components.Forms
                         offset,
                         segmentSize);
 
-                    if (bytes.Length != segmentSize)
+                    if (bytes is null || bytes.Length != segmentSize)
                     {
                         throw new InvalidOperationException(
-                            $"A segment with size {bytes.Length} bytes was received, but {segmentSize} bytes were expected.");
+                            $"A segment with size {bytes?.Length ?? 0} bytes was received, but {segmentSize} bytes were expected.");
                     }
 
                     bytes.CopyTo(pipeBuffer);

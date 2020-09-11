@@ -150,13 +150,18 @@ namespace Microsoft.AspNetCore.SignalR
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
+            return WriteAsync(message, ignoreAbort: false, cancellationToken);
+        }
+
+        internal ValueTask WriteAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken = default)
+        {
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
-                return new ValueTask(WriteSlowAsync(message, cancellationToken));
+                return new ValueTask(WriteSlowAsync(message, ignoreAbort, cancellationToken));
             }
 
-            if (_connectionAborted)
+            if (_connectionAborted && !ignoreAbort)
             {
                 _writeLock.Release();
                 return default;
@@ -275,14 +280,14 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task WriteSlowAsync(HubMessage message, CancellationToken cancellationToken)
+        private async Task WriteSlowAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken)
         {
             // Failed to get the lock immediately when entering WriteAsync so await until it is available
             await _writeLock.WaitAsync(cancellationToken);
 
             try
             {
-                if (_connectionAborted)
+                if (_connectionAborted && !ignoreAbort)
                 {
                     return;
                 }
@@ -304,7 +309,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task WriteSlowAsync(SerializedHubMessage message, CancellationToken cancellationToken)
         {
             // Failed to get the lock immediately when entering WriteAsync so await until it is available
-            await _writeLock.WaitAsync();
+            await _writeLock.WaitAsync(cancellationToken);
 
             try
             {

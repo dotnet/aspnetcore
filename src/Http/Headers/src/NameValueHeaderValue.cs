@@ -17,9 +17,9 @@ namespace Microsoft.Net.Http.Headers
     public class NameValueHeaderValue
     {
         private static readonly HttpHeaderParser<NameValueHeaderValue> SingleValueParser
-            = new GenericHeaderParser<NameValueHeaderValue>(false, GetNameValueLength!);
+            = new GenericHeaderParser<NameValueHeaderValue>(false, GetNameValueLength);
         internal static readonly HttpHeaderParser<NameValueHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<NameValueHeaderValue>(true, GetNameValueLength!);
+            = new GenericHeaderParser<NameValueHeaderValue>(true, GetNameValueLength);
 
         private StringSegment _name;
         private StringSegment _value;

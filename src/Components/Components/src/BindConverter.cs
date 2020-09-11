@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Components
         private delegate object? BindFormatter<T>(T value, CultureInfo? culture);
         private delegate object BindFormatterWithFormat<T>(T value, CultureInfo? culture, string format);
 
-        internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, out T value);
-        internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, out T value);
+        internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value);
+        internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, [MaybeNullWhen(false)] out T value);
 
         /// <summary>
         /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
@@ -1276,7 +1276,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
         /// <param name="value">The converted value.</param>
         /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-        public static bool TryConvertTo<T>(object? obj, CultureInfo? culture, out T value)
+        public static bool TryConvertTo<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
         {
             var converter = ParserDelegateCache.Get<T>();
             return converter(obj, culture, out value);
