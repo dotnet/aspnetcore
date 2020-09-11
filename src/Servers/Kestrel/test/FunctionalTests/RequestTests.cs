@@ -28,6 +28,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -37,10 +38,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionResetEventId = 19;
         private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
-        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
+        public static Dictionary<string, Func<ListenOptions>> ConnectionMiddlewareData => new Dictionary<string, Func<ListenOptions>>
         {
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
+            { "Loopback", () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)) },
+            { "PassThrough", () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough() }
+        };
+
+        public static TheoryData<string> ConnectionMiddlewareDataName => new TheoryData<string>
+        {
+            "Loopback",
+            "PassThrough"
         };
 
         [Theory]
@@ -515,9 +522,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23043")]
-        public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
+        public async Task ConnectionClosedTokenFiresOnClientFIN(string listenOptionsName)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -531,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -551,8 +558,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
+        public async Task ConnectionClosedTokenFiresOnServerFIN(string listenOptionsName)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -563,7 +570,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -587,8 +594,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
+        public async Task ConnectionClosedTokenFiresOnServerAbort(string listenOptionsName)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -601,7 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context.Abort();
 
                 return Task.CompletedTask;
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -628,8 +635,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
+        public async Task RequestsCanBeAbortedMidRead(string listenOptionsName)
         {
             // This needs a timeout.
             const int applicationAbortedConnectionId = 34;
@@ -678,7 +685,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     readTcs.SetException(new Exception("This shouldn't be reached."));
                 }
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -718,8 +725,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
-        public async Task ServerCanAbortConnectionAfterUnobservedClose(ListenOptions listenOptions)
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
+        public async Task ServerCanAbortConnectionAfterUnobservedClose(string listenOptionsName)
         {
             const int connectionPausedEventId = 4;
             const int connectionFinSentEventId = 7;
@@ -773,7 +780,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await serverClosedConnection.Task;
 
                 appFuncCompleted.SetResult();
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -799,9 +806,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionMiddlewareData))]
+        [MemberData(nameof(ConnectionMiddlewareDataName))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27157")]
-        public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
+        public async Task AppCanHandleClientAbortingConnectionMidRequest(string listenOptionsName)
         {
             var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -827,7 +834,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 readTcs.SetException(new Exception("This shouldn't be reached."));
 
-            }, testContext, listenOptions))
+            }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
             {
                 using (var connection = server.CreateConnection())
                 {
