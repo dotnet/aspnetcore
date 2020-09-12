@@ -9,10 +9,6 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0">
-      <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
-    </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-rc.2.20461.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>3eeb676b39ac74802ad1e806d0956df14a7955e8</Sha>
