@@ -132,8 +132,6 @@
     <SystemWindowsExtensionsPackageVersion>5.0.0-rc.2.20461.4</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.0-rc.2.20461.4</MicrosoftNETCorePlatformsPackageVersion>
-    <!-- Packages from dotnet/blazor -->
-    <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-rc.2.20461.2</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-rc.2.20461.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
