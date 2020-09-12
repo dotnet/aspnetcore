@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
+    <PackageReference Include="Microsoft.Identity.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCorePackageVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
   <!--#endif -->

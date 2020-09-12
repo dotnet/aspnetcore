@@ -39,6 +39,7 @@
   <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
+    <PackageReference Include="Microsoft.Identity.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
   </ItemGroup>
   <!--#endif -->
