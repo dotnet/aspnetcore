@@ -52,11 +52,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
+    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+        Condition=" $(IsTargetingPackBuilding) ">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
-    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
+    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Condition=" !$(IsTargetingPackBuilding) ">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
