@@ -47,50 +47,47 @@ namespace RunTests
                 { Argument = new Argument<string>(), Required = true },
 
                 new Option(
-                    aliases: new string[] { "--aspnetruntime" },
-                    description: "The path to the aspnet runtime nupkg to install")
-                { Argument = new Argument<string>(), Required = true },
-
-                new Option(
-                    aliases: new string[] { "--aspnetref" },
-                    description: "The path to the aspnet ref nupkg to install")
-                { Argument = new Argument<string>(), Required = true },
-
-                new Option(
                     aliases: new string[] { "--helixTimeout" },
                     description: "The timeout duration of the Helix job")
                 { Argument = new Argument<string>(), Required = true },
             };
 
             var parseResult = command.Parse(args);
-            var options = new RunTestsOptions();
-            options.Target = parseResult.ValueForOption<string>("--target");
-            options.RuntimeVersion = parseResult.ValueForOption<string>("--runtime");
-            options.HelixQueue = parseResult.ValueForOption<string>("--queue");
-            options.Architecture = parseResult.ValueForOption<string>("--arch");
-            options.Quarantined = parseResult.ValueForOption<bool>("--quarantined");
-            options.EfVersion = parseResult.ValueForOption<string>("--ef");
-            options.AspNetRuntime = parseResult.ValueForOption<string>("--aspnetruntime");
-            options.AspNetRef = parseResult.ValueForOption<string>("--aspnetref");
-            options.Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"));
-            options.HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-            options.Path = Environment.GetEnvironmentVariable("PATH");
-            options.DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            var sharedFxVersion = parseResult.ValueForOption<string>("--runtime");
+            var options = new RunTestsOptions
+            {
+                Architecture = parseResult.ValueForOption<string>("--arch"),
+                EfVersion = parseResult.ValueForOption<string>("--ef"),
+                HelixQueue = parseResult.ValueForOption<string>("--queue"),
+                Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
+                RuntimeVersion = sharedFxVersion,
+                Target = parseResult.ValueForOption<string>("--target"),
+                Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout")),
+
+                // When targeting pack builds, it has exactly the same version as the shared framework.
+                AspNetRef = $"Microsoft.AspNetCore.App.Ref.{sharedFxVersion}.nupkg",
+                AspNetRuntime = $"Microsoft.AspNetCore.App.Runtime.win-x64.{sharedFxVersion}.nupkg",
+
+                DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+                HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
+                Path = Environment.GetEnvironmentVariable("PATH"),
+            };
+
             return options;
         }
 
-        public string Target { get; set;}
-        public string SdkVersion { get; set;}
-        public string RuntimeVersion { get; set;}
-        public string AspNetRuntime { get; set;}
-        public string AspNetRef { get; set;}
-        public string HelixQueue { get; set;}
-        public string Architecture { get; set;}
-        public bool Quarantined { get; set;}
-        public string EfVersion { get; set;}
-        public string HELIX_WORKITEM_ROOT { get; set;}
-        public string DotnetRoot { get; set; }
+        public string Architecture { get; private set; }
+        public string EfVersion { get; private set; }
+        public string HelixQueue { get; private set; }
+        public bool Quarantined { get; private set; }
+        public string RuntimeVersion { get; private set; }
+        public string Target { get; private set; }
+        public TimeSpan Timeout { get; private set; }
+
+        public string AspNetRef { get; private set; }
+        public string AspNetRuntime { get; private set; }
+        public string HELIX_WORKITEM_ROOT { get; private set; }
+        public string DotnetRoot { get; private set; }
         public string Path { get; set; }
-        public TimeSpan Timeout { get; set; }
     }
 }
