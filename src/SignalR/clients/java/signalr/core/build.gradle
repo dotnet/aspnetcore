@@ -1,3 +1,8 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
 group 'com.microsoft.signalr'
 
 dependencies {
@@ -22,6 +27,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 task generatePOM {
     pom {
         project {
+            artifactId 'signalr'
             inceptionYear '2018'
             description 'ASP.NET Core SignalR Client for Java applications'
             url 'https://github.com/dotnet/aspnetcore'
