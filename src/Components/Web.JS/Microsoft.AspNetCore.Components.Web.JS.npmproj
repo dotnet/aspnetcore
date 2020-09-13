@@ -1,5 +1,6 @@
 ﻿<Project DefaultTargets="Build">
   <PropertyGroup>
+    <BuildHelixPayload>false</BuildHelixPayload>
     <IsUnitTestProject>true</IsUnitTestProject>
   </PropertyGroup>
 
