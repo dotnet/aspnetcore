@@ -20,7 +20,7 @@
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
   </ItemGroup>
 
-  <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
+  <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
     <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
@@ -137,8 +137,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
