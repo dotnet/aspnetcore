@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("ಹಲೋ", localizedDisplay.Text);
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void LoadingApp_DynamicallySetLanguageThrows()
         {
             // Arrange
