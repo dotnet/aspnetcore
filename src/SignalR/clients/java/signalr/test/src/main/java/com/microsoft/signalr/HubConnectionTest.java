@@ -2962,6 +2962,8 @@ class HubConnectionTest {
 
     @Test
     public void ConnectionRestartDoesNotResetUserTransportEnum() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        AtomicReference<CompletableSubject> blockGet = new AtomicReference<CompletableSubject>(CompletableSubject.create());
         TestHttpClient client = new TestHttpClient()
             .on("POST", (req) -> {
                 return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
@@ -2971,9 +2973,15 @@ class HubConnectionTest {
                         + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},"
                         + "{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
             .on("GET", (req) -> {
+                if (requestCount.incrementAndGet() >= 3) {
+                    blockGet.get().timeout(30, TimeUnit.SECONDS).blockingAwait();
+                }
                 return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
             })
-            .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer(""))));
+            .on("DELETE", (req) -> {
+                blockGet.get().onComplete();
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2982,11 +2990,13 @@ class HubConnectionTest {
                 .build();
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
         hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
+        requestCount.set(0);
+        blockGet.set(CompletableSubject.create());
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
         hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 

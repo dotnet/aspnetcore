@@ -114,11 +114,6 @@ public class HubConnection implements AutoCloseable {
     }
 
     // For testing purposes
-    TransportEnum getTransportEnum() {
-        return this.state.currentTransport;
-    }
-
-    // For testing purposes
     Transport getTransport() {
         return this.state.getConnectionState().transport;
     }
@@ -269,7 +264,7 @@ public class HubConnection implements AutoCloseable {
                 Transport transport = customTransport;
                 if (transport == null) {
                     Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
-                    switch (this.state.currentTransport) {
+                    switch (negotiateResponse.getChosenTransport()) {
                         case LONG_POLLING:
                             transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                             break;
@@ -308,7 +303,7 @@ public class HubConnection implements AutoCloseable {
                                 logger.info("HubConnection started.");
                                 connectionState.resetServerTimeout();
                                 // Don't send pings if we're using long polling.
-                                if (this.state.currentTransport != TransportEnum.LONG_POLLING) {
+                                if (negotiateResponse.getChosenTransport() != TransportEnum.LONG_POLLING) {
                                     connectionState.activatePingTimer();
                                 }
                             } finally {
@@ -350,9 +345,9 @@ public class HubConnection implements AutoCloseable {
                 Set<String> transports = response.getAvailableTransports();
                 if (this.transportEnum == TransportEnum.ALL) {
                     if (transports.contains("WebSockets")) {
-                        this.state.currentTransport = TransportEnum.WEBSOCKETS;
+                        response.setChosenTransport(TransportEnum.WEBSOCKETS);
                     } else if (transports.contains("LongPolling")) {
-                        this.state.currentTransport = TransportEnum.LONG_POLLING;
+                        response.setChosenTransport(TransportEnum.LONG_POLLING);
                     } else {
                         throw new RuntimeException("There were no compatible transports on the server.");
                     }
@@ -360,7 +355,7 @@ public class HubConnection implements AutoCloseable {
                         (this.transportEnum == TransportEnum.LONG_POLLING && !transports.contains("LongPolling"))) {
                     throw new RuntimeException("There were no compatible transports on the server.");
                 } else {
-                    this.state.currentTransport = this.transportEnum;
+                    response.setChosenTransport(this.transportEnum);
                 }
 
                 String connectionToken = "";
@@ -1449,7 +1444,6 @@ public class HubConnection implements AutoCloseable {
         private final Lock lock = new ReentrantLock();
         private ConnectionState state;
         private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-        public TransportEnum currentTransport;
 
         public ReconnectingConnectionState(Logger logger) {
             this.logger = logger;
