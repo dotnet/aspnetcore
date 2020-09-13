@@ -1,8 +1,11 @@
 ﻿<Project DefaultTargets="Build">
+  <PropertyGroup>
+    <IsUnitTestProject>true</IsUnitTestProject>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
