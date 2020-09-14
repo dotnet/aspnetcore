@@ -345,9 +345,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     }
 
     // "CertificateName": {
-    //     "Path": "testCert.pfx",
-    //     "KeyPath": "",
-    //     "ChainPath": "",
+    //     "Path": "testCert.pem/pfx",
+    //     "KeyPath": "key.pem",
+    //     "ChainPath": "chain.pem",
     //     "Password": "testPassword"
     // }
     internal class CertificateConfig
@@ -359,6 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // Bind explictly to preserve linkability
             Path = configSection[nameof(Path)];
             KeyPath = configSection[nameof(KeyPath)];
+            ChainPath = configSection[nameof(ChainPath)];
             Password = configSection[nameof(Password)];
             Subject = configSection[nameof(Subject)];
             Store = configSection[nameof(Store)];
