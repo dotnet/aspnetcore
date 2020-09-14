@@ -968,6 +968,26 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             await StartAsync(deploymentParameters);
         }
 
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task OnCompletedDoesNotFailRequest()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/OnCompleted");
+            Assert.True(response.IsSuccessStatusCode);
+
+            StopServer();
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                // We can't read stdout logs from IIS as they aren't redirected.
+                Assert.Contains(TestSink.Writes, context => context.Message.Contains("An unhandled exception was thrown by the application."));
+            }
+        }
+
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
         {
             var entries = GetEventLogsFromDotnetRuntime(deploymentResult);
