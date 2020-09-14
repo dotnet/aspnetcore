@@ -16,11 +16,20 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRuntime)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
+  <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
+    <!-- Grab all shipping packages. -->
+    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
   </ItemGroup>
 
-  <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
+  <ItemGroup>
+    <!-- Java test projects do not use xUnit. -->
+    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll"
+        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
+    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll"
+        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
+  </ItemGroup>
+
+  <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
     <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
@@ -40,13 +49,10 @@
     </ContentWithTargetPath>
   </ItemGroup>
 
-<!--
-
-This target is meant to be used when invoking helix tests on one project at a time.
-
-Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
-
--->
+  <!--
+    This target is meant to be used when invoking helix tests on one project at a time.
+    Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
+  -->
   <Target Name="Helix">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
              Properties="ProjectToBuild=$(MSBuildProjectFullPath)" />
@@ -101,25 +107,6 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
   </Target>
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
-    <ItemGroup>
-      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll" />
-      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll" />
-    </ItemGroup>
-
-    <!--
-      Could use _GetPackageVersionInfo target (defined in eng/targets/Packaging.targets and included in every C#
-      and F# project) instead of the $(SharedFxVersion) property but the property works everywhere except in site
-      extensions projects. Could also use $(TargetingPackVersion) but that has slightly more complicated semantics
-      and doesn't keep up when in servicing.
-    -->
-    <ItemGroup Condition=" '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true' ">
-      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
-      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg" />
-    </ItemGroup>
-
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
@@ -139,8 +126,12 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
+        <!--
+          When the targeting pack builds, it has exactly the same version as the shared framework. Passing
+          SharedFxVersion because that's needed even when the targeting pack isn't building.
+        -->
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

@@ -85,7 +85,7 @@
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
               HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
@@ -97,7 +97,7 @@
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
               HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               IncludeMainProjectInDepsFile=false" />
