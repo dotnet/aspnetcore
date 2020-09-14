@@ -1,14 +1,10 @@
 <Project>
-  <PropertyGroup>
-    <BuildHelixPayload>false</BuildHelixPayload>
-    <IsUnitTestProject>true</IsUnitTestProject>
-  </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsBuildable>false</IsBuildable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
