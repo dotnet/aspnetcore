@@ -1461,7 +1461,7 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
-        public Task OnCompleted(HttpContext httpContext)
+        public Task OnCompletedThrows(HttpContext httpContext)
         {
             httpContext.Response.OnCompleted(() =>
             {
