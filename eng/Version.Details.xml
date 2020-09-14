@@ -9,7 +9,7 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="5.0.0-rc.2.20461.2">
+    <Dependency Name="dotnet-ef" Version="5.0.0-rc.2.20462.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>56c241b562cbf75673cfd56dd496d72cfce32dfe</Sha>
     </Dependency>
