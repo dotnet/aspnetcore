@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                     catch (Exception ex)
                     {
-                        ReportApplicationError(ex);
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
                 }
             }
