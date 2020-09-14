@@ -13,7 +13,7 @@
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf')) OR $(RepoRelativeProjectDir.Contains('benchmarkapps'))">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
     <IsUnitTestProject Condition="'$(IsSpecificationTestProject)' != 'true' and ( $(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('.Test')) or $(MSBuildProjectName.EndsWith('.FunctionalTest')) )">true</IsUnitTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>

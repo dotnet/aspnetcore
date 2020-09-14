@@ -16,8 +16,17 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRuntime)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
+  <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
+    <!-- Grab all shipping packages. -->
+    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Java test projects do not use xUnit. -->
+    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll"
+        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
+    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll"
+        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
   </ItemGroup>
 
   <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
@@ -40,13 +49,10 @@
     </ContentWithTargetPath>
   </ItemGroup>
 
-<!--
-
-This target is meant to be used when invoking helix tests on one project at a time.
-
-Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
-
--->
+  <!--
+    This target is meant to be used when invoking helix tests on one project at a time.
+    Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
+  -->
   <Target Name="Helix">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
              Properties="ProjectToBuild=$(MSBuildProjectFullPath)" />
@@ -101,19 +107,6 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
   </Target>
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
-    <ItemGroup>
-      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll" />
-      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true' ">
-      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(TargetingPackVersion).nupkg" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
-      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg" />
-    </ItemGroup>
-
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
