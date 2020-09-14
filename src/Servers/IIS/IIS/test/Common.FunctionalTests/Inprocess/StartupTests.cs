@@ -976,7 +976,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/OnCompleted");
+            var response = await deploymentResult.HttpClient.GetAsync("/OnCompletedThrows");
             Assert.True(response.IsSuccessStatusCode);
 
             StopServer();
