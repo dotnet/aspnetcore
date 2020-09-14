@@ -19,6 +19,7 @@
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
       MicrosoftExtensionsHttpPackageVersion=$(MicrosoftExtensionsHttpPackageVersion);
       MicrosoftIdentityWebPackageVersion=$(MicrosoftIdentityWebPackageVersion);
+      MicrosoftIdentityWebMicrosoftGraphPackageVersion=$(MicrosoftIdentityWebMicrosoftGraphPackageVersion);
       MicrosoftIdentityWebUIPackageVersion=$(MicrosoftIdentityWebUIPackageVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
       SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
