@@ -9,10 +9,6 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0">
-      <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
-    </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-rc.2.20462.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>56c241b562cbf75673cfd56dd496d72cfce32dfe</Sha>
@@ -324,9 +320,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>91470b0b14ba016c1fb78211b12775287c17b34e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-2.20403.2" Pinned="true">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-3.20458.6" Pinned="true">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>b6a07e61473ed8a804de465f7c1cb5c17f80732d</Sha>
+      <Sha>b446afd34759150c2ea3b86ab794104e12e64db1</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
