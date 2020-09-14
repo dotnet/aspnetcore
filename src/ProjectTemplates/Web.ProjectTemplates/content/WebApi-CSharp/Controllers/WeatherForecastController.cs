@@ -35,7 +35,7 @@ namespace Company.WebApplication1.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-#if (GenerateApiOrGraph || OrganizationalAuth || IndividualB2CAuth)
+#if (OrganizationalAuth || IndividualB2CAuth)
 
         // The Web API will only accept tokens 1) for users, and 2) having the "api-scope" scope for this API
         static readonly string[] scopeRequiredByApi = new string[] { "api-scope" };
