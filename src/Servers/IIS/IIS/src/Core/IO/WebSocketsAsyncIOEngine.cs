@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             lock (_context._contextLock)
             {
                 // Should only call CancelIO if the client hasn't disconnected
-                if (!_context._clientDisconnected)
+                if (!_context.ClientDisconnected)
                 {
                     NativeMethods.HttpTryCancelIO(_handler);
                 }
