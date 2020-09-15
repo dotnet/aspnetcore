@@ -38,15 +38,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Id("signalr-client"));
         }
 
-        [Theory]
-        [InlineData(HttpTransportType.WebSockets)]
-        [InlineData(HttpTransportType.LongPolling)]
-        public void SignalRClientWorks(HttpTransportType transportType)
+        [Fact]
+        public void SignalRClientWorksWithLongPolling()
         {
             Browser.FindElement(By.Id("hub-url")).SendKeys(
                 new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
             Browser.FindElement(By.Id("transport-type")).SendKeys(
-                transportType.ToString());
+                HttpTransportType.LongPolling.ToString());
+            Browser.FindElement(By.Id("hub-connect")).Click();
+
+            Browser.Equal("SignalR Client: Echo",
+                () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
+        }
+
+        [Fact]
+        public void SignalRClientWorksWithWebSockets()
+        {
+            Browser.FindElement(By.Id("hub-url")).SendKeys(
+                new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
+            Browser.FindElement(By.Id("transport-type")).SendKeys(
+                HttpTransportType.WebSockets.ToString());
             Browser.FindElement(By.Id("hub-connect")).Click();
 
             Browser.Equal("SignalR Client: Echo",
