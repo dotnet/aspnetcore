@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -122,6 +123,7 @@ namespace Microsoft.AspNetCore.Http.Features
             return 0;
         }
 
+        [DoesNotReturn]
         private static void ThrowContextDisposed()
         {
             throw new ObjectDisposedException(nameof(Collection), nameof(IFeatureCollection) + " has been disposed.");
