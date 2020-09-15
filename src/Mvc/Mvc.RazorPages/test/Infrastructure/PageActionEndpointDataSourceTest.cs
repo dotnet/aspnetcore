@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return new PageActionEndpointDataSource(new PageActionEndpointDataSourceIdProvider(), actions, endpointFactory, new OrderedEndpointsSequenceProvider());
         }
 
-
         protected override ActionDescriptor CreateActionDescriptor(
             object values,
             string pattern = null,
