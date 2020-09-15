@@ -8,6 +8,9 @@
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
+
+    <!-- Project supports more than one language -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>

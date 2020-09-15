@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
-using System.Linq;
 using GlobalizationWasmApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -18,7 +16,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     // This app covers testing this along with verifying the behavior for fallback culture for localized resources.
     public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-        private readonly DateTime DisplayTime = new DateTime(2020, 09, 02);
         public WebAssemblyICUShardingTest(
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -39,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
             var dateDisplay = Browser.Exists(By.Id("dateTime"));
-            Assert.Equal(DisplayTime.ToString(culture), dateDisplay.Text);
+            Assert.Equal("02/09/2020 00:00:00", dateDisplay.Text);
 
             var localizedDisplay = Browser.Exists(By.Id("localizedString"));
             Assert.Equal("Bonjour!", localizedDisplay.Text);
@@ -57,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
             var dateDisplay = Browser.Exists(By.Id("dateTime"));
-            Assert.Equal(DisplayTime.ToString(culture), dateDisplay.Text);
+            Assert.Equal("2020. 9. 2. 오전 12:00:00", dateDisplay.Text);
 
             var localizedDisplay = Browser.Exists(By.Id("localizedString"));
             // The app has a "ko" resx file. This test verifies that we can walk up the culture hierarchy correctly.
@@ -76,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
             var dateDisplay = Browser.Exists(By.Id("dateTime"));
-            Assert.Equal(DisplayTime.ToString(culture), dateDisplay.Text);
+            Assert.Equal("02.09.2020 00:00:00", dateDisplay.Text);
 
             var localizedDisplay = Browser.Exists(By.Id("localizedString"));
             Assert.Equal("Hello", localizedDisplay.Text); // No localized resources for this culture.
@@ -94,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
             var dateDisplay = Browser.Exists(By.Id("dateTime"));
-            Assert.Equal(DisplayTime.ToString(culture), dateDisplay.Text);
+            Assert.Equal("2/9/2020 12:00:00 ಪೂರ್ವಾಹ್ನ", dateDisplay.Text);
 
             var localizedDisplay = Browser.Exists(By.Id("localizedString"));
             Assert.Equal("ಹಲೋ", localizedDisplay.Text);
@@ -105,15 +102,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Arrange
             // This verifies that we complain if the app programtically configures a language.
-            var expected = "This application's globalization settings requires using the combined globalization data file.";
             Navigate($"{ServerPathBase}/?culture=fr&dotNetCulture=es", noReload: false);
 
             var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Browser.Equal("block", () => errorUi.GetCssValue("display"));
 
-            var logs = Browser.GetBrowserLogs(LogLevel.Severe).Select(l => l.Message);
-            Assert.True(logs.Any(l => l.Contains(expected)),
-                $"Expected to see globalization error message in the browser logs: {string.Join(Environment.NewLine, logs)}.");
+            // Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803"
+            // var expected = "This application's globalization settings requires using the combined globalization data file.";
+            // var logs = Browser.GetBrowserLogs(LogLevel.Severe).Select(l => l.Message);
+            // Assert.True(logs.Any(l => l.Contains(expected)),
+            //     $"Expected to see globalization error message in the browser logs: {string.Join(Environment.NewLine, logs)}.");
         }
 
         private void Initialize(CultureInfo culture)

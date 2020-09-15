@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void DoesNotStartMultipleConnections()
         {
             Navigate("/multiple-components");
