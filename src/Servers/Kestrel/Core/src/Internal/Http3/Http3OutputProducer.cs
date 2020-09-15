@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         // Headers have already been written and there is no other content to write
                         // TODO complete something here.
                         flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
-                        _frameWriter.Complete();
+                        await _frameWriter.CompleteAsync();
                     }
                     else
                     {

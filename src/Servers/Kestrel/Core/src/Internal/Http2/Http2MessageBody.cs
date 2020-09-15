@@ -45,11 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _readResult = default;
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             var newlyExaminedBytes = TrackConsumedAndExaminedBytes(_readResult, consumed, examined);

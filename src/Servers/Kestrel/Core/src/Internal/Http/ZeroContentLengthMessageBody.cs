@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask StopAsync() => default;
 
-        public override void AdvanceTo(SequencePosition consumed) { }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) { }
 
         public override bool TryRead(out ReadResult result)

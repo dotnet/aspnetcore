@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _frameWriter.Complete();
+                    await _frameWriter.CompleteAsync();
                 }
                 catch
                 {

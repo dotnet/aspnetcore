@@ -43,11 +43,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public abstract void AdvanceTo(SequencePosition consumed);
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
+
+        public abstract bool TryRead(out ReadResult readResult);
+
+        public void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceTo(consumed, consumed);
+        }
 
         public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
-        public abstract bool TryRead(out ReadResult readResult);
+        public abstract void CancelPendingRead();
 
         public abstract void Complete(Exception exception);
 
@@ -56,10 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Complete(exception);
             return default;
         }
-
-        public abstract void CancelPendingRead();
-
-        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public virtual Task ConsumeAsync()
         {

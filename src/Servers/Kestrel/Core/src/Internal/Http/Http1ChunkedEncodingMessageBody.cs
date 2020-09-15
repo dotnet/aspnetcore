@@ -37,22 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
-        }
-
-        public override bool TryRead(out ReadResult readResult)
-        {
-            ThrowIfCompleted();
-
-            return TryReadInternal(out readResult);
         }
 
         public override bool TryReadInternal(out ReadResult readResult)
@@ -70,12 +58,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return boolResult;
-        }
-
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ThrowIfCompleted();
-            return ReadAsyncInternal(cancellationToken);
         }
 
         public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
@@ -101,12 +83,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return _readResult;
-        }
-
-        public override void Complete(Exception exception)
-        {
-            _completed = true;
-            _context.ReportApplicationError(exception);
         }
 
         public override void CancelPendingRead()

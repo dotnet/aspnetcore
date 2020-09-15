@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             _context = context;
         }
+
         protected override void OnReadStarting()
         {
             // Note ContentLength or MaxRequestBodySize may be null
@@ -29,18 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        protected override void OnReadStarted()
-        {
-        }
-
         public static MessageBody For(Http3Stream context)
         {
             return new Http3MessageBody(context);
-        }
-
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
         }
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)

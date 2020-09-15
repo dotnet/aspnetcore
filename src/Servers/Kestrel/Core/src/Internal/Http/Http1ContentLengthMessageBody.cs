@@ -31,12 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _unexaminedInputLength = _contentLength;
         }
 
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ThrowIfCompleted();
-            return ReadAsyncInternal(cancellationToken);
-        }
-
         public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
         {
             VerifyIsNotReading();
@@ -125,12 +119,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _readResult;
         }
 
-        public override bool TryRead(out ReadResult readResult)
-        {
-            ThrowIfCompleted();
-            return TryReadInternal(out readResult);
-        }
-
         public override bool TryReadInternal(out ReadResult readResult)
         {
             VerifyIsNotReading();
@@ -216,11 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return maxLength;
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             if (!_isReading)
@@ -261,21 +244,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public override void Complete(Exception exception)
-        {
-            _context.ReportApplicationError(exception);
-            _completed = true;
-        }
-
         public override void CancelPendingRead()
         {
             Interlocked.Exchange(ref _userCanceled, 1);
             _context.Input.CancelPendingRead();
-        }
-
-        protected override ValueTask OnStopAsync()
-        {
-            return CompleteAsync(exception: null);
         }
 
         [StackTraceHidden]
