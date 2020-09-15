@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Http.Connections;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
@@ -37,11 +38,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Id("signalr-client"));
         }
 
-        [Fact]
-        public void SignalRClientWorks()
+        [Theory]
+        [InlineData(HttpTransportType.WebSockets)]
+        [InlineData(HttpTransportType.LongPolling)]
+        public void SignalRClientWorks(HttpTransportType transportType)
         {
             Browser.FindElement(By.Id("hub-url")).SendKeys(
                 new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
+            Browser.FindElement(By.Id("transport-type")).SendKeys(
+                transportType.ToString());
             Browser.FindElement(By.Id("hub-connect")).Click();
 
             Browser.Equal("SignalR Client: Echo",

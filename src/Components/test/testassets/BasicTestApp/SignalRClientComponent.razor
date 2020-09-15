@@ -1,4 +1,6 @@
-﻿@using Microsoft.AspNetCore.SignalR.Client
+﻿@using System
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Http.Connections
 
 <h1 id="signalr-client">SignalR Client</h1>
 
@@ -7,6 +9,7 @@
 <p>
     Hub URL:
     <input id="hub-url" @bind="hubUrl" />
+    <input id="transport-type" @bind="transportType" />
     <button id="hub-connect" @onclick="Connect">Connect</button>
 </p>
 
@@ -21,13 +24,14 @@
 
 @code {
     private string hubUrl;
+    private string transportType;
     private HubConnection hubConnection;
     private List<string> messages = new List<string>();
 
     protected async Task Connect()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
+            .WithUrl(hubUrl, Enum.Parse<HttpTransportType>(transportType))
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
