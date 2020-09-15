@@ -86,15 +86,22 @@ namespace Microsoft.AspNetCore.Http.Features
                 Cache = default;
             }
 
-            cached = Collection.Get<TFeature>();
+            var collection = Collection;
+            // Catch concurrent race conditions with Disposal
+            if (collection is null)
+            {
+                ThrowContextDisposed();
+            }
+
+            cached = collection.Get<TFeature>();
             if (cached == null)
             {
                 // Item not in collection, create it with factory
                 cached = factory(state);
                 // Add item to IFeatureCollection
-                Collection.Set(cached);
+                Collection?.Set(cached);
                 // Revision changed by .Set, update revision to new value
-                Revision = Collection.Revision;
+                Revision = Collection?.Revision ?? ContextDisposed();
             }
             else if (flush)
             {
