@@ -282,37 +282,45 @@ public class HubConnection implements AutoCloseable {
                     ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
                                 new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
-                    return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
-                        this.state.lock();
-                        try {
-                            if (this.state.getConnectionStateUnsynchronized(true) != null) {
-                                connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                            } else {
-                                return Completable.error(new RuntimeException("Connection closed while sending handshake."));
-                            }
-                        } finally {
-                            this.state.unlock();
+                    this.state.lock();
+                    try {
+                        if (this.state.hubConnectionState != HubConnectionState.CONNECTING) {
+                            return Completable.error(new RuntimeException("Connection closed while trying to connect."));
                         }
-                        return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
+                        return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
                             this.state.lock();
                             try {
-                                if (this.state.getConnectionStateUnsynchronized(true) == null) {
-                                    return Completable.error(new RuntimeException("Connection closed while waiting for handshake."));
-                                }
-                                this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
-                                logger.info("HubConnection started.");
-                                connectionState.resetServerTimeout();
-                                // Don't send pings if we're using long polling.
-                                if (negotiateResponse.getChosenTransport() != TransportEnum.LONG_POLLING) {
-                                    connectionState.activatePingTimer();
+                                if (this.state.getConnectionStateUnsynchronized(true) != null) {
+                                    connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                                } else {
+                                    return Completable.error(new RuntimeException("Connection closed while sending handshake."));
                                 }
                             } finally {
                                 this.state.unlock();
                             }
+                            return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
+                                this.state.lock();
+                                try {
+                                    if (this.state.getConnectionStateUnsynchronized(true) == null) {
+                                        return Completable.error(new RuntimeException("Connection closed while waiting for handshake."));
+                                    }
+                                    this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
+                                    logger.info("HubConnection started.");
+                                    connectionState.resetServerTimeout();
+                                    // Don't send pings if we're using long polling.
+                                    if (negotiateResponse.getChosenTransport() != TransportEnum.LONG_POLLING) {
+                                        connectionState.activatePingTimer();
+                                    }
+                                } finally {
+                                    this.state.unlock();
+                                }
 
-                            return Completable.complete();
+                                return Completable.complete();
+                            }));
                         }));
-                    }));
+                    } finally {
+                        this.state.unlock();
+                    }
                 }));
             // subscribe makes this a "hot" completable so this runs immediately
             }).subscribe(() -> {
@@ -770,6 +778,9 @@ public class HubConnection implements AutoCloseable {
     private void sendHubMessageWithLock(HubMessage message) {
         this.state.lock();
         try {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("Trying to send and message while the connection is not active.");
+            }
             ByteBuffer serializedMessage = protocol.writeMessage(message);
             if (message.getMessageType() == HubMessageType.INVOCATION) {
                 logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
