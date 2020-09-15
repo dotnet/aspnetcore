@@ -98,6 +98,7 @@
       "src\\Components\\Ignitor\\src\\Ignitor.csproj",
       "src\\Components\\Ignitor\\test\\Ignitor.Test.csproj",
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
+      "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
       "src\\Components\\Web.Extensions\\src\\Microsoft.AspNetCore.Components.Web.Extensions.csproj",

@@ -36,6 +36,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
+    <_RazorSdkDotNetHostDirectory>$(NetCoreRoot)</_RazorSdkDotNetHostDirectory>
+    <_RazorSdkDotNetHostFileName>dotnet</_RazorSdkDotNetHostFileName>
+    <_RazorSdkDotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_RazorSdkDotNetHostFileName>
+  </PropertyGroup>
+
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
   <PropertyGroup>
     <_TargetingNETCoreApp30OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
@@ -871,7 +877,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_RazorSdkCustomCollectWatchItems">
     <ItemGroup>
       <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor' AND '%(Content.Watch)' != 'false'" />
-      <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor.css' AND '%(Content.Watch)' != 'false'" />
+      <Watch Include="%(None.FullPath)" Condition="$([System.String]::Copy('%(None.FullPath)').EndsWith('.razor.css')) AND '%(None.Watch)' != 'false'" />
       <Watch Include="%(Content.FullPath)"
         Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false' AND '%(Content.Extension)' == '.cshtml' AND '%(Content.Watch)' != 'false'" />
     </ItemGroup>

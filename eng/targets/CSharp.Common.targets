@@ -13,6 +13,9 @@
 
     <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
     <NoWarn>$(NoWarn);RS0041</NoWarn>
+
+    <!-- Turn off platform compatiblity analyzer warnings in test, test assets, and samples -->
+    <NoWarn Condition="'$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(ISBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.*.txt') AND

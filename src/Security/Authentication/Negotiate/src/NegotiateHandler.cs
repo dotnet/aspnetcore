@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             // things like ClaimsTransformation run per request.
             var identity = _negotiateState.GetIdentity();
             ClaimsPrincipal user;
-            if (identity is WindowsIdentity winIdentity)
+            if (OperatingSystem.IsWindows() && identity is WindowsIdentity winIdentity)
             {
                 user = new WindowsPrincipal(winIdentity);
                 Response.RegisterForDispose(winIdentity);

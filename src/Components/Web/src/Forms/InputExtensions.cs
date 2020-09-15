@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     internal static class InputExtensions
     {
-        public static bool TryParseSelectableValueFromString<TValue>(this InputBase<TValue> input, string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        public static bool TryParseSelectableValueFromString<TValue>(this InputBase<TValue> input, string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             try
             {

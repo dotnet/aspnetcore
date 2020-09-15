@@ -252,6 +252,7 @@ namespace Wasm.Performance.Driver
         static void PrettyPrint(BenchmarkResult benchmarkResult)
         {
             Console.WriteLine();
+            Console.WriteLine($"Download size: {(benchmarkResult.DownloadSize / 1024)}kb.");
             Console.WriteLine("| Name | Description | Duration | NumExecutions | ");
             Console.WriteLine("--------------------------");
             foreach (var result in benchmarkResult.ScenarioResults)

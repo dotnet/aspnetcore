@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext : IFeatureCollection,
                                             IHttpRequestFeature,
+                                            IHttpRequestBodyDetectionFeature,
                                             IHttpResponseFeature,
                                             IHttpResponseBodyFeature,
                                             IHttpUpgradeFeature,
@@ -140,6 +141,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             get => RequestBody;
             set => RequestBody = value;
         }
+
+        bool IHttpRequestBodyDetectionFeature.CanHaveBody => RequestCanHaveBody;
 
         int IHttpResponseFeature.StatusCode
         {

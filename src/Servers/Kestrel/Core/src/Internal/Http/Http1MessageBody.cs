@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
-            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
+            catch (BadHttpRequestException ex)
             {
                 _context.SetBadRequestState(ex);
             }

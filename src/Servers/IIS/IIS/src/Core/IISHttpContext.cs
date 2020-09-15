@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public string TraceIdentifier { get; set; }
         public ClaimsPrincipal User { get; set; }
         internal WindowsPrincipal WindowsUser { get; set; }
+        internal bool RequestCanHaveBody { get; private set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
         public PipeWriter ResponsePipeWrapper { get; set; }
@@ -165,6 +166,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 RequestHeaders = new RequestHeaders(this);
                 HttpResponseHeaders = new HeaderCollection();
                 ResponseHeaders = HttpResponseHeaders;
+                // Request headers can be modified by the app, read these first.
+                RequestCanHaveBody = CheckRequestCanHaveBody();
 
                 if (_options.ForwardWindowsAuthentication)
                 {
@@ -249,6 +252,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         internal IISHttpServer Server => _server;
+
+        private bool CheckRequestCanHaveBody()
+        {
+            // Http/1.x requests with bodies require either a Content-Length or Transfer-Encoding header.
+            // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
+            // Transfer-Encoding takes priority over Content-Length.
+            string transferEncoding = RequestHeaders[HttpKnownHeaderNames.TransferEncoding];
+            if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return RequestHeaders.ContentLength.GetValueOrDefault() > 0;
+        }
 
         private async Task InitializeResponse(bool flushHeaders)
         {

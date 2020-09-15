@@ -28,10 +28,9 @@ namespace Microsoft.Net.Http.Headers
         // pointing to the next non-whitespace character after a delimiter. E.g. if called with a start index of 0
         // for string "value , second_value", then after the call completes, 'index' must point to 's', i.e. the first
         // non-whitespace after the separator ','.
-        public abstract bool TryParseValue(StringSegment value, ref int index, [MaybeNull] out T parsedValue);
+        public abstract bool TryParseValue(StringSegment value, ref int index, out T? parsedValue);
 
-        [return: MaybeNull]
-        public T ParseValue(StringSegment value, ref int index)
+        public T? ParseValue(StringSegment value, ref int index)
         {
             // Index may be value.Length (e.g. both 0). This may be allowed for some headers (e.g. Accept but not
             // allowed by others (e.g. Content-Length). The parser has to decide if this is valid or not.

@@ -104,7 +104,7 @@
       "replaces": "api-scope",
       "defaultValue": "access_as_user",
       "description": "The API scope the client needs to request to provision an access token. (use with IndividualB2C, SingleOrg)."
-    },    
+    },
     "TenantId": {
       "type": "parameter",
       "datatype": "string",

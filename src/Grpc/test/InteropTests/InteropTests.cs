@@ -90,7 +90,22 @@ namespace InteropTests
         {
             using (var serverProcess = new WebsiteProcess(_serverPath, _output))
             {
-                await serverProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
+                try
+                {
+                    await serverProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
+                }
+                catch (Exception ex)
+                {
+                    var errorMessage = $@"Error while running server process.
+
+Server ready: {serverProcess.IsReady}
+
+Server process output:
+======================================
+{serverProcess.GetOutput()}
+======================================";
+                    throw new InvalidOperationException(errorMessage, ex);
+                }
 
                 using (var clientProcess = new ClientProcess(_output, _clientPath, serverProcess.ServerPort, name))
                 {

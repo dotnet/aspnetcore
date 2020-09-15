@@ -28,7 +28,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
 namespace TestSite
 {
@@ -470,6 +469,9 @@ namespace TestSite
 
         private async Task ReadRequestBody(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             var readBuffer = new byte[1];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             while (result != 0)
@@ -480,6 +482,9 @@ namespace TestSite
 
         private async Task ReadRequestBodyLarger(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             var readBuffer = new byte[4096];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 4096);
             while (result != 0)
@@ -515,6 +520,9 @@ namespace TestSite
 
         private async Task ReadFullBody(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             await ReadRequestBody(ctx);
             ctx.Response.ContentLength = 9;
             await ctx.Response.WriteAsync("Completed");
@@ -530,6 +538,9 @@ namespace TestSite
 
         private async Task ReadAndWriteEcho(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             var readBuffer = new byte[4096];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
             while (result != 0)
@@ -540,6 +551,9 @@ namespace TestSite
         }
         private async Task ReadAndFlushEcho(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             var readBuffer = new byte[4096];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
             while (result != 0)
@@ -552,6 +566,9 @@ namespace TestSite
 
         private async Task ReadAndWriteEchoLines(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
             {
                 ctx.Response.ContentType = contentType;
@@ -581,6 +598,7 @@ namespace TestSite
 #else
             var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
             feature.DisableBuffering();
+            Assert.True(ctx.Request.CanHaveBody());
 #endif
 
             if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
@@ -605,6 +623,9 @@ namespace TestSite
 
         private async Task ReadPartialBody(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             var data = new byte[5];
             var count = 0;
             do
@@ -655,6 +676,9 @@ namespace TestSite
 
         private async Task ReadAndWriteCopyToAsync(HttpContext ctx)
         {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
             await ctx.Request.Body.CopyToAsync(ctx.Response.Body);
         }
 
@@ -1313,6 +1337,10 @@ namespace TestSite
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(feature);
 
+#if !FORWARDCOMPAT
+                Assert.True(httpContext.Request.CanHaveBody());
+#endif
+
                 var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
                 Assert.Equal(10, read);
 
@@ -1454,6 +1482,46 @@ namespace TestSite
             await Assert.ThrowsAsync<IOException>(() => readTask);
         }
 
+        public Task Http2_MethodsRequestWithoutData_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.False(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Null(httpContext.Request.ContentLength);
+            Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+            return Task.CompletedTask;
+        }
+
+        public Task Http2_RequestWithDataAndContentLength_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.True(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Equal(11, httpContext.Request.ContentLength);
+            Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+            return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
+        }
+
+        public Task Http2_RequestWithDataAndNoContentLength_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.True(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Null(httpContext.Request.ContentLength);
+            // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
+            Assert.Equal("chunked", httpContext.Request.Headers[HeaderNames.TransferEncoding]);
+            return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
+        }
+
+        public Task Http2_ResponseWithData_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
         public Task IncreaseRequestLimit(HttpContext httpContext)
         {
             var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -1508,5 +1576,5 @@ namespace TestSite
             HeaderNames.ContentEncoding, HeaderNames.ContentType, HeaderNames.ContentRange, HeaderNames.Trailer
         };
 #endif
+        }
     }
-}

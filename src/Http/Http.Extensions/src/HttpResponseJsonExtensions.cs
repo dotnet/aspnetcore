@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             CancellationToken cancellationToken = default)
         {
             return response.WriteAsJsonAsync<TValue>(value, options: null, contentType: null, cancellationToken);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             JsonSerializerOptions? options,
             CancellationToken cancellationToken = default)
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             JsonSerializerOptions? options,
             string? contentType,
             CancellationToken cancellationToken = default)
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Http
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            return JsonSerializer.SerializeAsync<TValue>(response.Body, value!, options, cancellationToken);
+            return JsonSerializer.SerializeAsync<TValue>(response.Body, value, options, cancellationToken);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Microsoft.Net.Http.Headers
     public class RangeConditionHeaderValue
     {
         private static readonly HttpHeaderParser<RangeConditionHeaderValue> Parser
-            = new GenericHeaderParser<RangeConditionHeaderValue>(false, GetRangeConditionLength!);
+            = new GenericHeaderParser<RangeConditionHeaderValue>(false, GetRangeConditionLength);
 
         private DateTimeOffset? _lastModified;
         private EntityTagHeaderValue? _entityTag;
