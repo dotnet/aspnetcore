@@ -3197,6 +3197,7 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
+    @Ignore
     @Test
     public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
         AtomicInteger requestCount = new AtomicInteger(0);
