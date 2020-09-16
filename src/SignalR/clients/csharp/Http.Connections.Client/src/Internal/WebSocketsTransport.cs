@@ -85,16 +85,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     {
                         _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                     }
+
+                    httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
                 }
 
-                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
 
                 // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
                 // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
                 _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
             }
 
-            _closeTimeout = httpConnectionOptions.CloseTimeout;
+            _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
 
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
 
