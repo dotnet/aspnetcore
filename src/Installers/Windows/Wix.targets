@@ -90,11 +90,13 @@
   </Target>
 
   <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+    <MakeDir Directories="$(WixCommandPackagesDir)" />
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(WixCommandObjDir)"
+      OutputFolder="$(WixCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(InstallersOutputPath)$(PackageFileName)"
+      InstallerFile="$(InstallersOutputPath)$(PackageFileName)"
       AdditionalBasePaths="$(MSBuildProjectDirectory)"
       WixExtensions="@(WixExtension)"
       Loc="@(EmbeddedResource)"
@@ -102,14 +104,8 @@
       WixProjectFile="$(MSBuildProjectFile)"
       Fv="true"
       WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(_ResolvedWixLibraryPaths)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(WixCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(WixCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(WixCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
 </Project>
