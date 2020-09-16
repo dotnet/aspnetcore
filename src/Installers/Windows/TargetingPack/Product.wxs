@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)"
              Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
-        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+        <Package InstallerVersion="$(var.InstallerVersion)" Compressed="yes" InstallScope="perMachine" />
 
         <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
         <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="$(var.EmbedCab)" />
@@ -21,7 +21,7 @@
 
     <?if $(var.Platform)=x86?>
     <?define PFilesFolder=ProgramFilesFolder?>
-    <?elseif $(var.Platform)=x64?>
+    <?elseif $(var.Platform)=x64 or $(var.Platform)=arm64?>
     <?define PFilesFolder=ProgramFiles64Folder?>
     <?else?>
     <?error Invalid Platform ($(var.Platform))?>

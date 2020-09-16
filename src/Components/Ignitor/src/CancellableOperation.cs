@@ -14,7 +14,7 @@ namespace Ignitor
         {
             Timeout = timeout;
 
-            Completion = new TaskCompletionSource<TResult>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            Completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             Completion.Task.ContinueWith(
                 (task, state) =>
                 {

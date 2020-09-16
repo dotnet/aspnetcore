@@ -126,6 +126,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorSatelliteAssemblyCacheFile>$(IntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyCacheFile>
       <!-- Workaround for https://github.com/dotnet/sdk/issues/12114-->
       <PublishDir Condition="'$(AppendRuntimeIdentifierToOutputPath)' != 'true' AND '$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)\</PublishDir>
+
+      <_BlazorWebAssemblyLoadAllGlobalizationData>$(BlazorWebAssemblyLoadAllGlobalizationData)</_BlazorWebAssemblyLoadAllGlobalizationData>
+      <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(_BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <ItemGroup>
@@ -141,7 +144,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ReferenceCopyLocalPaths.FileName)%(ReferenceCopyLocalPaths.Extension)' == 'dotnet.timezones.blat'" />
 
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
-        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ReferenceCopyLocalPaths.FileName)%(ReferenceCopyLocalPaths.Extension)' == 'icudt.dat'" />
+        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ReferenceCopyLocalPaths.Extension)' == '.dat' AND $([System.String]::Copy('%(ReferenceCopyLocalPaths.FileName)').StartsWith('icudt'))" />
 
       <!--
         ReferenceCopyLocalPaths includes satellite assemblies from referenced projects but are inexpicably missing
@@ -282,6 +285,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
       <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
+      <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <Error
@@ -297,7 +301,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(_BlazorBuildBootJsonPath)"
       ConfigurationFiles="@(_BlazorConfigFile)"
-      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)" />
+      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
+      InvariantGlobalization="$(InvariantGlobalization)"
+      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
 
     <ItemGroup>
       <FileWrites Include="$(OutDir)$(_BlazorOutputPath)blazor.boot.json" />
@@ -467,7 +473,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)' == 'dotnet.timezones.blat'" />
 
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)' == 'icudt.dat'" />
+        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ResolvedFileToPublish.Extension)' == '.dat' AND $([System.String]::Copy('%(ResolvedFileToPublish.FileName)').StartsWith('icudt'))" />
 
       <!-- Remove dotnet.js from publish output -->
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'dotnet.js'" />
@@ -503,7 +509,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_BlazorOutputContent>@(_BlazorPublishBootResourceWithHash)</_BlazorOutputContent>
     </PropertyGroup>
-    
+
     <Error
       Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
       Code="BLAZORSDK1001"
@@ -517,7 +523,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(IntermediateOutputPath)blazor.publish.boot.json"
       ConfigurationFiles="@(_BlazorConfigFile)"
-      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)" />
+      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
+      InvariantGlobalization="$(InvariantGlobalization)"
+      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
 
     <ItemGroup>
       <ResolvedFileToPublish

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
@@ -13,9 +12,9 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
-        protected abstract int GetParsedValueLength(StringSegment value, int startIndex, [MaybeNull] out T parsedValue);
+        protected abstract int GetParsedValueLength(StringSegment value, int startIndex, out T? parsedValue);
 
-        public sealed override bool TryParseValue(StringSegment value, ref int index, [MaybeNull] out T parsedValue)
+        public sealed override bool TryParseValue(StringSegment value, ref int index, out T? parsedValue)
         {
             parsedValue = default;
 

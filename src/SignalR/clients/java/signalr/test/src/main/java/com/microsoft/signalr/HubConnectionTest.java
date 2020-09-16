@@ -17,7 +17,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -1959,7 +1961,7 @@ class HubConnectionTest {
 
             value1.set(param1);
             value2.set(param2);
-        }, String.class, Double.class);
+        }, String.class, double.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\", 12]}" + RECORD_SEPARATOR);
@@ -1967,7 +1969,7 @@ class HubConnectionTest {
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("Hello World", value1.get());
-        assertEquals(Double.valueOf(12), value2.get());
+        assertEquals(12d, value2.get().doubleValue());
     }
 
     @Test
@@ -2054,7 +2056,7 @@ class HubConnectionTest {
             value3.set(param3);
             value4.set(param4);
             value5.set(param5);
-        }, String.class, String.class, String.class, Boolean.class, Double.class);
+        }, String.class, String.class, String.class, boolean.class, double.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12 ]}" + RECORD_SEPARATOR);
@@ -2063,8 +2065,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
     }
 
     @Test
@@ -2093,7 +2095,7 @@ class HubConnectionTest {
             value4.set(param4);
             value5.set(param5);
             value6.set(param6);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\"]}" + RECORD_SEPARATOR);
@@ -2102,8 +2104,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
     }
 
@@ -2136,7 +2138,7 @@ class HubConnectionTest {
             value5.set(param5);
             value6.set(param6);
             value7.set(param7);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\"]}" + RECORD_SEPARATOR);
@@ -2145,8 +2147,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
     }
@@ -2183,7 +2185,7 @@ class HubConnectionTest {
             value6.set(param6);
             value7.set(param7);
             value8.set(param8);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class, String.class);
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\",\"F\"]}" + RECORD_SEPARATOR);
@@ -2191,8 +2193,8 @@ class HubConnectionTest {
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
         assertEquals("F", value8.get());
@@ -2563,6 +2565,37 @@ class HubConnectionTest {
         assertEquals("Doe", person.getLastName());
         assertEquals(30, person.getAge());
         assertEquals((short) 5, (short) person.getT());
+    }
+
+    @Test
+    public void throwFromOnHandlerRunsAllHandlers() {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+
+        try (TestLogger logger = new TestLogger()) {
+            MockTransport mockTransport = new MockTransport();
+            HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+            hubConnection.on("inc", (param1) -> {
+                value1.set(param1);
+                throw new RuntimeException("throw from on handler");
+            }, String.class);
+            hubConnection.on("inc", (param1) -> {
+                value2.set(param1);
+            }, String.class);
+
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
+
+            // Confirming that our handler was called and the correct message was passed in.
+            assertEquals("Hello World", value1.get());
+            assertEquals("Hello World", value2.get());
+
+            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+            ILoggingEvent log = logger.assertLog("Invoking client side method 'inc' failed:");
+            assertEquals("throw from on handler", log.getThrowableProxy().getMessage());
+        }
     }
 
     @Test
@@ -3165,6 +3198,7 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
+    @Disabled
     @Test
     public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
         AtomicInteger requestCount = new AtomicInteger(0);

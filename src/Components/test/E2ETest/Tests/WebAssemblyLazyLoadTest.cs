@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(renderedElement.Displayed);
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void ThrowsErrorForUnavailableAssemblies()
         {
             // Navigate to a page with lazy loaded assemblies for the first time

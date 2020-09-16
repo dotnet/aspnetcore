@@ -30,9 +30,9 @@ namespace Microsoft.Net.Http.Headers
         private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
 
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
-            = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength!);
+            = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<MediaTypeHeaderValue>(true, GetMediaTypeLength!);
+            = new GenericHeaderParser<MediaTypeHeaderValue>(true, GetMediaTypeLength);
 
         // Use a collection instead of a dictionary since we may have multiple parameters with the same name.
         private ObjectCollection<NameValueHeaderValue>? _parameters;

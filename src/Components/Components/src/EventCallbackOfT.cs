@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="arg">The argument.</param>
         /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
-        public Task InvokeAsync(TValue arg)
+        public Task InvokeAsync(TValue? arg)
         {
             if (Receiver == null)
             {
-                return EventCallbackWorkItem.InvokeAsync<TValue>(Delegate, arg);
+                return EventCallbackWorkItem.InvokeAsync<TValue?>(Delegate, arg);
             }
 
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
