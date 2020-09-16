@@ -90,6 +90,7 @@
   </Target>
 
   <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+    <MakeDir Directories="$(WixCommandPackagesDir)" />
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(WixCommandObjDir)"
       OutputFolder="$(WixCommandPackagesDir)"
