@@ -2975,7 +2975,10 @@ class HubConnectionTest {
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
-                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer(""))));
+                .on("DELETE", (req) -> {
+                    close.onComplete();
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+                });
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2985,7 +2988,6 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
-        close.onComplete();
         hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
