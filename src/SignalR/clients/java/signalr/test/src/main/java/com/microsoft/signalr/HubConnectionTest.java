@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.Completable;
@@ -3197,6 +3198,7 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
+    @Disabled
     @Test
     public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
         AtomicInteger requestCount = new AtomicInteger(0);
