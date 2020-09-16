@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
         public async Task RazorPagesTemplate_NoAuth()
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -106,7 +106,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
