@@ -392,7 +392,7 @@ public class LongPollingTransportTest {
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
 
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.stop().blockingAwait(100, TimeUnit.SECONDS));
         assertEquals("Request has no handler: DELETE http://example.com", exception.getMessage());

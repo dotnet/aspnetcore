@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.Completable;
@@ -2584,14 +2583,14 @@ class HubConnectionTest {
                 value2.set(param1);
             }, String.class);
 
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
 
             // Confirming that our handler was called and the correct message was passed in.
             assertEquals("Hello World", value1.get());
             assertEquals("Hello World", value2.get());
 
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
             ILoggingEvent log = logger.assertLog("Invoking client side method 'inc' failed:");
             assertEquals("throw from on handler", log.getThrowableProxy().getMessage());
@@ -3190,15 +3189,14 @@ class HubConnectionTest {
             closed.onComplete();
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         hubConnection.stop();
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
         blockGet.onComplete();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
-    @Disabled
     @Test
     public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
         AtomicInteger requestCount = new AtomicInteger(0);
@@ -3229,12 +3227,12 @@ class HubConnectionTest {
         hubConnection.onClosed((ex) -> {
             closed.onComplete();
         });
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         blockGet.onComplete();
 
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
