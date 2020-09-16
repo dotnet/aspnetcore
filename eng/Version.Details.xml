@@ -308,17 +308,17 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e24e67a8dd52a20e5aa07b934ce7790c96808b1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20459.8">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20465.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>91470b0b14ba016c1fb78211b12775287c17b34e</Sha>
+      <Sha>fa0486ddb04a76341d822903c8977fb9fa088d1e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.20459.8">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.20465.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>91470b0b14ba016c1fb78211b12775287c17b34e</Sha>
+      <Sha>fa0486ddb04a76341d822903c8977fb9fa088d1e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20459.8">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20465.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>91470b0b14ba016c1fb78211b12775287c17b34e</Sha>
+      <Sha>fa0486ddb04a76341d822903c8977fb9fa088d1e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-3.20458.6" Pinned="true">
       <Uri>https://github.com/dotnet/roslyn</Uri>
