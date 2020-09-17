@@ -290,7 +290,8 @@ public class HubConnection implements AutoCloseable {
                         return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
                             this.state.lock();
                             try {
-                                if (this.state.getConnectionStateUnsynchronized(true) != null) {
+                                ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                                if (activeState != null && activeState == connectionState) {
                                     connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                                 } else {
                                     return Completable.error(new RuntimeException("Connection closed while sending handshake."));
@@ -301,7 +302,8 @@ public class HubConnection implements AutoCloseable {
                             return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
                                 this.state.lock();
                                 try {
-                                    if (this.state.getConnectionStateUnsynchronized(true) == null) {
+                                    ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                                    if (activeState == null || activeState != connectionState) {
                                         return Completable.error(new RuntimeException("Connection closed while waiting for handshake."));
                                     }
                                     this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
@@ -326,10 +328,18 @@ public class HubConnection implements AutoCloseable {
             }).subscribe(() -> {
                 localStart.onComplete();
             }, error -> {
+                this.state.lock();
                 try {
-                    this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
+                    ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                    if (activeState == connectionState) {
+                        this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
+                    }
                 // this error is already logged and we want the user to see the original error
-                } catch(Exception ex) { }
+                } catch (Exception ex) {
+                } finally {
+                    this.state.unlock();
+                }
+
                 localStart.onError(error);
             });
         } finally {
