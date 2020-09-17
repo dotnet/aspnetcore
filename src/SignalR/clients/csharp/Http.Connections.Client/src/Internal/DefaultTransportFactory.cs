@@ -39,8 +39,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider);
                 }
-                catch (PlatformNotSupportedException)
+                catch (PlatformNotSupportedException ex)
                 {
+                    Log.TransportNotSupported(_loggerFactory.CreateLogger<DefaultTransportFactory>(), HttpTransportType.WebSockets, ex);
                     _websocketsSupported = false;
                 }
             }
@@ -58,6 +59,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             throw new InvalidOperationException("No requested transports available on the server.");
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, HttpTransportType, Exception> _transportNotSupported =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(1, "TransportNotSupported"), "Transport '{TransportType}' is not supported.");
+
+            public static void TransportNotSupported(ILogger logger, HttpTransportType transportType, Exception ex)
+            {
+                _transportNotSupported(logger, transportType, ex);
+            }
         }
     }
 }
