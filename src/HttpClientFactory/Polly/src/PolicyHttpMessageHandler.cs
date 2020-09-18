@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Net.Http;
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.Http
     /// <para>
     /// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following:
     /// <example>
-    /// Converting a non-generic <code>IAsyncPolicy policy</code> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
+    /// Converting a non-generic <c>IAsyncPolicy policy</c> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
     /// <code>
     /// policy.AsAsyncPolicy&lt;HttpResponseMessage&gt;()
     /// </code>

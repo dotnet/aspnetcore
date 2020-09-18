@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Data;
@@ -107,25 +108,25 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
                 var reader = await command.ExecuteReaderAsync(
                     CommandBehavior.SingleRow | CommandBehavior.SingleResult,
-                    token);
+                    token).ConfigureAwait(false);
 
-                if (await reader.ReadAsync(token))
+                if (await reader.ReadAsync(token).ConfigureAwait(false))
                 {
                     var id = reader.GetString(Columns.Indexes.CacheItemIdIndex);
 
                     expirationTime = DateTimeOffset.Parse(reader[Columns.Indexes.ExpiresAtTimeIndex].ToString());
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false))
                     {
                         slidingExpiration = TimeSpan.FromSeconds(
                             Convert.ToInt64(reader[Columns.Indexes.SlidingExpirationInSecondsIndex].ToString()));
                     }
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token).ConfigureAwait(false))
                     {
                         absoluteExpiration = DateTimeOffset.Parse(
                             reader[Columns.Indexes.AbsoluteExpirationIndex].ToString());
@@ -202,11 +203,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddAbsoluteExpirationMono(absoluteExpiration)
                     .AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
                 try
                 {
-                    await upsertCommand.ExecuteNonQueryAsync(token);
+                    await upsertCommand.ExecuteNonQueryAsync(token).ConfigureAwait(false);
                 }
                 catch (SqlException ex)
                 {

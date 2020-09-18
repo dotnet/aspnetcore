@@ -1,5 +1,0 @@
-﻿{
-    "ConnectionString": "Server=localhost;Database=CacheConcurrencySampleDb;Trusted_Connection=True;",
-    "SchemaName": "dbo",
-    "TableName": "CacheConcurrencySample"
-}

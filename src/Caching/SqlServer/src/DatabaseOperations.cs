@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Data;
@@ -71,9 +72,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
             {
                 command.Parameters.AddCacheItemId(key);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
-                await command.ExecuteNonQueryAsync(token);
+                await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
             }
         }
 
@@ -86,7 +87,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            return await GetCacheItemAsync(key, includeValue: true, token: token);
+            return await GetCacheItemAsync(key, includeValue: true, token: token).ConfigureAwait(false);
         }
 
         public void RefreshCacheItem(string key)
@@ -98,7 +99,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            await GetCacheItemAsync(key, includeValue: false, token:token);
+            await GetCacheItemAsync(key, includeValue: false, token:token).ConfigureAwait(false);
         }
 
         public virtual void DeleteExpiredCacheItems()
@@ -173,11 +174,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddAbsoluteExpiration(absoluteExpiration)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
                 try
                 {
-                    await upsertCommand.ExecuteNonQueryAsync(token);
+                    await upsertCommand.ExecuteNonQueryAsync(token).ConfigureAwait(false);
                 }
                 catch (SqlException ex)
                 {
@@ -284,35 +285,35 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
                 using (var reader = await command.ExecuteReaderAsync(
                     CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult,
-                    token))
+                    token).ConfigureAwait(false))
                 {
-                    if (await reader.ReadAsync(token))
+                    if (await reader.ReadAsync(token).ConfigureAwait(false))
                     {
-                        var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
+                        var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token).ConfigureAwait(false);
 
                         expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
-                            Columns.Indexes.ExpiresAtTimeIndex, token);
+                            Columns.Indexes.ExpiresAtTimeIndex, token).ConfigureAwait(false);
 
-                        if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
+                        if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false))
                         {
                             slidingExpiration = TimeSpan.FromSeconds(
-                                await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token));
+                                await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false));
                         }
 
-                        if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
+                        if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token).ConfigureAwait(false))
                         {
                             absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
                                 Columns.Indexes.AbsoluteExpirationIndex,
-                                token);
+                                token).ConfigureAwait(false);
                         }
 
                         if (includeValue)
                         {
-                            value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token);
+                            value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token).ConfigureAwait(false);
                         }
                     }
                     else
