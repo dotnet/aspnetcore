@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26060")]
         [ConditionalTheory]
         [InlineData("GET")]
         [InlineData("HEAD")]
