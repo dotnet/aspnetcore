@@ -55,13 +55,12 @@ namespace System.Net.Http.Unit.Tests.HPack
         public void IntegerEncoderDecoderRoundtrips()
         {
             IntegerDecoder decoder = new IntegerDecoder();
-            Span<byte> integerBytes = stackalloc byte[5];
 
             for (int i = 0; i < 2048; ++i)
             {
                 for (int prefixLength = 1; prefixLength <= 8; ++prefixLength)
                 {
-                    integerBytes.Clear();
+                    Span<byte> integerBytes = stackalloc byte[5];
                     Assert.True(IntegerEncoder.Encode(i, prefixLength, integerBytes, out int length));
 
                     bool decodeResult = decoder.BeginTryDecode(integerBytes[0], prefixLength, out int intResult);
