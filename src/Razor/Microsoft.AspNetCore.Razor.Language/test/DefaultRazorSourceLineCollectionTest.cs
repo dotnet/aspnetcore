@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test
@@ -51,10 +52,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
 @* A comment *@";
             var document = TestRazorSourceDocument.Create(content);
             var collection = new DefaultRazorSourceLineCollection(document);
+            var length = content.Length;
 
-            var location = collection.GetLocation(39);
+            var location = collection.GetLocation(length);
 
-            var expected = new SourceLocation("test.cshtml", 39, 1, 15);
+            var expected = new SourceLocation("test.cshtml", length, 1, 15);
             Assert.Equal(expected, location);
         }
 
@@ -89,7 +91,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var collection = new DefaultRazorSourceLineCollection(document);
 
             var lineLength = collection.GetLineLength(0);
-            Assert.Equal(24, lineLength);
+
+            var expectedLineLength = 22 + Environment.NewLine.Length;
+            Assert.Equal(expectedLineLength, lineLength);
         }
 
         [Fact]
@@ -101,7 +105,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var collection = new DefaultRazorSourceLineCollection(document);
 
             var lineLength = collection.GetLineLength(1);
-            Assert.Equal(15, lineLength);
+
+            var expectedLineLength = 15;
+            Assert.Equal(expectedLineLength, lineLength);
         }
     }
 }
