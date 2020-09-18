@@ -148,19 +148,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
                 var closedMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closed. The last processed stream ID was 1.")).DefaultTimeout();
                 cts.Cancel();
-                await stopServerTask;
 
                 // Wait for "is closed" message as this is logged from a different thread and aborting
                 // can timeout and return from server.StopAsync before this is logged.
                 await closedMessageTask;
+                requestUnblocked.SetResult();
+                await stopServerTask;
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
-
-            requestUnblocked.SetResult();
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
