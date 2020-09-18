@@ -8,7 +8,7 @@ namespace System.Threading.Tasks
 {
     internal static class TaskTimeoutExtensions
     {
-        public static TimeSpan DefaultTimeoutTimeSpan { get; } = TimeSpan.FromSeconds(5);
+        public static TimeSpan DefaultTimeoutTimeSpan { get; } = TimeSpan.FromSeconds(30);
 
         public static Task<T> DefaultTimeout<T>(this ValueTask<T> task)
         {
