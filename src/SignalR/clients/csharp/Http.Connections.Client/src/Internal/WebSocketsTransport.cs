@@ -37,66 +37,70 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
 
-            // Full Framework will throw when trying to set the User-Agent header
-            // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
+            // ClientWebSocketOptions throws PNSE when accessing and setting properties
+            if (!_isRunningInBrowser)
+            {
+                // Full Framework will throw when trying to set the User-Agent header
+                // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
 #if !NETSTANDARD2_0
-            _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+                _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 #else
-            // Set an alternative user agent header on Full framework
-            _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
+                // Set an alternative user agent header on Full framework
+                _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
 #endif
 
-            if (httpConnectionOptions != null)
-            {
-                if (httpConnectionOptions.Headers != null)
+                if (httpConnectionOptions != null)
                 {
-                    foreach (var header in httpConnectionOptions.Headers)
+                    if (httpConnectionOptions.Headers != null)
                     {
-                        _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        foreach (var header in httpConnectionOptions.Headers)
+                        {
+                            _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        }
                     }
+
+                    if (httpConnectionOptions.Cookies != null)
+                    {
+                        _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
+                    }
+
+                    if (httpConnectionOptions.ClientCertificates != null)
+                    {
+                        _webSocket.Options.ClientCertificates.AddRange(httpConnectionOptions.ClientCertificates);
+                    }
+
+                    if (httpConnectionOptions.Credentials != null)
+                    {
+                        _webSocket.Options.Credentials = httpConnectionOptions.Credentials;
+                    }
+
+                    if (httpConnectionOptions.Proxy != null)
+                    {
+                        _webSocket.Options.Proxy = httpConnectionOptions.Proxy;
+                    }
+
+                    if (httpConnectionOptions.UseDefaultCredentials != null)
+                    {
+                        _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
+                    }
+
+                    httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
                 }
 
-                if (httpConnectionOptions.Cookies != null)
-                {
-                    _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
-                }
 
-                if (httpConnectionOptions.ClientCertificates != null)
-                {
-                    _webSocket.Options.ClientCertificates.AddRange(httpConnectionOptions.ClientCertificates);
-                }
-
-                if (httpConnectionOptions.Credentials != null)
-                {
-                    _webSocket.Options.Credentials = httpConnectionOptions.Credentials;
-                }
-
-                if (httpConnectionOptions.Proxy != null)
-                {
-                    _webSocket.Options.Proxy = httpConnectionOptions.Proxy;
-                }
-
-                if (httpConnectionOptions.UseDefaultCredentials != null)
-                {
-                    _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
-                }
-
-                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
-
-                _closeTimeout = httpConnectionOptions.CloseTimeout;
+                // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
+                // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
+                _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
             }
 
-            // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
-            // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
-            _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
+            _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
 
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
-
-            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)

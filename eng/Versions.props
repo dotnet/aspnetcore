@@ -130,8 +130,6 @@
     <SystemWindowsExtensionsPackageVersion>6.0.0-alpha.1.20467.15</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>6.0.0-alpha.1.20467.15</MicrosoftNETCorePlatformsPackageVersion>
-    <!-- Packages from dotnet/blazor -->
-    <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>6.0.0-alpha.1.20467.2</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>6.0.0-alpha.1.20467.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -209,6 +207,7 @@
     <MicrosoftWebAdministrationPackageVersion>11.1.0</MicrosoftWebAdministrationPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
     <SystemIdentityModelTokensJwtPackageVersion>6.7.1</SystemIdentityModelTokensJwtPackageVersion>
+    <NuGetVersioningPackageVersion>5.7.0</NuGetVersioningPackageVersion>
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>

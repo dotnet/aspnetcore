@@ -62,6 +62,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _canLaunchBrowser = true;
                     _launchPath = launchPath;
                     _cancellationToken = cancellationToken;
+
+                    // We've redirected the output, but want to ensure that it continues to appear in the user's console.
+                    context.ProcessSpec.OnOutput += (_, eventArgs) => Console.WriteLine(eventArgs.Data);
                     context.ProcessSpec.OnOutput += OnOutput;
 
                     if (!_suppressBrowserRefresh)
@@ -101,9 +104,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private void OnOutput(object sender, DataReceivedEventArgs eventArgs)
         {
-            // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-            Console.WriteLine(eventArgs.Data);
-
             if (string.IsNullOrEmpty(eventArgs.Data))
             {
                 return;
@@ -116,7 +116,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 var process = (Process)sender;
                 process.OutputDataReceived -= OnOutput;
-                process.CancelOutputRead();
 
                 if (!_browserLaunched)
                 {

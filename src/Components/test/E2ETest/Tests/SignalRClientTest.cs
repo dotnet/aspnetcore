@@ -7,7 +7,9 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Http.Connections;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,13 +40,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void SignalRClientWorks()
+        public void SignalRClientWorksWithLongPolling()
         {
             Browser.FindElement(By.Id("hub-url")).SendKeys(
                 new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
+            var target = new SelectElement(Browser.FindElement(By.Id("transport-type")));
+            target.SelectByText("LongPolling");
             Browser.FindElement(By.Id("hub-connect")).Click();
 
-            Browser.Equal("SignalR Client: Echo",
+            Browser.Equal("SignalR Client: Echo LongPolling",
+                () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
+        }
+
+        [Fact]
+        public void SignalRClientWorksWithWebSockets()
+        {
+            Browser.FindElement(By.Id("hub-url")).SendKeys(
+                new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
+            var target = new SelectElement(Browser.FindElement(By.Id("transport-type")));
+            target.SelectByText("WebSockets");
+            Browser.FindElement(By.Id("hub-connect")).Click();
+
+            Browser.Equal("SignalR Client: Echo WebSockets",
                 () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
         }
     }
