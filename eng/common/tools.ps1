@@ -312,8 +312,14 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
     return $global:_MSBuildExe
   }
 
-  $vsMinVersionReqdStr = '16.5'
+  # Minimum VS version to require.
+  $vsMinVersionReqdStr = '16.8'
   $vsMinVersionReqd = [Version]::new($vsMinVersionReqdStr)
+
+  # If the version of msbuild is going to be xcopied,
+  # use this version. Version matches a package here:
+  # https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-eng&package=RoslynTools.MSBuild&protocolType=NuGet&version=16.8.0-preview3&view=overview
+  $defaultXCopyMSBuildVersion = '16.8.0-preview3'
 
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { $vsMinVersionReqdStr }
@@ -349,23 +355,28 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
     } else {
-      #if vs version provided in global.json is incompatible then use the default version for xcopy msbuild download
+      #if vs version provided in global.json is incompatible (too low) then use the default version for xcopy msbuild download
       if($vsMinVersion -lt $vsMinVersionReqd){
-        Write-Host "Using xcopy-msbuild version of $vsMinVersionReqdStr.0-alpha since VS version $vsMinVersionStr provided in global.json is not compatible"
-        $vsMajorVersion = $vsMinVersionReqd.Major
-        $vsMinorVersion = $vsMinVersionReqd.Minor
+        Write-Host "Using xcopy-msbuild version of $defaultXCopyMSBuildVersion since VS version $vsMinVersionStr provided in global.json is not compatible"
+        $xcopyMSBuildVersion = $defaultXCopyMSBuildVersion
       }
       else{
+        # If the VS version IS compatible, look for an xcopy msbuild package
+        # with a version matching VS.
+        # Note: If this version does not exist, then an explicit version of xcopy msbuild
+        # can be specified in global.json. This will be required for pre-release versions of msbuild.
         $vsMajorVersion = $vsMinVersion.Major
         $vsMinorVersion = $vsMinVersion.Minor
+        $xcopyMSBuildVersion = "$vsMajorVersion.$vsMinorVersion.0"
       }
-
-      $xcopyMSBuildVersion = "$vsMajorVersion.$vsMinorVersion.0-alpha"
     }
 
     $vsInstallDir = $null
     if ($xcopyMSBuildVersion.Trim() -ine "none") {
         $vsInstallDir = InitializeXCopyMSBuild $xcopyMSBuildVersion $install
+        if ($vsInstallDir -eq $null) {
+            throw "Could not xcopy msbuild. Please check that package 'RoslynTools.MSBuild @ $xcopyMSBuildVersion' exists on feed 'dotnet-eng'."
+        }
     }
     if ($vsInstallDir -eq $null) {
       throw 'Unable to find Visual Studio that has required version and components installed'
