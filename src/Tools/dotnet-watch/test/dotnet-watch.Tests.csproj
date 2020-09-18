@@ -12,9 +12,6 @@
     -->
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
-
-    <!-- Skipped due to https://github.com/dotnet/aspnetcore/issues/26061 -->
-    <SkipTests Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
