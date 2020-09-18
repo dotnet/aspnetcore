@@ -679,8 +679,8 @@ namespace Microsoft.Extensions.Caching.Memory
         public void GetOrCreateFromCacheWithNullKeyThrows()
         {
             var cache = CreateCache();
-            Assert.Throws<ArgumentNullException>(() => cache.GetOrCreate<object>(null, null))
-;       }
+            Assert.Throws<ArgumentNullException>(() => cache.GetOrCreate<object>(null, null));
+        }
 
         [Fact]
         public async Task GetOrCreateAsyncFromCacheWithNullKeyThrows()
