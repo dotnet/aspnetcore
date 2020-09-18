@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             lock (_testOutputLock)
             {
-                if (_disposed)
+                if (!_disposed)
                 {
                     _logger.WriteLine(text);
                 }
