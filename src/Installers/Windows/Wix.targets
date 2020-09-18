@@ -2,7 +2,7 @@
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
     <!-- Used for generating stable upgrade codes for bundles -->
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
+    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(FileRevisionVersion)</Version>
     <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
