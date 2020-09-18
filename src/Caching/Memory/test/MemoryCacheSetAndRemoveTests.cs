@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -180,6 +181,9 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             Assert.False(cache.TryGetValue(key, out int obj));
+
+            // verify that throwing an exception doesn't leak CacheEntry objects
+            Assert.Null(CacheEntryHelper.Current);
         }
 
         [Fact]
@@ -199,6 +203,21 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             Assert.False(cache.TryGetValue(key, out int obj));
+
+            // verify that throwing an exception doesn't leak CacheEntry objects
+            Assert.Null(CacheEntryHelper.Current);
+        }
+
+        [Fact]
+        public void DisposingCacheEntryReleasesScope()
+        {
+            var cache = CreateCache();
+
+            ICacheEntry entry = cache.CreateEntry("myKey");
+            Assert.NotNull(GetScope(entry));
+
+            entry.Dispose();
+            Assert.Null(GetScope(entry));
         }
 
         [Fact]
@@ -623,6 +642,13 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             var cache = CreateCache();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.GetOrCreateAsync<object>(null, null));
+        }
+
+        private object GetScope(ICacheEntry entry)
+        {
+            return entry.GetType()
+                .GetField("_scope", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(entry);
         }
 
         private class TestKey

@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     internal class CacheEntry : ICacheEntry
     {
-        private bool _added = false;
+        private bool _disposed = false;
         private static readonly Action<object> ExpirationCallback = ExpirationTokensExpired;
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
-        private readonly Action<CacheEntry> _notifyCacheEntryDisposed;
+        private readonly Action<CacheEntry> _notifyCacheEntryCommit;
         private IList<IDisposable> _expirationTokenRegistrations;
         private IList<PostEvictionCallbackRegistration> _postEvictionCallbacks;
         private bool _isExpired;
@@ -25,12 +25,14 @@ namespace Microsoft.Extensions.Caching.Memory
         private TimeSpan? _slidingExpiration;
         private long? _size;
         private IDisposable _scope;
+        private object _value;
+        private bool _valueHasBeenSet;
 
         internal readonly object _lock = new object();
 
         internal CacheEntry(
             object key,
-            Action<CacheEntry> notifyCacheEntryDisposed,
+            Action<CacheEntry> notifyCacheEntryCommit,
             Action<CacheEntry> notifyCacheOfExpiration)
         {
             if (key == null)
@@ -38,9 +40,9 @@ namespace Microsoft.Extensions.Caching.Memory
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (notifyCacheEntryDisposed == null)
+            if (notifyCacheEntryCommit == null)
             {
-                throw new ArgumentNullException(nameof(notifyCacheEntryDisposed));
+                throw new ArgumentNullException(nameof(notifyCacheEntryCommit));
             }
 
             if (notifyCacheOfExpiration == null)
@@ -49,7 +51,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             Key = key;
-            _notifyCacheEntryDisposed = notifyCacheEntryDisposed;
+            _notifyCacheEntryCommit = notifyCacheEntryCommit;
             _notifyCacheOfExpiration = notifyCacheOfExpiration;
 
             _scope = CacheEntryHelper.EnterScope(this);
@@ -173,7 +175,15 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public object Key { get; private set; }
 
-        public object Value { get; set; }
+        public object Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                _valueHasBeenSet = true;
+            }
+        }
 
         internal DateTimeOffset LastAccessed { get; set; }
 
@@ -181,12 +191,23 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public void Dispose()
         {
-            if (!_added)
+            if (!_disposed)
             {
-                _added = true;
+                _disposed = true;
+
+                // Ensure the _scope reference is cleared because it can reference other CacheEntry instances.
+                // This CacheEntry is going to be put into a MemoryCache, and we don't want to root unnecessary objects.
                 _scope.Dispose();
-                _notifyCacheEntryDisposed(this);
-                PropagateOptions(CacheEntryHelper.Current);
+                _scope = null;
+
+                // Don't commit or propagate options if the CacheEntry Value was never set.
+                // We assume an exception occurred causing the caller to not set the Value successfully,
+                // so don't use this entry.
+                if (_valueHasBeenSet)
+                {
+                    _notifyCacheEntryCommit(this);
+                    PropagateOptions(CacheEntryHelper.Current);
+                }
             }
         }
 

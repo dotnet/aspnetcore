@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+  	<Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
