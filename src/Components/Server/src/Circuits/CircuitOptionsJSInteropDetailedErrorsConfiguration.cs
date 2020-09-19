@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public void Configure(CircuitOptions options)
         {
-            options.DetailedErrors = Configuration.GetValue<bool>(WebHostDefaults.DetailedErrorsKey);
+            var value = Configuration.GetValue(WebHostDefaults.DetailedErrorsKey);
+            options.DetailedErrors = string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || 
+                string.Equals(value, "1", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
