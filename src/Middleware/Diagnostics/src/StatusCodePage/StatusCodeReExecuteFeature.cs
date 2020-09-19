@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Diagnostics
 {
     public class StatusCodeReExecuteFeature : IStatusCodeReExecuteFeature
     {
-        public string? OriginalPath { get; set; }
+        public string OriginalPath { get; set; } = default!;
 
-        public string? OriginalPathBase { get; set; }
+        public string OriginalPathBase { get; set; } = default!;
 
         public string? OriginalQueryString { get; set; }
     }

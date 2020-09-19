@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Diagnostics
     {
         public Exception Error { get; set; } = default!;
 
-        public string? Path { get; set; }
+        public string Path { get; set; } = default!;
     }
 }

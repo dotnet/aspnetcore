@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         /// <item><description>IPv6 addresses must include their bounding brackets and be in their normalized form.</description></item>
         /// </list>
         /// </remarks>
-        public IList<string>? AllowedHosts { get; set; } = new List<string>();
+        public IList<string> AllowedHosts { get; set; } = new List<string>();
 
         /// <summary>
         /// Indicates if requests without hosts are allowed. The default is true.
