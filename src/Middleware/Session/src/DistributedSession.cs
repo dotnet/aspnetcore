@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -35,8 +36,8 @@ namespace Microsoft.AspNetCore.Session
         private bool _loaded;
         private bool _isAvailable;
         private bool _isNewSessionKey;
-        private string _sessionId;
-        private byte[] _sessionIdBytes;
+        private string? _sessionId;
+        private byte[]? _sessionIdBytes;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DistributedSession"/>.
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Session
                     _sessionIdBytes = new byte[IdByteCount];
                     RandomNumberGenerator.Fill(_sessionIdBytes);
                 }
-                return _sessionIdBytes;
+                return _sessionIdBytes!;
             }
         }
 
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Session
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out byte[] value)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out byte[] value)
         {
             Load();
             return _store.TryGetValue(new EncodedKey(key), out value);

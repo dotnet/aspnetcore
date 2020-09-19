@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        bool TryGetValue(string key, out byte[] value);
+        bool TryGetValue(string key, [MaybeNullWhen(false)] out byte[] value);
 
         /// <summary>
         /// Set the given key and value in the current session. This will throw if the session

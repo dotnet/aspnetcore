@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Session
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                return null;
+                return null!;
             }
 
             set
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Session
 
         public bool Remove(EncodedKey key) => false;
 
-        public bool TryGetValue(EncodedKey key, out byte[] value)
+        public bool TryGetValue(EncodedKey key, [MaybeNullWhen(false)] out byte[] value)
         {
             value = null;
             return false;
