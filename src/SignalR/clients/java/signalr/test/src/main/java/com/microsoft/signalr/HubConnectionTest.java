@@ -2515,14 +2515,14 @@ class HubConnectionTest {
                 value2.set(param1);
             }, String.class);
 
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
 
             // Confirming that our handler was called and the correct message was passed in.
             assertEquals("Hello World", value1.get());
             assertEquals("Hello World", value2.get());
 
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
             ILoggingEvent log = logger.assertLog("Invoking client side method 'inc' failed:");
             assertEquals("throw from on handler", log.getThrowableProxy().getMessage());
