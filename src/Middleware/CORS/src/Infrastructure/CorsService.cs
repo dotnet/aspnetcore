@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             var policy = _options.GetPolicy(policyName);
+            if (policy is null)
+            {
+                throw new InvalidOperationException(Resources.FormatPolicyNotFound(policyName));
+            }
+
             return EvaluatePolicy(context, policy);
         }
 

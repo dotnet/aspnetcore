@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         string OriginalPath { get; set; }
 
-        string OriginalQueryString { get; set; }
+        string? OriginalQueryString { get; set; }
     }
 }

@@ -8,17 +8,17 @@ namespace Microsoft.AspNetCore.Cors
 {
     internal static class CORSLoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _isPreflightRequest;
-        private static readonly Action<ILogger, string, Exception> _requestHasOriginHeader;
-        private static readonly Action<ILogger, Exception> _requestDoesNotHaveOriginHeader;
-        private static readonly Action<ILogger, Exception> _policySuccess;
-        private static readonly Action<ILogger, Exception> _policyFailure;
-        private static readonly Action<ILogger, string, Exception> _originNotAllowed;
-        private static readonly Action<ILogger, string, Exception> _accessControlMethodNotAllowed;
-        private static readonly Action<ILogger, string, Exception> _requestHeaderNotAllowed;
-        private static readonly Action<ILogger, Exception> _failedToSetCorsHeaders;
-        private static readonly Action<ILogger, Exception> _noCorsPolicyFound;
-        private static readonly Action<ILogger, Exception> _isNotPreflightRequest;
+        private static readonly Action<ILogger, Exception?> _isPreflightRequest;
+        private static readonly Action<ILogger, string, Exception?> _requestHasOriginHeader;
+        private static readonly Action<ILogger, Exception?> _requestDoesNotHaveOriginHeader;
+        private static readonly Action<ILogger, Exception?> _policySuccess;
+        private static readonly Action<ILogger, Exception?> _policyFailure;
+        private static readonly Action<ILogger, string, Exception?> _originNotAllowed;
+        private static readonly Action<ILogger, string, Exception?> _accessControlMethodNotAllowed;
+        private static readonly Action<ILogger, string, Exception?> _requestHeaderNotAllowed;
+        private static readonly Action<ILogger, Exception?> _failedToSetCorsHeaders;
+        private static readonly Action<ILogger, Exception?> _noCorsPolicyFound;
+        private static readonly Action<ILogger, Exception?> _isNotPreflightRequest;
 
         static CORSLoggerExtensions()
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Cors
             _requestHeaderNotAllowed(logger, requestHeader, null);
         }
 
-        public static void FailedToSetCorsHeaders(this ILogger logger, Exception exception)
+        public static void FailedToSetCorsHeaders(this ILogger logger, Exception? exception)
         {
             _failedToSetCorsHeaders(logger, exception);
         }
