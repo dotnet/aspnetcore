@@ -1,5 +1,3 @@
-
-
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
