@@ -20,7 +20,7 @@
         <?endif?>
 
         <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
-        <?if $(var.Version)=3.1.0.0?>
+        <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
         <!--'Microsoft .NET Core 3.1.8 - Windows Server Hosting'-->
         <RelatedBundle Action="Upgrade" Id="{81D96996-6F29-3BAC-82C6-9156FE1BD5FB}"/>
         <!--'Microsoft .NET Core 3.1.7 - Windows Server Hosting'-->
