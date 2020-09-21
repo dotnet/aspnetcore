@@ -25,5 +25,9 @@ namespace HtmlGenerationWebSite.Models
         string Email,
 
         string Key
-    );
+    )
+    {
+        [Required]
+        public string Address { get; set; }
+    }
 }

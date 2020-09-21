@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
@@ -64,11 +64,61 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Assert.NotSame(validator2, Assert.Single(validators2.OfType<StringLengthAttributeAdapter>())); // not cached
         }
 
+        [Fact]
+        public void GetValidators_ReadsValidatorsFromCorrespondingRecordTypeParameter()
+        {
+            // Arrange
+            var cache = new ClientValidatorCache();
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var metadata = modelMetadataProvider.GetMetadataForType(typeof(TestRecordType));
+            var property = metadata.Properties[nameof(TestRecordType.Property1)];
+            var parameter = metadata.BoundConstructor.BoundConstructorParameters.First(f => f.Name == nameof(TestRecordType.Property1));
+            var validatorProvider = new ProviderWithNonReusableValidators();
+
+            // Act
+            var validators = cache.GetValidators(property, validatorProvider);
+
+            // Assert
+            var validator1 = Assert.Single(validators.OfType<RequiredAttributeAdapter>());
+            var validator2 = Assert.Single(validators.OfType<StringLengthAttributeAdapter>());
+            Assert.Contains(validator1.Attribute, parameter.ValidatorMetadata); // Copied by provider
+            Assert.Contains(validator2.Attribute, parameter.ValidatorMetadata); // Copied by provider
+        }
+
+        [Fact]
+        public void GetValidators_ReadsValidatorsFromProperty_IfRecordTypeDoesNotHaveCorrespondingParameter()
+        {
+            // Arrange
+            var cache = new ClientValidatorCache();
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var metadata = modelMetadataProvider.GetMetadataForType(typeof(TestRecordTypeWithProperty));
+            var property = metadata.Properties[nameof(TestRecordTypeWithProperty.Property2)];
+            var validatorProvider = new ProviderWithNonReusableValidators();
+
+            // Act
+            var validators = cache.GetValidators(property, validatorProvider);
+
+            // Assert
+            var validator1 = Assert.Single(validators.OfType<RequiredAttributeAdapter>());
+            var validator2 = Assert.Single(validators.OfType<StringLengthAttributeAdapter>());
+            Assert.Contains(validator1.Attribute, property.ValidatorMetadata); // Copied by provider
+            Assert.Contains(validator2.Attribute, property.ValidatorMetadata); // Copied by provider
+        }
+
         private class TypeWithProperty
         {
             [Required]
             [StringLength(10)]
             public string Property1 { get; set; }
+        }
+
+        private record TestRecordType([Required][StringLength(10)] string Property1);
+
+        private record TestRecordTypeWithProperty([Required][StringLength(10)] string Property1)
+        {
+            [Required]
+            [StringLength(10)]
+            public string Property2 { get; set; }
         }
 
         private class ProviderWithNonReusableValidators : IClientModelValidatorProvider
