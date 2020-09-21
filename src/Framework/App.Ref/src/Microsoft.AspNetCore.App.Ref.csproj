@@ -150,7 +150,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- Grab remaining .xml files from packages -->
       <AspNetCoreReferenceDocXml 
           Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')" 
-          Condition="Exists('%(AspNetCoreReferenceAssemblyPath.RootDir)%(AspNetCoreReferenceAssemblyPath.Directory)%(AspNetCoreReferenceAssemblyPath.Filename).xml')" />
+          Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml->Distinct())" PackagePath="$(RefAssemblyPackagePath)" />
