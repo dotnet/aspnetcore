@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
-            var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser"));
+            var isBrowser = OperatingSystem.IsBrowser();
             if (!isBrowser)
             {
                 // Full Framework will throw when trying to set the User-Agent header
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     // We can't use request headers in the browser, so instead append the token as a query string in that case
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+                    if (OperatingSystem.IsBrowser())
                     {
                         var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
                         accessTokenEncoded = "access_token=" + accessTokenEncoded;

@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 WebSocketConfiguration = options.WebSocketConfiguration,
             };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+            if (!OperatingSystem.IsBrowser())
             {
                 newOptions.Cookies = options.Cookies;
                 newOptions.ClientCertificates = options.ClientCertificates;

@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
-            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
             {
                 throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
             }
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         continue;
                     }
 
-                    if (transportType == HttpTransportType.ServerSentEvents && RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+                    if (transportType == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
                     {
                         Log.ServerSentEventsNotSupportedByBrowser(_logger);
                         transportExceptions.Add(new TransportFailedException("ServerSentEvents", "The transport is not supported in the browser."));
@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             var httpClientHandler = new HttpClientHandler();
             HttpMessageHandler httpMessageHandler = httpClientHandler;
 
-            var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser"));
+            var isBrowser = OperatingSystem.IsBrowser();
 
             if (_httpConnectionOptions != null)
             {
@@ -539,7 +539,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                     }
 
-                    httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
+                    try
+                    {
+                        // On supported platforms, we need to pass the cookie container to the http client
+                        // so that we can capture any cookies from the negotiate response and give them to WebSockets.
+                        httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
+                    }
+                    catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
+                    {
+                        // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
+                        Log.CookiesNotSupported(_logger);
+                    }
 
                     // Only access HttpClientHandler.ClientCertificates
                     // if the user has configured those options

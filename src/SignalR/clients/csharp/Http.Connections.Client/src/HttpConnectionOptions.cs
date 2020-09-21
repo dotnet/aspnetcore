@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _headers = new Dictionary<string, string>();
 
             // System.Security.Cryptography isn't supported on WASM currently
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+            if (!OperatingSystem.IsBrowser())
             {
                 _clientCertificates = new X509CertificateCollection();
             }
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static void ThrowIfUnsupportedPlatform()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+            if (OperatingSystem.IsBrowser())
             {
                 throw new PlatformNotSupportedException();
             }

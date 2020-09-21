@@ -12,6 +12,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)OperatingSystem.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>

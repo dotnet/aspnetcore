@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         // just want to start a new poll.
                         continue;
                     }
-                    catch (WebException ex) when (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")) && ex.Status == WebExceptionStatus.RequestCanceled)
+                    catch (WebException ex) when (!OperatingSystem.IsBrowser() && ex.Status == WebExceptionStatus.RequestCanceled)
                     {
                         // SendAsync on .NET Framework doesn't reliably throw OperationCanceledException.
                         // Catch the WebException and test it.
