@@ -27,18 +27,18 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Additional state values for the authentication session.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the return URL that will be flowed up to the access denied page.
         /// If <see cref="ReturnUrlParameter"/> is not set, this property is not used.
         /// </summary>
-        public string ReturnUrl { get; set; }
+        public string? ReturnUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter name that will be used to flow the return URL.
         /// By default, this property is set to <see cref="RemoteAuthenticationOptions.ReturnUrlParameter"/>.
         /// </summary>
-        public string ReturnUrlParameter { get; set; }
+        public string ReturnUrlParameter { get; set; } = default!;
     }
 }

@@ -4,8 +4,10 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -154,11 +156,23 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
+            var span = new Span<char>(buffer, index, count);
+            return Read(span);
+        }
+
+        public override int Read(Span<char> buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
+            var count = buffer.Length;
             var charsRead = 0;
             while (count > 0)
             {
@@ -178,16 +192,15 @@ namespace Microsoft.AspNetCore.WebUtilities
                     charsRemaining = count;
                 }
 
-                Buffer.BlockCopy(
-                    _charBuffer,
-                    _charBufferIndex * 2,
-                    buffer,
-                    (index + charsRead) * 2,
-                    charsRemaining * 2);
+                var source = new ReadOnlySpan<char>(_charBuffer, _charBufferIndex, charsRemaining);
+                source.CopyTo(buffer);
+
                 _charBufferIndex += charsRemaining;
 
                 charsRead += charsRemaining;
                 count -= charsRemaining;
+
+                buffer = buffer.Slice(charsRemaining, count);
 
                 // If we got back fewer chars than we asked for, then it's likely the underlying stream is blocked.
                 // Send the data back to the caller so they can process it.
@@ -200,7 +213,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return charsRead;
         }
 
-        public override async Task<int> ReadAsync(char[] buffer, int index, int count)
+        public override Task<int> ReadAsync(char[] buffer, int index, int count)
         {
             if (buffer == null)
             {
@@ -217,6 +230,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
+            var memory = new Memory<char>(buffer, index, count);
+            return ReadAsync(memory).AsTask();
+        }
+
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
+        public override async ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken cancellationToken = default)
+        {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
@@ -227,14 +247,16 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return 0;
             }
 
+            var count = buffer.Length;
+
             var charsRead = 0;
             while (count > 0)
             {
                 // n is the characters available in _charBuffer
-                var n = _charsRead - _charBufferIndex;
+                var charsRemaining = _charsRead - _charBufferIndex;
 
                 // charBuffer is empty, let's read from the stream
-                if (n == 0)
+                if (charsRemaining == 0)
                 {
                     _charsRead = 0;
                     _charBufferIndex = 0;
@@ -244,7 +266,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // We break out of the loop if the stream is blocked (EOF is reached).
                     do
                     {
-                        Debug.Assert(n == 0);
+                        Debug.Assert(charsRemaining == 0);
                         _bytesRead = await _stream.ReadAsync(
                             _byteBuffer,
                             0,
@@ -258,45 +280,43 @@ namespace Microsoft.AspNetCore.WebUtilities
                         // _isBlocked == whether we read fewer bytes than we asked for.
                         _isBlocked = (_bytesRead < _byteBufferSize);
 
-                        Debug.Assert(n == 0);
+                        Debug.Assert(charsRemaining == 0);
 
                         _charBufferIndex = 0;
-                        n = _decoder.GetChars(
+                        charsRemaining = _decoder.GetChars(
                             _byteBuffer,
                             0,
                             _bytesRead,
                             _charBuffer,
                             0);
 
-                        Debug.Assert(n > 0);
+                        Debug.Assert(charsRemaining > 0);
 
-                        _charsRead += n; // Number of chars in StreamReader's buffer.
+                        _charsRead += charsRemaining; // Number of chars in StreamReader's buffer.
                     }
-                    while (n == 0);
+                    while (charsRemaining == 0);
 
-                    if (n == 0)
+                    if (charsRemaining == 0)
                     {
                         break; // We're at EOF
                     }
                 }
 
                 // Got more chars in charBuffer than the user requested
-                if (n > count)
+                if (charsRemaining > count)
                 {
-                    n = count;
+                    charsRemaining = count;
                 }
 
-                Buffer.BlockCopy(
-                    _charBuffer,
-                    _charBufferIndex * 2,
-                    buffer,
-                    (index + charsRead) * 2,
-                    n * 2);
+                var source = new Memory<char>(_charBuffer, _charBufferIndex, charsRemaining);
+                source.CopyTo(buffer);
 
-                _charBufferIndex += n;
+                _charBufferIndex += charsRemaining;
 
-                charsRead += n;
-                count -= n;
+                charsRead += charsRemaining;
+                count -= charsRemaining;
+
+                buffer = buffer.Slice(charsRemaining, count);
 
                 // This function shouldn't block for an indefinite amount of time,
                 // or reading from a network stream won't work right.  If we got
@@ -308,6 +328,146 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             return charsRead;
+        }
+
+        public override async Task<string?> ReadLineAsync()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
+            }
+
+            StringBuilder? sb = null;
+            var consumeLineFeed = false;
+
+            while (true)
+            {
+                if (_charBufferIndex == _charsRead)
+                {
+                    if (await ReadIntoBufferAsync() == 0)
+                    {
+                        // reached EOF, we need to return null if we were at EOF from the beginning
+                        return sb?.ToString();
+                    }
+                }
+
+                var stepResult = ReadLineStep(ref sb, ref consumeLineFeed);
+
+                if (stepResult.Completed)
+                {
+                    return stepResult.Result ?? sb?.ToString();
+                }
+
+                continue;
+            }
+        }
+
+        // Reads a line. A line is defined as a sequence of characters followed by
+        // a carriage return ('\r'), a line feed ('\n'), or a carriage return
+        // immediately followed by a line feed. The resulting string does not
+        // contain the terminating carriage return and/or line feed. The returned
+        // value is null if the end of the input stream has been reached.
+        public override string? ReadLine()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
+            }
+
+            StringBuilder? sb = null;
+            var consumeLineFeed = false;
+
+            while (true)
+            {
+                if (_charBufferIndex == _charsRead)
+                {
+                    if (ReadIntoBuffer() == 0)
+                    {
+                        // reached EOF, we need to return null if we were at EOF from the beginning
+                        return sb?.ToString();
+                    }
+                }
+
+                var stepResult = ReadLineStep(ref sb, ref consumeLineFeed);
+
+                if (stepResult.Completed)
+                {
+                    return stepResult.Result ?? sb?.ToString();
+                }
+            }
+        }
+
+        private ReadLineStepResult ReadLineStep(ref StringBuilder? sb, ref bool consumeLineFeed)
+        {
+            const char carriageReturn = '\r';
+            const char lineFeed = '\n';
+
+            if (consumeLineFeed)
+            {
+                if (_charBuffer[_charBufferIndex] == lineFeed)
+                {
+                    _charBufferIndex++;
+                }
+                return ReadLineStepResult.Done;
+            }
+
+            var span = new Span<char>(_charBuffer, _charBufferIndex, _charsRead - _charBufferIndex);
+
+            var index = span.IndexOfAny(carriageReturn, lineFeed);
+
+            if (index != -1)
+            {
+                if (span[index] == carriageReturn)
+                {
+                    span = span.Slice(0, index);
+                    _charBufferIndex += index + 1;
+
+                    if (_charBufferIndex < _charsRead)
+                    {
+                        // consume following line feed
+                        if (_charBuffer[_charBufferIndex] == lineFeed)
+                        {
+                            _charBufferIndex++;
+                        }
+
+                        if (sb != null)
+                        {
+                            sb.Append(span);
+                            return ReadLineStepResult.Done;
+                        }
+
+                        // perf: if the new line is found in first pass, we skip the StringBuilder
+                        return ReadLineStepResult.FromResult(span.ToString());
+                    }
+
+                    // we where at the end of buffer, we need to read more to check for a line feed to consume
+                    sb ??= new StringBuilder();
+                    sb.Append(span);
+                    consumeLineFeed = true;
+                    return ReadLineStepResult.Continue;
+                }
+
+                if (span[index] == lineFeed)
+                {
+                    span = span.Slice(0, index);
+                    _charBufferIndex += index + 1;
+
+                    if (sb != null)
+                    {
+                        sb.Append(span);
+                        return ReadLineStepResult.Done;
+                    }
+
+                    // perf: if the new line is found in first pass, we skip the StringBuilder
+                    return ReadLineStepResult.FromResult(span.ToString());
+                }
+            }
+
+            sb ??= new StringBuilder();
+            sb.Append(span);
+            _charBufferIndex = _charsRead;
+
+            return ReadLineStepResult.Continue;
         }
 
         private int ReadIntoBuffer()
@@ -345,7 +505,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             do
             {
-
                 _bytesRead = await _stream.ReadAsync(
                     _byteBuffer,
                     0,
@@ -369,6 +528,37 @@ namespace Microsoft.AspNetCore.WebUtilities
             while (_charsRead == 0);
 
             return _charsRead;
+        }
+
+        public async override Task<string> ReadToEndAsync()
+        {
+            StringBuilder sb = new StringBuilder(_charsRead - _charBufferIndex);
+            do
+            {
+                int tmpCharPos = _charBufferIndex;
+                sb.Append(_charBuffer, tmpCharPos, _charsRead - tmpCharPos);
+                _charBufferIndex = _charsRead;  // We consumed these characters
+                await ReadIntoBufferAsync().ConfigureAwait(false);
+            } while (_charsRead > 0);
+
+            return sb.ToString();
+        }
+
+        private readonly struct ReadLineStepResult
+        {
+            public static readonly ReadLineStepResult Done = new ReadLineStepResult(true, null);
+            public static readonly ReadLineStepResult Continue = new ReadLineStepResult(false, null);
+
+            public static ReadLineStepResult FromResult(string value) => new ReadLineStepResult(true, value);
+
+            private ReadLineStepResult(bool completed, string? result)
+            {
+                Completed = completed;
+                Result = result;
+            }
+
+            public bool Completed { get; }
+            public string? Result { get; }
         }
     }
 }

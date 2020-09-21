@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
@@ -38,6 +39,11 @@ namespace Microsoft.DotNet.Watcher
                 DebugHelper.HandleDebugSwitch(ref args);
                 using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
                 {
+                    //if no command argument provided, we fall back to dotnet watch run
+                    if (args.Length == 0)
+                    {
+                        args = new[] { "run" };
+                    }
                     return await program.RunAsync(args);
                 }
             }
@@ -162,8 +168,8 @@ namespace Microsoft.DotNet.Watcher
                 _reporter.Output("Polling file watcher is enabled");
             }
 
-            await new DotNetWatcher(reporter)
-                .WatchAsync(processInfo, fileSetFactory, cancellationToken);
+            await using var watcher = new DotNetWatcher(reporter, fileSetFactory);
+            await watcher.WatchAsync(processInfo, cancellationToken);
 
             return 0;
         }

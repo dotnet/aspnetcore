@@ -18,6 +18,13 @@ export interface Platform {
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
   readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
+
+  beginHeapLock(): HeapLock;
+  invokeWhenHeapUnlocked(callback: Function): void;
+}
+
+export interface HeapLock {
+  release();
 }
 
 // We don't actually instantiate any of these at runtime. For perf it's preferable to

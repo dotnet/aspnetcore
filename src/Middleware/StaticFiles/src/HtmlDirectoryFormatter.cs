@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         private const string TextHtmlUtf8 = "text/html; charset=utf-8";
 
-        private HtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
 
         /// <summary>
         /// Constructs the <see cref="HtmlDirectoryFormatter"/>.

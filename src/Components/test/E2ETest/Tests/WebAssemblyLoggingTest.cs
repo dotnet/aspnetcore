@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("none", errorUi.GetCssValue("display"));
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void LogsSimpleExceptionsUsingLogger()
         {
             Browser.FindElement(By.Id("throw-simple-exception")).Click();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "at BasicTestApp.ErrorComponent.ThrowSimple");
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void LogsInnerExceptionsUsingLogger()
         {
             Browser.FindElement(By.Id("throw-inner-exception")).Click();
@@ -52,11 +52,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertLogContainsCriticalMessages(
                 "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
                 "[Custom logger] Unhandled exception rendering component: Here is the outer exception",
-                "System.InvalidTimeZoneException: Here is the outer exception ---> System.ArithmeticException: Here is the inner exception",
+                "System.InvalidTimeZoneException: Here is the outer exception",
+                "System.ArithmeticException: Here is the inner exception",
                 "at BasicTestApp.ErrorComponent.ThrowInner");
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void LogsAggregateExceptionsUsingLogger()
         {
             Browser.FindElement(By.Id("throw-aggregate-exception")).Click();
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "System.InvalidTimeZoneException: Aggregate exception 3");
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void LogsUsingCustomLogger()
         {
             Browser.MountTestComponent<LoggingComponent>();

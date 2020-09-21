@@ -46,5 +46,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets a value that indicates if the model has validators .
         /// </summary>
         public bool? HasValidators { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if validators can be constructed using metadata on properties.
+        /// </summary>
+        internal bool PropertyHasValidators { get; set; }
     }
 }

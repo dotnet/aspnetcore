@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,15 +15,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly int _segmentSize;
         private readonly SegmentWriteStream _segmentWriteStream;
         private readonly Action _startResponseCallback;
-        private readonly Func<Task> _startResponseCallbackAsync;
 
-        internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback, Func<Task> startResponseCallbackAsync)
+        internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback)
         {
             _innerStream = innerStream;
             _maxBufferSize = maxBufferSize;
             _segmentSize = segmentSize;
             _startResponseCallback = startResponseCallback;
-            _startResponseCallbackAsync = startResponseCallbackAsync;
             _segmentWriteStream = new SegmentWriteStream(_segmentSize);
         }
 
@@ -47,13 +45,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Stream GetBufferStream()
+        internal CachedResponseBody GetCachedResponseBody()
         {
             if (!BufferingEnabled)
             {
                 throw new InvalidOperationException("Buffer stream cannot be retrieved since buffering is disabled.");
             }
-            return new SegmentReadStream(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
+            return new CachedResponseBody(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
         }
 
         internal void DisableBuffering()
@@ -92,7 +90,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             try
             {
-                await _startResponseCallbackAsync();
+                _startResponseCallback();
                 await _innerStream.FlushAsync();
             }
             catch
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             try
             {
-                await _startResponseCallbackAsync();
+                _startResponseCallback();
                 await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
             catch
@@ -183,7 +181,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
         }

@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData((object[])null)]
+        [InlineData((object[]?)null)]
         [InlineData(new byte[] { 0x01, 0x02, 0x03 })]
         public void Ctor_Data_Bad(byte[] data)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             object blobA = new BinaryBlob(32);
-            object blobB = null;
+            object? blobB = null;
 
             // Act & assert
             Assert.NotEqual(blobA, blobB);

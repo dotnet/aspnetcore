@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.MountTestComponent<CounterComponent>();
             Browser.Equal("Current count: 0", () => Browser.FindElement(By.TagName("p")).Text);
 
-            GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
             Messages = new List<(Extensions.Logging.LogLevel level, string eventIdName)>();
             Sink.MessageLogged += Log;
@@ -77,13 +78,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23015")]
         public async Task ClosingTheBrowserWindow_GracefullyDisconnects_WhenNavigatingAwayFromThePage()
         {
             // Arrange & Act
             Browser.Navigate().GoToUrl("about:blank");
-            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+            var task = await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
+            Assert.Equal(GracefulDisconnectCompletionSource.Task, task);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }

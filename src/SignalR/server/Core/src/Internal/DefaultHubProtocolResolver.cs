@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _hubProtocols = _availableProtocols.Values.ToList();
         }
 
-        public virtual IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols)
+        public virtual IHubProtocol? GetProtocol(string protocolName, IReadOnlyList<string>? supportedProtocols)
         {
             protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 
@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private static class Log
         {
             // Category: DefaultHubProtocolResolver
-            private static readonly Action<ILogger, string, Type, Exception> _registeredSignalRProtocol =
+            private static readonly Action<ILogger, string, Type, Exception?> _registeredSignalRProtocol =
                 LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(1, "RegisteredSignalRProtocol"), "Registered SignalR Protocol: {ProtocolName}, implemented by {ImplementationType}.");
 
-            private static readonly Action<ILogger, string, Exception> _foundImplementationForProtocol =
+            private static readonly Action<ILogger, string, Exception?> _foundImplementationForProtocol =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "FoundImplementationForProtocol"), "Found protocol implementation for requested protocol: {ProtocolName}.");
 
             public static void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType)

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -164,7 +166,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.Headers.Add("header-name", "header-value");
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
@@ -191,7 +193,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.ContentType = "application/json";
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
@@ -233,6 +235,56 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Assert
             Assert.Equal("cookie-value", tokenSet.CookieToken);
             Assert.Null(tokenSet.RequestToken);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_ReadFormAsyncThrowsIOException_ThrowsAntiforgeryValidationException()
+        {
+            // Arrange
+            var ioException = new IOException();
+            var httpContext = new Mock<HttpContext>();
+
+            httpContext.Setup(r => r.Request.Cookies).Returns(Mock.Of<IRequestCookieCollection>());
+            httpContext.SetupGet(r => r.Request.HasFormContentType).Returns(true);
+            httpContext.Setup(r => r.Request.ReadFormAsync(It.IsAny<CancellationToken>())).Throws(ioException);
+
+            var options = new AntiforgeryOptions
+            {
+                Cookie = { Name = "cookie-name" },
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<AntiforgeryValidationException>(() => tokenStore.GetRequestTokensAsync(httpContext.Object));
+            Assert.Same(ioException, ex.InnerException);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_ReadFormAsyncThrowsInvalidDataException_ThrowsAntiforgeryValidationException()
+        {
+            // Arrange
+            var exception = new InvalidDataException();
+            var httpContext = new Mock<HttpContext>();
+
+            httpContext.Setup(r => r.Request.Cookies).Returns(Mock.Of<IRequestCookieCollection>());
+            httpContext.SetupGet(r => r.Request.HasFormContentType).Returns(true);
+            httpContext.Setup(r => r.Request.ReadFormAsync(It.IsAny<CancellationToken>())).Throws(exception);
+
+            var options = new AntiforgeryOptions
+            {
+                Cookie = { Name = "cookie-name" },
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<AntiforgeryValidationException>(() => tokenStore.GetRequestTokensAsync(httpContext.Object));
+            Assert.Same(exception, ex.InnerException);
         }
 
         [Theory]
@@ -282,7 +334,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(defaultCookieSecureValue, cookies.Options.Secure);
         }
 
@@ -321,7 +373,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(expectedCookiePath, cookies.Options.Path);
         }
 
@@ -361,7 +413,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(expectedCookiePath, cookies.Options.Path);
         }
 
@@ -400,7 +452,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal("/vdir1", cookies.Options.Path);
             Assert.Equal(expectedCookieDomain, cookies.Options.Domain);
         }
@@ -421,9 +473,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private class MockResponseCookieCollection : IResponseCookies
         {
-            public string Key { get; set; }
-            public string Value { get; set; }
-            public CookieOptions Options { get; set; }
+            public string? Key { get; set; }
+            public string? Value { get; set; }
+            public CookieOptions? Options { get; set; }
             public int Count { get; set; }
 
             public void Append(string key, string value, CookieOptions options)

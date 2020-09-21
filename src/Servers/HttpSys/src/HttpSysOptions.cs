@@ -55,11 +55,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public RequestQueueMode RequestQueueMode { get; set; }
 
         /// <summary>
-        /// Indicates how client certificates should be populated. The default is to allow renegotation.
+        /// Indicates how client certificates should be populated. The default is to allow a certificate without renegotiation.
         /// This does not change the netsh 'clientcertnegotiation' binding option which will need to be enabled for
         /// ClientCertificateMethod.AllowCertificate to resolve a certificate.
         /// </summary>
-        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowRenegotation;
+        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
         /// <summary>
         /// The maximum number of concurrent accepts.

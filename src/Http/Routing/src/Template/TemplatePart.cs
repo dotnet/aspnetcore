@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 IsCatchAll = parameter.IsCatchAll;
                 IsOptional = parameter.IsOptional;
                 DefaultValue = parameter.Default;
-                InlineConstraints = parameter.ParameterPolicies?.Select(p => new InlineConstraint(p));
+                InlineConstraints = parameter.ParameterPolicies?.Select(p => new InlineConstraint(p)) ?? Enumerable.Empty<InlineConstraint>();
             }
             else if (other.IsSeparator && other is RoutePatternSeparatorPart separator)
             {
@@ -59,8 +60,8 @@ namespace Microsoft.AspNetCore.Routing.Template
             string name,
             bool isCatchAll,
             bool isOptional,
-            object defaultValue,
-            IEnumerable<InlineConstraint> inlineConstraints)
+            object? defaultValue,
+            IEnumerable<InlineConstraint>? inlineConstraints)
         {
             if (name == null)
             {
@@ -83,12 +84,12 @@ namespace Microsoft.AspNetCore.Routing.Template
         public bool IsParameter { get; private set; }
         public bool IsOptional { get; private set; }
         public bool IsOptionalSeperator { get; set; }
-        public string Name { get; private set; }
-        public string Text { get; private set; }
-        public object DefaultValue { get; private set; }
-        public IEnumerable<InlineConstraint> InlineConstraints { get; private set; }
+        public string? Name { get; private set; }
+        public string? Text { get; private set; }
+        public object? DefaultValue { get; private set; }
+        public IEnumerable<InlineConstraint> InlineConstraints { get; private set; } = Enumerable.Empty<InlineConstraint>();
 
-        internal string DebuggerToString()
+        internal string? DebuggerToString()
         {
             if (IsParameter)
             {
@@ -104,11 +105,11 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
             if (IsLiteral && IsOptionalSeperator)
             {
-                return RoutePatternFactory.SeparatorPart(Text);
+                return RoutePatternFactory.SeparatorPart(Text!);
             }
             else if (IsLiteral)
             {
-                return RoutePatternFactory.LiteralPart(Text);
+                return RoutePatternFactory.LiteralPart(Text!);
             }
             else
             {
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         RoutePatternParameterKind.Standard;
 
                 var constraints = InlineConstraints.Select(c => new RoutePatternParameterPolicyReference(c.Constraint));
-                return RoutePatternFactory.ParameterPart(Name, DefaultValue, kind, constraints);
+                return RoutePatternFactory.ParameterPart(Name!, DefaultValue, kind, constraints);
             }
         }
     }

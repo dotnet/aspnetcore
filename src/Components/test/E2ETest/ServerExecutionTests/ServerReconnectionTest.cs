@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.False(() => Browser.FindElement(selector).Text == currentValue);
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void ErrorsStopTheRenderingProcess()
         {
             Browser.FindElement(By.Id("cause-error")).Click();

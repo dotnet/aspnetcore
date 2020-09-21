@@ -12,6 +12,7 @@ using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -41,10 +42,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
-            Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
+
+            Browser.Exists(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]"));
         }
 
         // This verifies that we've correctly configured the Razor language version via MSBuild.
@@ -341,6 +344,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var specialStyleDiv = appElement.FindElement(By.ClassName("special-style"));
             Assert.Equal("50px", specialStyleDiv.GetCssValue("padding"));
 
+            // This style is isolated to the component and comes from the bundle that gets generated for BasicTestApp
+            // and that includes the @import for the TestContentPackage.bundle.scp.css file
+            Assert.Equal("20px", specialStyleDiv.GetCssValue("font-size"));
+
             // The external components are fully functional, not just static HTML
             var externalComponentButton = specialStyleDiv.FindElement(By.TagName("button"));
             Assert.Equal("Click me", externalComponentButton.Text);
@@ -396,6 +403,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Clicks: 1", () => inputElement.GetAttribute("value"));
             buttonElement.Click();
             Browser.Equal("Clicks: 2", () => inputElement.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanUseFocusExtensionToFocusElement()
+        {
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the input element isn't focused when the test begins; we don't want
+            // the test to pass just because the input started as the focused element
+            Browser.NotEqual("focus-input", getFocusedElementId);
+
+            // Click the button whose callback focuses the input element
+            buttonElement.Click();
+
+            // Verify that the input element is focused
+            Browser.Equal("focus-input", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
         }
 
         [Fact]
@@ -462,6 +489,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -625,7 +653,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(incompleteItemsSelector);
 
             // Mark first item as done; observe the remaining incomplete item appears unchecked
-            // because the diff algoritm explicitly unchecks it
+            // because the diff algorithm explicitly unchecks it
             appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
             Browser.True(() =>
             {
@@ -635,7 +663,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
 
             // Mark first done item as not done; observe the remaining complete item appears checked
-            // because the diff algoritm explicitly re-checks it
+            // because the diff algorithm explicitly re-checks it
             appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
             Browser.True(() =>
             {
@@ -644,5 +672,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
             });
         }
+
+        [Fact]
+        public void CanHandleClearedChild()
+        {
+            var appElement = Browser.MountTestComponent<ContentEditable>();
+            var input = appElement.FindElement(By.Id("editable-div"));
+            var clickable = appElement.FindElement(By.Id("clickable"));
+
+            input.Clear();
+            clickable.Click();
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("", () => input.Text);
+        } 
     }
 }

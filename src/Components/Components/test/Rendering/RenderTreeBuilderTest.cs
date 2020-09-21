@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         [Fact]
         public void CanAddMultipleAttributes_WithChildRegion()
         {
-            // This represents bug https://github.com/aspnet/AspNetCore/issues/16570
+            // This represents bug https://github.com/dotnet/aspnetcore/issues/16570
             // If a sequence of attributes is terminated by a call to builder.OpenRegion,
             // then the attribute deduplication logic wasn't working correctly
 
@@ -1831,12 +1831,79 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 f => AssertFrame.Attribute(f, "3", "see ya"));
         }
 
+        [Fact]
+        public void AcceptsClosedFramesAsValid()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder();
+            var component = new TestComponent();
+            builder.OpenElement(0, "myElem");
+            builder.OpenRegion(1);
+            builder.OpenComponent<OtherComponent>(2);
+            builder.CloseComponent();
+            builder.CloseRegion();
+            builder.CloseElement();
+
+            // Act/Assert
+            // Lack of exception is success
+            builder.AssertTreeIsValid(component);
+        }
+
+        [Fact]
+        public void ReportsUnclosedElementAsInvalid()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder();
+            var component = new TestComponent();
+            builder.OpenElement(0, "outerElem");
+            builder.OpenElement(1, "innerElem");
+            builder.CloseElement();
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        }
+
+        [Fact]
+        public void ReportsUnclosedComponentAsInvalid()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder();
+            var component = new TestComponent();
+            builder.OpenComponent<OtherComponent>(0);
+            builder.OpenComponent<OtherComponent>(1);
+            builder.CloseComponent();
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed.", ex.Message);
+        }
+
+        [Fact]
+        public void ReportsUnclosedRegionAsInvalid()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder();
+            var component = new TestComponent();
+            builder.OpenRegion(0);
+            builder.OpenRegion(1);
+            builder.CloseRegion();
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed.", ex.Message);
+        }
+
         private class TestComponent : IComponent
         {
             public void Attach(RenderHandle renderHandle) { }
 
             public Task SetParametersAsync(ParameterView parameters)
                 => throw new NotImplementedException();
+        }
+
+        private class OtherComponent : TestComponent
+        {
         }
 
         private class TestRenderer : Renderer

@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -17,6 +19,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             return builder.ConfigureServices(services =>
             {
+                services.AddSingleton<IHostLifetime, NoopHostLifetime>();
                 services.AddSingleton<IServer, TestServer>();
             });
         }
@@ -91,6 +94,7 @@ namespace Microsoft.AspNetCore.TestHost
             return webHostBuilder;
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
             this IWebHostBuilder builder,
             string solutionRelativePath,
@@ -99,6 +103,7 @@ namespace Microsoft.AspNetCore.TestHost
             return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
             this IWebHostBuilder builder,
             string solutionRelativePath,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,6 +51,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="modelType">The actual model type.</param>
         /// <returns>A <see cref="ModelMetadata"/> instance describing the <paramref name="propertyInfo"/>.</returns>
         public virtual ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Supplies metadata describing a constructor.
+        /// </summary>
+        /// <param name="constructor">The <see cref="ConstructorInfo"/>.</param>
+        /// <param name="modelType">The type declaring the constructor.</param>
+        /// <returns>A <see cref="ModelMetadata"/> instance describing the <paramref name="constructor"/>.</returns>
+        public virtual ModelMetadata GetMetadataForConstructor(ConstructorInfo constructor, Type modelType)
         {
             throw new NotSupportedException();
         }

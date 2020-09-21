@@ -1,0 +1,13 @@
+﻿@page "/About"
+
+@model NewModel
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+@functions {
+    public class NewModel : PageModel
+    {
+        public string Name { get; set; }
+    }
+}
+
+<h1>New Customer @Model.Name</h1>

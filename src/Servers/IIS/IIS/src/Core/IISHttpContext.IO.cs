@@ -3,11 +3,10 @@
 
 using System;
 using System.Buffers;
-using System.Net.Http;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
@@ -15,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private long _consumedBytes;
+        internal bool ClientDisconnected { get; private set; }
 
         /// <summary>
         /// Reads data from the Input pipe to the user.
@@ -52,6 +52,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     _bodyInputPipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
                 }
             }
+        }
+
+        internal Task CopyToAsync(Stream destination, CancellationToken cancellationToken)
+        {
+            if (!HasStartedConsumingRequestBody)
+            {
+                InitializeRequestIO();
+            }
+
+            return _bodyInputPipe.Reader.CopyToAsync(destination, cancellationToken);
         }
 
         /// <summary>
@@ -113,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     if (_consumedBytes > MaxRequestBodySize)
                     {
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                        IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();
@@ -160,6 +170,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         // if request is done no need to flush, http.sys would do it for us
                         if (result.IsCompleted)
                         {
+                            // When is the reader completed? Is it always after the request pipeline exits? Or can CompleteAsync make it complete early?
+                            if (HasTrailers)
+                            {
+                                SetResponseTrailers();
+                            }
+
+                            // Done with response, say there is no more data after writing trailers.
+                            await AsyncIO.FlushAsync(moreData: false);
+
                             break;
                         }
 
@@ -208,12 +227,17 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _requestAborted = true;
             }
 
+            lock (_contextLock)
+            {
+                ClientDisconnected = clientDisconnect;
+            }
+
             if (clientDisconnect)
             {
                 Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
             }
 
-            _bodyOutput.Dispose();
+            _bodyOutput.Complete();
 
             if (shouldScheduleCancellation)
             {
@@ -254,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _bodyOutput.Abort(reason);
             _streams.Abort(reason);
-            NativeMethods.HttpCloseConnection(_pInProcessHandler);
+            NativeMethods.HttpCloseConnection(_requestNativeHandle);
 
             AbortIO(clientDisconnect: false);
         }

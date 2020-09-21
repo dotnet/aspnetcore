@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <_QuarantinedTestRunAdditionalArgs>-trait "Quarantined=true"</_QuarantinedTestRunAdditionalArgs>
+    <_NonQuarantinedTestRunAdditionalArgs>-notrait "Quarantined=true"</_NonQuarantinedTestRunAdditionalArgs>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TestRunnerAdditionalArguments Condition="'$(RunQuarantinedTests)' == ''">$(_NonQuarantinedTestRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
+    <TestRunnerAdditionalArguments Condition="'$(RunQuarantinedTests)' == 'true'">$(_QuarantinedTestRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
+  </PropertyGroup>
+</Project>

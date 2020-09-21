@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                     Assert.True(task3Success.IsCompleted);
                     Assert.False(task3Success.IsCanceled);
-                    Assert.False(task3Success.IsFaulted);;
+                    Assert.False(task3Success.IsFaulted);
                 }
             });
         }

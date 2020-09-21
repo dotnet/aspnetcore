@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public int DefaultWaitTimeoutInSeconds { get; set; } = 3;
+        public int DefaultWaitTimeoutInSeconds { get; set; } = 15;
 
         public string ScreenShotsPath { get; set; }
 
-        public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+        public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 10;
 
         public bool SauceTest { get; set; }
 

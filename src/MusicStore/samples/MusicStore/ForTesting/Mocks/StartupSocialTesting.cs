@@ -46,7 +46,7 @@ namespace MusicStore
 
             // Add EF services to the services container
             services.AddDbContext<MusicStoreContext>(options =>
-                options.UseSqlite("Data Source=MusicStore.db"));
+                options.UseSqlite("Data Source=MusicStore.db;Cache=Shared"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -140,6 +140,7 @@ namespace MusicStore
                 options.Scope.Add("wl.signin");
             });
 
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -160,7 +161,7 @@ namespace MusicStore
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
 
-            app.UseDatabaseErrorPage();
+            app.UseMigrationsEndPoint();
 
             // Configure Session.
             app.UseSession();

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents a list that lets users select multiple items.
-    /// This class is typically rendered as an HTML <code>&lt;select multiple="multiple"&gt;</code> element with the specified collection
+    /// This class is typically rendered as an HTML <c>&lt;select multiple="multiple"&gt;</c> element with the specified collection
     /// of <see cref="SelectListItem"/> objects.
     /// </summary>
     public class MultiSelectList : IEnumerable<SelectListItem>

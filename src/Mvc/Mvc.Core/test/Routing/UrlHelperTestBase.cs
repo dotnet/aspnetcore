@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -277,6 +277,43 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         [InlineData("~/\\")]
         [InlineData("~/\\foo")]
         public void IsLocalUrl_RejectsInvalidTokenUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper(appRoot: string.Empty, host: "www.mysite.com", protocol: null);
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("\n")]
+        [InlineData("\\n")]
+        [InlineData("/\n")]
+        [InlineData("~\n")]
+        [InlineData("~/\n")]
+        public void IsLocalUrl_RejectsUrlWithNewLineAtStart(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper(appRoot: string.Empty, host: "www.mysite.com", protocol: null);
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("/\r\nsomepath")]
+        [InlineData("~/\r\nsomepath")]
+        [InlineData("/some\npath")]
+        [InlineData("~/some\npath")]
+        [InlineData("\\path\b")]
+        [InlineData("~\\path\b")]
+        public void IsLocalUrl_RejectsUrlWithControlCharacters(string url)
         {
             // Arrange
             var helper = CreateUrlHelper(appRoot: string.Empty, host: "www.mysite.com", protocol: null);

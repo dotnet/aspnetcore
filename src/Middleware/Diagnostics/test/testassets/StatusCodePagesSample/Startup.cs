@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 
 namespace StatusCodePagesSample
 {
@@ -37,7 +38,7 @@ namespace StatusCodePagesSample
                 {
                     context.Response.StatusCode = int.Parse(requestedStatusCode);
 
-                    // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware 
+                    // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
                     // if the query contains a disableStatusCodePages=true parameter.
                     var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
                     if (disableStatusCodePages == "true")
@@ -102,15 +103,18 @@ namespace StatusCodePagesSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

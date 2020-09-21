@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Microsoft.Net.Http.Headers
             = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
         // Use list instead of dictionary since we may have multiple parameters with the same name.
-        private ObjectCollection<NameValueHeaderValue> _parameters;
+        private ObjectCollection<NameValueHeaderValue>? _parameters;
         private StringSegment _dispositionType;
 
         private ContentDispositionHeaderValue()
@@ -109,11 +110,10 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var sizeParameter = NameValueHeaderValue.Find(_parameters, SizeString);
-                long value;
                 if (sizeParameter != null)
                 {
                     var sizeString = sizeParameter.Value;
-                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out value))
+                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out var value))
                     {
                         return value;
                     }
@@ -128,7 +128,7 @@ namespace Microsoft.Net.Http.Headers
                     // Remove parameter
                     if (sizeParameter != null)
                     {
-                        _parameters.Remove(sizeParameter);
+                        _parameters!.Remove(sizeParameter);
                     }
                 }
                 else if (value < 0)
@@ -141,8 +141,8 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
-                    _parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
+                    var sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
+                    Parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
         }
@@ -180,7 +180,7 @@ namespace Microsoft.Net.Http.Headers
             return _dispositionType + NameValueHeaderValue.ToString(_parameters, ';', true);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ContentDispositionHeaderValue;
 
@@ -202,16 +202,16 @@ namespace Microsoft.Net.Http.Headers
         public static ContentDispositionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out ContentDispositionHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentDispositionHeaderValue? parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue parsedValue)
+        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -253,7 +253,7 @@ namespace Microsoft.Net.Http.Headers
 
         private static int GetDispositionTypeExpressionLength(StringSegment input, int startIndex, out StringSegment dispositionType)
         {
-            Contract.Requires((input != null) && (input.Length > 0) && (startIndex < input.Length));
+            Contract.Requires((input.Length > 0) && (startIndex < input.Length));
 
             // This method just parses the disposition type string, it does not parse parameters.
             dispositionType = null;
@@ -318,7 +318,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (dateParameter != null)
                 {
-                    _parameters.Remove(dateParameter);
+                    _parameters!.Remove(dateParameter);
                 }
             }
             else
@@ -343,7 +343,7 @@ namespace Microsoft.Net.Http.Headers
             var nameParameter = NameValueHeaderValue.Find(_parameters, parameter);
             if (nameParameter != null)
             {
-                string result;
+                string? result;
                 // filename*=utf-8'lang'%7FMyString
                 if (parameter.EndsWith("*", StringComparison.Ordinal))
                 {
@@ -375,7 +375,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (nameParameter != null)
                 {
-                    _parameters.Remove(nameParameter);
+                    _parameters!.Remove(nameParameter);
                 }
             }
             else
@@ -497,7 +497,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Attempt to decode MIME encoded strings
-        private bool TryDecodeMime(StringSegment input, out string output)
+        private bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             Contract.Assert(input != null);
 
@@ -582,7 +582,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Attempt to decode using RFC 5987 encoding.
         // encoding'language'my%20string
-        private bool TryDecode5987(StringSegment input, out string output)
+        private bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             output = null;
 
@@ -593,7 +593,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var decoded = new StringBuilder();
-            byte[] unescapedBytes = null;
+            byte[]? unescapedBytes = null;
             try
             {
                 var encoding = Encoding.GetEncoding(parts[0].ToString());

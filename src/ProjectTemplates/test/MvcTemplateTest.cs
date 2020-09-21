@@ -1,14 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Templates.Test.Helpers;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
@@ -28,7 +29,8 @@ namespace Templates.Test
         [Fact]
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
@@ -45,6 +47,12 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
+
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
 
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
@@ -97,9 +105,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -133,10 +142,10 @@ namespace Templates.Test
                     Url = PageUrls.ForgotPassword,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -145,10 +154,10 @@ namespace Templates.Test
                     Url = PageUrls.HomeUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
                     }
@@ -158,10 +167,10 @@ namespace Templates.Test
                     Url = PageUrls.PrivacyFullUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -170,12 +179,13 @@ namespace Templates.Test
                     Url = PageUrls.LoginUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
+                        PageUrls.ResendEmailConfirmation,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl }
                 },
@@ -184,10 +194,10 @@ namespace Templates.Test
                     Url = PageUrls.RegisterUrl,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
                     }
@@ -213,12 +223,99 @@ namespace Templates.Test
             }
         }
 
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        public async Task MvcTemplate_SingleFileExe()
+        {
+            // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
+            // this to a few operating systems to make our lives easier.
+            string runtimeIdentifer;
+            if (OperatingSystem.IsWindows())
+            {
+                runtimeIdentifer = "win-x64";
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                runtimeIdentifer = "linux-x64";
+            }
+            else
+            {
+                return;
+            }
+
+            Project = await ProjectFactory.GetOrCreateProject("mvcsinglefileexe", Output);
+            Project.RuntimeIdentifier = runtimeIdentifer;
+
+            var createResult = await Project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: true);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            var publishResult = await Project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer}", noRestore: false);
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+
+            var pages = new[]
+            {
+                new Page
+                {
+                    // Verify a view from the app works
+                    Url = PageUrls.HomeUrl,
+                    Links = new []
+                    {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.DocsUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    // Verify a view from a RCL (in this case IdentityUI) works
+                    Url = PageUrls.RegisterUrl,
+                    Links = new []
+                    {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+            };
+
+            using var aspNetProcess = Project.StartPublishedProjectAsync(usePublishedAppHost: true);
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertPagesOk(pages);
+        }
+
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
-            Project = await ProjectFactory.GetOrCreateProject("mvc_rc", Output);
+            await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });
 
-            var createResult = await Project.RunDotNetNewAsync("mvc", args: new[] { "--razor-runtime-compilation" });
+            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
+        }
+
+        [Theory]
+        [InlineData("IndividualB2C", null)]
+        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        public Task MvcTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
+
+        private async Task MvcTemplateBuildsAndPublishes(string auth, string[] args)
+        {
+            Project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+
+            var createResult = await Project.RunDotNetNewAsync("mvc", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             // Verify building in debug works
@@ -228,8 +325,6 @@ namespace Templates.Test
             // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
             buildResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, buildResult));
-
-            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
-       }
+        }
     }
 }

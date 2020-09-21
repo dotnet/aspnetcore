@@ -1,8 +1,9 @@
-namespace Company.WebApplication1
+namespace Company.WebApplication1.Models
 
 open System
 
-type ErrorViewModel private () =
-    member val RequestId : string = null with get, set
+type ErrorViewModel =
+    { RequestId: string }
 
-    member val ShowRequestId : bool = true with get, set
+    member this.ShowRequestId =
+        not (String.IsNullOrEmpty(this.RequestId))

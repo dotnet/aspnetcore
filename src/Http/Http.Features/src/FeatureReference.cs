@@ -5,10 +5,10 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public struct FeatureReference<T>
     {
-        private T _feature;
+        private T? _feature;
         private int _revision;
 
-        private FeatureReference(T feature, int revision)
+        private FeatureReference(T? feature, int revision)
         {
             _feature = feature;
             _revision = revision;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public static readonly FeatureReference<T> Default = new FeatureReference<T>(default(T), -1);
 
-        public T Fetch(IFeatureCollection features)
+        public T? Fetch(IFeatureCollection features)
         {
             if (_revision == features.Revision)
             {

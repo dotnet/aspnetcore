@@ -81,6 +81,7 @@ internal class StartupHook
 
             var exceptionDetailProvider = new ExceptionDetailsProvider(
                 new PhysicalFileProvider(contentRoot),
+                logger: null,
                 sourceCodeLineCount: 6);
 
             // The startup hook is only present when detailed errors are allowed, so

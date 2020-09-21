@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Internal
 {
     public class SyncPoint
     {
-        private readonly TaskCompletionSource<object> _atSyncPoint = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource<object> _continueFromSyncPoint = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _atSyncPoint = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _continueFromSyncPoint = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>
         /// Waits for the code-under-test to reach <see cref="WaitToContinue"/>.
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// Releases the code-under-test to continue past where it waited for <see cref="WaitToContinue"/>.
         /// </summary>
-        public void Continue() => _continueFromSyncPoint.TrySetResult(null);
+        public void Continue() => _continueFromSyncPoint.TrySetResult();
 
         /// <summary>
         /// Used by the code-under-test to wait for the test code to sync up.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <returns></returns>
         public Task WaitToContinue()
         {
-            _atSyncPoint.TrySetResult(null);
+            _atSyncPoint.TrySetResult();
             return _continueFromSyncPoint.Task;
         }
 

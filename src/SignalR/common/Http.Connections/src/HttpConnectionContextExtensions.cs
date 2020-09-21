@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// SignalR connections can run on top of HTTP transports like WebSockets or Long Polling, or other non-HTTP transports. As a result,
         /// this method can sometimes return <see langword="null"/> depending on the configuration of your application.
         /// </remarks>
-        public static HttpContext GetHttpContext(this ConnectionContext connection)
+        public static HttpContext? GetHttpContext(this ConnectionContext connection)
         {
             return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
         }

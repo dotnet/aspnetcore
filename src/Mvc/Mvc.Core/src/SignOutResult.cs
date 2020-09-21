@@ -25,6 +25,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
+        /// specified authentication scheme and <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        public SignOutResult(AuthenticationProperties properties)
+            : this(Array.Empty<string>(), properties)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="SignOutResult"/> with the
         /// specified authentication scheme.
         /// </summary>

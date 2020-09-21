@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,12 +15,13 @@ namespace Microsoft.Extensions.Tools.Internal
     {
         private event ConsoleCancelEventHandler _cancelKeyPress;
         private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
+        private readonly TestOutputWriter _testWriter;
 
         public TestConsole(ITestOutputHelper output)
         {
-            var writer = new TestOutputWriter(output);
-            Error = writer;
-            Out = writer;
+            _testWriter = new TestOutputWriter(output);
+            Error = _testWriter;
+            Out = _testWriter;
         }
 
         public event ConsoleCancelEventHandler CancelKeyPress
@@ -35,8 +36,8 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public Task CancelKeyPressSubscribed => _cancelKeySubscribed.Task;
 
-        public TextWriter Error { get; set; }
-        public TextWriter Out { get; set; }
+        public TextWriter Error { get; }
+        public TextWriter Out { get; }
         public TextReader In { get; set; } = new StringReader(string.Empty);
         public bool IsInputRedirected { get; set; } = false;
         public bool IsOutputRedirected { get; } = false;
@@ -58,10 +59,21 @@ namespace Microsoft.Extensions.Tools.Internal
         {
         }
 
+        public string GetOutput()
+        {
+            return _testWriter.GetOutput();
+        }
+
+        public void ClearOutput()
+        {
+            _testWriter.ClearOutput();
+        }
+
         private class TestOutputWriter : TextWriter
         {
             private readonly ITestOutputHelper _output;
             private readonly StringBuilder _sb = new StringBuilder();
+            private readonly StringBuilder _currentOutput = new StringBuilder();
 
             public TestOutputWriter(ITestOutputHelper output)
             {
@@ -79,11 +91,24 @@ namespace Microsoft.Extensions.Tools.Internal
                         _output.WriteLine(_sb.ToString());
                         _sb.Clear();
                     }
+
+                    _currentOutput.Append(value);
                 }
                 else
                 {
                     _sb.Append(value);
+                    _currentOutput.Append(value);
                 }
+            }
+
+            public string GetOutput()
+            {
+                return _currentOutput.ToString();
+            }
+
+            public void ClearOutput()
+            {
+                _currentOutput.Clear();
             }
         }
     }

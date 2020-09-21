@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal RenderHandle(Renderer renderer, int componentId)
         {
-            _renderer = renderer ?? throw new System.ArgumentNullException(nameof(renderer));
+            _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _componentId = componentId;
         }
 
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Components
             _renderer.AddToRenderQueue(_componentId, renderFragment);
         }
 
+        [DoesNotReturn]
         private static void ThrowNotInitialized()
         {
             throw new InvalidOperationException("The render handle is not yet assigned.");

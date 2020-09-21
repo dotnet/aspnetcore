@@ -74,6 +74,43 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
+        public void ReplacingResponseBody_DoesNotCreateOnCompletedRegistration()
+        {
+            var features = new FeatureCollection();
+
+            var originalStream = new FlushAsyncCheckStream();
+            var replacementStream = new FlushAsyncCheckStream();
+
+            var responseBodyMock = new Mock<IHttpResponseBodyFeature>();
+            responseBodyMock.Setup(o => o.Stream).Returns(originalStream);
+            features.Set(responseBodyMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+
+            Assert.Same(originalStream, context.Response.Body);
+            Assert.Same(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            context.Response.Body = replacementStream;
+
+            Assert.Same(replacementStream, context.Response.Body);
+            Assert.NotSame(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            context.Response.Body = originalStream;
+
+            Assert.Same(originalStream, context.Response.Body);
+            Assert.Same(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            // The real issue was not that an OnCompleted registration existed, but that it would previously flush
+            // the original response body in the OnCompleted callback after the response body was disposed.
+            // However, since now there's no longer an OnCompleted registration at all, it's easier to verify that.
+            // https://github.com/dotnet/aspnetcore/issues/25342
+            responseMock.Verify(m => m.OnCompleted(It.IsAny<Func<object, Task>>(), It.IsAny<object>()), Times.Never);
+        }
+
+        [Fact]
         public async Task ResponseStart_CallsFeatureIfSet()
         {
             var features = new FeatureCollection();

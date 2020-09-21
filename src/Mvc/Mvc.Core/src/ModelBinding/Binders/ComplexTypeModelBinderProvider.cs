@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <summary>
     /// An <see cref="IModelBinderProvider"/> for complex types.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. Use ComplexObjectModelBinderProvider instead.")]
     public class ComplexTypeModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />

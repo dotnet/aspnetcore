@@ -13,6 +13,8 @@
 # See example YAML call for this script below. Note the use of the variable `$(dn-bot-dnceng-artifact-feeds-rw)`
 # from the AzureDevOps-Artifact-Feeds-Pats variable group.
 #
+# Any disabledPackageSources entries which start with "darc-int" will be re-enabled as part of this script executing.
+#
 #  - task: Bash@3
 #    displayName: Setup Private Feeds Credentials
 #    inputs:
@@ -63,7 +65,7 @@ if [ "$?" != "0" ]; then
     ConfigNodeHeader="<configuration>"
     PackageSourcesTemplate="${TB}<packageSources>${NL}${TB}</packageSources>"
 
-    sed -i.bak "s|$ConfigNodeHeader|$ConfigNodeHeader${NL}$PackageSourcesTemplate|" NuGet.config
+    sed -i.bak "s|$ConfigNodeHeader|$ConfigNodeHeader${NL}$PackageSourcesTemplate|" $ConfigFile
 fi
 
 # Ensure there is a <packageSourceCredentials>...</packageSourceCredentials> section. 
@@ -74,35 +76,10 @@ if [ "$?" != "0" ]; then
     PackageSourcesNodeFooter="</packageSources>"
     PackageSourceCredentialsTemplate="${TB}<packageSourceCredentials>${NL}${TB}</packageSourceCredentials>"
 
-    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourcesNodeFooter${NL}$PackageSourceCredentialsTemplate|" NuGet.config
+    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourcesNodeFooter${NL}$PackageSourceCredentialsTemplate|" $ConfigFile
 fi
 
 PackageSources=()
-
-# Ensure dotnet3-internal and dotnet3-internal-transport are in the packageSources if the public dotnet3 feeds are present
-grep -i "<add key=\"dotnet3\"" $ConfigFile
-
-if [ "$?" == "0" ]; then
-    grep -i "<add key=\"dotnet3-internal\">" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet3-internal to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet3-internal')
-
-    grep -i "<add key=\"dotnet3-internal-transport\"" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet3-internal-transport to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet3-internal-transport')
-fi
 
 # Ensure dotnet3.1-internal and dotnet3.1-internal-transport are in the packageSources if the public dotnet3.1 feeds are present
 grep -i "<add key=\"dotnet3.1\"" $ConfigFile
@@ -128,6 +105,30 @@ if [ "$?" == "0" ]; then
     PackageSources+=('dotnet3.1-internal-transport')
 fi
 
+# Ensure dotnet5-internal and dotnet5-internal-transport are in the packageSources if the public dotnet5 feeds are present
+grep -i "<add key=\"dotnet5\"" $ConfigFile
+if [ "$?" == "0" ]; then
+    grep -i "<add key=\"dotnet5-internal\"" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet5-internal to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet5-internal')
+
+    grep -i "<add key=\"dotnet5-internal-transport\">" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet5-internal-transport to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet5-internal-transport')
+fi
+
 # I want things split line by line
 PrevIFS=$IFS
 IFS=$'\n'
@@ -147,3 +148,20 @@ for FeedName in ${PackageSources[@]} ; do
         sed -i.bak "s|$PackageSourceCredentialsNodeFooter|$NewCredential${NL}$PackageSourceCredentialsNodeFooter|" $ConfigFile
     fi
 done
+
+# Re-enable any entries in disabledPackageSources where the feed name contains darc-int
+grep -i "<disabledPackageSources>" $ConfigFile
+if [ "$?" == "0" ]; then
+    DisabledDarcIntSources=()
+    echo "Re-enabling any disabled \"darc-int\" package sources in $ConfigFile"
+    DisabledDarcIntSources+=$(grep -oh '"darc-int-[^"]*" value="true"' $ConfigFile  | tr -d '"')
+    for DisabledSourceName in ${DisabledDarcIntSources[@]} ; do
+        if [[ $DisabledSourceName == darc-int* ]]
+            then
+                OldDisableValue="add key=\"$DisabledSourceName\" value=\"true\""
+                NewDisableValue="add key=\"$DisabledSourceName\" value=\"false\""
+                sed -i.bak "s|$OldDisableValue|$NewDisableValue|" $ConfigFile
+                echo "Neutralized disablePackageSources entry for '$DisabledSourceName'"
+        fi
+    done
+fi

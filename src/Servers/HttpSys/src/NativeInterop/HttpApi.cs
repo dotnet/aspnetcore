@@ -46,6 +46,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static extern uint HttpCreateUrlGroup(ulong serverSessionId, ulong* urlGroupId, uint reserved);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern uint HttpFindUrlGroupId(string pFullyQualifiedUrl, SafeHandle requestQueueHandle, ulong* urlGroupId);
+
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern uint HttpAddUrlToUrlGroup(ulong urlGroupId, string pFullyQualifiedUrl, ulong context, uint pReserved);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
@@ -70,6 +73,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
 
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        internal static extern bool HttpIsFeatureSupported(HTTP_FEATURE_ID feature);
+
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern unsafe uint HttpDelegateRequestEx(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId,
+            ulong delegateUrlGroupId, ulong propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);
+
+        internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
         private static HTTPAPI_VERSION version;
 
@@ -106,6 +117,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal static SafeLibraryHandle HttpApiModule { get; private set; }
+        internal static HttpSetRequestPropertyInvoker HttpSetRequestProperty { get; private set; }
+        internal static bool SupportsTrailers { get; private set; }
+        internal static bool SupportsReset { get; private set; }
+
         static HttpApi()
         {
             InitHttpApi(2, 0);
@@ -119,6 +135,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var statusCode = HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
 
             supported = statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+
+            if (supported)
+            {
+                HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
+                HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+
+                SupportsReset = HttpSetRequestProperty != null;
+                // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
+                SupportsTrailers = SupportsReset;
+            }
         }
 
         private static volatile bool supported;
@@ -128,6 +154,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 return supported;
             }
+        }
+
+        internal static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
+        {
+            try
+            {
+                return HttpIsFeatureSupported(feature);
+            }
+            catch (EntryPointNotFoundException) { }
+
+            return false;
         }
     }
 }

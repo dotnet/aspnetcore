@@ -38,8 +38,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             _webSocket = new ClientWebSocket();
 
-            // Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627
-            //_webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+            // Full Framework will throw when trying to set the User-Agent header
+            // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
+#if !NETSTANDARD2_0
+            _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+#else
+            // Set an alternative user agent header on Full framework
+            _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
+#endif
 
             if (httpConnectionOptions != null)
             {
@@ -238,7 +244,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 #if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#elif NETSTANDARD2_0
+#elif NETSTANDARD2_0 || NET461
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 

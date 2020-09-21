@@ -26,13 +26,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
         private const int PauseWriterThreshold = 65536;
         private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
-        protected readonly IntPtr _pInProcessHandler;
+        protected readonly NativeSafeHandle _requestNativeHandle;
 
         private readonly IISServerOptions _options;
 
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private int _statusCode;
         private string _reasonPhrase;
         // Used to synchronize callback registration and native method calls
-        private readonly object _contextLock = new object();
+        internal readonly object _contextLock = new object();
 
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
@@ -65,13 +67,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Pipe _bodyInputPipe;
         protected OutputProducer _bodyOutput;
 
+        private HeaderCollection _trailers;
+
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
-            IntPtr pInProcessHandler,
+            NativeSafeHandle pInProcessHandler,
             IISServerOptions options,
             IISHttpServer server,
             ILogger logger,
@@ -79,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
         {
             _memoryPool = memoryPool;
-            _pInProcessHandler = pInProcessHandler;
+            _requestNativeHandle = pInProcessHandler;
             _options = options;
             _server = server;
             _logger = logger;
@@ -104,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public string TraceIdentifier { get; set; }
         public ClaimsPrincipal User { get; set; }
         internal WindowsPrincipal WindowsUser { get; set; }
+        internal bool RequestCanHaveBody { get; private set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
         public PipeWriter ResponsePipeWrapper { get; set; }
@@ -112,7 +117,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public IHeaderDictionary ResponseHeaders { get; set; }
+        public IHeaderDictionary ResponseTrailers { get; set; }
         private HeaderCollection HttpResponseHeaders { get; set; }
+        private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
+        internal bool HasTrailers => _trailers?.Count > 0;
+
         internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
         private bool HasStartedConsumingRequestBody { get; set; }
@@ -157,6 +166,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 RequestHeaders = new RequestHeaders(this);
                 HttpResponseHeaders = new HeaderCollection();
                 ResponseHeaders = HttpResponseHeaders;
+                // Request headers can be modified by the app, read these first.
+                RequestCanHaveBody = CheckRequestCanHaveBody();
 
                 if (_options.ForwardWindowsAuthentication)
                 {
@@ -171,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 ResetFeatureCollection();
 
-                if (!_server.IsWebSocketAvailable(_pInProcessHandler))
+                if (!_server.IsWebSocketAvailable(_requestNativeHandle))
                 {
                     _currentIHttpUpgradeFeature = null;
                 }
@@ -190,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _bodyOutput = new OutputProducer(pipe);
             }
 
-            NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
+            NativeMethods.HttpSetManagedContext(_requestNativeHandle, (IntPtr)_thisHandle);
         }
 
         private string GetOriginalPath()
@@ -242,6 +253,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         internal IISHttpServer Server => _server;
 
+        private bool CheckRequestCanHaveBody()
+        {
+            // Http/1.x requests with bodies require either a Content-Length or Transfer-Encoding header.
+            // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
+            // Transfer-Encoding takes priority over Content-Length.
+            string transferEncoding = RequestHeaders[HttpKnownHeaderNames.TransferEncoding];
+            if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return RequestHeaders.ContentLength.GetValueOrDefault() > 0;
+        }
+
         private async Task InitializeResponse(bool flushHeaders)
         {
             await FireOnStarting();
@@ -280,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (!canHaveNonEmptyBody)
             {
-                _bodyOutput.Dispose();
+                _bodyOutput.Complete();
             }
             else
             {
@@ -300,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;
@@ -316,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // If at this point request was not upgraded just start a normal IO engine
             if (AsyncIO == null)
             {
-                AsyncIO = new AsyncIOEngine(_contextLock, _pInProcessHandler);
+                AsyncIO = new AsyncIOEngine(this, _requestNativeHandle);
             }
         }
 
@@ -375,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             var reasonPhrase = string.IsNullOrEmpty(ReasonPhrase) ? ReasonPhrases.GetReasonPhrase(StatusCode) : ReasonPhrase;
 
             // This copies data into the underlying buffer
-            NativeMethods.HttpSetResponseStatusCode(_pInProcessHandler, (ushort)StatusCode, reasonPhrase);
+            NativeMethods.HttpSetResponseStatusCode(_requestNativeHandle, (ushort)StatusCode, reasonPhrase);
 
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
@@ -404,13 +429,49 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                             fixed (byte* pHeaderName = headerNameBytes)
                             {
-                                NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
+                                NativeMethods.HttpResponseSetUnknownHeader(_requestNativeHandle, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
                             }
                         }
                         else
                         {
-                            NativeMethods.HttpResponseSetKnownHeader(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
+                            NativeMethods.HttpResponseSetKnownHeader(_requestNativeHandle, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
                         }
+                    }
+                }
+            }
+        }
+
+        public unsafe void SetResponseTrailers()
+        {
+            HttpResponseTrailers.IsReadOnly = true;
+            foreach (var headerPair in HttpResponseTrailers)
+            {
+                var headerValues = headerPair.Value;
+
+                if (headerValues.Count == 0)
+                {
+                    continue;
+                }
+
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerPair.Key);
+                fixed (byte* pHeaderName = headerNameBytes)
+                {
+                    var isFirst = true;
+                    for (var i = 0; i < headerValues.Count; i++)
+                    {
+                        var headerValue = headerValues[i];
+                        if (string.IsNullOrEmpty(headerValue))
+                        {
+                            continue;
+                        }
+
+                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValue);
+                        fixed (byte* pHeaderValue = headerValueBytes)
+                        {
+                            NativeMethods.HttpResponseSetTrailer(_requestNativeHandle, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, replace: isFirst);
+                        }
+
+                        isFirst = false;
                     }
                 }
             }
@@ -489,7 +550,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                     catch (Exception ex)
                     {
-                        ReportApplicationError(ex);
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
                 }
             }
@@ -532,8 +593,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
         {
-            NativeMethods.HttpSetCompletionStatus(_pInProcessHandler, requestNotificationStatus);
-            NativeMethods.HttpPostCompletion(_pInProcessHandler, 0);
+            NativeMethods.HttpSetCompletionStatus(_requestNativeHandle, requestNotificationStatus);
+            NativeMethods.HttpPostCompletion(_requestNativeHandle, 0);
         }
 
         internal void OnAsyncCompletion(int hr, int bytes)
@@ -584,7 +645,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private WindowsPrincipal GetWindowsPrincipal()
         {
-            NativeMethods.HttpGetAuthenticationInformation(_pInProcessHandler, out var authenticationType, out var token);
+            NativeMethods.HttpGetAuthenticationInformation(_requestNativeHandle, out var authenticationType, out var token);
 
             if (token != IntPtr.Zero && authenticationType != null)
             {
@@ -613,13 +674,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (Exception ex)
             {
-               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
             }
             finally
             {
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
+                // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
+                // Instead Safehandle will call ReleaseHandle on the pinvoke thread when the pinvokes complete
+                // and the reference count goes to zero.
+
+                // What this means is we need to wait until ReleaseHandle is called to finish disposal.
+                // This is to make sure it is safe to return back to native.
+                // The handle implements IValueTaskSource
+                _requestNativeHandle.Dispose();
+
+                await new ValueTask<object>(_requestNativeHandle, _requestNativeHandle.Version);
 
                 // Dispose the context
                 Dispose();

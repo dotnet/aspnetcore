@@ -33,8 +33,8 @@ const defaultOptions: CircuitStartOptions = {
     configureSignalR: (_) => { },
     logLevel: LogLevel.Warning,
     reconnectionOptions: {
-      maxRetries: 5,
-      retryIntervalMilliseconds: 3000,
+      maxRetries: 8,
+      retryIntervalMilliseconds: 20000,
       dialogId: 'components-reconnect-modal',
     },
 };

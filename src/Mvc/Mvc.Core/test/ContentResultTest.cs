@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Content = null,
                 ContentType = new MediaTypeHeaderValue("text/plain")
                 {
-                    Encoding = Encoding.UTF7
+                    Encoding = Encoding.Unicode
                 }.ToString()
             };
             var httpContext = GetHttpContext();
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc
             await contentResult.ExecuteResultAsync(actionContext);
 
             // Assert
-            MediaTypeAssert.Equal("text/plain; charset=utf-7", httpContext.Response.ContentType);
+            MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
         }
 
         public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData

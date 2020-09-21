@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,12 +24,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<byte> _bytePool;
         private readonly int _memoryThreshold;
         private readonly long? _bufferLimit;
-        private string _tempFileDirectory;
-        private readonly Func<string> _tempFileDirectoryAccessor;
-        private string _tempFileName;
+        private string? _tempFileDirectory;
+        private readonly Func<string>? _tempFileDirectoryAccessor;
+        private string? _tempFileName;
 
         private Stream _buffer;
-        private byte[] _rentedBuffer;
+        private byte[]? _rentedBuffer;
         private bool _inMemory = true;
         private bool _completelyBuffered;
 
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             get { return _inMemory; }
         }
 
-        public string TempFileName
+        public string? TempFileName
         {
             get { return _tempFileName; }
         }
@@ -208,39 +209,41 @@ namespace Microsoft.AspNetCore.WebUtilities
                 FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
+        public override int Read(Span<byte> buffer)
         {
             ThrowIfDisposed();
+
             if (_buffer.Position < _buffer.Length || _completelyBuffered)
             {
                 // Just read from the buffer
-                return _buffer.Read(buffer, offset, (int)Math.Min(count, _buffer.Length - _buffer.Position));
+                return _buffer.Read(buffer);
             }
 
-            int read = _inner.Read(buffer, offset, count);
+            var read = _inner.Read(buffer);
 
             if (_bufferLimit.HasValue && _bufferLimit - read < _buffer.Length)
             {
-                Dispose();
                 throw new IOException("Buffer limit exceeded.");
             }
 
-            if (_inMemory && _buffer.Length + read > _memoryThreshold)
+            // We're about to go over the threshold, switch to a file
+            if (_inMemory && _memoryThreshold - read < _buffer.Length)
             {
                 _inMemory = false;
                 var oldBuffer = _buffer;
                 _buffer = CreateTempFile();
                 if (_rentedBuffer == null)
                 {
+                    // Copy data from the in memory buffer to the file stream using a pooled buffer
                     oldBuffer.Position = 0;
                     var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
                     try
                     {
-                        var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                        var copyRead = oldBuffer.Read(rentedBuffer);
                         while (copyRead > 0)
                         {
-                            _buffer.Write(rentedBuffer, 0, copyRead);
-                            copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            _buffer.Write(rentedBuffer.AsSpan(0, copyRead));
+                            copyRead = oldBuffer.Read(rentedBuffer);
                         }
                     }
                     finally
@@ -250,7 +253,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    _buffer.Write(_rentedBuffer, 0, (int)oldBuffer.Length);
+                    _buffer.Write(_rentedBuffer.AsSpan(0, (int)oldBuffer.Length));
                     _bytePool.Return(_rentedBuffer);
                     _rentedBuffer = null;
                 }
@@ -258,7 +261,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (read > 0)
             {
-                _buffer.Write(buffer, offset, read);
+                _buffer.Write(buffer.Slice(0, read));
             }
             else
             {
@@ -268,24 +271,35 @@ namespace Microsoft.AspNetCore.WebUtilities
             return read;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return Read(buffer.AsSpan(offset, count));
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        }
+
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
+
             if (_buffer.Position < _buffer.Length || _completelyBuffered)
             {
                 // Just read from the buffer
-                return await _buffer.ReadAsync(buffer, offset, (int)Math.Min(count, _buffer.Length - _buffer.Position), cancellationToken);
+                return await _buffer.ReadAsync(buffer, cancellationToken);
             }
 
-            int read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            var read = await _inner.ReadAsync(buffer, cancellationToken);
 
             if (_bufferLimit.HasValue && _bufferLimit - read < _buffer.Length)
             {
-                Dispose();
                 throw new IOException("Buffer limit exceeded.");
             }
 
-            if (_inMemory && _buffer.Length + read > _memoryThreshold)
+            if (_inMemory && _memoryThreshold - read < _buffer.Length)
             {
                 _inMemory = false;
                 var oldBuffer = _buffer;
@@ -297,11 +311,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                     try
                     {
                         // oldBuffer is a MemoryStream, no need to do async reads.
-                        var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                        var copyRead = oldBuffer.Read(rentedBuffer);
                         while (copyRead > 0)
                         {
-                            await _buffer.WriteAsync(rentedBuffer, 0, copyRead, cancellationToken);
-                            copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                            await _buffer.WriteAsync(rentedBuffer.AsMemory(0, copyRead), cancellationToken);
+                            copyRead = oldBuffer.Read(rentedBuffer);
                         }
                     }
                     finally
@@ -311,7 +325,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    await _buffer.WriteAsync(_rentedBuffer, 0, (int)oldBuffer.Length, cancellationToken);
+                    await _buffer.WriteAsync(_rentedBuffer.AsMemory(0, (int)oldBuffer.Length), cancellationToken);
                     _bytePool.Return(_rentedBuffer);
                     _rentedBuffer = null;
                 }
@@ -319,7 +333,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (read > 0)
             {
-                await _buffer.WriteAsync(buffer, offset, read, cancellationToken);
+                await _buffer.WriteAsync(buffer.Slice(0, read), cancellationToken);
             }
             else
             {
@@ -347,6 +361,44 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override void Flush()
         {
             throw new NotSupportedException();
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
+            // seekable *and* the length is 0 (it passes in a buffer size of 1).
+            // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
+            bufferSize = Math.Max(4096, bufferSize);
+
+            // If we're completed buffered then copy from the underlying source
+            if (_completelyBuffered)
+            {
+                return _buffer.CopyToAsync(destination, bufferSize, cancellationToken);
+            }
+
+            async Task CopyToAsyncImpl()
+            {
+                // At least a 4K buffer
+                byte[] buffer = _bytePool.Rent(bufferSize);
+                try
+                {
+                    while (true)
+                    {
+                        int bytesRead = await ReadAsync(buffer, cancellationToken);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+                        await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                    }
+                }
+                finally
+                {
+                    _bytePool.Return(buffer);
+                }
+            }
+
+            return CopyToAsyncImpl();
         }
 
         protected override void Dispose(bool disposing)

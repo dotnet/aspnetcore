@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
     /// <summary>
     /// Extension methods to add Azure Active Directory Authentication to your application.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public static class AzureADAuthenticationBuilderExtensions
     {
         /// <summary>
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADOptions"/>.
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADBearer(this AuthenticationBuilder builder, Action<AzureADOptions> configureOptions) =>
             builder.AddAzureADBearer(
                 AzureADDefaults.BearerAuthenticationScheme,
@@ -44,6 +46,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADOptions"/>.
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADBearer(
             this AuthenticationBuilder builder,
             string scheme,
@@ -78,6 +81,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADOptions"/>
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureAD(this AuthenticationBuilder builder, Action<AzureADOptions> configureOptions) =>
             builder.AddAzureAD(
                 AzureADDefaults.AuthenticationScheme,
@@ -98,6 +102,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADOptions"/>
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureAD(
             this AuthenticationBuilder builder,
             string scheme,

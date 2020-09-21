@@ -9,7 +9,7 @@
     <TestGroupName>Mvc.FunctionalTests</TestGroupName>
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
-    <!-- https://github.com/aspnet/AspNetCore/issues/10423 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/10423 -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
@@ -59,6 +59,5 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

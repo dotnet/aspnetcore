@@ -5,16 +5,23 @@
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
+
+    <!--
+      This project compiles against Microsoft.AspNetCore.App from the SDK.
+      This ensures that it's packaging output is correct and does not include local artifacts.
+    -->
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-watch.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,17 +36,23 @@
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(OutputPath)\tool\middleware" />
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(PublishDir)\tool\middleware" />
   </Target>
 
 </Project>

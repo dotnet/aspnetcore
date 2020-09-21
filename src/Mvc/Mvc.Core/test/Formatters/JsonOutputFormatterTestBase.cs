@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             var actualContent = encoding.GetString(body.ToArray());
             Assert.Equal(expectedContent, actualContent, StringComparer.OrdinalIgnoreCase);
+            Assert.True(body.CanWrite, "Response body should not be disposed.");
         }
 
         [Fact]

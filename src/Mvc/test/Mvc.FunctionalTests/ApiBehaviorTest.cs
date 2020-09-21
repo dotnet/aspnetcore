@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/contact")
             {
-                Content = new StringContent("some content", Encoding.UTF7, "application/json"),
+                Content = new StringContent("some content", Encoding.Latin1, "application/json"),
             };
 
             // Act

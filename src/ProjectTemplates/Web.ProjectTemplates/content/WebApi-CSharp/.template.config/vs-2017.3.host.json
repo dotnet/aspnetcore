@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/vs-2017.3.host",
   "name": {
-    "text": "API",
+    "text": "ASP.NET Core Web API",
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1013"
   },
@@ -47,6 +47,17 @@
     {
       "name": "HttpsPort",
       "useHttps": true
+    }
+  ],
+  "symbolInfo": [
+    {
+      "id": "DisableOpenAPI",
+      "name": {
+        "text": "Enable _OpenAPI support"
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
     }
   ],
   "excludeLaunchSettings": false,

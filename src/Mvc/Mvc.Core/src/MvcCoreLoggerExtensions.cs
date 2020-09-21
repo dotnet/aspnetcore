@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly Action<ILogger, string, Exception> _ambiguousActions;
         private static readonly Action<ILogger, string, string, IActionConstraint, Exception> _constraintMismatch;
 
-        private static readonly Action<ILogger, FileResult, string, string, Exception> _executingFileResult;
-        private static readonly Action<ILogger, FileResult, string, Exception> _executingFileResultWithNoFileName;
+        private static readonly Action<ILogger, string, string, string, Exception> _executingFileResult;
+        private static readonly Action<ILogger, string, string, Exception> _executingFileResultWithNoFileName;
         private static readonly Action<ILogger, Exception> _notEnabledForRangeProcessing;
         private static readonly Action<ILogger, Exception> _writingRangeToBody;
         private static readonly Action<ILogger, object, Exception> _authorizationFailure;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static readonly Action<ILogger, string, Exception> _localRedirectResultExecuting;
 
-        private static readonly Action<ILogger, string, Exception> _objectResultExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _objectResultExecuting;
         private static readonly Action<ILogger, IEnumerable<string>, Exception> _noFormatter;
         private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
         private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
@@ -250,12 +250,12 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(2, "ConstraintMismatch"),
                 "Action '{ActionName}' with id '{ActionId}' did not match the constraint '{ActionConstraint}'");
 
-            _executingFileResult = LoggerMessage.Define<FileResult, string, string>(
+            _executingFileResult = LoggerMessage.Define<string, string, string>(
                 LogLevel.Information,
                 new EventId(1, "ExecutingFileResult"),
                 "Executing {FileResultType}, sending file '{FileDownloadPath}' with download name '{FileDownloadName}' ...");
 
-            _executingFileResultWithNoFileName = LoggerMessage.Define<FileResult, string>(
+            _executingFileResultWithNoFileName = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(2, "ExecutingFileResultWithNoFileName"),
                 "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...");
@@ -315,10 +315,10 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(1, "NoFormatter"),
                 "No output formatter was found for content types '{ContentTypes}' to write the response.");
 
-            _objectResultExecuting = LoggerMessage.Define<string>(
+            _objectResultExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(1, "ObjectResultExecuting"),
-                "Executing ObjectResult, writing value of type '{Type}'.");
+                "Executing {ObjectResultType}, writing value of type '{Type}'.");
 
             _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
                 LogLevel.Debug,
@@ -933,12 +933,20 @@ namespace Microsoft.AspNetCore.Mvc
 
         public static void ExecutingFileResult(this ILogger logger, FileResult fileResult)
         {
-            _executingFileResultWithNoFileName(logger, fileResult, fileResult.FileDownloadName, null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                _executingFileResultWithNoFileName(logger, fileResultType, fileResult.FileDownloadName, null);
+            }
         }
 
         public static void ExecutingFileResult(this ILogger logger, FileResult fileResult, string fileName)
         {
-            _executingFileResult(logger, fileResult, fileName, fileResult.FileDownloadName, null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                _executingFileResult(logger, fileResultType, fileName, fileResult.FileDownloadName, null);
+            }
         }
 
         public static void NotEnabledForRangeProcessing(this ILogger logger)
@@ -1017,12 +1025,13 @@ namespace Microsoft.AspNetCore.Mvc
             _localRedirectResultExecuting(logger, destination, null);
         }
 
-        public static void ObjectResultExecuting(this ILogger logger, object value)
+        public static void ObjectResultExecuting(this ILogger logger, ObjectResult result, object value)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var type = value == null ? "null" : value.GetType().FullName;
-                _objectResultExecuting(logger, type, null);
+                var objectResultType = result.GetType().Name;
+                var valueType = value == null ? "null" : value.GetType().FullName;
+                _objectResultExecuting(logger, objectResultType, valueType, null);
             }
         }
 

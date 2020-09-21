@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -52,6 +54,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     throw new PlatformNotSupportedException(Resources.Platform_WindowsRequiredForGcm);
                 }
 
+                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
                 var configuration = new CngGcmAuthenticatedEncryptorConfiguration()
                 {
                     EncryptionAlgorithm = GetBCryptAlgorithmNameFromEncryptionAlgorithm(authenticatedConfiguration.EncryptionAlgorithm),
@@ -64,6 +68,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             {
                 if (OSVersionUtil.IsWindows())
                 {
+                    Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                     // CNG preferred over managed implementations if running on Windows
                     var configuration = new CngCbcAuthenticatedEncryptorConfiguration()
                     {

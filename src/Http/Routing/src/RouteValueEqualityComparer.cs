@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Routing
     ///
     /// strings are compared using <see cref="StringComparison.OrdinalIgnoreCase"/>.
     /// </remarks>
-    public class RouteValueEqualityComparer : IEqualityComparer<object>
+    public class RouteValueEqualityComparer : IEqualityComparer<object?>
     {
         public static readonly RouteValueEqualityComparer Default = new RouteValueEqualityComparer();
 
         /// <inheritdoc />
-        public new bool Equals(object x, object y)
+        public new bool Equals(object? x, object? y)
         {
             var stringX = x as string ?? Convert.ToString(x, CultureInfo.InvariantCulture);
             var stringY = y as string ?? Convert.ToString(y, CultureInfo.InvariantCulture);

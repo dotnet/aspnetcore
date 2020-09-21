@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
@@ -153,7 +154,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             _isRunningInBrowser = Utils.IsRunningInBrowser();
 
-
             if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
             {
                 throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
@@ -181,6 +181,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
             return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
@@ -196,6 +197,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
@@ -214,7 +216,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 return;
             }
 
-            await _connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync(cancellationToken);
             try
             {
                 CheckDisposed();
@@ -534,13 +536,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                 }
 
-                // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
-                // if the user has configured those options
-                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
-                if (_httpConnectionOptions.Cookies.Count > 0)
+                try
                 {
+                    // On supported platforms, we need to pass the cookie container to the http client
+                    // so that we can capture any cookies from the negotiate response and give them to WebSockets.
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
+                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
+                // Also WASM doesn't support some settings in the browser
+                catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
+                {
+                    Log.CookiesNotSupported(_logger);
+                }
+
+                // Only access HttpClientHandler.ClientCertificates
+                // if the user has configured those options
                 // https://github.com/aspnet/SignalR/issues/2232
                 var clientCertificates = _httpConnectionOptions.ClientCertificates;
                 if (clientCertificates?.Count > 0)
@@ -578,14 +588,34 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.Timeout = HttpClientTimeout;
 
             // Start with the user agent header
-            httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
+            httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
             {
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
-                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    // Check if the key is User-Agent and remove if empty string then replace if it exists.
+                    if (string.Equals(header.Key, Constants.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.IsNullOrEmpty(header.Value))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                        }
+                        else if (httpClient.DefaultRequestHeaders.Contains(header.Key))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                        else
+                        {
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                    }
+                    else
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
                 }
             }
 

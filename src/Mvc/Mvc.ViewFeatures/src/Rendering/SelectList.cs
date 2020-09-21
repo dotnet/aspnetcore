@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents a list that lets users select a single item.
-    /// This class is typically rendered as an HTML <code>&lt;select&gt;</code> element with the specified collection
+    /// This class is typically rendered as an HTML <c>&lt;select&gt;</c> element with the specified collection
     /// of <see cref="SelectListItem"/> objects.
     /// </summary>
     public class SelectList : MultiSelectList

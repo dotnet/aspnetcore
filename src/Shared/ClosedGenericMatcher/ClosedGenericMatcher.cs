@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Internal
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.Internal
         /// <c>typeof(KeyValuePair{,})</c>, and <paramref name="queryType"/> is
         /// <c>typeof(KeyValuePair{string, object})</c>.
         /// </remarks>
-        public static Type ExtractGenericInterface(Type queryType, Type interfaceType)
+        public static Type? ExtractGenericInterface(Type queryType, Type interfaceType)
         {
             if (queryType == null)
             {
@@ -62,9 +63,9 @@ namespace Microsoft.Extensions.Internal
                 candidate.GetGenericTypeDefinition() == interfaceType;
         }
 
-        private static Type GetGenericInstantiation(Type queryType, Type interfaceType)
+        private static Type? GetGenericInstantiation(Type queryType, Type interfaceType)
         {
-            Type bestMatch = null;
+            Type? bestMatch = null;
             var interfaces = queryType.GetInterfaces();
             foreach (var @interface in interfaces)
             {
