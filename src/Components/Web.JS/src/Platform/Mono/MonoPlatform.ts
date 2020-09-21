@@ -354,7 +354,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
 
-      let pdbPromises;
+      let pdbPromises: Promise<(ArrayBuffer | null)[]> | undefined;
       if (hasDebuggingEnabled()) {
         const pdbs = resourceLoader.bootConfig.resources.pdb;
         const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'))
@@ -376,16 +376,18 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           if (resourcesToLoad.length) {
             window['Blazor']._internal.readLazyAssemblies = () => {
               const assemblyBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (var i = 0; i < resourcesToLoad.length; i++) {
-                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+              for (let i = 0; i < resourcesToLoad.length; i++) {
+                const assembly = resourcesToLoad[i] as ArrayBuffer;
+                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
               }
               return assemblyBytes;
             };
 
             window['Blazor']._internal.readLazyPdbs = () => {
               const pdbBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (var i = 0; i < resourcesToLoad.length; i++) {
-                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdbsToLoad && pdbsToLoad[i] ? new Uint8Array(pdbsToLoad[i]) : new Uint8Array()));
+              for (let i = 0; i < resourcesToLoad.length; i++) {
+                const pdb = pdbsToLoad && pdbsToLoad[i] ? new Uint8Array(pdbsToLoad[i] as ArrayBufferLike) : new Uint8Array();
+                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
               }
               return pdbBytes;
             };

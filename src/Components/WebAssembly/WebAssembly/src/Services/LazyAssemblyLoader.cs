@@ -104,15 +104,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 null,
                 null);
 
-            foreach (var item in assemblies.Zip(pdbs, (a, p) => new { Assembly = a, PDB = p}))
+            for (int i = 0; i < assemblies.Length; i++)
             {
                 // The runtime loads assemblies into an isolated context by default. As a result,
                 // assemblies that are loaded via Assembly.Load aren't available in the app's context
                 // AKA the default context. To work around this, we explicitly load the assemblies
                 // into the default app context.
-                var loadedAssembly = item.PDB.Length == 0 ?
-                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(item.Assembly)) :
-                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(item.Assembly), new MemoryStream(item.PDB));
+                var assembly = assemblies[i];
+                var pdb = pdbs[i];
+                var loadedAssembly = pdb.Length == 0 ?
+                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly)) :
+                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly), new MemoryStream(pdb));
                 loadedAssemblies.Add(loadedAssembly);
                 _loadedAssemblyCache.Add(loadedAssembly.GetName().Name + ".dll");
             }
