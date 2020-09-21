@@ -95,7 +95,7 @@ function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): C
   return result;
 }
 
-const blazorCommentRegularExpression = /\W*Blazor:[^{]*(?<descriptor>.*)$/;
+const blazorCommentRegularExpression = /\W*Blazor:[^{]*(.*)$/;
 
 function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server'): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;
@@ -106,7 +106,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
   if (candidateStart.textContent) {
     const componentStartComment = new RegExp(blazorCommentRegularExpression);
     const definition = componentStartComment.exec(candidateStart.textContent);
-    const json = definition && definition.groups && definition.groups['descriptor'];
+    const json = definition && definition[1];
 
     if (json) {
       try {
