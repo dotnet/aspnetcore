@@ -1,7 +1,10 @@
 <Project>
 
   <Target Name="EnsureBaselineIsUpdated"
-          Condition="'$(IsServicingBuild)' == 'true' AND '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)'"
+          Condition=" '$(IsServicingBuild)' == 'true' AND
+              '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
+              '$(MSBuildProjectName)' != 'BaselineGenerator' AND
+              '$(MSBuildProjectName)' != 'RepoTasks' "
           BeforeTargets="BeforeBuild">
     <Error Text="The package baseline ($(AspNetCoreBaselineVersion)) is out of date with the latest release of this repo ($(PreviousAspNetCoreReleaseVersion)).
                  See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
