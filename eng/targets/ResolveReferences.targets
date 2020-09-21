@@ -10,11 +10,12 @@
 
   Items used by the resolution strategy:
 
-    * BaselinePackageReference = a list of packages that were reference in the last release of the project currently building
+    * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
+      - mainly used to ensure references do not change in servicing builds unless $(UseLatestPackageReferences) is not true.
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
- -->
+-->
 <Project>
 
   <PropertyGroup>
@@ -29,36 +30,29 @@
 
   <PropertyGroup>
     <!--
-      Projects should only use the latest package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
+      Projects should use the latest package references when:
+        * preparing a new major or minor release i.e. a non-servicing builds
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+      That is, use latest package references unless this is a servicing build, the project is normally packable, and
+      the package is not included in this release. The "unless" cases are extremely unlikely because both
+      $(IsPackableInNonServicingBuild) and $(IsPackageInThisPatch) are either undefined or true.
     -->
     <UseLatestPackageReferences
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackableInNonServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
-    <!--
-      Projects should only use the project references instead of baseline package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
-        * when a project is a test or sample project
-      We don't use project references between components in servicing builds between components to preserve the baseline as much as possible.
-    -->
-    <UseProjectReferences
-        Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences
-        Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+    <!-- Projects should use project references (instead of baseline packages) in almost all cases. -->
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <Reference>
-      <IsSharedSource></IsSharedSource>
+      <IsSharedSource />
     </Reference>
   </ItemDefinitionGroup>
 
@@ -73,20 +67,21 @@
     <!-- Capture a list of references which were set explicitly in the project. -->
     <_AllowedExplicitPackageReference Include="@(PackageReference->WithMetadataValue('AllowExplicitReference', 'true'))" />
     <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
-    <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
+    <_ExplicitPackageReference Include="@(PackageReference)"
+        Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
 
-    <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'"
-        Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
+    <_CompilationOnlyReference Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))"
+        Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
-      Include="@(Reference)"
-      Exclude="
-        @(AspNetCoreAppReference);
-        @(AspNetCoreAppReferenceAndPackage);
-        @(ExternalAspNetCoreAppReference);
-        @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'));
-        @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
+        Include="@(Reference)"
+        Exclude="
+          @(AspNetCoreAppReference);
+          @(AspNetCoreAppReferenceAndPackage);
+          @(ExternalAspNetCoreAppReference);
+          @(_CompilationOnlyReference);
+          @(Reference->WithMetadataValue('IsSharedSource', 'true'));
+          @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
     <_OriginalReferences Include="@(Reference)" />
   </ItemGroup>
 
@@ -134,7 +129,7 @@
   </ItemGroup>
 
   <!--
-    This target helps ensure projects within the shared framework do no unintentionally add new references, and that
+    This target helps ensure projects within the shared framework do not unintentionally add new references, and that
     assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
     In addition, enforce use of Reference items for projects reference providers.
   -->
@@ -309,9 +304,12 @@
 
   <!-- This is used by the eng/scripts/AddAllProjectRefsToSolution.ps1 script to traverse the ProjectRef graph -->
   <PropertyGroup>
-    <_CustomCollectProjectReferenceDependsOn Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
+    <_CustomCollectProjectReferenceDependsOn
+        Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
   </PropertyGroup>
-  <Target Name="_CustomCollectProjectReference" DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)" Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
+  <Target Name="_CustomCollectProjectReference"
+      DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)"
+      Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
     <ItemGroup>
       <_TargetFrameworks Include="$(TargetFrameworks)" />
     </ItemGroup>

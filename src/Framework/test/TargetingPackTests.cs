@@ -10,6 +10,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,9 +29,14 @@ namespace Microsoft.AspNetCore
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _targetingPackTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
-            _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
-                ? Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"))
-                : Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Microsoft.AspNetCore.App.Ref");
+            var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
+                TestData.GetTestDataValue("TargetingPackLayoutRoot") :
+                Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            _targetingPackRoot = Path.Combine(
+                root,
+                "packs",
+                "Microsoft.AspNetCore.App.Ref",
+                TestData.GetTestDataValue("TargetingPackVersion"));
             _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 
@@ -143,25 +149,46 @@ namespace Microsoft.AspNetCore
 
             Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
 
-            foreach (var entry in packageOverrideFileLines)
+            // PackageOverrides versions should remain at Major.Minor.0 while servicing.
+            var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
+            Assert.True(
+                NuGetVersion.TryParse(netCoreAppPackageVersion, out var parsedVersion),
+                "MicrosoftNETCoreAppPackageVersion must be convertable to a NuGetVersion.");
+            if (parsedVersion.Patch != 0 && !parsedVersion.IsPrerelease)
+            {
+                netCoreAppPackageVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.0";
+            }
+
+            var aspNetCoreAppPackageVersion = TestData.GetReferencePackSharedFxVersion();
+            Assert.True(
+                NuGetVersion.TryParse(aspNetCoreAppPackageVersion, out parsedVersion),
+                "ReferencePackSharedFxVersion must be convertable to a NuGetVersion.");
+            if (parsedVersion.Patch != 0 && !parsedVersion.IsPrerelease)
+            {
+                aspNetCoreAppPackageVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.0";
+            }
+
+            Assert.All(packageOverrideFileLines, entry =>
             {
                 var packageOverrideParts = entry.Split("|");
+                Assert.Equal(2, packageOverrideParts.Length);
+
                 var packageName = packageOverrideParts[0];
                 var packageVersion = packageOverrideParts[1];
 
                 if (runtimeDependencies.Contains(packageName))
                 {
-                    Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), packageVersion);
+                    Assert.Equal(netCoreAppPackageVersion, packageVersion);
                 }
                 else if (aspnetcoreDependencies.Contains(packageName))
                 {
-                    Assert.Equal(TestData.GetReferencePackSharedFxVersion(), packageVersion);
+                    Assert.Equal(aspNetCoreAppPackageVersion, packageVersion);
                 }
                 else
                 {
                     Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
                 }
-            }
+            });
         }
 
         [Fact]
