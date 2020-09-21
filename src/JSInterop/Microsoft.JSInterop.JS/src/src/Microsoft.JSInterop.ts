@@ -63,7 +63,9 @@ export module DotNet {
       url = document.baseURI + url.substr(2);
     }
 
-    return import(/* webpackIgnore: true */ url);
+    // TODO: When dropping support for legacy Edge, remove dynamicImport and all related code,
+    // and just "return import(url);" from here
+    return dynamicImport(url);
   });
 
   let nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
@@ -152,7 +154,7 @@ export module DotNet {
 
   /**
    * Parses the given JSON string using revivers to restore args passed from .NET to JS.
-   * 
+   *
    * @param json The JSON stirng to parse.
    */
   export function parseJsonWithRevivers(json: string): any {
@@ -430,5 +432,83 @@ export module DotNet {
 
   function argReplacer(key: string, value: any) {
     return value instanceof DotNetObject ? value.serializeAsArg() : value;
+  }
+
+  // Using "import" is tricky because legacy Edge considers it to be a syntax error at parse time,
+  // so you can't have it in your .js file even if you're not calling it at runtime.
+  //
+  // The options are:
+  // [1] Don't support legacy Edge
+  // [2] Or, construct the "import" usage dynamically, and work around resulting CSP issues
+  //
+  // The code below implements [2]
+
+  type DynamicImportFunction = (url: string) => Promise<any>;
+  let cachedImplementationPromise: Promise<DynamicImportFunction> | undefined;
+
+  async function dynamicImport(url: string): Promise<any> {
+    if (!cachedImplementationPromise) {
+      cachedImplementationPromise = getDynamicImportImplementation();
+    }
+
+    const cachedImplementation = await cachedImplementationPromise;
+    return cachedImplementation(url);
+  }
+
+  async function getDynamicImportImplementation(): Promise<DynamicImportFunction> {
+    // First, if window.__import__ exists, then it looks like you're using
+    // https://github.com/GoogleChromeLabs/dynamic-import-polyfill or some other
+    // polyfill, so allow that.
+    const polyfillFunctionName = '__import__';
+    if (typeof (window as any)[polyfillFunctionName] === 'function') {
+      const polyfill: DynamicImportFunction = (window as any)[polyfillFunctionName];
+      return polyfill;
+    }
+
+    // Next, try a naive eval-style construction. If this works then the browser
+    // supports 'import' and there's no CSP blocking this mechanism, so use it.
+    try {
+      const implViaNewFunction = new Function('url', 'return import(url)') as DynamicImportFunction;
+      return implViaNewFunction;
+    } catch {
+    }
+
+    // Next, try construction via a blob URL. In many cases this can be allowed
+    // via CSP, albeit with the drawback of making an extra odd entry appear
+    // in the browser dev tools UI.
+    return new Promise<DynamicImportFunction>((resolve, reject) => {
+      const functionNameKey = '__jsInteropDynamicImport__';
+      const scriptBlob = new Blob([
+        `window.${functionNameKey} = function(url) { return import(url); };`
+      ], {type: 'text/javascript'});
+      const scriptElem = document.createElement('script');
+      scriptElem.src = URL.createObjectURL(scriptBlob);
+      const cleanup = () => {
+        URL.revokeObjectURL(scriptElem.src);
+        if (scriptElem.parentNode) {
+          scriptElem.parentNode.removeChild(scriptElem);
+        }
+      };
+      scriptElem.onerror = err => {
+        // If this fails, just let it fail and pass through the underlying error. This
+        // should help the developer work out whether the problem is that their CSP needs
+        // to be expanded to allow blob:// script URLs or whether it's that the current
+        // browser doesn't support the 'import' keyword (in which case they should consider
+        // adding a polyfill).
+        cleanup();
+        reject(err);
+      };
+      scriptElem.onload = () => {
+        cleanup();
+        const resultImpl = (window as any)[functionNameKey];
+        if (typeof resultImpl == 'function') {
+          delete (window as any)[functionNameKey];
+          resolve(resultImpl);
+        } else {
+          reject(new Error('Could not load dynamic import function'));
+        }
+      };
+      document.head.appendChild(scriptElem);
+    });
   }
 }
