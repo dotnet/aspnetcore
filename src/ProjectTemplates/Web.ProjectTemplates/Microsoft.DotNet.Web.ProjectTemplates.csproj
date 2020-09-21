@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
   </PropertyGroup>
