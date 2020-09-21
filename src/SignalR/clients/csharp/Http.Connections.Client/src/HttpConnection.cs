@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -38,7 +39,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _started;
         private bool _disposed;
         private bool _hasInherentKeepAlive;
-        private bool _isRunningInBrowser;
 
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
@@ -152,9 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
-            _isRunningInBrowser = Utils.IsRunningInBrowser();
-
-            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
             {
                 throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
             }
@@ -376,7 +374,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         continue;
                     }
 
-                    if (transportType == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+                    if (transportType == HttpTransportType.ServerSentEvents && RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
                     {
                         Log.ServerSentEventsNotSupportedByBrowser(_logger);
                         transportExceptions.Add(new TransportFailedException("ServerSentEvents", "The transport is not supported in the browser."));
@@ -529,42 +527,39 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             var httpClientHandler = new HttpClientHandler();
             HttpMessageHandler httpMessageHandler = httpClientHandler;
 
+            var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser"));
+
             if (_httpConnectionOptions != null)
             {
-                if (_httpConnectionOptions.Proxy != null)
+                if (!isBrowser)
                 {
-                    httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
-                }
+                    // Configure options that do not work in the browser inside this if-block
+                    if (_httpConnectionOptions.Proxy != null)
+                    {
+                        httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
+                    }
 
-                try
-                {
-                    // On supported platforms, we need to pass the cookie container to the http client
-                    // so that we can capture any cookies from the negotiate response and give them to WebSockets.
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
-                }
-                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
-                // Also WASM doesn't support some settings in the browser
-                catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
-                {
-                    Log.CookiesNotSupported(_logger);
-                }
 
-                // Only access HttpClientHandler.ClientCertificates
-                // if the user has configured those options
-                // https://github.com/aspnet/SignalR/issues/2232
-                var clientCertificates = _httpConnectionOptions.ClientCertificates;
-                if (clientCertificates?.Count > 0)
-                {
-                    httpClientHandler.ClientCertificates.AddRange(clientCertificates);
-                }
+                    // Only access HttpClientHandler.ClientCertificates
+                    // if the user has configured those options
+                    // https://github.com/aspnet/SignalR/issues/2232
 
-                if (_httpConnectionOptions.UseDefaultCredentials != null)
-                {
-                    httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
-                }
-                if (_httpConnectionOptions.Credentials != null)
-                {
-                    httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    var clientCertificates = _httpConnectionOptions.ClientCertificates;
+                    if (clientCertificates?.Count > 0)
+                    {
+                        httpClientHandler.ClientCertificates.AddRange(clientCertificates);
+                    }
+
+                    if (_httpConnectionOptions.UseDefaultCredentials != null)
+                    {
+                        httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
+                    }
+
+                    if (_httpConnectionOptions.Credentials != null)
+                    {
+                        httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    }
                 }
 
                 httpMessageHandler = httpClientHandler;
@@ -645,7 +640,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else

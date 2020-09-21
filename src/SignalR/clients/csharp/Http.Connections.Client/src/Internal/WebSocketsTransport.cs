@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
-        private bool _isRunningInBrowser;
 
         private IDuplexPipe _transport;
 
@@ -37,10 +36,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
-            _isRunningInBrowser = Utils.IsRunningInBrowser();
-
-            // ClientWebSocketOptions throws PNSE when accessing and setting properties
-            if (!_isRunningInBrowser)
+            var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser"));
+            if (!isBrowser)
             {
                 // Full Framework will throw when trying to set the User-Agent header
                 // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
@@ -50,17 +47,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // Set an alternative user agent header on Full framework
                 _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
 #endif
+            }
 
-                if (httpConnectionOptions != null)
+            if (httpConnectionOptions != null)
+            {
+                if (httpConnectionOptions.Headers != null)
                 {
-                    if (httpConnectionOptions.Headers != null)
+                    if (isBrowser)
                     {
-                        foreach (var header in httpConnectionOptions.Headers)
-                        {
-                            _webSocket.Options.SetRequestHeader(header.Key, header.Value);
-                        }
+                        throw new PlatformNotSupportedException("Configuring request headers is not supported when using WebSocketsTransport in the browser platform.");
                     }
 
+                    foreach (var header in httpConnectionOptions.Headers)
+                    {
+                        _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                    }
+                }
+
+                if (!isBrowser)
+                {
                     if (httpConnectionOptions.Cookies != null)
                     {
                         _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
@@ -85,14 +90,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     {
                         _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                     }
-
-                    httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
                 }
 
+                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
+            }
 
+            if (!isBrowser)
+            {
                 // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
                 // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
+#pragma warning disable CA1416 // Analyzer bug
                 _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
+#pragma warning restore CA1416 // Validate platform compatibility
             }
 
             _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
@@ -128,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     // We can't use request headers in the browser, so instead append the token as a query string in that case
-                    if (_isRunningInBrowser)
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
                     {
                         var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
                         accessTokenEncoded = "access_token=" + accessTokenEncoded;
@@ -136,7 +145,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
                     else
                     {
+#pragma warning disable CA1416 // Analyzer bug
                         _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+#pragma warning restore CA1416 // Analyzer bug
                     }
                 }
             }
@@ -228,7 +239,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP
                     // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
@@ -245,7 +256,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #elif NETSTANDARD2_0 || NET461

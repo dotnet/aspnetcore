@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -86,23 +87,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             {
                 HttpMessageHandlerFactory = options.HttpMessageHandlerFactory,
                 Headers = options.Headers,
-                Cookies = options.Cookies,
                 Url = options.Url,
                 Transports = options.Transports,
                 SkipNegotiation = options.SkipNegotiation,
                 AccessTokenProvider = options.AccessTokenProvider,
                 CloseTimeout = options.CloseTimeout,
-                Credentials = options.Credentials,
-                Proxy = options.Proxy,
-                UseDefaultCredentials = options.UseDefaultCredentials,
                 DefaultTransferFormat = options.DefaultTransferFormat,
                 WebSocketConfiguration = options.WebSocketConfiguration,
             };
 
-            // WASM doesn't support Crypto APIs and our setter throws if you try to assign null
-            if (options.ClientCertificates != null)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
             {
+                newOptions.Cookies = options.Cookies;
                 newOptions.ClientCertificates = options.ClientCertificates;
+                newOptions.Credentials = options.Credentials;
+                newOptions.Proxy = options.Proxy;
+                newOptions.UseDefaultCredentials = options.UseDefaultCredentials;
             }
 
             return newOptions;

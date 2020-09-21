@@ -5,11 +5,13 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using static Microsoft.AspNetCore.Http.Connections.Client.Internal.Utils;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
@@ -161,7 +163,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         // just want to start a new poll.
                         continue;
                     }
-                    catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+                    catch (WebException ex) when (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")) && ex.Status == WebExceptionStatus.RequestCanceled)
                     {
                         // SendAsync on .NET Framework doesn't reliably throw OperationCanceledException.
                         // Catch the WebException and test it.

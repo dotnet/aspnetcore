@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core SignalR</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
   </PropertyGroup>
 
@@ -36,6 +36,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
@@ -22,6 +23,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private IDictionary<string, string> _headers;
         private X509CertificateCollection _clientCertificates;
         private CookieContainer _cookies;
+        private ICredentials _credentials;
+        private IWebProxy _proxy;
+        private bool? _useDefaultCredentials;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionOptions"/> class.
@@ -31,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _headers = new Dictionary<string, string>();
 
             // System.Security.Cryptography isn't supported on WASM currently
-            if (!Utils.IsRunningInBrowser())
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
             {
                 _clientCertificates = new X509CertificateCollection();
             }
@@ -59,19 +63,37 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets a collection of client certificates that will be sent with HTTP requests.
         /// </summary>
+        [UnsupportedOSPlatform("browser")]
         public X509CertificateCollection ClientCertificates
         {
-            get => _clientCertificates;
-            set => _clientCertificates = value ?? throw new ArgumentNullException(nameof(value));
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _clientCertificates;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _clientCertificates = value ?? throw new ArgumentNullException(nameof(value));
+            }
         }
 
         /// <summary>
         /// Gets or sets a collection of cookies that will be sent with HTTP requests.
         /// </summary>
+        [UnsupportedOSPlatform("browser")]
         public CookieContainer Cookies
         {
-            get => _cookies;
-            set => _cookies = value ?? throw new ArgumentNullException(nameof(value));
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _cookies;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _cookies = value ?? throw new ArgumentNullException(nameof(value));
+            }
         }
 
         /// <summary>
@@ -105,17 +127,56 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets the credentials used when making HTTP requests.
         /// </summary>
-        public ICredentials Credentials { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public ICredentials Credentials
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _credentials;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _credentials = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the proxy used when making HTTP requests.
         /// </summary>
-        public IWebProxy Proxy { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public IWebProxy Proxy
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _proxy;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _proxy = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether default credentials are used when making HTTP requests.
         /// </summary>
-        public bool? UseDefaultCredentials { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public bool? UseDefaultCredentials
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _useDefaultCredentials;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _useDefaultCredentials = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the default <see cref="TransferFormat" /> to use if <see cref="HttpConnection.StartAsync(CancellationToken)"/>
@@ -132,5 +193,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// has been applied.
         /// </remarks>
         public Action<ClientWebSocketOptions> WebSocketConfiguration { get; set; }
+
+        private static void ThrowIfUnsupportedPlatform()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser")))
+            {
+                throw new PlatformNotSupportedException();
+            }
+        }
     }
 }
