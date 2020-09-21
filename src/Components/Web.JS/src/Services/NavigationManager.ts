@@ -85,11 +85,13 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
     const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);
-  } else if (replace){
-    history.replaceState(null, '', absoluteUri)
   } else {
     // It's either an external URL, or forceLoad is requested, so do a full page load
-    location.href = uri;
+    if (replace) {
+      location.replace(absoluteUri);
+    } else {
+      location.href = uri;
+    }
   }
 }
 

@@ -355,10 +355,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var loginUrl = Navigation.ToAbsoluteUri(ApplicationPaths.LogInPath).PathAndQuery;
             var registerUrl = Navigation.ToAbsoluteUri($"{ApplicationPaths.RemoteRegisterPath}?returnUrl={Uri.EscapeDataString(loginUrl)}").PathAndQuery;
 
-            return JS.InvokeVoidAsync("location.replace", registerUrl);
+            return JS.InvokeVoidAsync("Blazor.navigateTo", registerUrl, true, true);
         }
 
-        private ValueTask RedirectToProfile() => JS.InvokeVoidAsync("location.replace", Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery);
+        private ValueTask RedirectToProfile() => JS.InvokeVoidAsync("Blazor.navigateTo", Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery, true, true);
 
         private static void DefaultLogInFragment(RenderTreeBuilder builder)
         {
