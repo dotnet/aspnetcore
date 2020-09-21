@@ -155,14 +155,24 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
+    <PropertyGroup>
+      <_PinnedNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimeVersion)</_PinnedNETCoreAppRuntimeVersion>
+      <_PinnedNETCoreAppRuntimeVersion
+          Condition=" '$(IsServicingBuild)' == 'true' ">$(_PinnedNETCoreAppRuntimeVersion.Split('.')[0]).$(_PinnedNETCoreAppRuntimeVersion.Split('.')[1]).0</_PinnedNETCoreAppRuntimeVersion>
+    </PropertyGroup>
     <ItemGroup>
-      <!-- Use package version for non-Extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+      <!-- Use package version for non-Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+          Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
-      <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
+      <!-- Use pinned NETCore.App version for Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(_PinnedNETCoreAppRuntimeVersion)')" />
 
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
+          Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
     </ItemGroup>
 
     <WriteLinesToFile

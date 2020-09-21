@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Http.Connections
 
 <h1 id="signalr-client">SignalR Client</h1>
 
@@ -7,6 +8,10 @@
 <p>
     Hub URL:
     <input id="hub-url" @bind="hubUrl" />
+    <select id="transport-type" @bind="transportType">
+        <option value=@HttpTransportType.LongPolling>LongPolling</option>
+        <option value=@HttpTransportType.WebSockets>WebSockets</option>
+    </select>
     <button id="hub-connect" @onclick="Connect">Connect</button>
 </p>
 
@@ -21,13 +26,14 @@
 
 @code {
     private string hubUrl;
+    private HttpTransportType transportType;
     private HubConnection hubConnection;
     private List<string> messages = new List<string>();
 
     protected async Task Connect()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
+            .WithUrl(hubUrl, transportType)
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
@@ -38,7 +44,7 @@
         });
 
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("SendMessage", "SignalR Client", "Echo");
+        await hubConnection.SendAsync("SendMessage", "SignalR Client", $"Echo {transportType}");
     }
 
     public bool IsConnected =>
