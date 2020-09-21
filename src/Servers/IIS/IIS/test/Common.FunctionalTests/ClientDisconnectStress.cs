@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -12,13 +14,49 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class ClientDisconnectStressTests: FunctionalTestsBase
+    public class ClientDisconnectStressTests: IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public ClientDisconnectStressTests(PublishedSitesFixture fixture)
+        public ClientDisconnectStressTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
+        }
+
+        [ConditionalFact]
+        public async Task ClosesConnectionOnServerAbortOutOfProcess()
+        {
+            try
+            {
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+                var deploymentResult = await DeployAsync(deploymentParameters);
+
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+
+                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+                // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
+                Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
+            }
+            catch (HttpRequestException)
+            {
+                // Connection reset is expected
+            }
+        }
+
+        [ConditionalFact]
+        public async Task ClosesConnectionOnServerAbortInProcess()
+        {
+            try
+            {
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+
+                Assert.True(false, "Should not reach here");
+            }
+            catch (HttpRequestException)
+            {
+                // Connection reset is expected both for outofproc and inproc
+            }
         }
 
         [ConditionalTheory]
@@ -27,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ClientDisconnectStress(HostingModel hostingModel)
         {
-            var site = await StartAsync(_fixture.GetBaseDeploymentParameters(hostingModel));
+            var site = await StartAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
             var maxRequestSize = 1000;
             var blockSize = 40;
             var random = new Random();

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
@@ -20,55 +22,18 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class HttpsTests : IISFunctionalTestBase
     {
-        public HttpsTests(PublishedSitesFixture fixture) : base(fixture)
+        private readonly ClientCertificateFixture _certFixture;
+
+        public HttpsTests(PublishedSitesFixture fixture, ClientCertificateFixture certFixture) : base(fixture)
         {
+            _certFixture = certFixture;
         }
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.Net50)
-                .WithAllApplicationTypes()
+                .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels();
-
-        [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22329")]
-        [MemberData(nameof(TestVariants))]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
-        public async Task HttpsHelloWorld(TestVariant variant)
-        {
-            var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
-            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
-            deploymentParameters.AddHttpsToServerConfig();
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var client = CreateNonValidatingClient(deploymentResult);
-            var response = await client.GetAsync("HttpsHelloWorld");
-            var responseText = await response.Content.ReadAsStringAsync();
-            if (variant.HostingModel == HostingModel.OutOfProcess)
-            {
-                Assert.Equal("Scheme:https; Original:http", responseText);
-            }
-            else
-            {
-                Assert.Equal("Scheme:https; Original:", responseText);
-            }
-
-            if (DeployerSelector.HasNewHandler &&
-                DeployerSelector.HasNewShim)
-            {
-                // We expect ServerAddress to be set for InProcess and ANCM_HTTPS_PORT for OutOfProcess
-                if (variant.HostingModel == HostingModel.InProcess)
-                {
-                    Assert.Equal(deploymentParameters.ApplicationBaseUriHint, await client.GetStringAsync("/ServerAddresses"));
-                }
-                else
-                {
-                    Assert.Equal(port.ToString(), await client.GetStringAsync("/ANCM_HTTPS_PORT"));
-                }
-            }
-        }
 
         [ConditionalFact]
         [RequiresNewHandler]
@@ -236,6 +201,77 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
             Assert.Null(response.Headers.ConnectionClose);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+        public Task HttpsNoClientCert_NoClientCert(TestVariant variant)
+        {
+            return ClientCertTest(variant, sendClientCert: false);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+        public Task HttpsClientCert_GetCertInformation(TestVariant variant)
+        {
+            return ClientCertTest(variant, sendClientCert: true);
+        }
+
+        private async Task ClientCertTest(TestVariant variant, bool sendClientCert)
+        {
+            var port = TestPortHelper.GetNextSSLPort();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
+            deploymentParameters.AddHttpsWithClientCertToServerConfig();
+
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+            };
+
+            X509Certificate2 cert = null;
+            if (sendClientCert)
+            {
+                cert = _certFixture.GetOrCreateCertificate();
+                handler.ClientCertificates.Add(cert);
+            }
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var client = deploymentResult.CreateClient(handler);
+            var response = await client.GetAsync("GetClientCert");
+
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                if (sendClientCert)
+                {
+                    Assert.Equal($"Enabled;{cert.GetCertHashString()}", responseText);
+                }
+                else
+                {
+                    Assert.Equal("Disabled", responseText);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Certificate is invalid. Issuer name: {cert?.Issuer}");
+                using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+                {
+                    Logger.LogError($"List of current certificates in root store:");
+                    store.Open(OpenFlags.ReadWrite);
+                    foreach (var otherCert in store.Certificates)
+                    {
+                        Logger.LogError(otherCert.Issuer);
+                    }
+                    store.Close();
+                }
+                throw ex;
+            }
         }
 
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)

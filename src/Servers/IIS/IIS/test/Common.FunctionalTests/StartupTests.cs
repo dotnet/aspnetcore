@@ -115,17 +115,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-        [ConditionalTheory]
-        [InlineData(RuntimeArchitecture.x64)]
-        [InlineData(RuntimeArchitecture.x86)]
+        [ConditionalFact]
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
-        public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
+        public async Task StartsWithDotnetInstallLocation()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
+            deploymentParameters.RuntimeArchitecture = RuntimeArchitecture.x64;
 
             // IIS doesn't allow empty PATH
             deploymentParameters.EnvironmentVariables["PATH"] = ".";
@@ -134,10 +132,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             // Key is always in 32bit view
             using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
-                var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
+                var installDir = DotNetCommands.GetDotNetInstallDir(RuntimeArchitecture.x64);
                 using (new TestRegistryKey(
                     localMachine,
-                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture,
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + RuntimeArchitecture.x64,
                     "InstallLocation",
                     installDir))
                 {
@@ -301,7 +299,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             if (deploymentParameters.ServerType == ServerType.IISExpress)
             {
-                // TODO skip conditions for IISExpress
                 return;
             }
 

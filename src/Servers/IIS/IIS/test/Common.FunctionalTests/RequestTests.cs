@@ -3,6 +3,8 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -90,6 +92,40 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 var response = await SendSocketRequestAsync("/%" + i.ToString("X2"));
                 Assert.True(string.Equals(400, response.Status), i.ToString("X2") + ";" + response);
             }
+        }
+
+        [ConditionalFact]
+        public async Task PassesThroughCompressionOutOfProcess()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/CompressedData");
+
+            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+            var response = await _fixture.Client.SendAsync(request);
+            Assert.Equal("gzip", response.Content.Headers.ContentEncoding.Single());
+            Assert.Equal(
+                new byte[] {
+                    0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                    0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
+                await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [ConditionalFact]
+        public async Task PassesThroughCompressionInProcess()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/CompressedData");
+
+            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+            var response = await _fixture.Client.SendAsync(request);
+            Assert.Equal("gzip", response.Content.Headers.ContentEncoding.Single());
+            Assert.Equal(
+                new byte[] {
+                    0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                    0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
+                await response.Content.ReadAsByteArrayAsync());
         }
 
         private async Task<(int Status, string Body)> SendSocketRequestAsync(string path)

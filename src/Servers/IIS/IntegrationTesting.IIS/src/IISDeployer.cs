@@ -301,9 +301,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     // redirection wasn't removed before starting another site.
                     redirectionSection.Attributes["enabled"].Value = false;
                     var redirectedFilePath = (string)redirectionSection.Attributes["path"].Value;
-                    Logger.LogWarning("Contents of redirected file");
-
-                    Logger.LogWarning(File.ReadAllText(redirectedFilePath));
+                    Logger.LogWarning($"Name of redirected file: {redirectedFilePath}");
 
                     serverManager.CommitChanges();
 

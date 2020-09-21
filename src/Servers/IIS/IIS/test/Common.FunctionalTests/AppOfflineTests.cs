@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/3835")]
+        [ConditionalFact]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -211,7 +211,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/7075")]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
         {
             var deploymentResult = await AssertStarts(hostingModel);

@@ -17,44 +17,5 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public ServerAbortOutOfProcessTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
-
-        [ConditionalFact]
-        public async Task ClosesConnectionOnServerAbortOutOfProcess()
-        {
-            try
-            {
-                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
-
-                var deploymentResult = await DeployAsync(deploymentParameters);
-
-                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
-
-                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
-                // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
-                Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
-            }
-            catch (HttpRequestException)
-            {
-                // Connection reset is expected
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ClosesConnectionOnServerAbortInProcess()
-        {
-            try
-            {
-                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
-
-                var deploymentResult = await DeployAsync(deploymentParameters);
-                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
-
-                Assert.True(false, "Should not reach here");
-            }
-            catch (HttpRequestException)
-            {
-                // Connection reset is expected both for outofproc and inproc
-            }
-        }
     }
 }

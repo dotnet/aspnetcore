@@ -22,8 +22,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.Net50)
-                .WithAllApplicationTypes()
+                .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels();
+
+        public static TestMatrix InprocessTestVariants
+            => TestMatrix.ForServers(DeployerSelector.ServerType)
+                .WithTfms(Tfm.Net50)
+                .WithApplicationTypes(ApplicationType.Portable)
+                .WithHostingModels(HostingModel.InProcess);
 
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
@@ -85,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         [RequiresNewShim]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile(TestVariant variant)
         {
@@ -101,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFile(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
@@ -116,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFileWhenEnabledWithEnvVar(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
@@ -133,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         public async Task StartupMessagesLogFileSwitchedWhenLogFilePresentInWebConfig(TestVariant variant)
         {
             var firstTempFile = Path.GetTempFileName();
@@ -165,8 +171,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [MemberData(nameof(TestVariants))]
-
+        [MemberData(nameof(InprocessTestVariants))]
         public async Task DebugLogsAreWrittenToEventLog(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
@@ -178,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2200")]
         public async Task CheckUTF8File(TestVariant variant)
         {
@@ -200,20 +205,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, logFolderPath), Logger);
             Assert.Contains("彡⾔", contents);
-
-            if (variant.HostingModel == HostingModel.InProcess)
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
-            }
-            else
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
-            }
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
         }
 
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [MemberData(nameof(TestVariants))]
+        [MemberData(nameof(InprocessTestVariants))]
         public async Task OnlyOneFileCreatedWithProcessStartTime(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
