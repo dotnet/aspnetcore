@@ -19,6 +19,28 @@
         <RelatedBundle Action="Upgrade" Id="{EA47395A-BC9B-3ECC-8229-229BC9528DF6}"/>
         <?endif?>
 
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <?if $(var.Version)=3.1.0.0?>
+        <!--'Microsoft .NET Core 3.1.8 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{81D96996-6F29-3BAC-82C6-9156FE1BD5FB}"/>
+        <!--'Microsoft .NET Core 3.1.7 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{44D6EE78-0248-36AD-9B2C-26FA728E477D}"/>
+        <!--'Microsoft .NET Core 3.1.6 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{C0453F97-42DD-3CD5-9FCE-018DD1F1A020}"/>
+        <!--'Microsoft .NET Core 3.1.5 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{8BF71BDA-9BF7-3AD5-9E6B-3656FEEC95AA}"/>
+        <!--'Microsoft .NET Core 3.1.4 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{6CF8B606-EE26-3536-BEFE-410EA70DBB94}"/>
+        <!--'Microsoft .NET Core 3.1.3 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{71F4232E-75BF-32AF-9A8F-1E87CC17CC6C}"/>
+        <!--'Microsoft .NET Core 3.1.2 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{3CDBE509-D166-335B-BD17-EA6FDAC4E03A}"/>
+        <!--'Microsoft .NET Core 3.1.1 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{62155173-E27B-3936-997F-56DA96ED19B5}"/>
+        <!--'Microsoft .NET Core 3.1.0 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{6F741175-2F75-3845-B30B-6C364101EAA2}"/>
+        <?endif?>
+
         <PayloadGroup Id="PG_Resources">
             <?foreach lcid in 2052;1028;1029;1031;3082;1036;1040;1041;1042;1045;1046;1049;1055?>
             <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>

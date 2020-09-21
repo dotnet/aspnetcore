@@ -1,3 +1,5 @@
+
+
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
@@ -21,6 +23,54 @@
         <RelatedBundle Action="Upgrade" Id="{F5C19B0F-77DF-3353-96D9-3F398FA38CF7}"/>
         <RelatedBundle Action="Upgrade" Id="{DFC9DEC7-307D-39B5-AF9C-4E8CE923B1BA}"/>
         <RelatedBundle Action="Upgrade" Id="{FDCA5106-C69E-34BB-A3B8-A24ADD0B4769}"/>
+        <?endif?>
+        <?endif?>
+
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <?if $(var.Version)=3.1.0.0?>
+        <?if $(var.Platform)=x64?>
+        <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{BA264433-7668-3F63-BA27-0B842B591B41}"/>
+        <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{E843D8AB-9AE4-3BBA-B417-E920A145D4D2}"/>
+        <!--'Microsoft ASP.NET Core 3.1.6 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{598E3E3B-DFA5-3F58-B2CF-EA59B0CD04E6}"/>
+        <!--'Microsoft ASP.NET Core 3.1.5 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{C2718AD8-4EC1-300D-A871-E98A1AC69180}"/>
+        <!--'Microsoft ASP.NET Core 3.1.4 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F6D32B6E-2736-3FCC-B0F8-CB4C5AF95B2E}"/>
+        <!--'Microsoft ASP.NET Core 3.1.3 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{33468842-C5B0-3189-96D7-8CD8D28585B9}"/>
+        <!--'Microsoft ASP.NET Core 3.1.2 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{54EE87B3-B909-37F1-85AD-EE2296ABD2F1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.1 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{90F6AF22-13B2-3D34-9CF0-C7F407DF4195}"/>
+        <!--'Microsoft ASP.NET Core 3.1.0 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{A65A6022-E10B-3AEF-802C-B9AFE0B000E2}"/>
+        <?endif?>
+        <?endif?>
+
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <?if $(var.Version)=3.1.0.0?>
+        <?if $(var.Platform)=x86?>
+        <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F9E1048A-39B9-3AE1-8AA1-6B054A204A84}"/>
+        <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{48272B78-3954-3D58-AB75-27B31E0D0DBD}"/>
+        <!--'Microsoft ASP.NET Core 3.1.6 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{52FF933A-F022-3A0A-8200-4C0E8E3934C3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.5 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F8C888A3-46C2-3306-8C90-5622C65BEBE3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.4 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{EC496CB3-526B-366D-B667-3A20354DB136}"/>
+        <!--'Microsoft ASP.NET Core 3.1.3 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{05780385-0142-3FAA-9B97-F785C4798EC1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.2 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{4EBEC6A2-DB4C-396B-BAE7-890D1D7EB9B3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.1 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{5F160755-5B95-32A7-8D4F-ED1BA9F959D1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.0 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{AC05AAAB-C217-3B65-95FE-11D2CB07A485}"/>
         <?endif?>
         <?endif?>
 
