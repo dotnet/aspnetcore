@@ -424,7 +424,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewShim]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1794")]
         public async Task ConfigurationTouchedStress_OutOfProcess()
         {
             await ConfigurationTouchedStress(HostingModel.OutOfProcess);
