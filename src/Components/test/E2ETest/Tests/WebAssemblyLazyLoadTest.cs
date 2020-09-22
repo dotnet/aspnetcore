@@ -99,11 +99,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Wait for the page to finish loading
             new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
+                 driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
 
-            // Now the assembly and its PDB have been loaded
+            // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
-            Assert.True(HasLoadedAssembly("LazyTestContentPackage.pdb"));
 
             var button = app.FindElement(By.Id("go-to-lazy-route"));
             button.Click();
