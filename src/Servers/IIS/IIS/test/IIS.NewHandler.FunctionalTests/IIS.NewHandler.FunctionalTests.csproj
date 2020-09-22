@@ -13,7 +13,6 @@
   <ItemGroup>
     <Compile Include="..\Common.FunctionalTests\StartupTests.cs" />
     <Compile Include="..\Common.FunctionalTests\ShutdownTests.cs" />
-    <Compile Include="..\Common.FunctionalTests\LoggingTests.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
     <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
