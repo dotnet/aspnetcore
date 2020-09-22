@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     internal static class EntrypointInvoker
     {
+        private const string NotifyCultureChanged = "window.Blazor._internal.notifyCultureChanged";
+
         // This method returns void because currently the JS side is not listening to any result,
         // nor will it handle any exceptions. We handle all exceptions internally to this method.
         // In the future we may want Blazor.start to return something that exposes the possibly-async
@@ -17,6 +20,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         // do change this it will be non-breaking.
         public static async void InvokeEntrypoint(string assemblyName, string[] args)
         {
+             WebAssemblyCultureProvider.Initialize();
+
             try
             {
                 var assembly = Assembly.Load(assemblyName);

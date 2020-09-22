@@ -309,11 +309,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
       const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
 
-      if (resourceLoader.bootConfig.icuDataMode == ICUDataMode.Sharded && culturesToLoad && culturesToLoad[0] !== applicationCulture) {
-        // We load an initial icu file based on the browser's locale. However if the application's culture requires a different set, flag this as an error.
-        throw new Error('To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application\'s project file.');
-      }
-
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
           .filter(culture => satelliteResources.hasOwnProperty(culture))
@@ -404,6 +399,14 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     }
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
+    if (resourceLoader.bootConfig.icuDataMode == ICUDataMode.Sharded) {
+      MONO.mono_wasm_setenv('__BLAZOR_SHARDED_ICU',  '1');
+
+      if (resourceLoader.startOptions.applicationCulture) {
+        // If a culture is specified via start options use that to initialize the Emscripten \  .NET culture.
+        MONO.mono_wasm_setenv('LANG',  `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
+      }
+    }
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     let timeZone = "UTC";
     try {

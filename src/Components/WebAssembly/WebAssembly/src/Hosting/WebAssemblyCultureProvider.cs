@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
-    internal class SatelliteResourcesLoader
+    internal class WebAssemblyCultureProvider
     {
         internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";
         internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
@@ -19,9 +19,44 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly WebAssemblyJSRuntimeInvoker _invoker;
 
         // For unit testing.
-        internal SatelliteResourcesLoader(WebAssemblyJSRuntimeInvoker invoker)
+        internal WebAssemblyCultureProvider(WebAssemblyJSRuntimeInvoker invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
         {
             _invoker = invoker;
+            InitialCulture = initialCulture;
+            InitialUICulture = initialUICulture;
+        }
+
+        public static WebAssemblyCultureProvider Instance { get; private set; }
+
+        public CultureInfo InitialCulture { get; }
+
+        public CultureInfo InitialUICulture { get; }
+
+        internal static void Initialize()
+        {
+            Instance = new WebAssemblyCultureProvider(
+                WebAssemblyJSRuntimeInvoker.Instance,
+                initialCulture: CultureInfo.CurrentCulture,
+                initialUICulture: CultureInfo.CurrentUICulture);
+        }
+
+        public void ThrowIfCultureChangeIsUnsupported()
+        {
+            // With ICU sharding enabled, bootstrapping WebAssembly will download a ICU shard based on the browser language.
+            // If the application author was to change the culture as part of their Program.MainAsync, we might have
+            // incomplete icu data for their culture. We would like to flag this as an error and notify the author to
+            // use the combined icu data file instead.
+            //
+            // The Initialize method is invoked as one of the first steps bootstrapping the app prior to any user code running.
+            // It allows us to capture the initial .NET culture that is configured based on the browser language.
+            // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
+            // thus allows us to detect if the culture was changed by user code.
+            if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
+                ((CultureInfo.CurrentCulture != InitialCulture) || (CultureInfo.CurrentUICulture != InitialUICulture)))
+            {
+                throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +
+                    "To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application's project file.");
+            }
         }
 
         public virtual async ValueTask LoadCurrentCultureResourcesAsync()

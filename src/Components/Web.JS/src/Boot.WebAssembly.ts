@@ -8,7 +8,7 @@ import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
-import { BootConfigResult } from './Platform/BootConfig';
+import { BootConfigResult, ICUDataMode } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
