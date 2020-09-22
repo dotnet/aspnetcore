@@ -83,6 +83,7 @@ namespace PackageBaselineGenerator
                     var resources = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
                     packageBase = resources.GetServiceEntryUri(ServiceTypes.PackageBaseAddress).ToString().TrimEnd('/');
                 }
+
                 packageBases.Add((packageBase, feedV3));
             }
 
@@ -150,7 +151,7 @@ namespace PackageBaselineGenerator
 
                     if (!File.Exists(nupkgPath))
                     {
-                        throw new Exception("Could not download package {id} @ {version} using any input feed");
+                        throw new Exception($"Could not download package {id} @ {version} using any input feed");
                     }
                 }
 
@@ -311,7 +312,8 @@ namespace PackageBaselineGenerator
             {
                 var potentialLatestVersion = versionRange.FindBestMatch(
                     searchMetadata.Select(metadata => metadata.Identity.Version));
-                if (latestVersion == null || potentialLatestVersion.CompareTo(latestVersion) > 0)
+                if (latestVersion == null ||
+                    (potentialLatestVersion != null && potentialLatestVersion.CompareTo(latestVersion) > 0))
                 {
                     latestVersion = potentialLatestVersion;
                 }
