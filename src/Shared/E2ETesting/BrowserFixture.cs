@@ -137,6 +137,9 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             var opts = new ChromeOptions();
 
+            // Force language to english for tests
+            opts.AddUserProfilePreference("intl.accept_languages", "en");
+
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
             if (!Debugger.IsAttached)
             {
