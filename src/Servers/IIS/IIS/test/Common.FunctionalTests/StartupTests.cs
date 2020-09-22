@@ -1190,7 +1190,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
         [ConditionalFact]
-        [RequiresNewShim]
         public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
         private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
