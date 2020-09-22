@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1794")]
         public async Task ConfigurationTouchedStress_InProcess()
         {
-            await ConfigurationTouchedStress(HostingModel.InProcess)
+            await ConfigurationTouchedStress(HostingModel.InProcess);
         }
 
         [ConditionalFact]
