@@ -27,7 +27,9 @@ class TestLogger implements AutoCloseable {
     }
 
     public ILoggingEvent assertLog(String logMessage) {
-        for (ILoggingEvent log : appender.list) {
+        // Copy items just in case logs are written while iterating
+        ILoggingEvent[] list = appender.list.toArray(new ILoggingEvent[1]);
+        for (ILoggingEvent log : list) {
             if (log.getFormattedMessage().startsWith(logMessage)) {
                 return log;
             }
