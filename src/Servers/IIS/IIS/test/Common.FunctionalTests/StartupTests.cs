@@ -1058,7 +1058,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Contains("500.30", responseText);
         }
 
-          [ConditionalFact]
+        [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextInProcessHandlerLoadFailure_CorrectString()
@@ -1079,6 +1079,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure_CorrectString()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);

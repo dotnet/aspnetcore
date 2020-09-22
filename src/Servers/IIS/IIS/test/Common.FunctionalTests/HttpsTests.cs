@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var port = TestPortHelper.GetNextSSLPort();
             fixture.DeploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
-            fixture.DeploymentParameters.AddHttpsToServerConfig();
+            fixture.DeploymentParameters.AddHttpsWithClientCertToServerConfig();
             fixture.DeploymentParameters.SetWindowsAuth(false);
             Fixture = fixture;
             _certFixture = certFixture;
@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [SkipIfNotAdmin]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
         {
@@ -60,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private async Task ClientCertTest(TestVariant variant, bool sendClientCert)
         {
-
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
