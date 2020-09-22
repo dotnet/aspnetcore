@@ -35,7 +35,7 @@ process.on("unhandledRejection", (reason) => {
     process.exit(1);
 });
 
-// Don't let us hang the build. If this process takes more than 20 minutes, we're outta here
+// If this process takes more than 20 minutes, we're outta here
 setTimeout(() => {
     console.error("Bail out! Tests took more than 20 minutes to run. Aborting.");
     process.exit(1);
