@@ -3,27 +3,27 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    [Collection(IISTestSiteCollection.Name)]
-    public class NewShimTests : FixtureLoggedTest
+    [Collection(PublishedSitesCollection.Name)]
+    public class NewShimTests : IISFunctionalTestBase
     {
-        private readonly IISTestSiteFixture _fixture;
-
-        public NewShimTests(IISTestSiteFixture fixture) : base(fixture)
+        public NewShimTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task CheckNewShimIsUsed()
         {
-            var response = await _fixture.Client.GetAsync("/HelloWorld");
-            var handles = _fixture.DeploymentResult.HostProcess.Modules;
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            var result = await DeployAsync(deploymentParameters);
+            var response = await result.HttpClient.GetAsync("/HelloWorld");
+            var handles = result.HostProcess.Modules;
             foreach (ProcessModule handle in handles)
             {
                 if (handle.ModuleName == "aspnetcorev2_inprocess.dll")
