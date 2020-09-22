@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task AppOfflineAddedAndRemovedStress_InProcess(HostingModel hostingModel)
+        public async Task AppOfflineAddedAndRemovedStress_InProcess()
         {
             await AppOfflineAddAndRemovedStress(HostingModel.InProcess);
         }
