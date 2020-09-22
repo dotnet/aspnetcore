@@ -136,6 +136,7 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("mvc");
 
+            // Note: if any links are updated here, RazorPagesTemplateTest.cs should be updated as well
             var pages = new List<Page> {
                 new Page
                 {
