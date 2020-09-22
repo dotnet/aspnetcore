@@ -21,6 +21,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
+    // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
     [Collection(PublishedSitesCollection.Name)]
     public class StartupTests : IISFunctionalTestBase
     {
@@ -983,6 +984,322 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 // We can't read stdout logs from IIS as they aren't redirected.
                 Assert.Contains(TestSink.Writes, context => context.Message.Contains("An unhandled exception was thrown by the application."));
             }
+        }
+
+
+        [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [InlineData("CheckLargeStdErrWrites")]
+        [InlineData("CheckLargeStdOutWrites")]
+        [InlineData("CheckOversizedStdErrWrites")]
+        [InlineData("CheckOversizedStdOutWrites")]
+        public async Task CheckStdoutWithLargeWrites_TestSink(string mode)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await AssertFailsToStart(deploymentResult);
+            var expectedString = new string('a', 30000);
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
+        }
+
+        [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [InlineData("CheckLargeStdOutWrites")]
+        [InlineData("CheckOversizedStdOutWrites")]
+        public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
+            deploymentParameters.EnableLogging(LogFolderPath);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await AssertFailsToStart(deploymentResult);
+
+            var contents = GetLogFileContent(deploymentResult);
+            var expectedString = new string('a', 30000);
+
+            Assert.Contains(expectedString, contents);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task CheckValidConsoleFunctions()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} CheckConsoleFunctions");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await AssertFailsToStart(deploymentResult);
+
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains("Is Console redirection: True"));
+        }
+
+        [ConditionalFact]
+        public async Task Gets500_30_ErrorPage()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Contains("500.30", responseText);
+        }
+
+          [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task IncludesAdditionalErrorPageTextInProcessHandlerLoadFailure_CorrectString()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            var response = await DeployAppWithStartupFailure(deploymentParameters);
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("500.0", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
+            await AssertLink(response);
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure_CorrectString()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var response = await DeployAppWithStartupFailure(deploymentParameters);
+
+            Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+
+            StopServer();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
+            await AssertLink(response);
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task IncludesAdditionalErrorPageTextOutOfProcessHandlerLoadFailure_CorrectString()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.HandlerSettings["handlerVersion"] = "88.93";
+            deploymentParameters.EnvironmentVariables["ANCM_ADDITIONAL_ERROR_PAGE_LINK"] = "http://example";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("500.0", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
+            await AssertLink(response);
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        public async Task IncludesAdditionalErrorPageTextInProcessStartupFailure_CorrectString()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
+            deploymentParameters.EnvironmentVariables["ANCM_ADDITIONAL_ERROR_PAGE_LINK"] = "http://example";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("500.30", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
+            await AssertLink(response);
+        }
+
+
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task GetLongEnvironmentVariable(HostingModel hostingModel)
+        {
+            var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
+
+
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
+
+            Assert.Equal(
+                expectedValue,
+                await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
+
+        [ConditionalFact]
+        public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
+
+        private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_IIS_HTTPAUTH"] = "shouldberemoved";
+
+            Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters,"/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesGlobalEnvironmentVariables_InProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesGlobalEnvironmentVariables_OutOfProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Production";
+            Assert.Equal("Production", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_ENVIRONMENT"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_InProcess() => WebConfigAppendsHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
+
+        private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
+            if (hostingModel == HostingModel.InProcess)
+            {
+                Assert.Equal("Asm1", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+            }
+            else
+            {
+                Assert.Equal("Asm1;Microsoft.AspNetCore.Server.IISIntegration", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesHostingStartup_InProcess() => WebConfigOverridesHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesHostingStartup_OutOfProcess() => WebConfigOverridesHostingStartup(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
+            Assert.Equal("Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_InProcess() => WebConfigExpandsVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_OutOfProcess() => WebConfigExpandsVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigExpandsVariables(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            deploymentParameters.EnvironmentVariables["TestVariable"] = "World";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["OtherVariable"] = "%TestVariable%;Hello";
+            Assert.Equal("World;Hello", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=OtherVariable"));
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task PreferEnvironmentVariablesOverWebConfigWhenConfigured(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+
+            var environment = "Development";
+            deploymentParameters.EnvironmentVariables["ANCM_PREFER_ENVIRONMENT_VARIABLES"] = "true";
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = environment;
+            deploymentParameters.WebConfigBasedEnvironmentVariables.Add("ASPNETCORE_ENVIRONMENT", "Debug");
+            Assert.Equal(environment, await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_ENVIRONMENT"));
+        }
+
+        private static void VerifyNoExtraTrailingBytes(string responseString)
+        {
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.EndsWith("</html>\r\n", responseString);
+            }
+        }
+
+        private static async Task AssertLink(HttpResponseMessage response)
+        {
+            Assert.Contains("<a href=\"http://example\"> <cite> http://example </cite></a> and ", await response.Content.ReadAsStringAsync());
+        }
+
+        private async Task<HttpResponseMessage> DeployAppWithStartupFailure(IISDeploymentParameters deploymentParameters)
+        {
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "doesnot"));
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", "start"));
+
+            deploymentParameters.EnvironmentVariables["ANCM_ADDITIONAL_ERROR_PAGE_LINK"] = "http://example";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            return await deploymentResult.HttpClient.GetAsync("HelloWorld");
+        }
+
+        private async Task AssertFailsToStart(IISDeploymentResult deploymentResult)
+        {
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            StopServer();
         }
 
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)

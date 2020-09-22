@@ -17,12 +17,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities
     public class IISFunctionalTestBase : FunctionalTestsBase
     {
         protected static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
-        protected PublishedSitesFixture Fixture { get; set; }
 
         public IISFunctionalTestBase(PublishedSitesFixture fixture, ITestOutputHelper output = null) : base(output)
         {
             Fixture = fixture;
+            LogFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         }
+
+        protected PublishedSitesFixture Fixture { get; set; }
+        public string LogFolderPath { get; }
 
         public async Task<IISDeploymentResult> DeployApp(HostingModel hostingModel = HostingModel.InProcess)
         {
@@ -78,6 +81,20 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities
                     continue;
                 }
                 File.Delete(file);
+            }
+        }
+
+        public string GetLogFileContent(IISDeploymentResult deploymentResult)
+        {
+            return Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (Directory.Exists(LogFolderPath))
+            {
+                Directory.Delete(LogFolderPath, true);
             }
         }
     }

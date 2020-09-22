@@ -18,7 +18,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class FrebTests : LogFileTestBase
+    public class FrebTests : IISFunctionalTestBase
     {
         public FrebTests(PublishedSitesFixture fixture) : base(fixture)
         {
@@ -112,9 +112,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         private async Task<IISDeploymentResult> SetupFrebApp(IISDeploymentParameters parameters = null)
         {
             parameters = parameters ?? Fixture.GetBaseDeploymentParameters();
-            parameters.EnableFreb("Verbose", _logFolderPath);
+            parameters.EnableFreb("Verbose", LogFolderPath);
 
-            Directory.CreateDirectory(_logFolderPath);
+            Directory.CreateDirectory(LogFolderPath);
             var result = await DeployAsync(parameters);
             return result;
         }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
-            var folderPath = Helpers.GetFrebFolder(_logFolderPath, result);
+            var folderPath = Helpers.GetFrebFolder(LogFolderPath, result);
             var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).ToList();
             var frebEvents = new List<FrebLogItem>();
 

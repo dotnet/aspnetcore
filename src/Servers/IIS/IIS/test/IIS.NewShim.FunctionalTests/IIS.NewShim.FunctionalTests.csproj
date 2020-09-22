@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -28,9 +28,6 @@
     <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
-    <Compile Remove="..\Common.FunctionalTests\ClientCertificateTests.cs" />
-    <Compile Remove="..\Common.FunctionalTests\CommonStartupTests.cs" />
-    <Compile Remove="..\Common.FunctionalTests\CompressionTests.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
   </ItemGroup>
 

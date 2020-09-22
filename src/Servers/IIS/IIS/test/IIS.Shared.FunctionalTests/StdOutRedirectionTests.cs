@@ -12,7 +12,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class StdOutRedirectionTests : LogFileTestBase
+    public class StdOutRedirectionTests : IISFunctionalTestBase
     {
         public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters =
                 Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
 
-            deploymentParameters.EnableLogging(_logFolderPath);
+            deploymentParameters.EnableLogging(LogFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             StopServer();
 
-            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
             var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString, Logger);
             Assert.Contains(expectedString, contents);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
 
-            deploymentParameters.EnableLogging(_logFolderPath);
+            deploymentParameters.EnableLogging(LogFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             StopServer();
 
-            var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
+            var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
             var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
             Assert.Contains("Invoked hostfxr", contents);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
             deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
-            deploymentParameters.EnableLogging(_logFolderPath);
+            deploymentParameters.EnableLogging(LogFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             StopServer();
 
-            var fileInDirectory = Directory.GetFiles(_logFolderPath).First();
+            var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
             var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
