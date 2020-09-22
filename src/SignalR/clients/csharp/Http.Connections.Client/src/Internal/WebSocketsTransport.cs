@@ -51,16 +51,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             if (httpConnectionOptions != null)
             {
-                if (httpConnectionOptions.Headers != null)
+                if (httpConnectionOptions.Headers.Count > 0)
                 {
                     if (isBrowser)
                     {
-                        throw new PlatformNotSupportedException("Configuring request headers is not supported when using WebSocketsTransport in the browser platform.");
+                        Log.HeadersNotSupported(_logger);
                     }
-
-                    foreach (var header in httpConnectionOptions.Headers)
+                    else
                     {
-                        _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        foreach (var header in httpConnectionOptions.Headers)
+                        {
+                            _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        }
                     }
                 }
 
@@ -90,9 +92,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     {
                         _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                     }
-                }
 
-                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
+                    httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
+                }
             }
 
             if (!isBrowser)
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
 #pragma warning disable CA1416 // Analyzer bug
                 _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
-#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Analyzer bug
             }
 
             _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;

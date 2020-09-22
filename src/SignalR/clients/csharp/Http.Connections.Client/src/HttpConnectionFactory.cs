@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 AccessTokenProvider = options.AccessTokenProvider,
                 CloseTimeout = options.CloseTimeout,
                 DefaultTransferFormat = options.DefaultTransferFormat,
-                WebSocketConfiguration = options.WebSocketConfiguration,
             };
 
             if (!OperatingSystem.IsBrowser())
@@ -103,6 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 newOptions.Credentials = options.Credentials;
                 newOptions.Proxy = options.Proxy;
                 newOptions.UseDefaultCredentials = options.UseDefaultCredentials;
+                newOptions.WebSocketConfiguration = options.WebSocketConfiguration;
             }
 
             return newOptions;

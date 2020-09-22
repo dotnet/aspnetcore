@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private ICredentials _credentials;
         private IWebProxy _proxy;
         private bool? _useDefaultCredentials;
+        private Action<ClientWebSocketOptions> _webSocketConfiguration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionOptions"/> class.
@@ -192,7 +193,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
         /// has been applied.
         /// </remarks>
-        public Action<ClientWebSocketOptions> WebSocketConfiguration { get; set; }
+        [UnsupportedOSPlatform("browser")]
+        public Action<ClientWebSocketOptions> WebSocketConfiguration
+        {
+            get
+            {
+                ThrowIfUnsupportedPlatform();
+                return _webSocketConfiguration;
+            }
+            set
+            {
+                ThrowIfUnsupportedPlatform();
+                _webSocketConfiguration = value;
+            }
+        }
 
         private static void ThrowIfUnsupportedPlatform()
         {
