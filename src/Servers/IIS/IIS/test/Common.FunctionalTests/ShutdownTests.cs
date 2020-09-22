@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [RequiresNewShim]
         public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503_OutOfProcess()
         {
