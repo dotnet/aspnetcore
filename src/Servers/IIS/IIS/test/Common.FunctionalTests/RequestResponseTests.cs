@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
     public class RequestResponseTests
@@ -134,7 +134,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
                 await response.Content.ReadAsByteArrayAsync());
         }
-
 
         [ConditionalFact]
         public async Task ReadAndWriteSynchronously()

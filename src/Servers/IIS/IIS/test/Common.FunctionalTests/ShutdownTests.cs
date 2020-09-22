@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     // Contains all tests related to shutdown, including app_offline, abort, and app recycle
     [Collection(PublishedSitesCollection.Name)]

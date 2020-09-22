@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
         }
 
+        public IISDeploymentParameters DeploymentParameters { get; }
+
         internal IISTestSiteFixture(Action<IISDeploymentParameters> configure)
         {
             var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
@@ -33,6 +35,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             _loggerFactory.AddProvider(_forwardingProvider);
 
             _configure = configure;
+
+            DeploymentParameters = new IISDeploymentParameters()
+            {
+                RuntimeArchitecture = RuntimeArchitecture.x64,
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
+                TargetFramework = Tfm.Net50,
+                HostingModel = HostingModel.InProcess,
+                PublishApplicationBeforeDeployment = true,
+                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
+                ServerType = DeployerSelector.ServerType
+            };
         }
 
         public HttpClient Client => DeploymentResult.HttpClient;
@@ -82,20 +95,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 return;
             }
 
-            var deploymentParameters = new IISDeploymentParameters()
-            {
-                RuntimeArchitecture = RuntimeArchitecture.x64,
-                RuntimeFlavor =  RuntimeFlavor.CoreClr,
-                TargetFramework = Tfm.Net50,
-                HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = true,
-                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
-                ServerType =  DeployerSelector.ServerType
-            };
+            _configure(DeploymentParameters);
 
-            _configure(deploymentParameters);
-
-            _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, _loggerFactory);
+            _deployer = IISApplicationDeployerFactory.Create(DeploymentParameters, _loggerFactory);
             _deploymentResult = (IISDeploymentResult)_deployer.DeployAsync().Result;
         }
 

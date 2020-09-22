@@ -20,19 +20,27 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class Http2Tests : IISFunctionalTestBase
+    [Collection(IISHttpsTestSiteCollection.Name)]
+    public class Http2Tests
     {
+
         // TODO: Remove when the regression is fixed.
         // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
         private static readonly Version Win10_Regressed_DataFrame = new Version(10, 0, 20145, 0);
         private const string WindowsVersionForTrailers = "10.0.20300";
 
-        public Http2Tests(PublishedSitesFixture fixture) : base(fixture)
+        public Http2Tests(IISTestSiteFixture fixture)
         {
+            var port = TestPortHelper.GetNextSSLPort();
+            fixture.DeploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
+            fixture.DeploymentParameters.AddHttpsToServerConfig();
+            fixture.DeploymentParameters.SetWindowsAuth(false);
+            Fixture = fixture;
         }
+
+        public IISTestSiteFixture Fixture { get; }
 
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26060")]
         [ConditionalTheory]
@@ -44,11 +52,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task Http2_MethodsRequestWithoutData_Success(string method)
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -91,11 +96,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task Http2_PostRequestWithoutData_LengthRequired(string method)
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -137,11 +139,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_RequestWithDataAndContentLength_Success(string method)
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -210,11 +209,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_RequestWithDataAndNoContentLength_Success(string method)
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -275,11 +271,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_ResponseWithData_Success()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -324,10 +317,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_HTTP2_TrailersAvailable()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_HTTP2_TrailersAvailable");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP2_TrailersAvailable");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -338,11 +328,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
         {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: IntegrationTesting.HostingModel.OutOfProcess);
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version11, response.Version);
@@ -353,10 +339,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_ProhibitedTrailers_Blocked()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_ProhibitedTrailers_Blocked");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_ProhibitedTrailers_Blocked");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -367,10 +350,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_NoBody_TrailersSent()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_NoBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_NoBody_TrailersSent");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -382,10 +362,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_WithBody_TrailersSent()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_WithBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_WithBody_TrailersSent");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -400,10 +377,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             var body = "Hello World";
 
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_WithContentLengthBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_WithContentLengthBody_TrailersSent");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -418,10 +392,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             var body = "Hello World";
 
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_WithTrailersBeforeContentLengthBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_WithTrailersBeforeContentLengthBody_TrailersSent");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -439,10 +410,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             var body = "Hello World";
 
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_WithContentLengthBodyAndDeclared_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_WithContentLengthBodyAndDeclared_TrailersSent");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -459,10 +427,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_MultipleValues_SentAsSeparateHeaders()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_MultipleValues_SentAsSeparateHeaders");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_MultipleValues_SentAsSeparateHeaders");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -475,18 +440,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
             // This verifies that the response is sent to the client with CompleteAsync
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent");
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
             Assert.NotEmpty(response.TrailingHeaders);
             Assert.Equal("TrailerValue", response.TrailingHeaders.GetValues("TrailerName").Single());
 
-            var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed");
+            var response2 = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed");
             Assert.True(response2.IsSuccessStatusCode);
         }
 
@@ -494,19 +456,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
             // This verifies that the response is sent to the client with CompleteAsync
-            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent");
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent");
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
             Assert.NotEmpty(response.TrailingHeaders);
             Assert.Equal("Trailer Value", response.TrailingHeaders.GetValues("TrailerName").Single());
 
-            var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed");
+            var response2 = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed");
             Assert.True(response2.IsSuccessStatusCode);
         }
 
@@ -515,11 +474,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task AppException_BeforeResponseHeaders_500()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -553,11 +509,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Custom Reset support was added in Win10_20H2.")]
         public async Task AppException_AfterHeaders_ResetInternalError()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -590,14 +543,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [RequiresNewHandler]
         public async Task Reset_Http1_NotSupported()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using HttpClient client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version11;
-            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri + "Reset_Http1_NotSupported");
+            var response = await client.GetStringAsync(Fixture.Client.BaseAddress + "Reset_Http1_NotSupported");
             Assert.Equal("Hello World", response);
         }
 
@@ -607,14 +557,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without Reset support")]
         public async Task Reset_PriorOSVersions_NotSupported()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using HttpClient client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri + "Reset_PriorOSVersions_NotSupported");
+            var response = await client.GetStringAsync(Fixture.Client.BaseAddress + "Reset_PriorOSVersions_NotSupported");
             Assert.Equal("Hello World", response);
         }
 
@@ -623,11 +570,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeResponse_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -640,7 +584,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
                     // Any app errors?
                     var client = CreateClient();
-                    var response = await client.GetAsync(deploymentResult.ApplicationBaseUri + "/Reset_BeforeResponse_Resets_Complete");
+                    var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_BeforeResponse_Resets_Complete");
                     Assert.True(response.IsSuccessStatusCode);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -653,11 +597,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeResponse_Zero_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -670,7 +611,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
                     // Any app errors?
                     var client = CreateClient();
-                    var response = await client.GetAsync(deploymentResult.ApplicationBaseUri + "/Reset_BeforeResponse_Zero_Resets_Complete");
+                    var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_BeforeResponse_Zero_Resets_Complete");
                     Assert.True(response.IsSuccessStatusCode);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -683,11 +624,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_AfterResponseHeaders_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -697,7 +635,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
                     // Any app errors?
                     var client = CreateClient();
-                    var response = await client.GetAsync(deploymentResult.ApplicationBaseUri + "/Reset_AfterResponseHeaders_Resets_Complete");
+                    var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_AfterResponseHeaders_Resets_Complete");
                     Assert.True(response.IsSuccessStatusCode);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
@@ -721,11 +659,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_DuringResponseBody_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -761,11 +696,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeRequestBody_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -789,11 +721,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_DuringRequestBody_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -817,11 +746,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_AfterCompleteAsync_NoReset()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -849,11 +775,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_CompleteAsyncDuringRequestBody_Resets()
         {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                .UseHttp2Cat(Fixture.Client.BaseAddress.AbsoluteUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
@@ -902,15 +825,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             var kvp = new KeyValuePair<string, string>(HeaderNames.Path, path);
             headers.Add(kvp);
             return headers;
-        }
-
-        private IISDeploymentParameters GetHttpsDeploymentParameters()
-        {
-            var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
-            deploymentParameters.AddHttpsToServerConfig();
-            return deploymentParameters;
         }
 
         private static HttpClient CreateClient()
