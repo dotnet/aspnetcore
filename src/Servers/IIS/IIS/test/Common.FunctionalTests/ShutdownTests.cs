@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
             });
 
-            for (int i = 0; i < 100; i++)
+            for (var i = 0; i < 100; i++)
             {
                 // ModifyWebConfig might fail if web.config is being read by IIS
                 RetryHelper.RetryOperation(

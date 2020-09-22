@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     }
 
     [CollectionDefinition(Name)]
-    public class IISHttpsTestSiteCollection : ICollectionFixture<IISTestSiteFixture>, ICollectionFixture<ClientCertificateFixture>
+    public class IISHttpsTestSiteCollection : ICollectionFixture<IISTestSiteFixture>
     {
         public const string Name = nameof(IISHttpsTestSiteCollection);
     }

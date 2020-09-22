@@ -22,11 +22,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             _fixture = fixture;
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.DynamicCompression)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BufferingDisabled(bool compression)
+        public async Task BufferingDisabledWithCompressedRequest()
         {
             using (var connection = _fixture.CreateTestConnection())
             {
@@ -42,7 +40,49 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 await connection.Send(
                     "POST /ReadAndWriteEchoLinesNoBuffering HTTP/1.1",
                     $"Content-Length: {requestLength}",
-                    "Accept-Encoding: " + (compression ? "gzip": "identity"),
+                    "Accept-Encoding: gzip",
+                    "Response-Content-Type: text/event-stream",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "");
+                await connection.ReceiveHeaders();
+
+                foreach (var message in messages)
+                {
+                    await connection.Send(message);
+                    await connection.ReceiveChunk(message);
+                }
+
+                await connection.Send("\r\n");
+                await connection.ReceiveChunk("");
+                await connection.WaitForConnectionClose();
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.DynamicCompression)]
+        public async Task BufferingDisabledWithoutCompressedRequest()
+        {
+            using (var connection = _fixture.CreateTestConnection())
+            {
+                var requestLength = 0;
+                var messages = new List<string>();
+                for (var i = 1; i < 100; i++)
+                {
+                    var message = i + Environment.NewLine;
+                    requestLength += message.Length;
+                    messages.Add(message);
+                }
+
+                await connection.Send(
+                    "POST /ReadAndWriteEchoLinesNoBuffering HTTP/1.1",
+                    $"Content-Length: {requestLength}",
+                    "Accept-Encoding: identity",
                     "Response-Content-Type: text/event-stream",
                     "Host: localhost",
                     "Connection: close",
