@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private volatile ConnectionMultiplexer _connection;
         private IDatabase _cache;
+        private bool _disposed;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
@@ -165,6 +166,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private void Connect()
         {
+            CheckDisposed();
             if (_cache != null)
             {
                 return;
@@ -181,7 +183,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);                        
+                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
                     }
                     _cache = _connection.GetDatabase();
                 }
@@ -194,6 +196,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
         {
+            CheckDisposed();
             token.ThrowIfCancellationRequested();
 
             if (_cache != null)
@@ -212,9 +215,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);                  
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
                     }
-                    
+
                     _cache = _connection.GetDatabase();
                 }
             }
@@ -431,9 +434,20 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         public void Dispose()
         {
-            if (_connection != null)
+            if (_disposed)
             {
-                _connection.Close();
+                return;
+            }
+
+            _disposed = true;
+            _connection?.Close();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
             }
         }
     }
