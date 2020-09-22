@@ -97,6 +97,20 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         [Parameter]
         public int OverscanCount { get; set; } = 3;
 
+        /// <summary>
+        /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
+        /// This is useful if external data may have changed. There is no need to call this
+        /// when using <see cref="Items"/>.
+        /// </summary>
+        /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
+        public async Task RefreshDataAsync()
+        {
+            // We don't auto-render after this operation because in the typical use case, the
+            // host component calls this from one of its lifecycle methods, and will naturally
+            // re-render afterwards anyway. It's not desirable to re-render twice.
+            await RefreshDataCoreAsync(renderOnSuccess: false);
+        }
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -270,7 +284,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
-                var refreshTask = RefreshDataAsync();
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
                 if (!refreshTask.IsCompleted)
                 {
@@ -279,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             }
         }
 
-        private async Task RefreshDataAsync()
+        private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
         {
             _refreshCts?.Cancel();
             _refreshCts = new CancellationTokenSource();
@@ -298,7 +312,10 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                     _loadedItems = result.Items;
                     _loadedItemsStartIndex = request.StartIndex;
 
-                    StateHasChanged();
+                    if (renderOnSuccess)
+                    {
+                        StateHasChanged();
+                    }
                 }
             }
             catch (Exception e)
