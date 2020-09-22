@@ -399,7 +399,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     }
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
-    if (resourceLoader.bootConfig.icuDataMode == ICUDataMode.Sharded) {
+    if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Sharded) {
       MONO.mono_wasm_setenv('__BLAZOR_SHARDED_ICU',  '1');
 
       if (resourceLoader.startOptions.applicationCulture) {
@@ -524,7 +524,7 @@ async function loadTimezone(timeZoneResource: LoadingResource): Promise<void> {
 
 function getICUResourceName(bootConfig: BootJsonData, culture: string | undefined): string {
   const combinedICUResourceName = 'icudt.dat';
-  if (!culture || bootConfig.icuDataMode == ICUDataMode.All) {
+  if (!culture || bootConfig.icuDataMode === ICUDataMode.All) {
     return combinedICUResourceName;
   }
 

@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     internal static class EntrypointInvoker
     {
-        private const string NotifyCultureChanged = "window.Blazor._internal.notifyCultureChanged";
-
         // This method returns void because currently the JS side is not listening to any result,
         // nor will it handle any exceptions. We handle all exceptions internally to this method.
         // In the future we may want Blazor.start to return something that exposes the possibly-async
