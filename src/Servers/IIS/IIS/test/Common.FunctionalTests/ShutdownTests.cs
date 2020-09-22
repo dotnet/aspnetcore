@@ -67,12 +67,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503(HostingModel hostingModel)
+        [ConditionalFact]
+        public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess()
         {
-            var deploymentResult = await DeployApp(hostingModel);
+            var deploymentResult = await DeployApp(HostingModel.InProcess);
 
             AddAppOffline(deploymentResult.ContentRoot);
 
@@ -80,12 +78,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503(HostingModel hostingModel)
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503_OutOfProcess()
         {
-            var deploymentResult = await DeployApp(hostingModel);
+            var deploymentResult = await DeployApp(HostingModel.OutOfProcess);
+
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            await AssertAppOffline(deploymentResult);
+            DeletePublishOutput(deploymentResult);
+        }
+
+        [ConditionalFact]
+        public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess()
+        {
+            var deploymentResult = await DeployApp(HostingModel.InProcess);
 
             // Add app_offline without shared access
             using (var stream = File.Open(Path.Combine(deploymentResult.ContentRoot, "app_offline.htm"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
@@ -100,18 +108,53 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData(HostingModel.InProcess, 500, "500.0")]
-        [InlineData(HostingModel.OutOfProcess, 502, "502.5")]
-        public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed(HostingModel hostingModel, int statusCode, string content)
+        [RequiresNewShim]
+        public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503_OutOfProcess()
         {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
+            var deploymentResult = await DeployApp(HostingModel.OutOfProcess);
+
+            // Add app_offline without shared access
+            using (var stream = File.Open(Path.Combine(deploymentResult.ContentRoot, "app_offline.htm"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
+            using (var writer = new StreamWriter(stream))
+            {
+                await writer.WriteLineAsync("App if offline but you wouldn't see this message");
+                await writer.FlushAsync();
+                await AssertAppOffline(deploymentResult, "");
+            }
+
+            DeletePublishOutput(deploymentResult);
+        }
+
+        [ConditionalFact]
+        public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed_InProcess()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: HostingModel.InProcess);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var result = await deploymentResult.HttpClient.GetAsync("/");
-            Assert.Equal(statusCode, (int)result.StatusCode);
-            Assert.Contains(content, await result.Content.ReadAsStringAsync());
+            Assert.Equal(500, (int)result.StatusCode);
+            Assert.Contains("500.0", await result.Content.ReadAsStringAsync());
+
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            await AssertAppOffline(deploymentResult);
+            DeletePublishOutput(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed_OutOfProcess()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: HostingModel.OutOfProcess);
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.Equal(502, (int)result.StatusCode);
+            Assert.Contains("502.5", await result.Content.ReadAsStringAsync());
 
             AddAppOffline(deploymentResult.ContentRoot);
 
@@ -220,6 +263,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
         public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_OutOfProcess()
         {
             var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
@@ -234,12 +278,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks(HostingModel hostingModel)
+        [ConditionalFact]
+        public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks_InProcess()
         {
-            var deploymentResult = await DeployApp(hostingModel);
+            var deploymentResult = await DeployApp(HostingModel.InProcess);
 
             AddAppOffline(deploymentResult.ContentRoot);
 
@@ -250,12 +292,37 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await AssertRunning(deploymentResult);
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks_OutOfProcess()
         {
-            var deploymentResult = await AssertStarts(hostingModel);
+            var deploymentResult = await DeployApp(HostingModel.OutOfProcess);
+
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            await AssertAppOffline(deploymentResult);
+
+            RemoveAppOffline(deploymentResult.ContentRoot);
+
+            await AssertRunning(deploymentResult);
+        }
+
+        [ConditionalFact]
+        public async Task AppOfflineAddedAndRemovedStress_InProcess(HostingModel hostingModel)
+        {
+            await AppOfflineAddAndRemovedStress(HostingModel.InProcess);
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task AppOfflineAddedAndRemovedStress_OutOfProcess()
+        {
+            await AppOfflineAddAndRemovedStress(HostingModel.OutOfProcess);
+        }
+
+        private async Task AppOfflineAddAndRemovedStress(HostingModel hostingModel)
+        {
+             var deploymentResult = await AssertStarts(hostingModel);
 
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
             {
@@ -269,7 +336,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
             });
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 5; i++)
             {
                 // AddAppOffline might fail if app_offline is being read by ANCM and deleted at the same time
                 RetryHelper.RetryOperation(
@@ -310,6 +377,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
         public async Task ConfigurationChangeForcesChildProcessRestart()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
@@ -347,11 +415,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.Headers.Server.ToString().StartsWith("Microsoft"));
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
+        [ConditionalFact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1794")]
-        public async Task ConfigurationTouchedStress(HostingModel hostingModel)
+        public async Task ConfigurationTouchedStress_InProcess()
+        {
+            await ConfigurationTouchedStress(HostingModel.InProcess)
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1794")]
+        public async Task ConfigurationTouchedStress_OutOfProcess()
+        {
+            await ConfigurationTouchedStress(HostingModel.OutOfProcess);
+        }
+
+        private async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
 
@@ -387,6 +466,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
         public async Task ClosesConnectionOnServerAbortOutOfProcess()
         {
             try

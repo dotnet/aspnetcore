@@ -1079,6 +1079,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure_CorrectString()
         {
@@ -1098,6 +1099,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task IncludesAdditionalErrorPageTextOutOfProcessHandlerLoadFailure_CorrectString()
         {
@@ -1144,10 +1146,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task GetLongEnvironmentVariable(HostingModel hostingModel)
+        [ConditionalFact]
+        public async Task GetLongEnvironmentVariable_InProcess()
         {
             var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
                                 "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
@@ -1157,7 +1157,27 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                                 "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
 
 
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
+
+            Assert.Equal(
+                expectedValue,
+                await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task GetLongEnvironmentVariable_OutOfProcess()
+        {
+            var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
+
+
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
 
             Assert.Equal(
@@ -1170,6 +1190,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
         [ConditionalFact]
+        [RequiresNewShim]
         public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
         private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
@@ -1186,6 +1207,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task WebConfigOverridesGlobalEnvironmentVariables_InProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.InProcess);
 
         [ConditionalFact]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public Task WebConfigOverridesGlobalEnvironmentVariables_OutOfProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.OutOfProcess);
 
@@ -1203,6 +1225,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task WebConfigAppendsHostingStartup_InProcess() => WebConfigAppendsHostingStartup(HostingModel.InProcess);
 
         [ConditionalFact]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
 
@@ -1226,6 +1249,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task WebConfigOverridesHostingStartup_InProcess() => WebConfigOverridesHostingStartup(HostingModel.InProcess);
 
         [ConditionalFact]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public Task WebConfigOverridesHostingStartup_OutOfProcess() => WebConfigOverridesHostingStartup(HostingModel.OutOfProcess);
 
@@ -1243,6 +1267,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public Task WebConfigExpandsVariables_InProcess() => WebConfigExpandsVariables(HostingModel.InProcess);
 
         [ConditionalFact]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public Task WebConfigExpandsVariables_OutOfProcess() => WebConfigExpandsVariables(HostingModel.OutOfProcess);
 
