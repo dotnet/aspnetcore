@@ -354,19 +354,42 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
 
+      let pdbPromises: Promise<(ArrayBuffer | null)[]> | undefined;
+      if (hasDebuggingEnabled()) {
+        const pdbs = resourceLoader.bootConfig.resources.pdb;
+        const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'))
+        if (pdbs) {
+          pdbPromises = Promise.all(pdbsToLoad
+            .map(pdb => lazyAssemblies.hasOwnProperty(pdb) ? resourceLoader.loadResource(pdb, `_framework/${pdb}`, lazyAssemblies[pdb], 'pdb') : null)
+            .map(async resource => resource ? (await resource.response).arrayBuffer() : null));
+        }
+      }
+
       const resourcePromises = Promise.all(assembliesMarkedAsLazy
         .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
         .map(async resource => (await resource.response).arrayBuffer()));
 
       return BINDING.js_to_mono_obj(
-        resourcePromises.then(resourcesToLoad => {
+        Promise.all([resourcePromises, pdbPromises]).then(values => {
+          const resourcesToLoad = values[0];
+          const pdbsToLoad = values[1];
           if (resourcesToLoad.length) {
             window['Blazor']._internal.readLazyAssemblies = () => {
-              const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (var i = 0; i < resourcesToLoad.length; i++) {
-                BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+              const assemblyBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
+              for (let i = 0; i < resourcesToLoad.length; i++) {
+                const assembly = resourcesToLoad[i] as ArrayBuffer;
+                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
               }
-              return array;
+              return assemblyBytes;
+            };
+
+            window['Blazor']._internal.readLazyPdbs = () => {
+              const pdbBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
+              for (let i = 0; i < resourcesToLoad.length; i++) {
+                const pdb = pdbsToLoad && pdbsToLoad[i] ? new Uint8Array(pdbsToLoad[i] as ArrayBufferLike) : new Uint8Array();
+                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
+              }
+              return pdbBytes;
             };
           }
 
