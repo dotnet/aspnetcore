@@ -296,9 +296,22 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
         {
             _refreshCts?.Cancel();
-            _refreshCts = new CancellationTokenSource();
+            CancellationToken cancellationToken;
 
-            var cancellationToken = _refreshCts.Token;
+            if (_itemsProvider == DefaultItemsProvider)
+            {
+                // If we're using the DefaultItemsProvider (because the developer supplied a fixed
+                // Items collection) we know it will complete synchronously, and there's no point
+                // instantiating a new CancellationTokenSource
+                _refreshCts = null;
+                cancellationToken = CancellationToken.None;
+            }
+            else
+            {
+                _refreshCts = new CancellationTokenSource();
+                cancellationToken = _refreshCts.Token;
+            }
+
             var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
 
             try
