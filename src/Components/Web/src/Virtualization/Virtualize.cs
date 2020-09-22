@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         /// This is useful if external data may have changed. There is no need to call this
         /// when using <see cref="Items"/>.
         /// </summary>
-        /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
+        /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
         public async Task RefreshDataAsync()
         {
             // We don't auto-render after this operation because in the typical use case, the
