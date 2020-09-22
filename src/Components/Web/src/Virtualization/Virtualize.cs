@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,6 +140,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             else if (Items != null)
             {
                 _itemsProvider = DefaultItemsProvider;
+
+                // When we have a fixed set of in-memory data, it doesn't cost anything to
+                // re-query it on each cycle, so do that. This means the developer can add/remove
+                // items in the collection and see the UI update without having to call RefreshDataAsync.
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: false);
+
+                // We know it's synchronous and has its own error handling
+                Debug.Assert(refreshTask.IsCompletedSuccessfully);
             }
             else
             {
