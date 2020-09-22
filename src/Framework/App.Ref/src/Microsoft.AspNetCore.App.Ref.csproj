@@ -153,7 +153,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
-      <RefPackContent Include="@(AspNetCoreReferenceDocXml->Distinct())" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
       <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
