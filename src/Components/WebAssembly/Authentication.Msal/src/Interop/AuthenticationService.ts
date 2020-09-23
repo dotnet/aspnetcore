@@ -84,15 +84,15 @@ class MsalAuthorizeService implements AuthorizeService {
 
         const scopes: string[] = [];
         if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
-            scopes.concat(this._settings.defaultAccessTokenScopes)
+            scopes.push(...this._settings.defaultAccessTokenScopes)
         }
 
         if (this._settings.additionalScopesToConsent && this._settings.additionalScopesToConsent.length > 0) {
-            scopes.concat(this._settings.additionalScopesToConsent);
+            scopes.push(...this._settings.additionalScopesToConsent);
         }
 
         if (this._requestedScopes && this._requestedScopes.length > 0) {
-            scopes.concat(this._requestedScopes);
+            scopes.push(...this._requestedScopes);
         }
 
         const silentRequest = {
@@ -125,7 +125,7 @@ class MsalAuthorizeService implements AuthorizeService {
             return;
         }
 
-        this._requestedScopes = request?.scopes;
+        this._requestedScopes = scopes;
         const silentRequest = {
             redirectUri: this._settings.auth?.redirectUri,
             account: account,
