@@ -38,4 +38,8 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>

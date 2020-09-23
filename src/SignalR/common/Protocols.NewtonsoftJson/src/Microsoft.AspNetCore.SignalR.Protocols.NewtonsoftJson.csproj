@@ -21,4 +21,8 @@
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>

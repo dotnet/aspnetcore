@@ -20,4 +20,8 @@
     <Reference Include="MessagePackAnalyzer" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>

@@ -42,4 +42,8 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>
