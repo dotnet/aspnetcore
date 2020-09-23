@@ -398,10 +398,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             await host.StartAsync();
 
-            var server = host.GetTestServer();
 
             try
             {
+                using var server = host.GetTestServer();
                 await server.CreateClient().GetAsync("http://localhost/");
             }
             catch (Exception exception)
@@ -446,10 +446,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 var logProvider = new TestLoggerProvider();
 
                 using var host = await SetupServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
-                using var server = host.GetTestServer();
 
                 try
                 {
+                    using var server = host.GetTestServer();
                     await server.CreateClient().GetAsync("http://localhost/");
                 }
                 catch (Exception exception)

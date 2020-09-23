@@ -126,17 +126,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/20718#issuecomment-618758634")]
         public void Server_RegisterUnavailablePrefix_ThrowsActionableHttpSysException()
         {
+            using var server1 = Utilities.CreateHttpServer(out var address1);
+
             var options = new HttpSysOptions();
-            options.UrlPrefixes.Add(UrlPrefix.Create("http", "example.org", "8080", ""));
-            var listener = new HttpSysListener(options, new LoggerFactory());
+            options.UrlPrefixes.Add(address1);
+            using var listener = new HttpSysListener(options, new LoggerFactory());
 
             var exception = Assert.Throws<HttpSysException>(() => listener.Start());
 
-            Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED, exception.ErrorCode);
-            Assert.Contains($@"netsh http add urlacl url=http://example.org:8080/ user={Environment.UserDomainName}\{Environment.UserName}", exception.Message);
+            Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
+            Assert.Contains($"The prefix '{address1}' is already registered.", exception.Message);
         }
 
         [ConditionalFact]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.ResponseCaching
@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         /// <summary>
         /// Gets or sets the query keys used by the response cache middleware for calculating secondary vary keys.
         /// </summary>
-        string[] VaryByQueryKeys { get; set; }
+        string[]? VaryByQueryKeys { get; set; }
     }
 }

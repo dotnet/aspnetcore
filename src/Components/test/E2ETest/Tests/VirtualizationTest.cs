@@ -167,6 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CancelsOutdatedRefreshes_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();

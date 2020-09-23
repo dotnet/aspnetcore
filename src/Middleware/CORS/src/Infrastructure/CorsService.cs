@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             var policy = _options.GetPolicy(policyName);
+            if (policy is null)
+            {
+                throw new InvalidOperationException(Resources.FormatPolicyNotFound(policyName));
+            }
+
             return EvaluatePolicy(context, policy);
         }
 
@@ -119,7 +124,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 var origin = headers[CorsConstants.Origin];
                 result.AllowedOrigin = origin;
-                result.VaryByOrigin = policy.Origins.Count > 1;
+                result.VaryByOrigin = policy.Origins.Count > 1 || !policy.IsDefaultIsOriginAllowed;
             }
 
             result.SupportsCredentials = policy.SupportsCredentials;

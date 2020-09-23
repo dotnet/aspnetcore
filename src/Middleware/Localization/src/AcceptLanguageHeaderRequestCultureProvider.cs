@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Localization
         public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <inheritdoc />
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Localization
 
             if (orderedLanguages.Count > 0)
             {
-                return Task.FromResult(new ProviderCultureResult(orderedLanguages));
+                return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(orderedLanguages));
             }
 
             return NullProviderCultureResult;
