@@ -54,6 +54,7 @@ class MsalAuthorizeService implements AuthorizeService {
     private readonly _msalApplication: Msal.PublicClientApplication;
     private _account: Msal.AccountInfo | undefined;
     private _redirectCallback: Promise<AuthenticationResult | null> | undefined;
+    private _requestedScopes: string[] | undefined;
 
     constructor(private readonly _settings: AuthorizeServiceConfiguration) {
         if (this._settings.auth?.knownAuthorities?.length == 0) {
@@ -81,10 +82,23 @@ class MsalAuthorizeService implements AuthorizeService {
             return;
         }
 
+        const scopes: string[] = [];
+        if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
+            scopes.concat(this._settings.defaultAccessTokenScopes)
+        }
+
+        if (this._settings.additionalScopesToConsent && this._settings.additionalScopesToConsent.length > 0) {
+            scopes.concat(this._settings.additionalScopesToConsent);
+        }
+
+        if (this._requestedScopes && this._requestedScopes.length > 0) {
+            scopes.concat(this._requestedScopes);
+        }
+
         const silentRequest = {
             redirectUri: this._settings.auth?.redirectUri,
             account: account,
-            scopes: this._settings.defaultAccessTokenScopes
+            scopes: scopes
         };
 
         const response = await this._msalApplication.acquireTokenSilent(silentRequest);
@@ -111,6 +125,7 @@ class MsalAuthorizeService implements AuthorizeService {
             return;
         }
 
+        this._requestedScopes = request?.scopes;
         const silentRequest = {
             redirectUri: this._settings.auth?.redirectUri,
             account: account,
@@ -162,7 +177,7 @@ class MsalAuthorizeService implements AuthorizeService {
                     const silentRequest = {
                         redirectUri: request.redirectUri,
                         account: account,
-                        scopes: request.scopes,
+                        scopes: request.scopes.concat(request.extraScopesToConsent || [])
                     };
                     await this._msalApplication.acquireTokenSilent(silentRequest);
                 }
