@@ -69,6 +69,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, Exception> _startedTransport =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(19, "StartedTransport"), "Started transport.");
 
+            private static readonly Action<ILogger, Exception> _headersNotSupported =
+                LoggerMessage.Define(LogLevel.Warning, new EventId(20, "HeadersNotSupported"),
+                    $"Configuring request headers using {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Headers)} is not supported when using websockets transport " +
+                    "on the browser platform.");
+
+
             public static void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl)
             {
                 _startTransport(logger, transferFormat, webSocketUrl, null);
@@ -162,6 +168,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             public static void StartedTransport(ILogger logger)
             {
                 _startedTransport(logger, null);
+            }
+
+            public static void HeadersNotSupported(ILogger logger)
+            {
+                _headersNotSupported(logger, null);
             }
         }
     }
