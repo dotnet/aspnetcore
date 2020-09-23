@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     return;
                 }
             }
-            throw new XunitException($"Could not find aspnetcorev2_inprocess.dll loaded in process {_fixture.DeploymentResult.HostProcess.ProcessName}");
+            throw new XunitException($"Could not find aspnetcorev2_inprocess.dll loaded in process {result.HostProcess.ProcessName}");
         }
     }
 }
