@@ -90,15 +90,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
-            // Ensure that we haven't requested the lazy loaded assembly
+            // Ensure that we haven't requested the lazy loaded assembly or its PDB
             Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+            Assert.False(HasLoadedAssembly("LazyTestContentPackage.pdb"));
 
             // Navigate to the designated route
             SetUrlViaPushState("/WithLazyLoadedRoutes");
 
             // Wait for the page to finish loading
             new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
+                 driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
 
             // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
