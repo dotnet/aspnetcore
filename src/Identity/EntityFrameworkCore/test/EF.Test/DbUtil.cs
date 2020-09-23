@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             foreach (var property in context.Model.GetEntityTypes().Single(e => e.GetTableName() == table).GetProperties())
             {
-                if (!columns.Contains(property.GetColumnName()))
+                if (!columns.Contains(property.GetColumnName(StoreObjectIdentifier.Table(table, property.DeclaringEntityType.GetSchema()))))
                 {
                     continue;
                 }
