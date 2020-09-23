@@ -7,18 +7,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
     /// <summary>
     /// Defines the operations that can be performed on a JSON patch document.
-    /// </summary>  
+    /// </summary>
     public interface IObjectAdapter
     {
         /// <summary>
         /// Using the "add" operation a new value is inserted into the root of the target
         /// document, into the target array at the specified valid index, or to a target object at
         /// the specified location.
-        /// 
-        /// When adding to arrays, the specified index MUST NOT be greater than the number of elements in the array.  
+        ///
+        /// When adding to arrays, the specified index MUST NOT be greater than the number of elements in the array.
         /// To append the value to the array, the index of "-" character is used (see [RFC6901]).
-        /// 
-        /// When adding to an object, if an object member does not already exist, a new member is added to the object at the 
+        ///
+        /// When adding to an object, if an object member does not already exist, a new member is added to the object at the
         /// specified location or if an object member does exist, that member's value is replaced.
         ///
         /// The operation object MUST contain a "value" member whose content
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         ///  For example:
         ///
         ///  { "op": "copy", "from": "/a/b/c", "path": "/a/b/e" }
-        ///  
+        ///
         /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-7
         /// </summary>
         /// <param name="operation">The copy operation.</param>
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// { "op": "move", "from": "/a/b/c", "path": "/a/b/d" }
         ///
         /// A location cannot be moved into one of its children.
-        /// 
+        ///
         /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
         /// </summary>
         /// <param name="operation">The move operation.</param>
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         ///
         /// If removing an element from an array, any elements above the
         /// specified index are shifted one position to the left.
-        /// 
+        ///
         /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
         /// </summary>
         /// <param name="operation">The remove operation.</param>
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         void Remove(Operation operation, object objectToApplyTo);
 
         /// <summary>
-        /// Using the "replace" operation he value at the target location is replaced
+        /// Using the "replace" operation the value at the target location is replaced
         /// with a new value.  The operation object MUST contain a "value" member
         /// which specifies the replacement value.
         ///
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// For example:
         ///
         /// { "op": "replace", "path": "/a/b/c", "value": 42 }
-        /// 
+        ///
         /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
         /// </summary>
         /// <param name="operation">The replace operation.</param>

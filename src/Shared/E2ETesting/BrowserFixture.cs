@@ -11,7 +11,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Safari;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // To prevent this we let the client attempt several times to connect to the server, increasing
                     // the max allowed timeout for a command on each attempt linearly.
                     // This can also be caused if many tests are running concurrently, we might want to manage
-                    // chrome and chromedriver instances more aggresively if we have to.
+                    // chrome and chromedriver instances more aggressively if we have to.
                     // Additionally, if we think the selenium server has become irresponsive, we could spin up
                     // replace the current selenium server instance and let a new instance take over for the
                     // remaining tests.
@@ -234,54 +237,74 @@ namespace Microsoft.AspNetCore.E2ETesting
                 name = $"{name} - {context}";
             }
 
-            var capabilities = new DesiredCapabilities();
+            DriverOptions options;
+
+            switch (sauce.BrowserName.ToLower())
+            {
+                case "chrome":
+                    options = new ChromeOptions();
+                    break;
+                case "safari":
+                    options = new SafariOptions();
+                    break;
+                case "internet explorer":
+                    options = new InternetExplorerOptions();
+                    break;
+                case "microsoftedge":
+                    options = new EdgeOptions();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Browser name {sauce.BrowserName} not recognized");
+            }
 
             // Required config
-            capabilities.SetCapability("username", sauce.Username);
-            capabilities.SetCapability("accessKey", sauce.AccessKey);
-            capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
-            capabilities.SetCapability("name", name);
+            options.AddAdditionalOption("username", sauce.Username);
+            options.AddAdditionalOption("accessKey", sauce.AccessKey);
+            options.AddAdditionalOption("tunnelIdentifier", sauce.TunnelIdentifier);
+            options.AddAdditionalOption("name", name);
 
             if (!string.IsNullOrEmpty(sauce.BrowserName))
             {
-                capabilities.SetCapability("browserName", sauce.BrowserName);
+                options.AddAdditionalOption("browserName", sauce.BrowserName);
             }
 
             if (!string.IsNullOrEmpty(sauce.PlatformVersion))
             {
-                capabilities.SetCapability("platformName", sauce.PlatformName);
-                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+                options.PlatformName = sauce.PlatformName;
+                options.AddAdditionalOption("platformVersion", sauce.PlatformVersion);
             }
             else
             {
                 // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
-                capabilities.SetCapability("platform", sauce.PlatformName);
+                options.AddAdditionalOption("platform", sauce.PlatformName);
             }
 
             if (!string.IsNullOrEmpty(sauce.BrowserVersion))
             {
-                capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
+                options.BrowserVersion = sauce.BrowserVersion;
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceName))
             {
-                capabilities.SetCapability("deviceName", sauce.DeviceName);
+                options.AddAdditionalOption("deviceName", sauce.DeviceName);
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
             {
-                capabilities.SetCapability("deviceOrientation", sauce.DeviceOrientation);
+                options.AddAdditionalOption("deviceOrientation", sauce.DeviceOrientation);
             }
 
             if (!string.IsNullOrEmpty(sauce.AppiumVersion))
             {
-                capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
+                options.AddAdditionalOption("appiumVersion", sauce.AppiumVersion);
             }
 
             if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
             {
-                capabilities.SetCapability("seleniumVersion", sauce.SeleniumVersion);
+                options.AddAdditionalOption("seleniumVersion", sauce.SeleniumVersion);
             }
+
+            var capabilities = options.ToCapabilities();
 
             await SauceConnectServer.StartAsync(output);
 

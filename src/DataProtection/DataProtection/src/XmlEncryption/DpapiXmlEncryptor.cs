@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Versioning;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// <remarks>
     /// This API is only supported on Windows platforms.
     /// </remarks>
+    [SupportedOSPlatform("windows")]
     public sealed class DpapiXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger _logger;

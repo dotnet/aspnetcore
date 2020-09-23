@@ -29,12 +29,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         // Used for UTF8/ASCII (precalculated for fast path)
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
         // Used for other encodings
-        private byte[] _otherEqualEncoding;
-        private byte[] _otherAndEncoding;
+        private byte[]? _otherEqualEncoding;
+        private byte[]? _otherAndEncoding;
 
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
@@ -46,8 +47,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public FormPipeReader(PipeReader pipeReader, Encoding encoding)
         {
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
             if (encoding == Encoding.UTF7)
             {
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
                 throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");
             }
 
@@ -128,7 +131,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (buffer.IsSingleSegment)
             {
-                ParseFormValuesFast(buffer.First.Span,
+                ParseFormValuesFast(buffer.FirstSpan,
                     ref accumulator,
                     isFinalBlock,
                     out var consumed);
@@ -174,7 +177,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // If we're not in the final block, then consume nothing
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
+                        // Don't buffer indefinitely
                         if ((uint)span.Length > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();
@@ -243,7 +246,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
+                        // Don't buffer indefinitely
                         if ((uint)(sequenceReader.Consumed - consumedBytes) > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();
@@ -268,7 +271,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var keyValueReader = new SequenceReader<byte>(keyValuePair);
                 ReadOnlySequence<byte> value;
 
-                if (keyValueReader.TryReadTo(out var key, equalsDelimiter))
+                if (keyValueReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter))
                 {
                     if (key.Length > KeyLengthLimit)
                     {
@@ -325,7 +328,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (ros.IsSingleSegment)
             {
-                return GetDecodedString(ros.First.Span);
+                return GetDecodedString(ros.FirstSpan);
             }
 
             if (ros.Length < StackAllocThreshold)
@@ -376,10 +379,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
 
-                var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
-                span = span.Slice(0, bytes);
+                try
+                {
+                    var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
+                    span = span.Slice(0, bytes);
 
-                return _encoding.GetString(span);
+                    return _encoding.GetString(span);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidDataException("The form value contains invalid characters.", ex);
+                }
             }
             else
             {

@@ -39,10 +39,10 @@ namespace JwtClientSample
                 })
                 .Build();
 
-            var closedTcs = new TaskCompletionSource<object>();
+            var closedTcs = new TaskCompletionSource();
             hubConnection.Closed += e =>
             {
-                closedTcs.SetResult(null);
+                closedTcs.SetResult();
                 return Task.CompletedTask;
             };
 

@@ -1,14 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Intentionally targeting netcoreapp3.0 because we do not want to update the Benchmark client to use 3.1 -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <IsPackable>true</IsPackable>
+    <TargetFramework>net5.0</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

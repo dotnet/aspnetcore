@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class DefaultWebSocketManager : WebSocketManager
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpWebSocketFeature> _nullWebSocketFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
 
         private FeatureReferences<FeatureInterfaces> _features;
 
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Http
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature);
+            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature)!;
 
         private IHttpWebSocketFeature WebSocketFeature =>
-            _features.Fetch(ref _features.Cache.WebSockets, _nullWebSocketFeature);
+            _features.Fetch(ref _features.Cache.WebSockets, _nullWebSocketFeature)!;
 
         public override bool IsWebSocketRequest
         {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
+        public override Task<WebSocket> AcceptWebSocketAsync(string? subProtocol)
         {
             if (WebSocketFeature == null)
             {
@@ -71,8 +71,8 @@ namespace Microsoft.AspNetCore.Http
 
         struct FeatureInterfaces
         {
-            public IHttpRequestFeature Request;
-            public IHttpWebSocketFeature WebSockets;
+            public IHttpRequestFeature? Request;
+            public IHttpWebSocketFeature? WebSockets;
         }
     }
 }

@@ -22,9 +22,19 @@ output_dir="$DIR/node"
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
 echo "Downloading from: $url"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
-trap "rm -rf $tmp" EXIT
+
+cleanup() {
+    exitcode=$?
+    if [ $exitcode -ne 0 ]; then
+      echo "Failed to install node with exit code: $exitcode"
+    fi
+    rm -rf "$tmp"
+    exit $exitcode
+}
+
+trap "cleanup" EXIT
 cd "$tmp"
-curl -Lsfo $(basename $url) "$url"
+curl -Lsfo $(basename $url) "$url" --retry 5
 echo "Installing node from $(basename $url) $url"
 mkdir $output_dir
 echo "Unpacking to $output_dir"

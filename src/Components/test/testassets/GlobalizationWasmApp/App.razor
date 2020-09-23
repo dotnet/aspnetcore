@@ -1,0 +1,8 @@
+﻿@using System.Globalization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<App> Loc
+
+<p>App's culture: <span id="culture">@CultureInfo.CurrentCulture</span></p>
+
+<p>DateTime: <span id="dateTime">@(new DateTime(2020, 09, 02))</span></p>
+
+<p>Localized string: <span id="localizedString">@Loc["Hello"]</span></p>

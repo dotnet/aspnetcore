@@ -12,5 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         Http1 = 0x1,
         Http2 = 0x2,
         Http1AndHttp2 = Http1 | Http2,
+        Http3 = 0x4,
+        Http1AndHttp2AndHttp3 = Http1 | Http2 | Http3
     }
 }

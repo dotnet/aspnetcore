@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                     else
                     {
                         var redirectType = ParseEnum(urlAction, RewriteTags.RedirectType, RedirectType.Permanent);
-                        action = new RedirectAction((int)redirectType, urlPattern, appendQuery);
+                        action = new RedirectAction((int)redirectType, urlPattern, appendQuery, !appendQuery, escapeBackReferences: false);
                     }
                     break;
                 case ActionType.AbortRequest:

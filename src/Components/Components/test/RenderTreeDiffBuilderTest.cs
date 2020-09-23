@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingAdded()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame without a key and a new frame with a key.
 
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingRemoved()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame with a key and a new frame without a key.
 

@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public void PostConfigure(string name, TOptions options)
             {
-                options.SignInScheme = options.SignInScheme ?? _authOptions.DefaultSignInScheme;
+                options.SignInScheme ??= _authOptions.DefaultSignInScheme;
             }
         }
 

@@ -22,11 +22,19 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// </summary>
         public bool Succeeded { get; private set; }
 
+        /// <summary>
+        /// Contains information about why authorization failed.
+        /// </summary>
+        public AuthorizationFailure? AuthorizationFailure { get; private set; }
+
         public static PolicyAuthorizationResult Challenge()
             => new PolicyAuthorizationResult { Challenged = true };
 
         public static PolicyAuthorizationResult Forbid()
-            => new PolicyAuthorizationResult { Forbidden = true };
+            => Forbid(null);
+
+        public static PolicyAuthorizationResult Forbid(AuthorizationFailure? authorizationFailure)
+            => new PolicyAuthorizationResult { Forbidden = true, AuthorizationFailure = authorizationFailure };
 
         public static PolicyAuthorizationResult Success()
             => new PolicyAuthorizationResult { Succeeded = true };

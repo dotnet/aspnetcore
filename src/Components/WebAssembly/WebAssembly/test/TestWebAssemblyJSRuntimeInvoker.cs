@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 case "Blazor._internal.navigationManager.getUnmarshalledLocationHref":
                     var testHref = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
                     return (TResult)(object)testHref;
+                case "Blazor._internal.registeredComponents.getRegisteredComponentsCount":
+                    return (TResult)(object)0;
                 default:
                     throw new NotImplementedException($"{nameof(TestWebAssemblyJSRuntimeInvoker)} has no implementation for '{identifier}'.");
             }

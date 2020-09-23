@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.AzureAD.Controllers.Int
     [AllowAnonymous]
     [Area("AzureAD")]
     [Route("[area]/[controller]/[action]")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     internal class AccountController : Controller
     {
         public AccountController(IOptionsMonitor<AzureADOptions> options)

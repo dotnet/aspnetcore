@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             if (context == null)
             {
-                throw new ArgumentNullException(Resources.ArgumentCannotBeNullOrEmpty, (nameof(context)));
+                throw new ArgumentNullException(nameof(context));
             }
 
             var httpContext = context.HttpContext;

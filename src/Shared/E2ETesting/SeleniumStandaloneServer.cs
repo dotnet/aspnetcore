@@ -86,10 +86,20 @@ namespace Microsoft.AspNetCore.E2ETesting
             var port = FindAvailablePort();
             var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
 
+            var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.Testing.SeleniumConfigPath")
+                ?.Value;
+
+            if (seleniumConfigPath == null)
+            {
+                throw new InvalidOperationException("Selenium config path not configured. Does this project import the E2ETesting.targets?");
+            }
+
             var psi = new ProcessStartInfo
             {
                 FileName = "npm",
-                Arguments = $"run selenium-standalone start -- -- -port {port}",
+                Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" -- -port {port}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
@@ -103,6 +113,13 @@ namespace Microsoft.AspNetCore.E2ETesting
             // It's important that we get the folder value before we start the process to prevent
             // untracked processes when the tracking folder is not correctly configure.
             var trackingFolder = GetProcessTrackingFolder();
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                // Just create a random tracking folder on helix
+                trackingFolder = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+                Directory.CreateDirectory(trackingFolder);
+            }
+            
             if (!Directory.Exists(trackingFolder))
             {
                 throw new InvalidOperationException($"Invalid tracking folder. Set the 'SeleniumProcessTrackingFolder' MSBuild property to a valid folder.");
@@ -191,7 +208,7 @@ Captured output lines:
 
         private static Process StartSentinelProcess(Process process, string sentinelFile, int timeout)
         {
-            // This sentinel process will start and will kill any roge selenium server that want' torn down
+            // This sentinel process will start and will kill any rouge selenium server that want' torn down
             // via normal means.
             var psi = new ProcessStartInfo
             {

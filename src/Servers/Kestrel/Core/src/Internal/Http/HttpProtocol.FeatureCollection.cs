@@ -18,6 +18,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IHttpRequestFeature,
+                                          IHttpRequestBodyDetectionFeature,
                                           IHttpResponseFeature,
                                           IHttpResponseBodyFeature,
                                           IRequestBodyPipeFeature,
@@ -37,8 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         string IHttpRequestFeature.Protocol
         {
-            get => HttpVersion;
-            set => HttpVersion = value;
+            get => _httpProtocol ??= HttpVersion;
+            set => _httpProtocol = value;
         }
 
         string IHttpRequestFeature.Scheme
@@ -120,6 +121,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return RequestBodyPipeReader;
             }
         }
+
+        bool IHttpRequestBodyDetectionFeature.CanHaveBody => _bodyControl.CanHaveBody;
 
         bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
 
@@ -292,6 +295,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             IsUpgraded = true;
+
+            KestrelEventSource.Log.RequestUpgradedStart(this);
 
             ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
 

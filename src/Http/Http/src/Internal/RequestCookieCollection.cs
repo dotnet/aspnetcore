@@ -4,15 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
     internal class RequestCookieCollection : IRequestCookieCollection
     {
-        private const string EnableCookieNameDecoding = "Microsoft.AspNetCore.Http.EnableCookieNameDecoding";
-        private bool _enableCookieNameDecoding;
-
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
@@ -20,24 +18,23 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, string> Store { get; set; }
+        private Dictionary<string, string>? Store { get; set; }
 
         public RequestCookieCollection()
         {
-            _enableCookieNameDecoding = AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled;
         }
 
-        public RequestCookieCollection(Dictionary<string, string> store) : this()
+        public RequestCookieCollection(Dictionary<string, string> store)
         {
             Store = store;
         }
 
-        public RequestCookieCollection(int capacity) : this()
+        public RequestCookieCollection(int capacity)
         {
             Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
@@ -51,8 +48,7 @@ namespace Microsoft.AspNetCore.Http
                     return null;
                 }
 
-                string value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -61,17 +57,16 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public static RequestCookieCollection Parse(IList<string> values)
-            => ParseInternal(values, AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled);
+            => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
 
-        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameDecoding)
+        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameEncoding)
         {
             if (values.Count == 0)
             {
                 return Empty;
             }
 
-            IList<CookieHeaderValue> cookies;
-            if (CookieHeaderValue.TryParseList(values, out cookies))
+            if (CookieHeaderValue.TryParseList(values, out var cookies))
             {
                 if (cookies.Count == 0)
                 {
@@ -79,15 +74,11 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 var collection = new RequestCookieCollection(cookies.Count);
-                var store = collection.Store;
+                var store = collection.Store!;
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
-                    var name = cookie.Name.Value;
-                    if (enableCookieNameDecoding)
-                    {
-                        name = Uri.UnescapeDataString(name);
-                    }
+                    var name = enableCookieNameEncoding ? Uri.UnescapeDataString(cookie.Name.Value) : cookie.Name.Value;
                     var value = Uri.UnescapeDataString(cookie.Value.Value);
                     store[name] = value;
                 }
@@ -127,20 +118,17 @@ namespace Microsoft.AspNetCore.Http
             {
                 return false;
             }
-            return Store.ContainsKey(key)
-                || !_enableCookieNameDecoding && Store.ContainsKey(Uri.EscapeDataString(key));
+            return Store.ContainsKey(key);
         }
 
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value)
         {
             if (Store == null)
             {
                 value = null;
                 return false;
             }
-
-            return Store.TryGetValue(key, out value)
-                || !_enableCookieNameDecoding && Store.TryGetValue(Uri.EscapeDataString(key), out value);
+            return Store.TryGetValue(key, out value);
         }
 
         /// <summary>

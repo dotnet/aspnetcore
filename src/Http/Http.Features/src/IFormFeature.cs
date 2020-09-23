@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// The parsed form, if any.
         /// </summary>
-        IFormCollection Form { get; set; }
+        IFormCollection? Form { get; set; }
 
         /// <summary>
         /// Parses the request body as a form.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="IFormCollection"/>.</returns>
         IFormCollection ReadForm();
 
         /// <summary>

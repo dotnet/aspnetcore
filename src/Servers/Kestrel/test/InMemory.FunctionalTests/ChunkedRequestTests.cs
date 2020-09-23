@@ -9,13 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -25,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
+            Assert.True(request.CanHaveBody());
             while (true)
             {
                 var buffer = new byte[8192];
@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
+            Assert.True(request.CanHaveBody());
             while (true)
             {
                 var readResult = await request.BodyReader.ReadAsync();
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
+            Assert.True(request.CanHaveBody());
             var data = new MemoryStream();
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
@@ -175,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
+                Assert.True(request.CanHaveBody());
 
                 Assert.Equal("POST", request.Method);
 
@@ -230,6 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
+                Assert.True(request.CanHaveBody());
 
                 var buffer = new byte[200];
 
@@ -357,6 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
+                Assert.True(request.CanHaveBody());
 
                 // The first request is chunked with no trailers.
                 if (requestsReceived == 0)
@@ -653,6 +658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
+                Assert.True(request.CanHaveBody());
 
                 var buffer = new byte[200];
 
@@ -685,7 +691,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -697,6 +702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
+                Assert.True(request.CanHaveBody());
 
                 var buffer = new byte[200];
 
@@ -841,19 +847,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ClosingConnectionMidChunkPrefixThrows()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var readStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+#pragma warning disable CS0618 // Type or member is obsolete
             var exTcs = new TaskCompletionSource<BadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await using (var server = new TestServer(async httpContext =>
             {
                 var readTask = httpContext.Request.Body.CopyToAsync(Stream.Null);
-                readStartedTcs.SetResult(null);
+                readStartedTcs.SetResult();
 
                 try
                 {
                     await readTask;
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 catch (BadHttpRequestException badRequestEx)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     exTcs.TrySetResult(badRequestEx);
                 }
@@ -887,7 +897,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunkedRequestCallCancelPendingReadWorks()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -906,7 +916,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.True((await requestTask).IsCanceled);
 
-                tcs.SetResult(null);
+                tcs.SetResult();
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
@@ -988,7 +998,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -1042,6 +1051,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                        "0",
                        "",
                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
 
@@ -1051,10 +1067,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunkedRequestCallCompleteWithExceptionCauses500()
         {
-            var tcs = new TaskCompletionSource<object>();
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;

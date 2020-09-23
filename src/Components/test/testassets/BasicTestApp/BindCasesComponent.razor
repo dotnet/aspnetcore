@@ -1,4 +1,4 @@
-<h3 id="bind-cases">Bind cases</h3>
+﻿<h3 id="bind-cases">Bind cases</h3>
 
 @* There are a mix of cases here using bind and bind-value for coverage *@
 
@@ -49,6 +49,18 @@
     <input id="textbox-nullable-long" @bind="textboxNullableLongValue" type="number" />
     <span id="textbox-nullable-long-value">@textboxNullableLongValue</span>
     <input id="textbox-nullable-long-mirror" @bind="textboxNullableLongValue" readonly />
+</p>
+<p>
+    short:
+    <input id="textbox-short" @bind="textboxShortValue" type="number" />
+    <span id="textbox-short-value">@textboxShortValue</span>
+    <input id="textbox-short-mirror" @bind="textboxShortValue" readonly />
+</p>
+<p>
+    Nullable short:
+    <input id="textbox-nullable-short" @bind="textboxNullableShortValue" type="number" />
+    <span id="textbox-nullable-short-value">@textboxNullableShortValue</span>
+    <input id="textbox-nullable-short-mirror" @bind="textboxNullableShortValue" readonly />
 </p>
 <p>
     float:
@@ -229,6 +241,8 @@
     <select id="select-box" @bind="selectValue">
         <optgroup label="Some choices">
             <!-- Show it also works with optgroup -->
+            <option value=@string.Empty>Empty value</option>
+            <option value="@variableValue">Variable value</option>
             <option value=@SelectableValue.First>First choice</option>
             <option value=@SelectableValue.Second>Second choice</option>
             <option value=@SelectableValue.Third>Third choice</option>
@@ -240,12 +254,14 @@
     </select>
     <span id="select-box-value">@selectValue</span>
     <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="change-variable-value" @onclick="ChangeVariableValueToSixth">Change variable value to Sixth.</button>
 </p>
 
 <h2>Select (markup block)</h2>
 <p>
     <select id="select-markup-box" @bind="selectMarkupValue">
         <optgroup label="Some choices">
+            <option value="">Empty value</option>
             <option value="First">First choice</option>
             <option value="Second">Second choice</option>
             <option value="Third">Third choice</option>
@@ -326,6 +342,8 @@
     int? textboxNullableIntValue = null;
     long textboxLongValue = 3_000_000_000;
     long? textboxNullableLongValue = null;
+    short textboxShortValue = -42;
+    short? textboxNullableShortValue = null;
     float textboxFloatValue = 3.141f;
     float? textboxNullableFloatValue = null;
     double textboxDoubleValue = 3.14159265359d;
@@ -367,13 +385,21 @@
     DateTime? timeStepTextboxNullableDateTimeValue = null;
 
     bool includeFourthOption = false;
-    enum SelectableValue { First, Second, Third, Fourth }
-    SelectableValue selectValue = SelectableValue.Second;
-    SelectableValue selectMarkupValue = SelectableValue.Second;
+    enum SelectableValue { First, Second, Third, Fourth, Fifth, Sixth }
+    SelectableValue? selectValue = SelectableValue.Second;
+    SelectableValue? selectMarkupValue = SelectableValue.Second;
+
+    SelectableValue variableValue = SelectableValue.Fifth;
 
     void AddAndSelectNewSelectOption()
     {
         includeFourthOption = true;
         selectValue = SelectableValue.Fourth;
+    }
+
+    void ChangeVariableValueToSixth()
+    {
+        selectValue = SelectableValue.Sixth;
+        variableValue = SelectableValue.Sixth;
     }
 }

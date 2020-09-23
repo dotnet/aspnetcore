@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         // do change this it will be non-breaking.
         public static async void InvokeEntrypoint(string assemblyName, string[] args)
         {
+             WebAssemblyCultureProvider.Initialize();
+
             try
             {
                 var assembly = Assembly.Load(assemblyName);

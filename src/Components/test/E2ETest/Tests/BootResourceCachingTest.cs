@@ -9,6 +9,7 @@ using HostedInAspNet.Server;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
@@ -46,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var initialResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));            
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
@@ -58,28 +59,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
             Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 
         [Fact]
+        [QuarantinedTest]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
             Navigate("/");
             WaitUntilLoaded();
             var cacheEntryUrls1 = GetCacheEntryUrls();
-            var cacheEntryForMsCorLib = cacheEntryUrls1.Single(url => url.Contains("/mscorlib.dll"));
+            var cacheEntryForComponentsDll = cacheEntryUrls1.Single(url => url.Contains("/Microsoft.AspNetCore.Components.dll"));
             var cacheEntryForDotNetWasm = cacheEntryUrls1.Single(url => url.Contains("/dotnet.wasm"));
             var cacheEntryForDotNetWasmWithChangedHash = cacheEntryForDotNetWasm.Replace(".sha256-", ".sha256-different");
 
             // Remove some items we do need, and add an item we don't need
-            RemoveCacheEntry(cacheEntryForMsCorLib);
+            RemoveCacheEntry(cacheEntryForComponentsDll);
             RemoveCacheEntry(cacheEntryForDotNetWasm);
             AddCacheEntry(cacheEntryForDotNetWasmWithChangedHash, "ignored content");
             var cacheEntryUrls2 = GetCacheEntryUrls();
-            Assert.DoesNotContain(cacheEntryForMsCorLib, cacheEntryUrls2);
+            Assert.DoesNotContain(cacheEntryForComponentsDll, cacheEntryUrls2);
             Assert.DoesNotContain(cacheEntryForDotNetWasm, cacheEntryUrls2);
             Assert.Contains(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls2);
 
@@ -90,13 +91,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".dll")),
-                requestedDll => Assert.Contains("/mscorlib.dll", requestedDll));
+                requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.dll", requestedDll));
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".wasm")),
                 requestedDll => Assert.Contains("/dotnet.wasm", requestedDll));
 
             // We also update the cache (add new items, remove unnecessary items)
             var cacheEntryUrls3 = GetCacheEntryUrls();
-            Assert.Contains(cacheEntryForMsCorLib, cacheEntryUrls3);
+            Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
             Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
             Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);
         }

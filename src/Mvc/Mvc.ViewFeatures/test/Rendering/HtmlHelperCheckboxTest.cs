@@ -170,6 +170,93 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         [Fact]
+        public void CheckBox_WithHiddenInputRenderModeNone_DoesNotGenerateHiddenInput()
+        {
+            // Arrange
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Boolean");
+            var expected = @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
+                $@"data-val-required=""HtmlEncode[[{requiredMessage}]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.None;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
+
+            // Assert
+            Assert.False(helper.ViewContext.FormContext.HasEndOfFormContent);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+        }
+
+        [Fact]
+        public void CheckBox_WithHiddenInputRenderModeInline_GeneratesHiddenInput()
+        {
+            // Arrange
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Boolean");
+            var expected = @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
+                $@"data-val-required=""HtmlEncode[[{requiredMessage}]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.FormContext.CanRenderAtEndOfForm = true;
+            helper.ViewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.Inline;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+        }
+
+        [Fact]
+        public void CheckBox_WithHiddenInputRenderModeEndOfForm_GeneratesHiddenInput()
+        {
+            // Arrange
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Boolean");
+            var expected = @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
+                $@"data-val-required=""HtmlEncode[[{requiredMessage}]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.FormContext.CanRenderAtEndOfForm = true;
+            helper.ViewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
+
+            // Assert
+            Assert.True(helper.ViewContext.FormContext.HasEndOfFormContent);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+            var writer = new StringWriter();
+            var hiddenTag = Assert.Single(helper.ViewContext.FormContext.EndOfFormContent);
+            hiddenTag.WriteTo(writer, new HtmlTestEncoder());
+            Assert.Equal("<input name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />",
+                writer.ToString());
+        }
+
+        [Fact]
+        public void CheckBox_WithHiddenInputRenderModeEndOfForm_WithCanRenderAtEndOfFormNotSet_GeneratesHiddenInput()
+        {
+            // Arrange
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Boolean");
+            var expected = @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
+                $@"data-val-required=""HtmlEncode[[{requiredMessage}]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.FormContext.CanRenderAtEndOfForm = false;
+            helper.ViewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
+
+            // Assert
+            Assert.False(helper.ViewContext.FormContext.HasEndOfFormContent);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+        }
+
+        [Fact]
         public void CheckBoxUsesAttemptedValueFromModelState()
         {
             // Arrange

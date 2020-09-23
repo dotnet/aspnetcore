@@ -13,6 +13,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpsPolicy
 {
+    /// <summary>
+    /// Middleware that redirects non-HTTPS requests to an HTTPS URL.
+    /// </summary>
     public class HttpsRedirectionMiddleware
     {
         private const int PortNotFound = -1;
@@ -21,12 +24,12 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         private readonly Lazy<int> _httpsPort;
         private readonly int _statusCode;
 
-        private readonly IServerAddressesFeature _serverAddressesFeature;
+        private readonly IServerAddressesFeature? _serverAddressesFeature;
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware
+        /// Initializes <see cref="HttpsRedirectionMiddleware" />.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
@@ -56,13 +59,13 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         }
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware
+        /// Initializes <see cref="HttpsRedirectionMiddleware" />.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="config"></param>
         /// <param name="loggerFactory"></param>
-        /// <param name="serverAddressesFeature">The</param>
+        /// <param name="serverAddressesFeature"></param>
         public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory,
             IServerAddressesFeature serverAddressesFeature)
             : this(next, options, config, loggerFactory)
@@ -71,7 +74,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         }
 
         /// <summary>
-        /// Invokes the HttpsRedirectionMiddleware
+        /// Invokes the HttpsRedirectionMiddleware.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

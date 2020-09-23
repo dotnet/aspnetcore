@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -18,9 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
         private const string CorrelationMarker = "N";
         private const string AuthSchemeKey = ".AuthScheme";
 
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
-        protected string SignInScheme => Options.SignInScheme;
+        protected string? SignInScheme => Options.SignInScheme;
 
         /// <summary>
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         protected new RemoteAuthenticationEvents Events
         {
-            get { return (RemoteAuthenticationEvents)base.Events; }
+            get { return (RemoteAuthenticationEvents)base.Events!; }
             set { base.Events = value; }
         }
 
@@ -48,9 +47,9 @@ namespace Microsoft.AspNetCore.Authentication
                 return false;
             }
 
-            AuthenticationTicket ticket = null;
-            Exception exception = null;
-            AuthenticationProperties properties = null;
+            AuthenticationTicket? ticket = null;
+            Exception? exception = null;
+            AuthenticationProperties? properties = null;
             try
             {
                 var authResult = await HandleRemoteAuthenticateAsync();
@@ -111,6 +110,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             // We have a ticket if we get here
+            Debug.Assert(ticket != null);
             var ticketContext = new TicketReceivedContext(Context, Scheme, Options, ticket)
             {
                 ReturnUri = ticket.Properties.RedirectUri
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Authentication
                 }
             }
 
-            await Context.SignInAsync(SignInScheme, ticketContext.Principal, ticketContext.Properties);
+            await Context.SignInAsync(SignInScheme, ticketContext.Principal!, ticketContext.Properties);
 
             // Default redirect path is the base path
             if (string.IsNullOrEmpty(ticketContext.ReturnUri))
@@ -167,10 +167,9 @@ namespace Microsoft.AspNetCore.Authentication
                 }
 
                 // The SignInScheme may be shared with multiple providers, make sure this provider issued the identity.
-                string authenticatedScheme;
                 var ticket = result.Ticket;
                 if (ticket != null && ticket.Principal != null && ticket.Properties != null
-                    && ticket.Properties.Items.TryGetValue(AuthSchemeKey, out authenticatedScheme)
+                    && ticket.Properties.Items.TryGetValue(AuthSchemeKey, out var authenticatedScheme)
                     && string.Equals(Scheme.Name, authenticatedScheme, StringComparison.Ordinal))
                 {
                     return AuthenticateResult.Success(new AuthenticationTicket(ticket.Principal,
@@ -194,14 +193,14 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var bytes = new byte[32];
-            CryptoRandom.GetBytes(bytes);
+            RandomNumberGenerator.Fill(bytes);
             var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
             var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
 
             properties.Items[CorrelationProperty] = correlationId;
 
-            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + correlationId;
 
             Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
         }
@@ -213,15 +212,15 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(properties));
             }
 
-            if (!properties.Items.TryGetValue(CorrelationProperty, out string correlationId))
+            if (!properties.Items.TryGetValue(CorrelationProperty, out var correlationId))
             {
-                Logger.CorrelationPropertyNotFound(Options.CorrelationCookie.Name);
+                Logger.CorrelationPropertyNotFound(Options.CorrelationCookie.Name!);
                 return false;
             }
 
             properties.Items.Remove(CorrelationProperty);
 
-            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + correlationId;
 
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))
@@ -278,7 +277,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     uri = QueryHelpers.AddQueryString(uri, context.ReturnUrlParameter, context.ReturnUrl);
                 }
-                Response.Redirect(uri);
+                Response.Redirect(BuildRedirectUri(uri));
 
                 return HandleRequestResult.Handle();
             }

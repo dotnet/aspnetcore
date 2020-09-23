@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
 
-        internal SatelliteResourcesLoader SatelliteResourcesLoader { get; set; } = new SatelliteResourcesLoader(WebAssemblyJSRuntimeInvoker.Instance);
+        internal WebAssemblyCultureProvider CultureProvider { get; set; } = WebAssemblyCultureProvider.Instance;
 
         /// <summary>
         /// Disposes the host asynchronously.
@@ -121,11 +121,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _started = true;
 
+            CultureProvider.ThrowIfCultureChangeIsUnsupported();
+
             // EntryPointInvoker loads satellite assemblies for the application default culture.
             // Application developers might have configured the culture based on some ambient state
             // such as local storage, url etc as part of their Program.Main(Async).
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
-            await SatelliteResourcesLoader.LoadCurrentCultureResourcesAsync();
+            await CultureProvider.LoadCurrentCultureResourcesAsync();
 
             var tcs = new TaskCompletionSource<object>();
 
@@ -138,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 for (var i = 0; i < rootComponents.Length; i++)
                 {
                     var rootComponent = rootComponents[i];
-                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector);
+                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                 }
 
                 await tcs.Task;

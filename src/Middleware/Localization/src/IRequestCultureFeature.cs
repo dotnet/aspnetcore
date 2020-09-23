@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Localization
         /// If the value is <c>null</c> then no provider was used and the request's culture was set to the value of
         /// <see cref="Builder.RequestLocalizationOptions.DefaultRequestCulture"/>.
         /// </summary>
-        IRequestCultureProvider Provider { get; }
+        IRequestCultureProvider? Provider { get; }
     }
 }

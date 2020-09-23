@@ -92,7 +92,7 @@ namespace BasicApi
                     _isSQLite = true;
                     services
                         .AddEntityFrameworkSqlite()
-                        .AddDbContextPool<BasicApiContext>(options => options.UseSqlite("Data Source=BasicApi.db"));
+                        .AddDbContextPool<BasicApiContext>(options => options.UseSqlite("Data Source=BasicApi.db;Cache=Shared"));
                     break;
 
                 case "SQLSERVER":

@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+  <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" Condition="'$(IsHelixJob)' != 'true'"/>
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,10 +11,8 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <SkipHelixArm>true</SkipHelixArm>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <BaseOutputPath />
     <OutputPath />
 
@@ -23,21 +22,28 @@
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
-    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+    <Compile Include="..\Shared\**" LinkBase="Helpers" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AngleSharp" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
+    <Content Include="..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
+    <Content Include="..\Web.Spa.ProjectTemplates\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
+    <Content Include="..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
+    <Content Include="..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../ComponentsWebAssembly.ProjectTemplates/Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj" ReferenceOutputAssembly="false" />
+    <HelixContent Include="$(OutputPath)$(TargetFramework)Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
@@ -48,12 +54,18 @@
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</PreserveExistingLogsInOutput>
+    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == ''">false</PreserveExistingLogsInOutput>
+  </PropertyGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/$(DefaultNetCoreTargetFramework)/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
@@ -67,9 +79,14 @@
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
+      <_Parameter1>$(PreserveExistingLogsInOutput)</_Parameter1>
+      <_Parameter2>$(TargetFramework)</_Parameter2>
+      <_Parameter3></_Parameter3>
+    </AssemblyAttribute>
   </ItemGroup>
-  
-  <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
+
+  <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <TestTemplateTestsProps>$(TestTemplateCreationFolder)$(TestTemplateTestsProps)</TestTemplateTestsProps>
@@ -138,7 +155,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
-      Properties=""
+      Properties="RepoRoot=$(RepoRoot)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

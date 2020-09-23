@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             : base(parent, CommandName, httpClient)
         {
             Commands.Add(new AddFileCommand(this, httpClient));
-            //TODO: Add AddprojectComand here: https://github.com/aspnet/AspNetCore/issues/12738
+            //TODO: Add AddprojectComand here: https://github.com/dotnet/aspnetcore/issues/12738
             Commands.Add(new AddURLCommand(this, httpClient));
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -15,11 +16,11 @@ namespace Microsoft.AspNetCore.Components
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
         // This setting is not configurable, but realistically we don't expect an app to take more than 30 seconds from when
-        // it got rendrered to when the circuit got started, and having an expiration on the serialized server-components helps
+        // it got rendered to when the circuit got started, and having an expiration on the serialized server-components helps
         // prevent old payloads from being replayed.
         public static readonly TimeSpan DataExpiration = TimeSpan.FromMinutes(5);
     }

@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,15 +18,19 @@ namespace Microsoft.AspNetCore
     {
         private readonly string _expectedTfm;
         private readonly string _expectedRid;
+        private readonly string _expectedVersionFileName;
         private readonly string _sharedFxRoot;
         private readonly ITestOutputHelper _output;
 
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _sharedFxRoot = Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"));
+            _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
+                ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
+                : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
+            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")) ? ".version" : "Microsoft.AspNetCore.App.versions.txt";
         }
 
         [Fact]
@@ -77,7 +85,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
-        public void ItContainsValidRuntimeConfigFile()
+        public void SharedFrameworkContainsValidRuntimeConfigFile()
         {
             var runtimeConfigFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.runtimeconfig.json");
 
@@ -94,7 +102,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
-        public void ItContainsValidDepsJson()
+        public void SharedFrameworkContainsValidDepsJson()
         {
             var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
 
@@ -152,9 +160,49 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
+        {
+            // Only test managed assemblies
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess"));
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var assemblyDefinition = reader.GetAssemblyDefinition();
+
+                // Assembly versions should all match Major.Minor.0.0
+                Assert.Equal(0, assemblyDefinition.Version.Build);
+                Assert.Equal(0, assemblyDefinition.Version.Revision);
+            });
+        }
+
+        [Fact]
+        public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
+        {
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess") && !i.Contains("System.Security.Cryptography.Xml", StringComparison.OrdinalIgnoreCase));
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                
+                Assert.All(reader.AssemblyReferences, handle =>
+                {
+                    var reference = reader.GetAssemblyReference(handle);
+                    Assert.Equal(0, reference.Version.Revision);
+                });
+            });
+        }
+
+        [Fact]
         public void ItContainsVersionFile()
         {
-            var versionFile = Path.Combine(_sharedFxRoot, ".version");
+            var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
             AssertEx.FileExists(versionFile);
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);

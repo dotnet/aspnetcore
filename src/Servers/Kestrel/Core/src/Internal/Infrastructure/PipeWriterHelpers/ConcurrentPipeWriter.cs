@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -57,6 +58,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _innerPipeWriter = innerPipeWriter;
             _pool = pool;
             _sync = sync;
+        }
+
+        public void Reset()
+        {
+            Debug.Assert(_currentFlushTcs == null, "There should not be a pending flush.");
+
+            _aborted = false;
+            _completeException = null;
         }
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
@@ -341,8 +350,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             else
             {
-                // We can't use the pool so allocate an array
-                newSegment.SetUnownedMemory(new byte[sizeHint]);
+                // We can't use the recommended pool so use the ArrayPool
+                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
             }
 
             _tailMemory = newSegment.AvailableMemory;

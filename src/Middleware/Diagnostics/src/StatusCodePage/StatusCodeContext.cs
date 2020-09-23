@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -15,10 +17,10 @@ namespace Microsoft.AspNetCore.Diagnostics
             Next = next;
         }
 
-        public HttpContext HttpContext { get; private set; }
+        public HttpContext HttpContext { get; }
 
-        public StatusCodePagesOptions Options { get; private set; }
+        public StatusCodePagesOptions Options { get; }
 
-        public RequestDelegate Next { get; private set; }
+        public RequestDelegate Next { get; }
     }
 }

@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _disposing = false;
 
         /// <summary>
-        /// Notifies when a rendering exception occured.
+        /// Notifies when a rendering exception occurred.
         /// </summary>
-        public event EventHandler<Exception> UnhandledException;
+        public event EventHandler<Exception>? UnhandledException;
 
         /// <summary>
         /// Creates a new <see cref="RemoteRenderer"/>.
@@ -37,12 +37,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ILoggerFactory loggerFactory,
             CircuitOptions options,
             CircuitClientProxy client,
-            ILogger logger)
+            ILogger logger,
+            ElementReferenceContext? elementReferenceContext)
             : base(serviceProvider, loggerFactory)
         {
             _client = client;
             _options = options;
             _logger = logger;
+
+            ElementReferenceContext = elementReferenceContext;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
@@ -90,14 +93,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // as we have a client that is not acknowledging render batches fast enough (something we consider needs
                 // to be fast).
                 // The result is something as follows:
-                // Lets imagine an extreme case where the server produces a new batch every milisecond.
-                // Lets say the client is able to ACK a batch every 100 miliseconds.
+                // Lets imagine an extreme case where the server produces a new batch every millisecond.
+                // Lets say the client is able to ACK a batch every 100 milliseconds.
                 // When the app starts the client might see the sequence 0->(MaxUnacknowledgedRenderBatches-1) and then
-                // after 100 miliseconds it sees it jump to 1xx, then to 2xx where xx is something between {0..99} the
+                // after 100 milliseconds it sees it jump to 1xx, then to 2xx where xx is something between {0..99} the
                 // reason for this is that the server slows down rendering new batches to as fast as the client can consume
                 // them.
                 // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
-                // would still proces the events, but would not produce new renders until it gets an ack that frees up space
+                // would still process the events, but would not produce new renders until it gets an ack that frees up space
                 // for a new render.
                 // We should never see UnacknowledgedRenderBatches.Count > _options.MaxBufferedUnacknowledgedRenderBatches
 
@@ -168,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
-                    new TaskCompletionSource<object>(),
+                    new TaskCompletionSource(),
                     ValueStopwatch.StartNew());
 
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
@@ -202,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Send the render batch to the client
             // If the "send" operation fails (synchronously or asynchronously) or the client
-            // gets disconected simply give up. This likely means that
+            // gets disconnected simply give up. This likely means that
             // the circuit went offline while sending the data, so simply wait until the
             // client reconnects back or the circuit gets evicted because it stayed
             // disconnected for too long.
@@ -231,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // disposed.
         }
 
-        public Task OnRenderCompletedAsync(long incomingBatchId, string errorMessageOrNull)
+        public Task OnRenderCompletedAsync(long incomingBatchId, string? errorMessageOrNull)
         {
             if (_disposing)
             {
@@ -247,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // from the client that it has received and successfully applied all batches up to that point).
 
             // If receive an ack for a previously acknowledged batch, its an error, as the messages are
-            // guranteed to be delivered in order, so a message for a render batch of 2 will never arrive
+            // guaranteed to be delivered in order, so a message for a render batch of 2 will never arrive
             // after a message for a render batch for 3.
             // If that were to be the case, it would just be enough to relax the checks here and simply skip
             // the message.
@@ -282,7 +285,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (lastBatchId < incomingBatchId)
                 {
-                    // This exception is due to a bad client input, so we mark it as such to prevent loging it as a warning and
+                    // This exception is due to a bad client input, so we mark it as such to prevent logging it as a warning and
                     // flooding the logs with warnings.
                     throw new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'.");
                 }
@@ -305,7 +308,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry)
+        private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
         {
             var elapsedTime = entry.ValueStopwatch.GetElapsedTime();
             if (errorMessageOrNull == null)
@@ -321,11 +324,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
-        private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
+        private void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
         {
             if (errorMessageOrNull == null)
             {
-                pendingRenderInfo.TrySetResult(null);
+                pendingRenderInfo.TrySetResult();
             }
             else
             {
@@ -335,7 +338,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         internal readonly struct UnacknowledgedRenderBatch
         {
-            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource, ValueStopwatch valueStopwatch)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource completionSource, ValueStopwatch valueStopwatch)
             {
                 BatchId = batchId;
                 Data = data;
@@ -345,7 +348,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public long BatchId { get; }
             public ArrayBuilder<byte> Data { get; }
-            public TaskCompletionSource<object> CompletionSource { get; }
+            public TaskCompletionSource CompletionSource { get; }
             public ValueStopwatch ValueStopwatch { get; }
         }
 

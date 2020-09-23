@@ -296,8 +296,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
                 var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
 
-                redirectionSection.Attributes["enabled"].Value = true;
+                if ((bool)redirectionSection.Attributes["enabled"].Value)
+                {
+                    // redirection wasn't removed before starting another site.
+                    redirectionSection.Attributes["enabled"].Value = false;
+                    var redirectedFilePath = (string)redirectionSection.Attributes["path"].Value;
+                    Logger.LogWarning($"Name of redirected file: {redirectedFilePath}");
+
+                    serverManager.CommitChanges();
+
+                    throw new InvalidOperationException("Redirection is enabled between test runs.");
+                }
+
                 redirectionSection.Attributes["path"].Value = _configPath;
+
+                redirectionSection.Attributes["enabled"].Value = true;
+
+                Logger.LogInformation("applicationhost.config path {configPath}", _configPath);
 
                 serverManager.CommitChanges();
             });
@@ -334,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
             {
-                pool.SetAttributeValue("enable32BitAppOnWin64", "true");;
+                pool.SetAttributeValue("enable32BitAppOnWin64", "true");
             }
 
             RunServerConfigActions(config, contentRoot);

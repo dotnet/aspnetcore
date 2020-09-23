@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCaching
@@ -13,8 +12,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public int StatusCode { get; set; }
 
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; } = default!;
 
-        public Stream Body { get; set; }
+        public CachedResponseBody Body { get; set; } = default!;
     }
 }

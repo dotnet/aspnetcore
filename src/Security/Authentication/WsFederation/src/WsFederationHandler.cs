@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// Overridden to handle remote signout requests
         /// </summary>
-        /// <returns><code>true</code> if request processing should stop.</returns>
+        /// <returns><see langword="true" /> if request processing should stop.</returns>
         public override Task<bool> HandleRequestAsync()
         {
             // RemoteSignOutPath and CallbackPath may be the same, fall through if the message doesn't match.
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                 Logger.ExceptionProcessingMessage(exception);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-                if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                if (Options.RefreshOnIssuerKeyNotFound && exception is SecurityTokenSignatureKeyNotFoundException)
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }

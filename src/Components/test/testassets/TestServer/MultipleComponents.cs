@@ -32,6 +32,18 @@ namespace TestServer
                 app.UseDeveloperExceptionPage();
             }
 
+            app.Map("/Client/multiple-components", app =>
+            {
+                app.UseBlazorFrameworkFiles();
+                app.UseStaticFiles();
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorPages();
+                    endpoints.MapFallbackToPage("/Client/MultipleComponents");
+                });
+            });
+
             app.Map("/multiple-components", app =>
             {
                 app.UseStaticFiles();

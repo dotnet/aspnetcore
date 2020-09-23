@@ -7,6 +7,9 @@
     <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(TargetArchitecture)' != 'arm64' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
     <SauceConnectProcessTrackingFolder Condition="'$(SauceConnectProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\sauceconnect\</SauceConnectProcessTrackingFolder>
 
+    <!-- Config that limits driver to chrome-->
+    <SeleniumConfigPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory)selenium-config.json))</SeleniumConfigPath>
+
     <!-- We want to enforce prerequisites when we build from the CI or within Visual Studio -->
     <EnforcedE2EBuildEnvironment Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(BuildingInsideVisualStudio)' == 'true'">true</EnforcedE2EBuildEnvironment>
 
@@ -28,11 +31,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.props" Link="Selenium\E2ETesting.props" />
     <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" Link="Selenium\E2ETesting.targets" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="AngleSharp" />
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
     <Reference Include="Microsoft.Extensions.Configuration" />
@@ -41,14 +50,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.CI</_Parameter1>
-      <_Parameter2>$(ContinuousIntegrationBuild)</_Parameter2>      
+      <_Parameter2>$(ContinuousIntegrationBuild)</_Parameter2>
     </AssemblyAttribute>
-    
+
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.ScreenshotsPath</_Parameter1>
-      <_Parameter2>$(SeleniumScreenShotsFolderPath)</_Parameter2>      
+      <_Parameter2>$(SeleniumScreenShotsFolderPath)</_Parameter2>
     </AssemblyAttribute>
 
   </ItemGroup>
