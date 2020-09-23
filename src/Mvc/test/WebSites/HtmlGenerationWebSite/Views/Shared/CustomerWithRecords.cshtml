@@ -38,6 +38,11 @@
             <input asp-for="Gender" type="radio" value="Female" /> Female
             <span asp-validation-for="Gender"></span>
         </div>
+         <div>
+            <label asp-for="Address" class="order"></label>
+            <input asp-for="Address" type="text" />
+            <span asp-validation-for="Address"></span>
+        </div>
         <div id="validation-summary-all" asp-validation-summary="All" class="order"></div>
         <div id="validation-summary-model" asp-validation-summary="ModelOnly" class="order"></div>
         <input type="submit"/>
