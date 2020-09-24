@@ -14,12 +14,12 @@ namespace OpenQA.Selenium
     // case.
     public class BrowserAssertFailedException : XunitException
     {
-        public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException, string screenShotPath, string innerHTML)
+        public BrowserAssertFailedException(IReadOnlyCollection<string> logs, Exception innerException, string screenShotPath, string innerHTML)
             : base(BuildMessage(innerException, logs, screenShotPath, innerHTML), innerException)
         {
         }
 
-        private static string BuildMessage(Exception exception, IReadOnlyList<LogEntry> logs, string screenShotPath, string innerHTML)
+        private static string BuildMessage(Exception exception, IReadOnlyCollection<string> logs, string screenShotPath, string innerHTML)
         {
             var builder = new StringBuilder();
             builder.AppendLine(exception.ToString());
