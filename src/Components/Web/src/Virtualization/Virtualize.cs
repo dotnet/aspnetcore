@@ -250,18 +250,18 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var itemSizeChanged);
 
-            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity, itemSizeChanged);
         }
 
         void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var itemSizeChanged);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
-            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity, itemSizeChanged);
         }
 
         private void CalcualteItemDistribution(
@@ -269,27 +269,37 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             float spacerSeparation,
             float containerSize,
             out int itemsInSpacer,
-            out int visibleItemCapacity)
+            out int visibleItemCapacity,
+            out bool itemSizeChanged)
         {
-            if (_lastRenderedItemCount > 0)
+            if (spacerSeparation > 0 && _lastRenderedItemCount > 0)
             {
+                var previousItemSize = _itemSize;
                 _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
-            }
 
-            if (_itemSize <= 0)
+                if (_itemSize <= 0)
+                {
+                    // At this point, something unusual has occurred, likely due to misuse of this component.
+                    // Reset the calculated item size to the user-provided item size.
+                    _itemSize = ItemSize;
+                }
+
+                // We don't want to create an infinite rendering loop due to floating point precision limits,
+                // so only re-render if the item size change is big enough
+                itemSizeChanged = Math.Abs(_itemSize - previousItemSize) > 0.5f;
+            }
+            else
             {
-                // At this point, something unusual has occurred, likely due to misuse of this component.
-                // Reset the calculated item size to the user-provided item size.
-                _itemSize = ItemSize;
+                itemSizeChanged = false;
             }
 
             itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
             visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
         }
 
-        private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
+        private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, bool itemSizeChanged)
         {
-            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
+            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity || itemSizeChanged)
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
@@ -299,6 +309,13 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 {
                     StateHasChanged();
                 }
+            }
+            else if (itemSizeChanged)
+            {
+                // Even if the range of visible items hasn't changed, it's possible that we adjusted our
+                // estimate of the item height. In this case we need to re-render to update the spacer
+                // dimensions.
+                StateHasChanged();
             }
         }
 
