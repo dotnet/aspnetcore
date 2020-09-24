@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
         
         [Fact]
-        public void ActivityParentIdAndBaggePreservesItemsOrder()
+        public void ActivityBaggagePreservesItemsOrder()
         {
             var diagnosticListener = new DiagnosticListener("DummySource");
             var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 Headers = new HeaderDictionary()
                 {
                     {"Request-Id", "ParentId1"},
-                    {"Correlation-Context", "Key1=value1, Key2=value2, Key1=value3"}
+                    {"Correlation-Context", "Key1=value1, Key2=value2, Key1=value3"} // duplicated keys allowed by the contract
                 }
             });
             hostingApplication.CreateContext(features);
