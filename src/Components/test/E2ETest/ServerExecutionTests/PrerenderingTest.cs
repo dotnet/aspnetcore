@@ -83,39 +83,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [QuarantinedTest]
-        public void CanInfluenceHeadDuringPrerender()
-        {
-            Navigate("/prerendered/prerendered-head");
-
-            // Validate updated head during prerender
-            Browser.Equal("Initial title", () => Browser.Title);
-            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
-            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
-
-            BeginInteractivity();
-
-            // Wait until the component has rerendered
-            Browser.Exists(By.Id("interactive-indicator"));
-
-            // Validate updated head after prerender
-            Browser.Equal("Initial title", () => Browser.Title);
-            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
-            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
-
-            // Change parameter of meta component
-            var inputMetaBinding = Browser.FindElement(By.Id("input-meta-binding"));
-            inputMetaBinding.Clear();
-            inputMetaBinding.SendKeys("Updated meta content\n");
-
-            // Validate new meta content attribute
-            Browser.Equal("Updated meta content", () => GetMetaWithBindings().GetAttribute("content"));
-
-            IWebElement GetMetaWithBindings() => Browser.FindElement(By.Id("meta-with-bindings"));
-            IWebElement GetMetaWithoutBindings() => Browser.FindElement(By.Id("meta-no-bindings"));
-        }
-
-        [Fact]
         public void CanReadUrlHashOnlyOnceConnected()
         {
             var urlWithoutHash = "prerendered/show-uri?my=query&another=value";
