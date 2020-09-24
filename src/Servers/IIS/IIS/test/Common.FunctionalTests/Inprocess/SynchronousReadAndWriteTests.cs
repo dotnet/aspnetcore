@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26294")]
         public async Task ReadAndWriteSynchronously()
         {
             var content = new StringContent(new string('a', 100000));
