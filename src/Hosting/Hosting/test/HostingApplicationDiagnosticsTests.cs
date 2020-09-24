@@ -300,6 +300,38 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
+        
+        [Fact]
+        public void ActivityParentIdAndBaggePreservesItemsOrder()
+        {
+            var diagnosticListener = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
+
+            diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
+                s =>
+                {
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"Request-Id", "ParentId1"},
+                    {"Correlation-Context", "Key1=value1, Key2=value2, Key1=value3"}
+                }
+            });
+            hostingApplication.CreateContext(features);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
+            Assert.Collection(Activity.Current.Baggage, 
+                              pair => pair.Key == "Key1" && pair.Value == "value1",
+                              pair => pair.Key == "Key2" && pair.Value == "value2",
+                              pair => pair.Key == "Key1" && pair.Value == "value3");
+        }
 
         [Fact]
         public void ActivityBaggageValuesAreUrlDecodedFromHeaders()
