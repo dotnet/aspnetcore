@@ -5,10 +5,14 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
@@ -18,8 +22,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         [Fact]
         public async Task MiddlewareIsRunWithConnectionLoggingScopeForHttp2Requests()
         {
+            var expectedLogMessage = "Log from connection scope!";
+            string connectionIdFromFeature = null;
+
+            var mockScopeLoggerProvider = new MockScopeLoggerProvider(expectedLogMessage);
+            LoggerFactory.AddProvider(mockScopeLoggerProvider);
+
             await using var server = new TestServer(async context =>
             {
+                connectionIdFromFeature = context.Features.Get<IConnectionIdFeature>().ConnectionId;
+
+                var logger = context.RequestServices.GetRequiredService<ILogger<Http2EndToEndTests>>();
+                logger.LogInformation(expectedLogMessage);
+
                 await context.Response.WriteAsync("hello, world");
             },
             new TestServiceContext(LoggerFactory),
@@ -49,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
             using var httpRequsetMessage = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"http://localhost:{server.Port}/"),
+                RequestUri = new Uri("http://localhost/"),
                 Version = new Version(2, 0),
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact,
             };
@@ -57,6 +72,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
             using var responseMessage = await httpClient.SendAsync(httpRequsetMessage);
 
             Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
+
+            Assert.NotNull(connectionIdFromFeature);
+            Assert.NotNull(mockScopeLoggerProvider.ConnectionLogScope);
+            Assert.Equal(connectionIdFromFeature, mockScopeLoggerProvider.ConnectionLogScope[0].Value);
+        }
+
+        private class MockScopeLoggerProvider : ILoggerProvider, ISupportExternalScope
+        {
+            private readonly string _expectedLogMessage;
+            private IExternalScopeProvider _scopeProvider;
+
+            public MockScopeLoggerProvider(string expectedLogMessage)
+            {
+                _expectedLogMessage = expectedLogMessage;
+            }
+
+            public ConnectionLogScope ConnectionLogScope { get; private set; }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return new MockScopeLogger(this);
+            }
+
+            public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+            {
+                _scopeProvider = scopeProvider;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            private class MockScopeLogger : ILogger
+            {
+                private readonly MockScopeLoggerProvider _loggerProvider;
+
+                public MockScopeLogger(MockScopeLoggerProvider parent)
+                {
+                    _loggerProvider = parent;
+                }
+
+                public IDisposable BeginScope<TState>(TState state)
+                {
+                    return _loggerProvider._scopeProvider?.Push(state);
+                }
+
+                public bool IsEnabled(LogLevel logLevel)
+                {
+                    return true;
+                }
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    var msg = formatter(state, exception);
+
+                    if (msg == _loggerProvider._expectedLogMessage)
+                    {
+                        _loggerProvider._scopeProvider?.ForEachScope(
+                            (scopeObject, loggerPovider) =>
+                            {
+                                 loggerPovider.ConnectionLogScope ??= scopeObject as ConnectionLogScope;
+                            },
+                            _loggerProvider);
+                    }
+                }
+            }
         }
     }
 }
