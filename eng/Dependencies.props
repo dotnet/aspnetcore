@@ -94,6 +94,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
   </ItemGroup>
 
