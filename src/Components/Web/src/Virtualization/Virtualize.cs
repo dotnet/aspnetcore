@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, bool itemSizeChanged)
         {
-            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity || itemSizeChanged)
+            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
