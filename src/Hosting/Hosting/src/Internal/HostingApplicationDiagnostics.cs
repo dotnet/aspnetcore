@@ -269,9 +269,11 @@ namespace Microsoft.AspNetCore.Hosting
                 string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
                 if (baggage.Length > 0)
                 {
-                    foreach (var item in baggage)
+                    // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+                    // An order could be important if baggage has two items with the same key (that is allowed by the contract)
+                    for (var i = baggage.Length - 1; i >= 0; i--)
                     {
-                        if (NameValueHeaderValue.TryParse(item, out var baggageItem))
+                        if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
                         {
                             activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
                         }
