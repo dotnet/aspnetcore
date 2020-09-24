@@ -50,28 +50,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         public static Dictionary<string, (string header, string errorMessage)> BadHeaderData => new Dictionary<string, (string, string)>
         {
-            { "NullInHeaderName", ("Hea\0der: value", "Invalid characters in header name.") },
-            { "NullInHeaderValue", ("Header: va\0lue", "Malformed request: invalid headers.") },
-            { "BadCharacterInHeaderName", ("Head\x80r: value", "Invalid characters in header name.") },
-            { "BadCharacterInHeaderValue", ("Header: valu\x80", "Malformed request: invalid headers.") },
+            { "Hea\0der: value".EscapeNonPrintable(), ("Hea\0der: value", "Invalid characters in header name.") },
+            { "Header: va\0lue".EscapeNonPrintable(), ("Header: va\0lue", "Malformed request: invalid headers.") },
+            { "Head\x80r: value".EscapeNonPrintable(), ("Head\x80r: value", "Invalid characters in header name.") },
+            { "Header: valu\x80".EscapeNonPrintable(), ("Header: valu\x80", "Malformed request: invalid headers.") },
         };
 
         public static TheoryData<string> BadHeaderDataNames => new TheoryData<string>
         {
-            "NullInHeaderName",
-            "NullInHeaderValue",
-            "BadCharacterInHeaderName",
-            "BadCharacterInHeaderValue"
+            "Hea\0der: value".EscapeNonPrintable(),
+            "Header: va\0lue".EscapeNonPrintable(),
+            "Head\x80r: value".EscapeNonPrintable(),
+            "Header: valu\x80".EscapeNonPrintable()
         };
 
         [Theory]
         [MemberData(nameof(BadHeaderDataNames))]
         public Task BadRequestWhenHeaderNameContainsNonASCIIOrNullCharacters(string dataName)
         {
+            // Using dictionary of input data to avoid invalid strings in the xml test results
+            var header = BadHeaderData[dataName].header;
+            var errorMessage = BadHeaderData[dataName].errorMessage;
+
             return TestBadRequest(
-                $"GET / HTTP/1.1\r\n{BadHeaderData[dataName].header}\r\n\r\n",
+                $"GET / HTTP/1.1\r\n{header}\r\n\r\n",
                 "400 Bad Request",
-                BadHeaderData[dataName].errorMessage);
+                errorMessage);
         }
 
         [Theory]
