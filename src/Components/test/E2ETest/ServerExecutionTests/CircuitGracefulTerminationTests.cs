@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnects_TheCurrentCircuit()
+        public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnect_TheCurrentCircuit()
         {
             // Arrange & Act
             var element = Browser.FindElement(By.Id("mailto-link"));
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public async Task DownloadAction_DoesNotGracefullyDisconnects_TheCurrentCircuit()
+        public async Task DownloadAction_DoesNotGracefullyDisconnect_TheCurrentCircuit()
         {
             // Arrange & Act
             var element = Browser.FindElement(By.Id("download-link"));
