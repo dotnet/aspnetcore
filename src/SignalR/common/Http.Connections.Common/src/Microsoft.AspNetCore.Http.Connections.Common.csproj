@@ -23,4 +23,8 @@
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>

@@ -23,6 +23,7 @@
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +40,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

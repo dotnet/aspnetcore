@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// registered health checks - this is the default behavior. To run a subset of health checks,
         /// provide a function that filters the set of checks.
         /// </remarks>
-        public Func<HealthCheckRegistration, bool> Predicate { get; set; }
+        public Func<HealthCheckRegistration, bool>? Predicate { get; set; }
 
         private IDictionary<HealthStatus, int> _resultStatusCodes = new Dictionary<HealthStatus, int>(DefaultStatusCodesMapping);
 

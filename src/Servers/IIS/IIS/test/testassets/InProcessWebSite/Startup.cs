@@ -1529,6 +1529,16 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public Task OnCompletedThrows(HttpContext httpContext)
+        {
+            httpContext.Response.OnCompleted(() =>
+            {
+                throw new Exception();
+            });
+
+            return Task.CompletedTask;
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
