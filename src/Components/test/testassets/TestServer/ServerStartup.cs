@@ -39,6 +39,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub();
+                    endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });
             });

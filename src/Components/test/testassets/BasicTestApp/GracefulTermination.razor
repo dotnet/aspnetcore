@@ -1,0 +1,13 @@
+﻿@inject NavigationManager navigationManager
+
+<h1>Graceful Termination</h1>
+
+<a href="mailto:test@example.com" id="mailto-link">Send Email</a>
+<button @onclick="DownloadFile" id="download-link">Download File</button>
+
+@code {
+    private void DownloadFile()
+    {
+        navigationManager.NavigateTo("/subdir/download", true);
+    }
+}

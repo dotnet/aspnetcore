@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            Browser.MountTestComponent<CounterComponent>();
-            Browser.Equal("Current count: 0", () => Browser.FindElement(By.TagName("p")).Text);
+            Browser.MountTestComponent<GracefulTermination>();
+            Browser.Equal("Graceful Termination", () => Browser.FindElement(By.TagName("h1")).Text);
 
             GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
@@ -89,6 +89,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(GracefulDisconnectCompletionSource.Task, task);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+        }
+
+        [Fact]
+        public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnects_TheCurrentCircuit()
+        {
+            // Arrange & Act
+            var element = Browser.FindElement(By.Id("mailto-link"));
+            element.Click();
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+        }
+
+        [Fact]
+        public async Task DownloadAction_DoesNotGracefullyDisconnects_TheCurrentCircuit()
+        {
+            // Arrange & Act
+            var element = Browser.FindElement(By.Id("download-link"));
+            element.Click();
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
         private void Log(WriteContext wc)
