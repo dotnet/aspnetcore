@@ -125,17 +125,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
                 public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
                 {
-                    var msg = formatter(state, exception);
-
-                    if (msg == _loggerProvider._expectedLogMessage)
+                    if (formatter(state, exception) != _loggerProvider._expectedLogMessage)
                     {
-                        _loggerProvider._scopeProvider?.ForEachScope(
-                            (scopeObject, loggerPovider) =>
-                            {
-                                 loggerPovider.ConnectionLogScope ??= scopeObject as ConnectionLogScope;
-                            },
-                            _loggerProvider);
+                        return;
                     }
+
+                    _loggerProvider._scopeProvider?.ForEachScope(
+                        (scopeObject, loggerPovider) =>
+                        {
+                             loggerPovider.ConnectionLogScope ??= scopeObject as ConnectionLogScope;
+                        },
+                        _loggerProvider);
                 }
             }
         }

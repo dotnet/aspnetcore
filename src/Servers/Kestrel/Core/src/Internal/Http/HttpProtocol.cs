@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -106,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
         protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
+        protected ExecutionContext InitialExecutionContext { get; set; }
 
         public string ConnectionIdFeature { get; set; }
         public bool HasStartedConsumingRequestBody { get; set; }
@@ -609,7 +609,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
         {
-            var cleanContext = ExecutionContext.Capture();
             while (_keepAlive)
             {
                 BeginRequestProcessing();
@@ -628,6 +627,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // Connection finished, stop processing requests
                     return;
+                }
+
+                if (InitialExecutionContext is null)
+                {
+                    // If this is a first request on a non-Http2Connection, capture a clean ExecutionContext.
+                    InitialExecutionContext = ExecutionContext.Capture();
+                }
+                else
+                {
+                    // Clear any AsyncLocals set during the request; back to a clean state ready for next request
+                    // And/or reset to Http2Connection's ExecutionContext giving access to the connection logging scope
+                    // and any other AsyncLocals set by connection middleware.
+                    ExecutionContext.Restore(InitialExecutionContext);
                 }
 
                 var messageBody = CreateMessageBody();
@@ -737,9 +749,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     await messageBody.StopAsync();
                 }
-
-                // Clear any AsyncLocals set during the request; back to a clean state ready for next request
-                ExecutionContext.Restore(cleanContext);
             }
         }
 
