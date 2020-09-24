@@ -61,11 +61,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
 
-
         private void WaitUntilLoaded()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            var app = Browser.Exists(By.TagName("app"));
+            Browser.NotEqual("Loading...", () => app.Text);
         }
     }
 }

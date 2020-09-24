@@ -546,10 +546,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             SetUrlViaPushState("/LongPage1");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("loading-banner")) != null);
-
-            Assert.True(app.FindElement(By.Id("loading-banner")) != null);
+            Browser.Exists(By.Id("loading-banner"));
         }
 
         [Fact]

@@ -1,22 +1,24 @@
 (function () {
+  // Note: there are multiple copies of this file throughout the repo. If you're editing it, please look for
+  // other seleniumworkaround.js files and keep them all in sync.
   const logs = [];
 
-  console.defaultLog = console.log.bind(console);
+  const defaultLog = console.log;
   console.log = function () {
-    console.defaultLog.apply(console, arguments);
-    logs.push(Array.from(arguments).join('\n'));
+    defaultLog.apply(console, arguments);
+    logs.push(Array.from(arguments).join(' '));
   }
 
-  console.defaultError = console.error.bind(console);
+  const defaultError = console.error;
   console.error = function () {
-    console.defaultError.apply(console, arguments);
-    logs.push(Array.from(arguments).join('\n'));
+    defaultError.apply(console, arguments);
+    logs.push(Array.from(arguments).join(' '));
   }
 
-  console.defaultWarn = console.warn.bind(console);
+  const defaultWarn = console.warn;
   console.warn = function () {
-    console.defaultWarn.apply(console, arguments);
-    logs.push(Array.from(arguments).join('\n'));
+    defaultWarn.apply(console, arguments);
+    logs.push(Array.from(arguments).join(' '));
   }
 
   window.getBrowserLogs = () => logs;
