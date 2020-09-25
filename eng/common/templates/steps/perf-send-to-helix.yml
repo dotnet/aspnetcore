@@ -19,12 +19,18 @@ parameters:
   DisplayNamePrefix: 'Send job to Helix' # optional -- rename the beginning of the displayName of the steps in AzDO 
   condition: succeeded()                 # optional -- condition for step to execute; defaults to succeeded()
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
+  osGroup: ''                            # required -- operating system for the job
             
 
 steps:
-  - powershell: $(Build.SourcesDirectory)\eng\common\msbuild.ps1 $(Build.SourcesDirectory)\eng\common\performance\${{ parameters.ProjectFile }} /restore /t:Test /bl:$(Build.SourcesDirectory)\artifacts\log\$env:BuildConfig\SendToHelix.binlog
-    displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
-    env:
+- template: /eng/pipelines/common/templates/runtimes/send-to-helix-inner-step.yml
+  parameters:
+    osGroup: ${{ parameters.osGroup }}
+    sendParams: $(Build.SourcesDirectory)/eng/common/performance/${{ parameters.ProjectFile }} /restore /t:Test /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
+    displayName: ${{ parameters.DisplayNamePrefix }}
+    condition: ${{ parameters.condition }}
+    continueOnError: ${{ parameters.continueOnError }}
+    environment:
       BuildConfig: $(_BuildConfig)
       HelixSource: ${{ parameters.HelixSource }}
       HelixType: ${{ parameters.HelixType }}
@@ -42,27 +48,3 @@ steps:
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
       Creator: ${{ parameters.Creator }}
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
-    continueOnError: ${{ parameters.continueOnError }}
-  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/eng/common/performance/${{ parameters.ProjectFile }} /restore /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
-    displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
-    env:
-      BuildConfig: $(_BuildConfig)
-      HelixSource: ${{ parameters.HelixSource }}
-      HelixType: ${{ parameters.HelixType }}
-      HelixBuild: ${{ parameters.HelixBuild }}
-      HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
-      HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      HelixPreCommands: ${{ parameters.HelixPreCommands }}
-      HelixPostCommands: ${{ parameters.HelixPostCommands }}
-      WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
-      CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
-      IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
-      DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
-      DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
-      EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
-      WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
-      Creator: ${{ parameters.Creator }}
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))
-    continueOnError: ${{ parameters.continueOnError }}
