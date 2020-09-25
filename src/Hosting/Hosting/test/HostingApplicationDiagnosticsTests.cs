@@ -327,10 +327,15 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             });
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
-            Assert.Collection(Activity.Current.Baggage, 
-                              pair => pair.Key == "Key1" && pair.Value == "value1",
-                              pair => pair.Key == "Key2" && pair.Value == "value2",
-                              pair => pair.Key == "Key1" && pair.Value == "value3");
+            
+            var expectedBaggage = new []
+            {
+                KeyValuePair.Create("Key1","value1"),
+                KeyValuePair.Create("Key2","value2"),
+                KeyValuePair.Create("Key1","value3")
+            };
+
+            Assert.Equal(expectedBaggage, Activity.Current.Baggage);
         }
 
         [Fact]
