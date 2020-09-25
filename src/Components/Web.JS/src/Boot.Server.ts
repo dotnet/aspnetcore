@@ -66,7 +66,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     }
   };
 
-  window.addEventListener('beforeunload', cleanup, { capture: false, once: true });
+  window['Blazor'].disconnect = cleanup;
+
   window.addEventListener('unload', cleanup, { capture: false, once: true });
 
   window['Blazor'].reconnect = reconnect;
