@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var browsers = await Task.WhenAll(_browsers.Values);
             foreach (var (browser, log) in browsers)
             {
+                browser?.Quit();
                 browser?.Dispose();
             }
 
