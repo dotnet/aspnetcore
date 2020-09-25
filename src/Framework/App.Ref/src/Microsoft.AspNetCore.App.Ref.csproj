@@ -87,7 +87,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
       _ResolveTargetingPackContent;
-      GeneratePackageConflictManifest;
+      GeneratePackageOverrides;
       IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
