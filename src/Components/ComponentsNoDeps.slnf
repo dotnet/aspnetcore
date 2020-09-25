@@ -16,7 +16,6 @@
       "src\\Components\\Samples\\BlazorServerApp\\BlazorServerApp.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
-      "src\\Components\\Web.Extensions\\src\\Microsoft.AspNetCore.Components.Web.Extensions.csproj",
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
       "src\\Components\\WebAssembly\\DevServer\\src\\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj",
       "src\\Components\\WebAssembly\\JSInterop\\src\\Microsoft.JSInterop.WebAssembly.csproj",
