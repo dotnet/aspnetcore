@@ -36,13 +36,15 @@
     <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
 
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
-    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
+
     <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
+    <SharedFxVersion Condition=" '$(StabilizePackageVersion)' == 'true' ">$(VersionPrefix)</SharedFxVersion>
+    <SharedFxProductName>$(Product) $(SharedFxVersion) Shared Framework</SharedFxProductName>
 
-    <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
-    <TargetingPackVersion Condition=" '$(VersionSuffix)' != '' ">$(TargetingPackVersionPrefix)-$(VersionSuffix)</TargetingPackVersion>
+    <TargetingPackVersion>$(SharedFxVersion)</TargetingPackVersion>
+    <TargetingPackVersion Condition=" ! $(IsTargetingPackBuilding) ">$(TargetingPackVersionPrefix)</TargetingPackVersion>
 
-    <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
+    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -130,8 +132,14 @@
     <None Include="$(PackageThirdPartyNoticesFile)" Pack="true" PackagePath="." />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Language)' == 'C#'">
-    <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
+  <!--
+    If assembly is in shared framework and not net4*, assembly version should remain fixed for an entire
+    major.minor release even in servicing.
+  -->
+  <PropertyGroup Condition=" '$(IsAspNetCoreApp)' == 'true' AND
+      '$(Language)' == 'C#' AND
+      '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -156,7 +164,7 @@
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' == 'true' AND '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true'" Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(TargetingPackVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <!-- Track compiler separately from Arcade.-->
@@ -186,6 +194,7 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />

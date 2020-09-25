@@ -47,6 +47,10 @@
     <Message Text="Content: %(Content.Identity) CopyToOutputDirectory=%(Content.CopyToOutputDirectory) CopyToPublishDirectory=%(Content.CopyToPublishDirectory) ExcludeFromSingleFile=%(Content.ExcludeFromSingleFile)" Importance="High" />
   </Target>
 
+  <Target Name="_IntrospectWatchItems" DependsOnTargets="_RazorSdkCustomCollectWatchItems">
+    <Message Text="Watch: %(Watch.FileName)%(Watch.Extension)" Importance="High" />
+  </Target>
+
   <Target Name="_IntrospectRazorTasks">
     <PropertyGroup>
       <_SdkTaskPath>$([System.IO.Path]::GetFullPath('$(RazorSdkBuildTasksAssembly)'))</_SdkTaskPath>

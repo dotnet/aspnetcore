@@ -11,12 +11,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
     <IsPackable>false</IsPackable>
+
+    <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
-    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\"/>
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
@@ -41,6 +44,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 

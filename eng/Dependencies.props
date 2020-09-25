@@ -73,8 +73,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
-    <LatestPackageReference Include="System.Security.AccessControl" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
@@ -167,11 +165,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
-    <LatestPackageReference Include="Microsoft.Identity.Web.UI" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
+    <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
@@ -196,11 +194,6 @@ and are generated based on the last package release.
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)PackageVersion)</Version>
-      <RTMVersion>$(%(VersionName)V0PackageVersion)</RTMVersion>
-
-      <!-- Remove excess metadata. -->
-      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
-      <VersionName />
     </LatestPackageReference>
 
     <!--

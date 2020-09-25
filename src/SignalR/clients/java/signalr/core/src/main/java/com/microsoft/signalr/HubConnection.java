@@ -5,7 +5,6 @@ package com.microsoft.signalr;
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -34,39 +33,31 @@ public class HubConnection implements AutoCloseable {
     private static final List<Type> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private String baseUrl;
-    private Transport transport;
-    private boolean customTransport = false;
-    private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
-    private HubProtocol protocol;
-    private Boolean handshakeReceived = false;
-    private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-    private final Lock hubConnectionStateLock = new ReentrantLock();
-    private List<OnClosedCallback> onClosedCallbackList;
+    private final HubProtocol protocol;
     private final boolean skipNegotiate;
-    private Single<String> accessTokenProvider;
-    private Single<String> redirectAccessTokenProvider;
     private final Map<String, String> headers;
-    private final Map<String, String> localHeaders = new HashMap<>();
-    private ConnectionState connectionState = null;
-    private HttpClient httpClient;
-    private String stopError;
-    private Timer pingTimer = null;
-    private final AtomicLong nextServerTimeout = new AtomicLong();
-    private final AtomicLong nextPingActivation = new AtomicLong();
-    private long keepAliveInterval = 15*1000;
-    private long serverTimeout = 30*1000;
-    private long tickRate = 1000;
-    private CompletableSubject handshakeResponseSubject;
-    private long handshakeResponseTimeout = 15*1000;
-    private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
-    private TransportEnum transportEnum = TransportEnum.ALL;
-    private String connectionId;
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
-    private ScheduledExecutorService handshakeTimeout = null;
-    private Completable start;
+    private final HttpClient httpClient;
+    private final Transport customTransport;
+    private final OnReceiveCallBack callback;
+    private final Single<String> accessTokenProvider;
+    private final TransportEnum transportEnum;
+
+    // These are all user-settable properties
+    private String baseUrl;
+    private List<OnClosedCallback> onClosedCallbackList;
+    private long keepAliveInterval = 15 * 1000;
+    private long serverTimeout = 30 * 1000;
+    private long handshakeResponseTimeout = 15 * 1000;
+
+    // Private property, modified for testing
+    private long tickRate = 1000;
+
+
+    // Holds all mutable state other than user-defined handlers and settable properties.
+    private final ReconnectingConnectionState state;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -110,7 +101,11 @@ public class HubConnection implements AutoCloseable {
      * @return A string representing the the client's connectionId.
      */
     public String getConnectionId() {
-        return this.connectionId;
+        ConnectionState state = this.state.getConnectionStateUnsynchronized(true);
+        if (state != null) {
+            return state.connectionId;
+        }
+        return null;
     }
 
     // For testing purposes
@@ -119,16 +114,8 @@ public class HubConnection implements AutoCloseable {
     }
 
     // For testing purposes
-    Map<String, Observable> getStreamMap() {
-        return this.streamMap;
-    }
-
-    TransportEnum getTransportEnum() {
-        return this.transportEnum;
-    }
-
     Transport getTransport() {
-        return transport;
+        return this.state.getConnectionState().transport;
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient, HubProtocol protocol,
@@ -138,6 +125,7 @@ public class HubConnection implements AutoCloseable {
             throw new IllegalArgumentException("A valid url is required.");
         }
 
+        this.state = new ReconnectingConnectionState(this.logger);
         this.baseUrl = url;
         this.protocol = protocol;
 
@@ -154,10 +142,14 @@ public class HubConnection implements AutoCloseable {
         }
 
         if (transport != null) {
-            this.transport = transport;
-            this.customTransport = true;
+            this.transportEnum = TransportEnum.ALL;
+            this.customTransport = transport;
         } else if (transportEnum != null) {
             this.transportEnum = transportEnum;
+            this.customTransport = null;
+        } else {
+            this.transportEnum = TransportEnum.ALL;
+            this.customTransport = null;
         }
 
         if (handshakeResponseTimeout > 0) {
@@ -167,120 +159,12 @@ public class HubConnection implements AutoCloseable {
         this.headers = headers;
         this.skipNegotiate = skipNegotiate;
 
-        this.callback = (payload) -> {
-            resetServerTimeout();
-            if (!handshakeReceived) {
-                List<Byte> handshakeByteList = new ArrayList<Byte>();
-                byte curr = payload.get();
-                // Add the handshake to handshakeBytes, but not the record separator
-                while (curr != RECORD_SEPARATOR) {
-                    handshakeByteList.add(curr);
-                    curr = payload.get();
-                }
-                int handshakeLength = handshakeByteList.size() + 1;
-                byte[] handshakeBytes = new byte[handshakeLength - 1];
-                for (int i = 0; i < handshakeLength - 1; i++) {
-                    handshakeBytes[i] = handshakeByteList.get(i);
-                }
-                // The handshake will always be a UTF8 Json string
-                String handshakeResponseString = new String(handshakeBytes, StandardCharsets.UTF_8);
-                HandshakeResponseMessage handshakeResponse;
-                try {
-                    handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
-                } catch (RuntimeException ex) {
-                    RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
-                    handshakeResponseSubject.onError(exception);
-                    throw exception;
-                }
-                if (handshakeResponse.getHandshakeError() != null) {
-                    String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
-                    logger.error(errorMessage);
-                    RuntimeException exception = new RuntimeException(errorMessage);
-                    handshakeResponseSubject.onError(exception);
-                    throw exception;
-                }
-                handshakeReceived = true;
-                handshakeResponseSubject.onComplete();
-
-                // The payload only contained the handshake response so we can return.
-                if (!payload.hasRemaining()) {
-                    return;
-                }
-            }
-            
-            List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
-
-            for (HubMessage message : messages) {
-                logger.debug("Received message of type {}.", message.getMessageType());
-                switch (message.getMessageType()) {
-                    case INVOCATION_BINDING_FAILURE:
-                        InvocationBindingFailureMessage msg = (InvocationBindingFailureMessage)message;
-                        logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
-                        break;
-                    case INVOCATION:
-
-                        InvocationMessage invocationMessage = (InvocationMessage) message;
-                        List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
-                        if (handlers != null) {
-                            for (InvocationHandler handler : handlers) {
-                                handler.getAction().invoke(invocationMessage.getArguments());
-                            }
-                        } else {
-                            logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
-                        }
-                        break;
-                    case CLOSE:
-                        logger.info("Close message received from server.");
-                        CloseMessage closeMessage = (CloseMessage) message;
-                        stop(closeMessage.getError());
-                        break;
-                    case PING:
-                        // We don't need to do anything in the case of a ping message.
-                        break;
-                    case COMPLETION:
-                        CompletionMessage completionMessage = (CompletionMessage)message;
-                        InvocationRequest irq = connectionState.tryRemoveInvocation(completionMessage.getInvocationId());
-                        if (irq == null) {
-                            logger.warn("Dropped unsolicited Completion message for invocation '{}'.", completionMessage.getInvocationId());
-                            continue;
-                        }
-                        irq.complete(completionMessage);
-                        break;
-                    case STREAM_ITEM:
-                        StreamItem streamItem = (StreamItem)message;
-                        InvocationRequest streamInvocationRequest = connectionState.getInvocation(streamItem.getInvocationId());
-                        if (streamInvocationRequest == null) {
-                            logger.warn("Dropped unsolicited Completion message for invocation '{}'.", streamItem.getInvocationId());
-                            continue;
-                        }
-
-                        streamInvocationRequest.addItem(streamItem);
-                        break;
-                    case STREAM_INVOCATION:
-                    case CANCEL_INVOCATION:
-                        logger.error("This client does not support {} messages.", message.getMessageType());
-
-                        throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
-                }
-            }
-        };
+        this.callback = (payload) -> ReceiveLoop(payload);
     }
 
-    private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
-        handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
-        handshakeTimeout.schedule(() -> {
-            // If onError is called on a completed subject the global error handler is called
-            if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
-            {
-                handshakeResponseSubject.onError(
-                    new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
-            }
-        }, timeout, unit);
-    }
-
-    private Single<NegotiateResponse> handleNegotiate(String url) {
+    private Single<NegotiateResponse> handleNegotiate(String url, Map<String, String> localHeaders) {
         HttpRequest request = new HttpRequest();
-        request.addHeaders(this.localHeaders);
+        request.addHeaders(localHeaders);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url, this.negotiateVersion), request).map((response) -> {
             if (response.getStatusCode() != 200) {
@@ -295,11 +179,7 @@ public class HubConnection implements AutoCloseable {
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.redirectAccessTokenProvider = Single.just(negotiateResponse.getAccessToken());
-                // We know the Single is non blocking in this case
-                // It's fine to call blockingGet() on it.
-                String token = this.redirectAccessTokenProvider.blockingGet();
-                this.localHeaders.put("Authorization", "Bearer " + token);
+                localHeaders.put("Authorization", "Bearer " + negotiateResponse.getAccessToken());
             }
 
             return negotiateResponse;
@@ -312,7 +192,7 @@ public class HubConnection implements AutoCloseable {
      * @return HubConnection state enum.
      */
     public HubConnectionState getConnectionState() {
-        return hubConnectionState;
+        return this.state.getHubConnectionState();
     }
 
     // For testing only
@@ -329,7 +209,7 @@ public class HubConnection implements AutoCloseable {
             throw new IllegalArgumentException("The HubConnection url must be a valid url.");
         }
 
-        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+        if (this.state.getHubConnectionState() != HubConnectionState.DISCONNECTED) {
             throw new IllegalStateException("The HubConnection must be in the disconnected state to change the url.");
         }
 
@@ -344,46 +224,47 @@ public class HubConnection implements AutoCloseable {
     public Completable start() {
         CompletableSubject localStart = CompletableSubject.create();
 
-        hubConnectionStateLock.lock();
+        this.state.lock.lock();
         try {
-            if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", hubConnectionState);
-                return start;
+            if (this.state.getHubConnectionState() != HubConnectionState.DISCONNECTED) {
+                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", this.state.getHubConnectionState());
+                return this.state.getConnectionStateUnsynchronized(false).startTask;
             }
 
-            hubConnectionState = HubConnectionState.CONNECTING;
-            start = localStart;
+            this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTING);
 
-            handshakeResponseSubject = CompletableSubject.create();
-            handshakeReceived = false;
             CompletableSubject tokenCompletable = CompletableSubject.create();
+            Map<String, String> localHeaders = new HashMap<>();
             localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
             if (headers != null) {
-                this.localHeaders.putAll(headers);
+                localHeaders.putAll(headers);
             }
+            ConnectionState connectionState = new ConnectionState(this);
+            this.state.setConnectionState(connectionState);
+            connectionState.startTask = localStart;
 
             accessTokenProvider.subscribe(token -> {
                 if (token != null && !token.isEmpty()) {
-                    this.localHeaders.put("Authorization", "Bearer " + token);
+                    localHeaders.put("Authorization", "Bearer " + token);
                 }
                 tokenCompletable.onComplete();
             }, error -> {
                 tokenCompletable.onError(error);
             });
 
-            stopError = null;
             Single<NegotiateResponse> negotiate = null;
             if (!skipNegotiate) {
-                negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
+                negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0, localHeaders)));
             } else {
                 negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(baseUrl))));
             }
 
             negotiate.flatMapCompletable(negotiateResponse -> {
                 logger.debug("Starting HubConnection.");
+                Transport transport = customTransport;
                 if (transport == null) {
                     Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
-                    switch (transportEnum) {
+                    switch (negotiateResponse.getChosenTransport()) {
                         case LONG_POLLING:
                             transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                             break;
@@ -392,81 +273,88 @@ public class HubConnection implements AutoCloseable {
                     }
                 }
 
+                connectionState.transport = transport;
+
                 transport.setOnReceive(this.callback);
                 transport.setOnClose((message) -> stopConnection(message));
 
                 return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
                     ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
-                            new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+                                new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
-                    connectionState = new ConnectionState(this);
-
-                    return transport.send(handshake).andThen(Completable.defer(() -> {
-                        timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                        return handshakeResponseSubject.andThen(Completable.defer(() -> {
-                            hubConnectionStateLock.lock();
+                    this.state.lock();
+                    try {
+                        if (this.state.hubConnectionState != HubConnectionState.CONNECTING) {
+                            return Completable.error(new RuntimeException("Connection closed while trying to connect."));
+                        }
+                        return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
+                            this.state.lock();
                             try {
-                                hubConnectionState = HubConnectionState.CONNECTED;
-                                logger.info("HubConnection started.");
-                                resetServerTimeout();
-                                //Don't send pings if we're using long polling.
-                                if (transportEnum != TransportEnum.LONG_POLLING) {
-                                    activatePingTimer();
+                                ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                                if (activeState != null && activeState == connectionState) {
+                                    connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                                } else {
+                                    return Completable.error(new RuntimeException("Connection closed while sending handshake."));
                                 }
                             } finally {
-                                hubConnectionStateLock.unlock();
+                                this.state.unlock();
                             }
+                            return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
+                                this.state.lock();
+                                try {
+                                    ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                                    if (activeState == null || activeState != connectionState) {
+                                        return Completable.error(new RuntimeException("Connection closed while waiting for handshake."));
+                                    }
+                                    this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
+                                    logger.info("HubConnection started.");
+                                    connectionState.resetServerTimeout();
+                                    // Don't send pings if we're using long polling.
+                                    if (negotiateResponse.getChosenTransport() != TransportEnum.LONG_POLLING) {
+                                        connectionState.activatePingTimer();
+                                    }
+                                } finally {
+                                    this.state.unlock();
+                                }
 
-                            return Completable.complete();
+                                return Completable.complete();
+                            }));
                         }));
-                    }));
+                    } finally {
+                        this.state.unlock();
+                    }
                 }));
             // subscribe makes this a "hot" completable so this runs immediately
             }).subscribe(() -> {
                 localStart.onComplete();
             }, error -> {
-                hubConnectionStateLock.lock();
-                hubConnectionState = HubConnectionState.DISCONNECTED;
-                hubConnectionStateLock.unlock();
+                this.state.lock();
+                try {
+                    ConnectionState activeState = this.state.getConnectionStateUnsynchronized(true);
+                    if (activeState == connectionState) {
+                        this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
+                    }
+                // this error is already logged and we want the user to see the original error
+                } catch (Exception ex) {
+                } finally {
+                    this.state.unlock();
+                }
+
                 localStart.onError(error);
             });
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.lock.unlock();
         }
 
         return localStart;
     }
 
-    private void activatePingTimer() {
-        this.pingTimer = new Timer();
-        this.pingTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    if (System.currentTimeMillis() > nextServerTimeout.get()) {
-                        stop("Server timeout elapsed without receiving a message from the server.");
-                        return;
-                    }
-
-                    if (System.currentTimeMillis() > nextPingActivation.get()) {
-                        sendHubMessage(PingMessage.getInstance());
-                    }
-                } catch (Exception e) {
-                    logger.warn("Error sending ping: {}.", e.getMessage());
-                    // The connection is probably in a bad or closed state now, cleanup the timer so
-                    // it stops triggering
-                    pingTimer.cancel();
-                }
-            }
-        }, new Date(0), tickRate);
-    }
-
-    private Single<NegotiateResponse> startNegotiate(String url, int negotiateAttempts) {
-        if (hubConnectionState != HubConnectionState.CONNECTING) {
+    private Single<NegotiateResponse> startNegotiate(String url, int negotiateAttempts, Map<String, String> localHeaders) {
+        if (this.state.getHubConnectionState() != HubConnectionState.CONNECTING) {
             throw new RuntimeException("HubConnection trying to negotiate when not in the CONNECTING state.");
         }
 
-        return handleNegotiate(url).flatMap(response -> {
+        return handleNegotiate(url, localHeaders).flatMap(response -> {
             if (response.getRedirectUrl() != null && negotiateAttempts >= MAX_NEGOTIATE_ATTEMPTS) {
                 throw new RuntimeException("Negotiate redirection limit exceeded.");
             }
@@ -475,23 +363,26 @@ public class HubConnection implements AutoCloseable {
                 Set<String> transports = response.getAvailableTransports();
                 if (this.transportEnum == TransportEnum.ALL) {
                     if (transports.contains("WebSockets")) {
-                        this.transportEnum = TransportEnum.WEBSOCKETS;
+                        response.setChosenTransport(TransportEnum.WEBSOCKETS);
                     } else if (transports.contains("LongPolling")) {
-                        this.transportEnum = TransportEnum.LONG_POLLING;
+                        response.setChosenTransport(TransportEnum.LONG_POLLING);
                     } else {
                         throw new RuntimeException("There were no compatible transports on the server.");
                     }
                 } else if (this.transportEnum == TransportEnum.WEBSOCKETS && !transports.contains("WebSockets") ||
                         (this.transportEnum == TransportEnum.LONG_POLLING && !transports.contains("LongPolling"))) {
                     throw new RuntimeException("There were no compatible transports on the server.");
+                } else {
+                    response.setChosenTransport(this.transportEnum);
                 }
 
                 String connectionToken = "";
                 if (response.getVersion() > 0) {
-                    this.connectionId = response.getConnectionId();
+                    this.state.getConnectionState().connectionId = response.getConnectionId();
                     connectionToken = response.getConnectionToken();
                 } else {
-                    connectionToken = this.connectionId = response.getConnectionId();
+                    connectionToken = response.getConnectionId();
+                    this.state.getConnectionState().connectionId = connectionToken;
                 }
 
                 String finalUrl = Utils.appendQueryString(url, "id=" + connectionToken);
@@ -500,7 +391,7 @@ public class HubConnection implements AutoCloseable {
                 return Single.just(response);
             }
 
-            return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
+            return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1, localHeaders);
         });
     }
 
@@ -511,23 +402,106 @@ public class HubConnection implements AutoCloseable {
      * @return A Completable that completes when the connection has been stopped.
      */
     private Completable stop(String errorMessage) {
-        hubConnectionStateLock.lock();
+        Transport transport;
+        this.state.lock();
         try {
-            if (hubConnectionState == HubConnectionState.DISCONNECTED) {
+            if (this.state.getHubConnectionState() == HubConnectionState.DISCONNECTED) {
                 return Completable.complete();
             }
 
             if (errorMessage != null) {
-                stopError = errorMessage;
+                this.state.getConnectionStateUnsynchronized(false).stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
                 logger.debug("Stopping HubConnection.");
             }
+
+            transport = this.state.getConnectionStateUnsynchronized(false).transport;
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
 
-        return transport.stop();
+        Completable stop = transport.stop();
+        stop.onErrorComplete().subscribe();
+        return stop;
+    }
+
+    private void ReceiveLoop(ByteBuffer payload)
+    {
+        List<HubMessage> messages;
+        ConnectionState connectionState;
+        this.state.lock();
+        try {
+            connectionState = this.state.getConnectionState();
+            connectionState.resetServerTimeout();
+            connectionState.handleHandshake(payload);
+            // The payload only contained the handshake response so we can return.
+            if (!payload.hasRemaining()) {
+                return;
+            }
+
+            messages = protocol.parseMessages(payload, connectionState);
+        } finally {
+            this.state.unlock();
+        }
+
+        for (HubMessage message : messages) {
+            logger.debug("Received message of type {}.", message.getMessageType());
+            switch (message.getMessageType()) {
+                case INVOCATION_BINDING_FAILURE:
+                    InvocationBindingFailureMessage msg = (InvocationBindingFailureMessage)message;
+                    logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
+                    break;
+                case INVOCATION:
+
+                    InvocationMessage invocationMessage = (InvocationMessage) message;
+                    List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
+                    if (handlers != null) {
+                        for (InvocationHandler handler : handlers) {
+                            try {
+                                handler.getAction().invoke(invocationMessage.getArguments());
+                            } catch (Exception e) {
+                                logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
+                            }
+                        }
+                    } else {
+                        logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
+                    }
+                    break;
+                case CLOSE:
+                    logger.info("Close message received from server.");
+                    CloseMessage closeMessage = (CloseMessage) message;
+                    stop(closeMessage.getError());
+                    break;
+                case PING:
+                    // We don't need to do anything in the case of a ping message.
+                    break;
+                case COMPLETION:
+                    CompletionMessage completionMessage = (CompletionMessage)message;
+                    InvocationRequest irq = connectionState.tryRemoveInvocation(completionMessage.getInvocationId());
+                    if (irq == null) {
+                        logger.warn("Dropped unsolicited Completion message for invocation '{}'.", completionMessage.getInvocationId());
+                        continue;
+                    }
+                    irq.complete(completionMessage);
+                    break;
+                case STREAM_ITEM:
+                    StreamItem streamItem = (StreamItem)message;
+                    InvocationRequest streamInvocationRequest = connectionState.getInvocation(streamItem.getInvocationId());
+                    if (streamInvocationRequest == null) {
+                        logger.warn("Dropped unsolicited Completion message for invocation '{}'.", streamItem.getInvocationId());
+                        continue;
+                    }
+
+                    streamInvocationRequest.addItem(streamItem);
+                    break;
+                case STREAM_INVOCATION:
+                case CANCEL_INVOCATION:
+                    logger.error("This client does not support {} messages.", message.getMessageType());
+
+                    throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", message.getMessageType()));
+            }
+        }
     }
 
     /**
@@ -541,46 +515,29 @@ public class HubConnection implements AutoCloseable {
 
     private void stopConnection(String errorMessage) {
         RuntimeException exception = null;
-        hubConnectionStateLock.lock();
+        this.state.lock();
         try {
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
-            if (stopError != null) {
-                errorMessage = stopError;
+            if (this.state.getConnectionStateUnsynchronized(false).stopError != null) {
+                errorMessage = this.state.getConnectionStateUnsynchronized(false).stopError;
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
+
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
             if (connectionState != null) {
                 connectionState.cancelOutstandingInvocations(exception);
-                connectionState = null;
-            }
-
-            if (pingTimer != null) {
-                pingTimer.cancel();
-                pingTimer = null;
+                connectionState.close();
+                this.state.setConnectionState(null);
             }
 
             logger.info("HubConnection stopped.");
-            hubConnectionState = HubConnectionState.DISCONNECTED;
-            handshakeResponseSubject.onComplete();
-            redirectAccessTokenProvider = null;
-            connectionId = null;
-            transportEnum = TransportEnum.ALL;
-            this.localHeaders.clear();
-            this.streamMap.clear();
-
-            if (this.handshakeTimeout != null) {
-                this.handshakeTimeout.shutdownNow();
-                this.handshakeTimeout = null;
-            }
-
-            if (this.customTransport == false) {
-                this.transport = null;
-            }
+            this.state.changeState(HubConnectionState.CONNECTED, HubConnectionState.DISCONNECTED);
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
 
         // Do not run these callbacks inside the hubConnectionStateLock
@@ -599,14 +556,14 @@ public class HubConnection implements AutoCloseable {
      * @param args   The arguments to be passed to the method.
      */
     public void send(String method, Object... args) {
-        hubConnectionStateLock.lock();
+        this.state.lock();
         try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
             }
             sendInvocationMessage(method, args);
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
     }
 
@@ -616,7 +573,8 @@ public class HubConnection implements AutoCloseable {
 
     private void sendInvocationMessage(String method, Object[] args, String id, Boolean isStreamInvocation) {
         List<String> streamIds = new ArrayList<>();
-        args = checkUploadStream(args, streamIds);
+        List<Observable> streams = new ArrayList<>();
+        args = checkUploadStream(args, streamIds, streams);
         InvocationMessage invocationMessage;
         if (isStreamInvocation) {
             invocationMessage = new StreamInvocationMessage(null, id, method, args, streamIds);
@@ -624,35 +582,35 @@ public class HubConnection implements AutoCloseable {
             invocationMessage = new InvocationMessage(null, id, method, args, streamIds);
         }
 
-        sendHubMessage(invocationMessage);
-        launchStreams(streamIds);
+        sendHubMessageWithLock(invocationMessage);
+        launchStreams(streamIds, streams);
     }
 
-    void launchStreams(List<String> streamIds) {
-        if (streamMap.isEmpty()) {
+    void launchStreams(List<String> streamIds, List<Observable> streams) {
+        if (streams.isEmpty()) {
             return;
         }
 
-        for (String streamId: streamIds) {
-            Observable observable = this.streamMap.get(streamId);
-            observable.subscribe(
-                (item) -> sendHubMessage(new StreamItem(null, streamId, item)),
+        for (int i = 0; i < streamIds.size(); i++) {
+            String streamId = streamIds.get(i);
+            Observable stream = streams.get(i);
+            stream.subscribe(
+                (item) -> sendHubMessageWithLock(new StreamItem(null, streamId, item)),
                 (error) -> {
-                    sendHubMessage(new CompletionMessage(null, streamId, null, error.toString()));
-                    this.streamMap.remove(streamId);
+                    sendHubMessageWithLock(new CompletionMessage(null, streamId, null, error.toString()));
                 },
                 () -> {
-                    sendHubMessage(new CompletionMessage(null, streamId, null, null));
-                    this.streamMap.remove(streamId);
+                    sendHubMessageWithLock(new CompletionMessage(null, streamId, null, null));
                 });
         }
     }
 
-    Object[] checkUploadStream(Object[] args, List<String> streamIds) {
+    Object[] checkUploadStream(Object[] args, List<String> streamIds, List<Observable> streams) {
         if (args == null) {
             return new Object[] { null };
         }
 
+        ConnectionState connectionState = this.state.getConnectionState();
         List<Object> params = new ArrayList<>(Arrays.asList(args));
         for (Object arg: args) {
             if (arg instanceof Observable) {
@@ -660,7 +618,7 @@ public class HubConnection implements AutoCloseable {
                 Observable stream = (Observable)arg;
                 String streamId = connectionState.getNextInvocationId();
                 streamIds.add(streamId);
-                this.streamMap.put(streamId, stream);
+                streams.add(stream);
             }
         }
 
@@ -674,14 +632,14 @@ public class HubConnection implements AutoCloseable {
      * @param args The arguments used to invoke the server method.
      * @return A Completable that indicates when the invocation has completed.
      */
-    @SuppressWarnings("unchecked")
     public Completable invoke(String method, Object... args) {
-        hubConnectionStateLock.lock();
+        this.state.lock();
         try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             String id = connectionState.getNextInvocationId();
 
             CompletableSubject subject = CompletableSubject.create();
@@ -699,7 +657,7 @@ public class HubConnection implements AutoCloseable {
             sendInvocationMessage(method, args, id, false);
             return subject;
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
     }
 
@@ -733,12 +691,13 @@ public class HubConnection implements AutoCloseable {
     
     @SuppressWarnings("unchecked")
     private <T> Single<T> invoke(Type returnType, Class<?> returnClass, String method, Object... args) {
-        hubConnectionStateLock.lock();
+        this.state.lock();
         try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             String id = connectionState.getNextInvocationId();
             InvocationRequest irq = new InvocationRequest(returnType, id);
             connectionState.addInvocation(irq);
@@ -749,12 +708,7 @@ public class HubConnection implements AutoCloseable {
             // run continuations on a separate thread
             Subject<Object> pendingCall = irq.getPendingCall();
             pendingCall.subscribe(result -> {
-                // Primitive types can't be cast with the Class cast function
-                if (returnClass.isPrimitive()) {
-                    subject.onSuccess((T)result);
-                } else {
-                    subject.onSuccess((T)returnClass.cast(result));
-                }
+                subject.onSuccess(Utils.<T>cast(returnClass, result));
             }, error -> subject.onError(error));
 
             // Make sure the actual send is after setting up the callbacks otherwise there is a race
@@ -762,7 +716,7 @@ public class HubConnection implements AutoCloseable {
             sendInvocationMessage(method, args, id, false);
             return subject;
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
     }
 
@@ -797,12 +751,13 @@ public class HubConnection implements AutoCloseable {
     private <T> Observable<T> stream(Type returnType, Class<?> returnClass, String method, Object ... args) {
         String invocationId;
         InvocationRequest irq;
-        hubConnectionStateLock.lock();
+        this.state.lock();
         try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
 
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
             invocationId = connectionState.getNextInvocationId();
             irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
@@ -811,12 +766,7 @@ public class HubConnection implements AutoCloseable {
             ReplaySubject<T> subject = ReplaySubject.create();
             Subject<Object> pendingCall = irq.getPendingCall();
             pendingCall.subscribe(result -> {
-                        // Primitive types can't be cast with the Class cast function
-                        if (returnClass.isPrimitive()) {
-                            subject.onNext((T)result);
-                        } else {
-                            subject.onNext((T)returnClass.cast(result));
-                        }
+                        subject.onNext(Utils.<T>cast(returnClass, result));
                     }, error -> subject.onError(error),
                     () -> subject.onComplete());
 
@@ -825,38 +775,37 @@ public class HubConnection implements AutoCloseable {
             return observable.doOnDispose(() -> {
                 if (subscriptionCount.decrementAndGet() == 0) {
                     CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
-                    sendHubMessage(cancelInvocationMessage);
-                    if (connectionState != null) {
-                        connectionState.tryRemoveInvocation(invocationId);
-                    }
+                    sendHubMessageWithLock(cancelInvocationMessage);
+                    connectionState.tryRemoveInvocation(invocationId);
                     subject.onComplete();
                 }
             });
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.unlock();
         }
     }
 
-    private void sendHubMessage(HubMessage message) {
-        ByteBuffer serializedMessage = protocol.writeMessage(message);
-        if (message.getMessageType() == HubMessageType.INVOCATION ) {
-            logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
-        } else  if (message.getMessageType() == HubMessageType.STREAM_INVOCATION) {
-            logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((StreamInvocationMessage)message).getInvocationId());
-        } else {
-            logger.debug("Sending {} message.", message.getMessageType().name());
+    private void sendHubMessageWithLock(HubMessage message) {
+        this.state.lock();
+        try {
+            if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("Trying to send and message while the connection is not active.");
+            }
+            ByteBuffer serializedMessage = protocol.writeMessage(message);
+            if (message.getMessageType() == HubMessageType.INVOCATION) {
+                logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
+            } else  if (message.getMessageType() == HubMessageType.STREAM_INVOCATION) {
+                logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((StreamInvocationMessage)message).getInvocationId());
+            } else {
+                logger.debug("Sending {} message.", message.getMessageType().name());
+            }
+
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
+            connectionState.transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
+            connectionState.resetKeepAlive();
+        } finally {
+            this.state.unlock();
         }
-
-        transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
-        resetKeepAlive();
-    }
-
-    private void resetServerTimeout() {
-        this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout);
-    }
-
-    private void resetKeepAlive() {
-        this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval);
     }
 
     /**
@@ -905,7 +854,7 @@ public class HubConnection implements AutoCloseable {
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1> Subscription on(String target, Action1<T1> callback, Class<T1> param1) {
-        ActionBase action = params -> callback.invoke(param1.cast(params[0]));
+        ActionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]));
         return registerHandler(target, action, param1);
 
     }
@@ -924,7 +873,7 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Class<T1> param1, Class<T2> param2) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]));
         };
         return registerHandler(target, action, param1, param2);
     }
@@ -946,7 +895,7 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
                                         Class<T1> param1, Class<T2> param2, Class<T3> param3) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]));
         };
         return registerHandler(target, action, param1, param2, param3);
     }
@@ -970,7 +919,8 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
                                             Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]));
         };
         return registerHandler(target, action, param1, param2, param3, param4);
     }
@@ -996,8 +946,8 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
                                                 Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5);
     }
@@ -1025,8 +975,8 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
                                                     Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]), param6.cast(params[5]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
     }
@@ -1056,8 +1006,8 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
                                                         Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
     }
@@ -1089,8 +1039,9 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
                                                             Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7, Class<T8> param8) {
         ActionBase action = params -> {
-            callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
-                    param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]),
+                Utils.<T8>cast(param8, params[7]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
@@ -1106,9 +1057,10 @@ public class HubConnection implements AutoCloseable {
      * @param <T1>     The first argument type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1> Subscription on(String target, Action1<T1> callback, Type param1) {
-        ActionBase action = params -> callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]));
+        ActionBase action = params -> {
+            callback.invoke(Utils.<T1>cast(param1, params[0]));
+        };
         return registerHandler(target, action, param1);
     }
 
@@ -1125,10 +1077,9 @@ public class HubConnection implements AutoCloseable {
      * @param <T2>     The second parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Type param1, Type param2) {        
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]));
         };
         return registerHandler(target, action, param1, param2);
     }
@@ -1148,12 +1099,10 @@ public class HubConnection implements AutoCloseable {
      * @param <T3>     The third parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
                                         Type param1, Type param2, Type param3) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]));
         };
         return registerHandler(target, action, param1, param2, param3);
     }
@@ -1175,12 +1124,11 @@ public class HubConnection implements AutoCloseable {
      * @param <T4>     The fourth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
                                             Type param1, Type param2, Type param3, Type param4) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]));
         };
         return registerHandler(target, action, param1, param2, param3, param4);
     }
@@ -1204,13 +1152,11 @@ public class HubConnection implements AutoCloseable {
      * @param <T5>     The fifth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
                                                 Type param1, Type param2, Type param3, Type param4, Type param5) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
-                    (T5)Utils.typeToClass(param5).cast(params[4]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5);
     }
@@ -1236,13 +1182,11 @@ public class HubConnection implements AutoCloseable {
      * @param <T6>     The sixth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
                                                     Type param1, Type param2, Type param3, Type param4, Type param5, Type param6) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
-                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
     }
@@ -1270,14 +1214,11 @@ public class HubConnection implements AutoCloseable {
      * @param <T7>     The seventh parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
                                                         Type param1, Type param2, Type param3, Type param4, Type param5, Type param6, Type param7) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
-                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]),
-                    (T7)Utils.typeToClass(param7).cast(params[6]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
     }
@@ -1307,15 +1248,13 @@ public class HubConnection implements AutoCloseable {
      * @param <T8>     The eighth parameter type.
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
-    @SuppressWarnings("unchecked")
     public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
                                                             Type param1, Type param2, Type param3, Type param4, Type param5, Type param6, Type param7, 
                                                             Type param8) {
         ActionBase action = params -> {
-            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
-                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
-                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]),
-                    (T7)Utils.typeToClass(param7).cast(params[6]), (T8)Utils.typeToClass(param8).cast(params[7]));
+            callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]), 
+                Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]),
+                Utils.<T8>cast(param8, params[7]));
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
@@ -1330,7 +1269,18 @@ public class HubConnection implements AutoCloseable {
         private final HubConnection connection;
         private final AtomicInteger nextId = new AtomicInteger(0);
         private final HashMap<String, InvocationRequest> pendingInvocations = new HashMap<>();
-        private final Lock lock = new ReentrantLock();
+        private final AtomicLong nextServerTimeout = new AtomicLong();
+        private final AtomicLong nextPingActivation = new AtomicLong();
+        private Timer pingTimer = null;
+        private Boolean handshakeReceived = false;
+        private ScheduledExecutorService handshakeTimeout = null;
+
+        public final Lock lock = new ReentrantLock();
+        public final CompletableSubject handshakeResponseSubject = CompletableSubject.create();
+        public Transport transport;
+        public String connectionId;
+        public String stopError;
+        public Completable startTask;
 
         public ConnectionState(HubConnection connection) {
             this.connection = connection;
@@ -1390,6 +1340,98 @@ public class HubConnection implements AutoCloseable {
             }
         }
 
+        public void resetServerTimeout() {
+            this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout);
+        }
+
+        public void resetKeepAlive() {
+            this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval);
+        }
+
+        public void activatePingTimer() {
+            this.pingTimer = new Timer();
+            this.pingTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                            stop("Server timeout elapsed without receiving a message from the server.");
+                            return;
+                        }
+
+                        if (System.currentTimeMillis() > nextPingActivation.get()) {
+                            sendHubMessageWithLock(PingMessage.getInstance());
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Error sending ping: {}.", e.getMessage());
+                        // The connection is probably in a bad or closed state now, cleanup the timer so
+                        // it stops triggering
+                        pingTimer.cancel();
+                    }
+                }
+            }, new Date(0), tickRate);
+        }
+
+        public void handleHandshake(ByteBuffer payload) {
+            if (!handshakeReceived) {
+                List<Byte> handshakeByteList = new ArrayList<Byte>();
+                byte curr = payload.get();
+                                // Add the handshake to handshakeBytes, but not the record separator
+                while (curr != RECORD_SEPARATOR) {
+                    handshakeByteList.add(curr);
+                    curr = payload.get();
+                }
+                int handshakeLength = handshakeByteList.size() + 1;
+                byte[] handshakeBytes = new byte[handshakeLength - 1];
+                for (int i = 0; i < handshakeLength - 1; i++) {
+                    handshakeBytes[i] = handshakeByteList.get(i);
+                }
+                // The handshake will always be a UTF8 Json string
+                String handshakeResponseString = new String(handshakeBytes, StandardCharsets.UTF_8);
+                HandshakeResponseMessage handshakeResponse;
+                try {
+                    handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
+                } catch (RuntimeException ex) {
+                    RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
+                    handshakeResponseSubject.onError(exception);
+                    throw exception;
+                }
+                if (handshakeResponse.getHandshakeError() != null) {
+                    String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
+                    logger.error(errorMessage);
+                    RuntimeException exception = new RuntimeException(errorMessage);
+                    handshakeResponseSubject.onError(exception);
+                    throw exception;
+                }
+                handshakeReceived = true;
+                handshakeResponseSubject.onComplete();
+            }
+        }
+
+        public void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
+            handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
+            handshakeTimeout.schedule(() -> {
+                // If onError is called on a completed subject the global error handler is called
+                if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
+                {
+                    handshakeResponseSubject.onError(
+                        new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
+                }
+            }, timeout, unit);
+        }
+
+        public void close() {
+            handshakeResponseSubject.onComplete();
+
+            if (pingTimer != null) {
+                pingTimer.cancel();
+            }
+
+            if (this.handshakeTimeout != null) {
+                this.handshakeTimeout.shutdownNow();
+            }
+        }
+
         @Override
         public Type getReturnType(String invocationId) {
             InvocationRequest irq = getInvocation(invocationId);
@@ -1413,6 +1455,76 @@ public class HubConnection implements AutoCloseable {
             }
 
             return handlers.get(0).getTypes();
+        }
+    }
+
+    // We don't have reconnect yet, but this helps align the Java client with the .NET client
+    // and hopefully make it easier to implement reconnect in the future
+    private final class ReconnectingConnectionState {
+        private final Logger logger;
+        private final Lock lock = new ReentrantLock();
+        private ConnectionState state;
+        private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
+
+        public ReconnectingConnectionState(Logger logger) {
+            this.logger = logger;
+        }
+
+        public void setConnectionState(ConnectionState state) {
+            this.lock.lock();
+            try {
+                this.state = state;
+            } finally {
+                this.lock.unlock();
+            }
+        }
+
+        public ConnectionState getConnectionStateUnsynchronized(Boolean allowNull) {
+            if (allowNull != true && this.state == null) {
+                throw new RuntimeException("Connection is not active.");
+            }
+            return this.state;
+        }
+
+        public ConnectionState getConnectionState() {
+            this.lock.lock();
+            try {
+                if (this.state == null) {
+                    throw new RuntimeException("Connection is not active.");
+                }
+                return this.state;
+            } finally {
+                this.lock.unlock();
+            }
+        }
+
+        public HubConnectionState getHubConnectionState() {
+            return this.hubConnectionState;
+        }
+
+        public void changeState(HubConnectionState from, HubConnectionState to) {
+            this.lock.lock();
+            try {
+                logger.debug("The HubConnection is attempting to transition from the {} state to the {} state.", from, to);
+                if (this.hubConnectionState != from) {
+                    logger.debug("The HubConnection failed to transition from the {} state to the {} state because it was actually in the {} state.",
+                        from, to, this.hubConnectionState);
+                    throw new RuntimeException(String.format("The HubConnection failed to transition from the '%s' state to the '%s' state because it was actually in the '%s' state.",
+                        from, to, this.hubConnectionState));
+                }
+
+                this.hubConnectionState = to;
+            } finally {
+                this.lock.unlock();
+            }
+        }
+
+        public void lock() {
+            this.lock.lock();
+        }
+
+        public void unlock() {
+            this.lock.unlock();
         }
     }
 

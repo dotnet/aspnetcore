@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -26,6 +27,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// Creates a new instance of <see cref="FileLoggerProvider"/>.
         /// </summary>
         /// <param name="options">The options to use when creating a provider.</param>
+        [SuppressMessage("ApiDesign", "RS0022:Constructor make noninheritable base class inheritable", Justification = "Required for backwards compatibility")]
         public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
         {
             var loggerOptions = options.CurrentValue;

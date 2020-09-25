@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\shared\src\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>

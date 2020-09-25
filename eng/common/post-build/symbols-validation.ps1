@@ -141,11 +141,6 @@ $CountMissingSymbols = {
   if ($using:Clean) {
     Remove-Item $ExtractPath -Recurse -Force
   }
-
-  if ($MissingSymbols -ne 0)
-  {
-    Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Missing symbols for $MissingSymbols modules in the package $PackagePath"
-  }
   
   Pop-Location
 
@@ -165,6 +160,7 @@ function CheckJobResult(
     $DupedSymbols.Value++
   } 
   elseif ($jobResult.result -ne '0') {
+    Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Missing symbols for $result modules in the package $packagePath"
     $TotalFailures.Value++
   }
 }
@@ -201,7 +197,6 @@ function CheckSymbolsAvailable {
       Start-Job -ScriptBlock $CountMissingSymbols -ArgumentList $FullName | Out-Null
 
       $NumJobs = @(Get-Job -State 'Running').Count
-      Write-Host $NumJobs
 
       while ($NumJobs -ge $MaxParallelJobs) {
         Write-Host "There are $NumJobs validation jobs running right now. Waiting $SecondsBetweenLoadChecks seconds to check again."

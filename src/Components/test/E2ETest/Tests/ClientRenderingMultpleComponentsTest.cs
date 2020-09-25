@@ -14,9 +14,9 @@ using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class ClientRenderingMultpleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixture<MultipleComponents>>
+    public class ClientRenderingMultpleComponentsTest : E2ETest.Infrastructure.ServerTestBase<BasicTestAppServerSiteFixture<MultipleComponents>>
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
 

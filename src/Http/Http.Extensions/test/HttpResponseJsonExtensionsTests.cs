@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             context.Response.Body = body;
 
             // Act
-            await context.Response.WriteAsJsonAsync<Uri>(value: null);
+            await context.Response.WriteAsJsonAsync<Uri?>(value: null);
 
             // Assert
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);

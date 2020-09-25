@@ -49,7 +49,7 @@
     <Compile Include="..\..\Microsoft.AspNetCore.Razor.Tools\src\Client.cs">
       <Link>Shared\Client.cs</Link>
     </Compile>
-    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\Utilities\ArgumentEscaper.cs" />
 
     <Content Include="_._" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

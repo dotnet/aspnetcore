@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify referenced static web assets
             Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -845,12 +845,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJsonPath = Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(result, bootJsonPath);
 
+            Assert.Equal(ICUDataMode.Invariant, bootJsonData.icuDataMode);
             var runtime = bootJsonData.resources.runtime.Keys;
             Assert.Contains("dotnet.wasm", runtime);
             Assert.DoesNotContain("icudt.dat", runtime);
+            Assert.DoesNotContain("icudt_EFIGS.dat", runtime);
 
             Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
             Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat");
         }
 
         private static void AddWasmProjectContent(ProjectDirectory project, string content)

@@ -13,9 +13,9 @@ namespace Microsoft.Net.Http.Headers
     public class StringWithQualityHeaderValue
     {
         private static readonly HttpHeaderParser<StringWithQualityHeaderValue> SingleValueParser
-            = new GenericHeaderParser<StringWithQualityHeaderValue>(false, GetStringWithQualityLength!);
+            = new GenericHeaderParser<StringWithQualityHeaderValue>(false, GetStringWithQualityLength);
         private static readonly HttpHeaderParser<StringWithQualityHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<StringWithQualityHeaderValue>(true, GetStringWithQualityLength!);
+            = new GenericHeaderParser<StringWithQualityHeaderValue>(true, GetStringWithQualityLength);
 
         private StringSegment _value;
         private double? _quality;

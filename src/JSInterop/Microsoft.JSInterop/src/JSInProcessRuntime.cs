@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -17,25 +18,28 @@ namespace Microsoft.JSInterop
         /// </summary>
         protected JSInProcessRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<JSInProcessObjectReference>(
-                id => new JSInProcessObjectReference(this, id)));
+            JsonSerializerOptions.Converters.Add(
+                new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
+                    id => new JSInProcessObjectReference(this, id)));
         }
 
-        [return: MaybeNull]
         internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
             var resultJson = InvokeJS(
                 identifier,
                 JsonSerializer.Serialize(args, JsonSerializerOptions),
-                ResultTypeFromGeneric<TValue>(),
+                JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 
+            // While the result of deserialization could be null, we're making a
+            // quality of life decision and letting users explicitly determine if they expect
+            // null by specifying TValue? as the expected return type.
             if (resultJson is null)
             {
-                return default;
+                return default!;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions);
+            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
         }
 
         /// <summary>
@@ -45,7 +49,6 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object?[]? args)
             => Invoke<TValue>(identifier, 0, args);
 

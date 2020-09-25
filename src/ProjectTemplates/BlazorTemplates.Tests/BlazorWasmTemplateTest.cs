@@ -40,7 +40,7 @@ namespace Templates.Test
             return InitializeAsync(isolationContext: Guid.NewGuid().ToString());
         }
 
-        [Fact]
+        [Fact(Skip = "Certificate issue: https://github.com/dotnet/aspnetcore/issues/25826")]
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -178,7 +178,7 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Certificate issue: https://github.com/dotnet/aspnetcore/issues/25826")]
         public async Task BlazorWasmHostedPwaTemplate_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278

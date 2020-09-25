@@ -4,8 +4,6 @@
 
   <PropertyGroup>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
-    <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">$(TargetingPackVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
   </PropertyGroup>
 
   <!-- Use the shared framework that was produced -->
@@ -18,7 +16,7 @@
       RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
       DefaultRuntimeFrameworkVersion="$(SharedFxVersion)"
       LatestRuntimeFrameworkVersion="$(SharedFxVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+      TargetingPackVersion="$(TargetingPackVersion)"
       RuntimePackRuntimeIdentifiers="$(SupportedRuntimeIdentifiers)" />
   </ItemGroup>
 </Project>

@@ -21,8 +21,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     /// </summary>
     public sealed class LazyAssemblyLoader
     {
-        internal const string GetDynamicAssemblies = "window.Blazor._internal.getLazyAssemblies";
-        internal const string ReadDynamicAssemblies = "window.Blazor._internal.readLazyAssemblies";
+        internal const string GetLazyAssemblies = "window.Blazor._internal.getLazyAssemblies";
+        internal const string ReadLazyAssemblies = "window.Blazor._internal.readLazyAssemblies";
+        internal const string ReadLazyPDBs = "window.Blazor._internal.readLazyPdbs";
 
         private readonly IJSRuntime _jsRuntime;
         private readonly HashSet<string> _loadedAssemblyCache;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var loadedAssemblies = new List<Assembly>();
 
             var count = (int)await ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string[], object, object, Task<object>>(
-               GetDynamicAssemblies,
+               GetLazyAssemblies,
                newAssembliesToLoad.ToArray(),
                null,
                null);
@@ -91,19 +92,29 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 return loadedAssemblies;
             }
 
-            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, object[]>(
-                ReadDynamicAssemblies,
+            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, byte[][]>(
+                ReadLazyAssemblies,
                 null,
                 null,
                 null);
 
-            foreach (byte[] assembly in assemblies)
+            var pdbs = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, byte[][]>(
+                ReadLazyPDBs,
+                null,
+                null,
+                null);
+
+            for (int i = 0; i < assemblies.Length; i++)
             {
                 // The runtime loads assemblies into an isolated context by default. As a result,
                 // assemblies that are loaded via Assembly.Load aren't available in the app's context
                 // AKA the default context. To work around this, we explicitly load the assemblies
                 // into the default app context.
-                var loadedAssembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly));
+                var assembly = assemblies[i];
+                var pdb = pdbs[i];
+                var loadedAssembly = pdb.Length == 0 ?
+                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly)) :
+                    AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly), new MemoryStream(pdb));
                 loadedAssemblies.Add(loadedAssembly);
                 _loadedAssemblyCache.Add(loadedAssembly.GetName().Name + ".dll");
             }

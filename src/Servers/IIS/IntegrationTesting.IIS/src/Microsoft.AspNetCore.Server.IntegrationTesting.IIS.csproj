@@ -20,6 +20,8 @@
       about this structure
     -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- Ignore platform compatibility analyzer warnings for test and test infrastructure -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />

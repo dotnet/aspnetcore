@@ -90,15 +90,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
-            // Ensure that we haven't requested the lazy loaded assembly
+            // Ensure that we haven't requested the lazy loaded assembly or its PDB
             Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+            Assert.False(HasLoadedAssembly("LazyTestContentPackage.pdb"));
 
             // Navigate to the designated route
             SetUrlViaPushState("/WithLazyLoadedRoutes");
 
             // Wait for the page to finish loading
             new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
+                 driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
 
             // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(renderedElement.Displayed);
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void ThrowsErrorForUnavailableAssemblies()
         {
             // Navigate to a page with lazy loaded assemblies for the first time

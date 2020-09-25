@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -52,9 +53,11 @@ namespace Microsoft.AspNetCore.Testing
             _serviceProvider = serviceProvider;
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) =>
             StartTestLog(output, className, out loggerFactory, LogLevel.Debug, testName);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null) =>
             StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, out var _, testName);
 
@@ -84,15 +87,19 @@ namespace Microsoft.AspNetCore.Testing
             });
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerFactory(output, className, LogLevel.Trace, testName, logStart);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerServices(output, className, minLogLevel, out var _, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerServices(output, className, minLogLevel, out normalizedTestName, out var _, testName, logStart);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
         {
             normalizedTestName = string.Empty;

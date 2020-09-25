@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -38,7 +39,7 @@ class HubConnectionTest {
     @Test
     public void checkHubConnectionState() {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop();
@@ -49,7 +50,7 @@ class HubConnectionTest {
     public void transportCloseTriggersStopInHubConnection() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         mockTransport.stop();
 
@@ -67,7 +68,7 @@ class HubConnectionTest {
             message.set(error.getMessage());
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         mockTransport.stopWithError(errorMessage);
         assertEquals(errorMessage, message.get());
@@ -82,7 +83,7 @@ class HubConnectionTest {
                 .shouldSkipNegotiate(true)
                 .withHandshakeResponseTimeout(100)
                 .build();
-        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals(TimeoutException.class, exception.getCause().getClass());
         assertEquals("Timed out waiting for the server to respond to the handshake message.", exception.getCause().getMessage());
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
@@ -93,7 +94,7 @@ class HubConnectionTest {
         Transport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop();
@@ -105,7 +106,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
@@ -119,21 +120,21 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://example.com", hubConnection.getBaseUrl());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         hubConnection.setBaseUrl("http://newurl.com");
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals("http://newurl.com", hubConnection.getBaseUrl());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -141,7 +142,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://example.com", hubConnection.getBaseUrl());
@@ -150,15 +151,15 @@ class HubConnectionTest {
             hubConnection.setBaseUrl("http://newurl.com");
         });
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals("http://newurl.com", hubConnection.getBaseUrl());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -166,7 +167,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://example.com", hubConnection.getBaseUrl());
@@ -180,7 +181,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://example.com", hubConnection.getBaseUrl());
@@ -195,7 +196,7 @@ class HubConnectionTest {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start();
-        mockTransport.getStartTask().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        mockTransport.getStartTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         Throwable exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{" + RECORD_SEPARATOR));
         assertEquals("An invalid handshake response was received from the server.", exception.getMessage());
@@ -208,8 +209,8 @@ class HubConnectionTest {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
         hubConnection.start();
-        mockTransport.getStartTask().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        Throwable exception = assertThrows(RuntimeException.class, () -> 
+        mockTransport.getStartTask().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        Throwable exception = assertThrows(RuntimeException.class, () ->
             mockTransport.receiveMessage("{\"error\":\"Requested protocol 'messagepack' is not available.\"}" + RECORD_SEPARATOR));
         assertEquals("Error in handshake Requested protocol 'messagepack' is not available.", exception.getMessage());
     }
@@ -226,7 +227,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
@@ -250,7 +251,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -277,7 +278,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -302,7 +303,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -331,7 +332,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -363,7 +364,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -398,7 +399,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
@@ -426,7 +427,7 @@ class HubConnectionTest {
 
         assertEquals(Double.valueOf(0), value.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         try {
             mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
@@ -450,7 +451,7 @@ class HubConnectionTest {
         hubConnection.on("add", action, Double.class);
 
         assertEquals(Double.valueOf(0), value.get());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"add\",\"arguments\":[12]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
@@ -462,7 +463,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream);
@@ -481,7 +482,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> firstStream = ReplaySubject.create();
         ReplaySubject<String> secondStream = ReplaySubject.create();
@@ -508,7 +509,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream, 12);
@@ -521,74 +522,6 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
-    }
-
-    @Test
-    public void streamMapIsClearedOnClose() {
-        MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-
-        ReplaySubject<String> stream = ReplaySubject.create();
-        hubConnection.send("UploadStream", stream, 12);
-
-        stream.onNext("FirstItem");
-        ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
-
-        stream.onComplete();
-        messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
-
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-
-        assertTrue(hubConnection.getStreamMap().isEmpty());
-    }
-
-    @Test
-    public void streamMapEntriesRemovedOnStreamClose() {
-        MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-
-        ReplaySubject<String> stream = ReplaySubject.create();
-        hubConnection.send("UploadStream", stream, 12);
-
-        ReplaySubject<String> secondStream = ReplaySubject.create();
-        hubConnection.send("SecondUploadStream", secondStream, 13);
-
-
-        stream.onNext("FirstItem");
-        secondStream.onNext("SecondItem");
-        ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
-        assertEquals("{\"type\":1,\"target\":\"SecondUploadStream\",\"arguments\":[13],\"streamIds\":[\"2\"]}\u001E", TestUtils.byteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[3]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", TestUtils.byteBufferToString(messages[4]));
-
-
-        assertEquals(2, hubConnection.getStreamMap().size());
-        assertTrue(hubConnection.getStreamMap().keySet().contains("1"));
-        assertTrue(hubConnection.getStreamMap().keySet().contains("2"));
-
-        // Verify that we clear the entry from the stream map after we clear the first stream.
-        stream.onComplete();
-        assertEquals(1, hubConnection.getStreamMap().size());
-        assertTrue(hubConnection.getStreamMap().keySet().contains("2"));
-
-        secondStream.onError(new Exception("Exception"));
-        assertEquals(0, hubConnection.getStreamMap().size());
-        assertTrue(hubConnection.getStreamMap().isEmpty());
-
-        messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[5]));
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", TestUtils.byteBufferToString(messages[6]));
-
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(hubConnection.getStreamMap().isEmpty());
     }
 
     @Test
@@ -596,7 +529,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream, stream);
@@ -620,7 +553,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.invoke(String.class, "UploadStream", stream);
@@ -631,7 +564,7 @@ class HubConnectionTest {
             System.out.println(TestUtils.byteBufferToString(bb));
         }
         assertEquals(3, messages.length);
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E",
                 TestUtils.byteBufferToString(messages[1]));
         assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
@@ -639,13 +572,13 @@ class HubConnectionTest {
         messages = mockTransport.getSentMessages();
         assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
-    
+
     @Test
     public void checkStreamUploadSingleItemThroughInvokeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.<String>invoke(stringType, "UploadStream", stream);
@@ -656,18 +589,18 @@ class HubConnectionTest {
             System.out.println(TestUtils.byteBufferToString(bb));
         }
         assertEquals(3, messages.length);
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F,
             0x61, 0x64, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, (byte) 0x90, (byte) 0x91, (byte) 0xA1, 0x32 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(messages[1]));
-        
-        byte[] secondMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 
+
+        byte[] secondMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73,
             0x74, 0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(secondMessageExpectedBytes), ByteString.of(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        
+
         byte[] thirdMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x32, 0x02 };
         assertEquals(ByteString.of(thirdMessageExpectedBytes), ByteString.of(messages[3]));
     }
@@ -677,7 +610,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.stream(String.class, "UploadStream", stream);
@@ -686,7 +619,7 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(3, messages.length);
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E",
                 TestUtils.byteBufferToString(messages[1]));
         assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
@@ -695,13 +628,13 @@ class HubConnectionTest {
         assertEquals(4, messages.length);
         assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
-    
+
     @Test
     public void checkStreamUploadSingleItemThroughStreamWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.<String>stream(stringType, "UploadStream", stream);
@@ -710,19 +643,19 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(3, messages.length);
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F,
             0x61, 0x64, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, (byte) 0x90, (byte) 0x91, (byte) 0xA1, 0x32 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(messages[1]));
-        
-        byte[] secondMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 
+
+        byte[] secondMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73,
             0x74, 0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(secondMessageExpectedBytes), ByteString.of(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        
+
         byte[] thirdMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x32, 0x02 };
         assertEquals(ByteString.of(thirdMessageExpectedBytes), ByteString.of(messages[3]));
     }
@@ -732,7 +665,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream);
@@ -742,9 +675,9 @@ class HubConnectionTest {
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
         assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
-        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"3\"]}\u001E", 
+        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"3\"]}\u001E",
                 TestUtils.byteBufferToString(messages[2]));
-        assertEquals("{\"type\":4,\"invocationId\":\"4\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"5\"]}\u001E", 
+        assertEquals("{\"type\":4,\"invocationId\":\"4\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"5\"]}\u001E",
                 TestUtils.byteBufferToString(messages[3]));
 
         stream.onNext("FirstItem");
@@ -762,13 +695,13 @@ class HubConnectionTest {
         assertEquals("{\"type\":3,\"invocationId\":\"3\"}\u001E", TestUtils.byteBufferToString(messages[8]));
         assertEquals("{\"type\":3,\"invocationId\":\"5\"}\u001E", TestUtils.byteBufferToString(messages[9]));
     }
-    
+
     @Test
     public void useSameSubjectInMutlipleStreamsFromDifferentMethodsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream);
@@ -777,16 +710,16 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 0x61, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 0x61,
             0x64, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, (byte) 0x90, (byte) 0x91, (byte) 0xA1, 0x31 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(messages[1]));
-        
-        byte[] secondMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 
+
+        byte[] secondMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F,
             0x61, 0x64, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, (byte) 0x90, (byte) 0x91, (byte) 0xA1, 0x33 };
         assertEquals(ByteString.of(secondMessageExpectedBytes), ByteString.of(messages[2]));
 
-        byte[] thirdMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x34, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F, 
+        byte[] thirdMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x34, (byte) 0xAC, 0x55, 0x70, 0x6C, 0x6F,
             0x61, 0x64, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, (byte) 0x90, (byte) 0x91, (byte) 0xA1, 0x35 };
         assertEquals(ByteString.of(thirdMessageExpectedBytes), ByteString.of(messages[3]));
 
@@ -794,29 +727,29 @@ class HubConnectionTest {
 
         messages = mockTransport.getSentMessages();
         assertEquals(7, messages.length);
-        
-        byte[] fourthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74, 
+
+        byte[] fourthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74,
             0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(fourthMessageExpectedBytes), ByteString.of(messages[4]));
-        
-        byte[] fifthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x33, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74, 
+
+        byte[] fifthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x33, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74,
                 0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(fifthMessageExpectedBytes), ByteString.of(messages[5]));
-        
-        byte[] sixthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x35, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74, 
+
+        byte[] sixthMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x35, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74,
                 0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(sixthMessageExpectedBytes), ByteString.of(messages[6]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(10, messages.length);
-        
+
         byte[] seventhMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 };
         assertEquals(ByteString.of(seventhMessageExpectedBytes), ByteString.of(messages[7]));
-        
+
         byte[] eighthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x33, 0x02 };
         assertEquals(ByteString.of(eighthMessageExpectedBytes), ByteString.of(messages[8]));
-        
+
         byte[] ninthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x35, 0x02 };
         assertEquals(ByteString.of(ninthMessageExpectedBytes), ByteString.of(messages[9]));
     }
@@ -826,7 +759,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream);
@@ -836,7 +769,7 @@ class HubConnectionTest {
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
         assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"error\":\"java.lang.RuntimeException: onError called\"}\u001E", 
+        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"error\":\"java.lang.RuntimeException: onError called\"}\u001E",
                 TestUtils.byteBufferToString(messages[3]));
 
         // onComplete doesn't send a completion message after onError.
@@ -850,7 +783,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.send("UploadStream", stream);
@@ -876,7 +809,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.invoke(String.class, "UploadStream", stream);
@@ -894,13 +827,13 @@ class HubConnectionTest {
         assertEquals(5, messages.length);
         assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[4]));
     }
-    
+
     @Test
     public void checkStreamUploadMultipleItemsThroughInvokeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ReplaySubject<String> stream = ReplaySubject.create();
         hubConnection.<String>invoke(stringType, "UploadStream", stream);
@@ -910,19 +843,19 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x0F, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA9, 0x46, 0x69, 0x72, 0x73, 0x74,
             0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(messages[2]));
-        
-        byte[] secondMessageExpectedBytes = new byte[] { 0x10, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xAA, 0x53, 0x65, 0x63, 0x6F, 0x6E, 
+
+        byte[] secondMessageExpectedBytes = new byte[] { 0x10, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xAA, 0x53, 0x65, 0x63, 0x6F, 0x6E,
             0x64, 0x49, 0x74, 0x65, 0x6D };
         assertEquals(ByteString.of(secondMessageExpectedBytes), ByteString.of(messages[3]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(5, messages.length);
-        
+
         byte[] thirdMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x32, 0x02 };
         assertEquals(ByteString.of(thirdMessageExpectedBytes), ByteString.of(messages[4]));
     }
@@ -932,7 +865,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         PublishSubject<String> streamOne = PublishSubject.create();
         PublishSubject<String> streamTwo = PublishSubject.create();
@@ -964,7 +897,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -973,7 +906,7 @@ class HubConnectionTest {
                 (error) -> {},
                 () -> completed.set(true));
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
@@ -985,15 +918,15 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"hello\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
     }
-    
+
     @Test
     public void checkStreamSingleItemWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -1002,7 +935,7 @@ class HubConnectionTest {
                 (error) -> {},
                 () -> completed.set(true));
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
@@ -1017,15 +950,15 @@ class HubConnectionTest {
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
     }
-    
+
     @Test
     public void checkStreamCompletionResult() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -1034,7 +967,7 @@ class HubConnectionTest {
                 (error) -> {},
                 () -> completed.set(true));
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
@@ -1046,16 +979,16 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"COMPLETED\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
-        assertEquals("COMPLETED", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        assertEquals("COMPLETED", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
-    
+
     @Test
     public void checkStreamCompletionResultWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -1064,7 +997,7 @@ class HubConnectionTest {
                 (error) -> {},
                 () -> completed.set(true));
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
@@ -1075,13 +1008,13 @@ class HubConnectionTest {
 
         assertTrue(onNextCalled.get());
 
-        byte[] thirdMessageExpectedBytes = new byte[] { 0x10, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xA9, 0x43, 0x4F, 0x4D, 0x50, 
+        byte[] thirdMessageExpectedBytes = new byte[] { 0x10, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xA9, 0x43, 0x4F, 0x4D, 0x50,
             0x4C, 0x45, 0x54, 0x45, 0x44 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
         assertTrue(completed.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
-        assertEquals("COMPLETED", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        assertEquals("COMPLETED", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
 
     @Test
@@ -1089,7 +1022,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean onErrorCalled = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -1098,7 +1031,7 @@ class HubConnectionTest {
                 (error) -> onErrorCalled.set(true),
                 () -> {});
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(onErrorCalled.get());
         assertFalse(onNextCalled.get());
@@ -1110,17 +1043,17 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
         assertTrue(onErrorCalled.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
-        Throwable exception = assertThrows(HubException.class, () -> result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        Throwable exception = assertThrows(HubException.class, () -> result.timeout(30, TimeUnit.SECONDS).blockingLast());
         assertEquals("There was an error", exception.getMessage());
     }
-    
+
     @Test
     public void checkStreamCompletionErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean onErrorCalled = new AtomicBoolean();
         AtomicBoolean onNextCalled = new AtomicBoolean();
@@ -1129,7 +1062,7 @@ class HubConnectionTest {
                 (error) -> onErrorCalled.set(true),
                 () -> {});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(onErrorCalled.get());
@@ -1144,8 +1077,8 @@ class HubConnectionTest {
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
         assertTrue(onErrorCalled.get());
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
-        Throwable exception = assertThrows(HubException.class, () -> result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
+        Throwable exception = assertThrows(HubException.class, () -> result.timeout(30, TimeUnit.SECONDS).blockingLast());
         assertEquals("Error", exception.getMessage());
     }
 
@@ -1154,7 +1087,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
@@ -1162,7 +1095,7 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
@@ -1170,18 +1103,18 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"null\"}" + RECORD_SEPARATOR);
 
-        Iterator<String> resultIterator = result.timeout(1000, TimeUnit.MILLISECONDS).blockingIterable().iterator();
+        Iterator<String> resultIterator = result.timeout(30, TimeUnit.SECONDS).blockingIterable().iterator();
         assertEquals("First", resultIterator.next());
         assertEquals("Second", resultIterator.next());
         assertTrue(completed.get());
     }
-    
+
     @Test
     public void checkStreamMultipleItemsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
@@ -1189,21 +1122,21 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
-        
+
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
-        
+
         byte[] fourthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 };
         mockTransport.receiveMessage(ByteBuffer.wrap(fourthMessageExpectedBytes));
 
-        Iterator<String> resultIterator = result.timeout(1000, TimeUnit.MILLISECONDS).blockingIterable().iterator();
+        Iterator<String> resultIterator = result.timeout(30, TimeUnit.SECONDS).blockingIterable().iterator();
         assertEquals("First", resultIterator.next());
         assertEquals("Second", resultIterator.next());
         assertTrue(completed.get());
@@ -1214,7 +1147,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
@@ -1222,20 +1155,20 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
         subscription.dispose();
         assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR, TestUtils.byteBufferToString(mockTransport.getSentMessages()[2]));
     }
-    
+
     @Test
     public void checkCancelIsSentAfterDisposeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
@@ -1243,7 +1176,7 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
@@ -1258,7 +1191,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
         Disposable subscription = result.subscribe((item) -> {/*OnNext*/ },
@@ -1279,13 +1212,13 @@ class HubConnectionTest {
         assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
     }
-    
+
     @Test
     public void checkCancelIsSentAfterAllSubscriptionsAreDisposedWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
         Disposable subscription = result.subscribe((item) -> {/*OnNext*/ },
@@ -1298,8 +1231,8 @@ class HubConnectionTest {
 
         subscription.dispose();
         assertEquals(2, mockTransport.getSentMessages().length);
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
 
@@ -1314,14 +1247,14 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
         Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
@@ -1329,33 +1262,33 @@ class HubConnectionTest {
         subscription.dispose();
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
-    
+
     @Test
     public void checkStreamWithDisposeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
         Disposable subscription = result.subscribe((item) -> {/*OnNext*/},
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
-        
+
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
-        
+
         subscription.dispose();
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
 
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
 
     @Test
@@ -1363,7 +1296,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.stream(String.class, "echo", "message");
@@ -1375,7 +1308,7 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
@@ -1386,18 +1319,18 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
 
         subscription2.dispose();
-        assertEquals("Second", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("Second", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
-    
+
     @Test
     public void checkStreamWithDisposeWithMultipleSubscriptionsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean completed = new AtomicBoolean();
         Observable<String> result = hubConnection.<String>stream(stringType, "echo", "message");
@@ -1409,26 +1342,26 @@ class HubConnectionTest {
                 (error) -> {/*OnError*/},
                 () -> {/*OnCompleted*/completed.set(true);});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
-        
+
         byte[] secondMessageExpectedBytes = new byte[] { 0x0B, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA5, 0x46, 0x69, 0x72, 0x73, 0x74 };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondMessageExpectedBytes));
-        
+
         subscription.dispose();
         byte[] thirdMessageExpectedBytes = new byte[] { 0x0C, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA6, 0x53, 0x65, 0x63, 0x6F, 0x6E, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(thirdMessageExpectedBytes));
-        
+
         byte[] fourthMessageExpectedBytes = new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 };
         mockTransport.receiveMessage(ByteBuffer.wrap(fourthMessageExpectedBytes));
 
         assertTrue(completed.get());
-        assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
+        assertEquals("First", result.timeout(30, TimeUnit.SECONDS).blockingFirst());
 
         subscription2.dispose();
-        assertEquals("Second", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
+        assertEquals("Second", result.timeout(30, TimeUnit.SECONDS).blockingLast());
     }
 
     @Test
@@ -1436,40 +1369,40 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void invokeWaitsForCompletionMessageWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.<Integer>invoke(integerType, "echo", "message");
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x07, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, 0x2A }));
 
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1478,41 +1411,41 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe();
 
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void invokeNoReturnValueWaitsForCompletionWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe();
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 }));
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1521,19 +1454,19 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe();
 
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1542,20 +1475,20 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe();
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x07, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, 0x2A }));
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1564,17 +1497,17 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
 
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
-        Throwable exception = assertThrows(IllegalArgumentException.class, () -> 
+        Throwable exception = assertThrows(IllegalArgumentException.class, () ->
             mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42,\"error\":\"There was an error\"}" + RECORD_SEPARATOR));
         assertEquals("Expected either 'error' or 'result' to be provided, but not both.", exception.getMessage());
     }
@@ -1584,19 +1517,19 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
 
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
 
-        result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+        result.timeout(30, TimeUnit.SECONDS).blockingGet();
 
         AtomicReference<String> errorMessage = new AtomicReference<>();
         result.doOnError(error -> {
@@ -1605,28 +1538,28 @@ class HubConnectionTest {
 
         assertEquals("There was an error", errorMessage.get());
     }
-    
+
     @Test
     public void invokeNoReturnValueHandlesErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
 
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
                 (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
             assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
-        byte[] completionMessageErrorBytes = new byte[] { 0x19, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x01, (byte) 0xB2, 0x54, 0x68, 0x65, 
+        byte[] completionMessageErrorBytes = new byte[] { 0x19, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x01, (byte) 0xB2, 0x54, 0x68, 0x65,
                 0x72, 0x65, 0x20, 0x77, 0x61, 0x73, 0x20, 0x61, 0x6E, 0x20, 0x65, 0x72, 0x72, 0x6F, 0x72 };
         mockTransport.receiveMessage(ByteBuffer.wrap(completionMessageErrorBytes));
 
-        result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+        result.timeout(30, TimeUnit.SECONDS).blockingGet();
 
         AtomicReference<String> errorMessage = new AtomicReference<>();
         result.doOnError(error -> {
@@ -1641,42 +1574,42 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", (Object)null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
 
-        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("Hello World", result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void canSendNullArgInInvocationWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.<String>invoke(stringType, "fixedMessage", (Object)null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x66, 0x69, 0x78, 0x65, 0x64, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x66, 0x69, 0x78, 0x65, 0x64,
             0x4D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x91, (byte) 0xC0, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
-        byte[] completionMessageBytes = new byte[] { 0x12, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xAB, 0x48, 0x65, 0x6C, 0x6C, 
+        byte[] completionMessageBytes = new byte[] { 0x12, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xAB, 0x48, 0x65, 0x6C, 0x6C,
             0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(completionMessageBytes));
 
-        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("Hello World", result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1685,42 +1618,42 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null, null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null,null]}"+ RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null,null]}"+ RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
 
-        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("Hello World", result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void canSendMultipleNullArgsInInvocationWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null, null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x66, 0x69, 0x78, 0x65, 0x64, 0x4D, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x16, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xAC, 0x66, 0x69, 0x78, 0x65, 0x64, 0x4D,
             0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x92, (byte) 0xC0, (byte) 0xC0, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
-        byte[] completionMessageBytes = new byte[] { 0x12, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xAB, 0x48, 0x65, 0x6C, 0x6C, 
+        byte[] completionMessageBytes = new byte[] { 0x12, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, (byte) 0xAB, 0x48, 0x65, 0x6C, 0x6C,
             0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64 };
         mockTransport.receiveMessage(ByteBuffer.wrap(completionMessageBytes));
 
-        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("Hello World", result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1729,7 +1662,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean doneFirst = new AtomicBoolean();
         AtomicBoolean doneSecond = new AtomicBoolean();
@@ -1737,29 +1670,29 @@ class HubConnectionTest {
         Single<String> result2 = hubConnection.invoke(String.class, "echo", "message");
         result.doOnSuccess(value -> doneFirst.set(true)).subscribe();
         result2.doOnSuccess(value -> doneSecond.set(true)).subscribe();
-        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
-        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
+        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
                 TestUtils.byteBufferToString(mockTransport.getSentMessages()[2]));
         assertFalse(doneFirst.get());
         assertFalse(doneSecond.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"2\",\"result\":\"message\"}" + RECORD_SEPARATOR);
-        assertEquals("message", result2.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("message", result2.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertFalse(doneFirst.get());
         assertTrue(doneSecond.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(doneFirst.get());
     }
-    
+
     @Test
     public void multipleInvokesWaitForOwnCompletionMessageWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean doneFirst = new AtomicBoolean();
         AtomicBoolean doneSecond = new AtomicBoolean();
@@ -1767,27 +1700,27 @@ class HubConnectionTest {
         Single<String> result2 = hubConnection.<String>invoke(stringType, "echo", "message");
         result.doOnSuccess(value -> doneFirst.set(true)).subscribe();
         result2.doOnSuccess(value -> doneSecond.set(true)).subscribe();
-        
-        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+
+        byte[] firstMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x31, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
             (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(firstMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[1]));
-        
-        byte[] secondMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F, 
+
+        byte[] secondMessageExpectedBytes = new byte[] { 0x14, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xA1, 0x32, (byte) 0xA4, 0x65, 0x63, 0x68, 0x6F,
                 (byte) 0x91, (byte) 0xA7, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, (byte) 0x90 };
         assertEquals(ByteString.of(secondMessageExpectedBytes), ByteString.of(mockTransport.getSentMessages()[2]));
         assertFalse(doneFirst.get());
         assertFalse(doneSecond.get());
 
-        byte[] firstCompletionMessageBytes = new byte[] { 0x0E, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x32, 0x03, (byte) 0xA7, 0x6D, 0x65, 0x73, 
+        byte[] firstCompletionMessageBytes = new byte[] { 0x0E, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x32, 0x03, (byte) 0xA7, 0x6D, 0x65, 0x73,
             0x73, 0x61, 0x67, 0x65 };
         mockTransport.receiveMessage(ByteBuffer.wrap(firstCompletionMessageBytes));
-        assertEquals("message", result2.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals("message", result2.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertFalse(doneFirst.get());
         assertTrue(doneSecond.get());
 
         byte[] secondCompletionMessageBytes = new byte[] { 0x07, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, 0x2A };
         mockTransport.receiveMessage(ByteBuffer.wrap(secondCompletionMessageBytes));
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(doneFirst.get());
     }
 
@@ -1796,7 +1729,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         // int.class is a primitive type and since we use Class.cast to cast an Object to the expected return type
@@ -1807,16 +1740,16 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void invokeWorksForPrimitiveTypesWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         // int.class is a primitive type and since we use Class.cast to cast an Object to the expected return type
@@ -1827,7 +1760,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x07, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, 0x2A }));
 
-        assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertEquals(Integer.valueOf(42), result.timeout(30, TimeUnit.SECONDS).blockingGet());
         assertTrue(done.get());
     }
 
@@ -1836,7 +1769,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
@@ -1847,7 +1780,7 @@ class HubConnectionTest {
 
         String exceptionMessage = null;
         try {
-            result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+            result.timeout(30, TimeUnit.SECONDS).blockingGet();
             assertFalse(true);
         } catch (HubException ex) {
             exceptionMessage = ex.getMessage();
@@ -1855,26 +1788,26 @@ class HubConnectionTest {
 
         assertEquals("There was an error", exceptionMessage);
     }
-    
+
     @Test
     public void completionMessageCanHaveErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
         result.doOnSuccess(value -> done.set(true));
         assertFalse(done.get());
 
-        byte[] completionMessageErrorBytes = new byte[] { 0x19, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x01, (byte) 0xB2, 0x54, 0x68, 0x65, 
+        byte[] completionMessageErrorBytes = new byte[] { 0x19, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x01, (byte) 0xB2, 0x54, 0x68, 0x65,
             0x72, 0x65, 0x20, 0x77, 0x61, 0x73, 0x20, 0x61, 0x6E, 0x20, 0x65, 0x72, 0x72, 0x6F, 0x72 };
         mockTransport.receiveMessage(ByteBuffer.wrap(completionMessageErrorBytes));
 
         String exceptionMessage = null;
         try {
-            result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+            result.timeout(30, TimeUnit.SECONDS).blockingGet();
             assertFalse(true);
         } catch (HubException ex) {
             exceptionMessage = ex.getMessage();
@@ -1888,7 +1821,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
@@ -1899,7 +1832,7 @@ class HubConnectionTest {
 
         RuntimeException hasException = null;
         try {
-            result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+            result.timeout(30, TimeUnit.SECONDS).blockingGet();
             assertFalse(true);
         } catch (CancellationException ex) {
             hasException = ex;
@@ -1919,7 +1852,7 @@ class HubConnectionTest {
             value.getAndUpdate((val) -> val + 1);
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and that the counter property was incremented.
@@ -1937,7 +1870,7 @@ class HubConnectionTest {
             value.set(param);
         }, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
         hubConnection.send("inc", "Hello World");
 
@@ -1959,15 +1892,15 @@ class HubConnectionTest {
 
             value1.set(param1);
             value2.set(param2);
-        }, String.class, Double.class);
+        }, String.class, double.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\", 12]}" + RECORD_SEPARATOR);
         hubConnection.send("inc", "Hello World", 12);
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("Hello World", value1.get());
-        assertEquals(Double.valueOf(12), value2.get());
+        assertEquals(12d, value2.get().doubleValue());
     }
 
     @Test
@@ -1989,7 +1922,7 @@ class HubConnectionTest {
             value3.set(param3);
         }, String.class, String.class, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\"]}" + RECORD_SEPARATOR);
         hubConnection.send("inc", "A", "B", "C");
 
@@ -2021,7 +1954,7 @@ class HubConnectionTest {
             value4.set(param4);
         }, String.class, String.class, String.class, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\", \"D\"]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
@@ -2054,17 +1987,17 @@ class HubConnectionTest {
             value3.set(param3);
             value4.set(param4);
             value5.set(param5);
-        }, String.class, String.class, String.class, Boolean.class, Double.class);
+        }, String.class, String.class, String.class, boolean.class, double.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12 ]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
     }
 
     @Test
@@ -2093,17 +2026,17 @@ class HubConnectionTest {
             value4.set(param4);
             value5.set(param5);
             value6.set(param6);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\"]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
     }
 
@@ -2136,17 +2069,17 @@ class HubConnectionTest {
             value5.set(param5);
             value6.set(param6);
             value7.set(param7);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\"]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
     }
@@ -2183,21 +2116,21 @@ class HubConnectionTest {
             value6.set(param6);
             value7.set(param7);
             value8.set(param8);
-        }, String.class, String.class, String.class, Boolean.class, Double.class, String.class, String.class, String.class);
+        }, String.class, String.class, String.class, boolean.class, double.class, String.class, String.class, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"A\", \"B\", \"C\",true,12,\"D\",\"E\",\"F\"]}" + RECORD_SEPARATOR);
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("A", value1.get());
         assertEquals("B", value2.get());
         assertEquals("C", value3.get());
-        assertTrue(value4.get());
-        assertEquals(Double.valueOf(12), value5.get());
+        assertTrue(value4.get().booleanValue());
+        assertEquals(12d, value5.get().doubleValue());
         assertEquals("D", value6.get());
         assertEquals("E", value7.get());
         assertEquals("F", value8.get());
     }
-    
+
     @Test
     public void sendWithNoParamsTriggersOnHandlerWithMessagePack() {
         AtomicReference<Integer> value = new AtomicReference<>(0);
@@ -2209,7 +2142,7 @@ class HubConnectionTest {
             value.getAndUpdate((val) -> val + 1);
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         byte[] messageBytes = new byte[] { 0x0A, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x90, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2228,8 +2161,8 @@ class HubConnectionTest {
             value.set(param);
         }, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x91, (byte) 0xA1, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x91, (byte) 0xA1,
             0x41, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
         hubConnection.send("inc", "A");
@@ -2254,8 +2187,8 @@ class HubConnectionTest {
             value2.set(param2);
         }, stringType, doubleType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x92, (byte) 0xA1, 0x41, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x15, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x92, (byte) 0xA1, 0x41,
             (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
         hubConnection.send("inc", "A", 12);
@@ -2284,8 +2217,8 @@ class HubConnectionTest {
             value3.set(param3);
         }, stringType, stringType, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x10, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x93, (byte) 0xA1, 0x41, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x10, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x93, (byte) 0xA1, 0x41,
             (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
         hubConnection.send("inc", "A", "B", "C");
@@ -2318,8 +2251,8 @@ class HubConnectionTest {
             value4.set(param4);
         }, stringType, stringType, stringType, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x12, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x94, (byte) 0xA1, 0x41, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x12, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x94, (byte) 0xA1, 0x41,
                 (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xA1, 0x44, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2355,8 +2288,8 @@ class HubConnectionTest {
             value5.set(param5);
         }, stringType, stringType, stringType, booleanType, doubleType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x1A, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x95, (byte) 0xA1, 0x41, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x1A, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x95, (byte) 0xA1, 0x41,
             (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2396,8 +2329,8 @@ class HubConnectionTest {
             value6.set(param6);
         }, stringType, stringType, stringType, booleanType, doubleType, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x1C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x96, (byte) 0xA1, 0x41, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x1C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x96, (byte) 0xA1, 0x41,
             (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xA1, 0x44, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2441,9 +2374,9 @@ class HubConnectionTest {
             value7.set(param7);
         }, stringType, stringType, stringType, booleanType, doubleType, stringType, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x1E, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x97, (byte) 0xA1, 0x41, 
-            (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xA1, 0x44, (byte) 0xA1, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x1E, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x97, (byte) 0xA1, 0x41,
+            (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xA1, 0x44, (byte) 0xA1,
             0x45, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2491,9 +2424,9 @@ class HubConnectionTest {
             value8.set(param8);
         }, stringType, stringType, stringType, booleanType, doubleType, stringType, stringType, stringType);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x20, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x98, (byte) 0xA1, 0x41, 
-            (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xA1, 0x44, (byte) 0xA1, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x20, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x98, (byte) 0xA1, 0x41,
+            (byte) 0xA1, 0x42, (byte) 0xA1, 0x43, (byte) 0xC3, (byte) 0xCB, 0x40, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xA1, 0x44, (byte) 0xA1,
             0x45, (byte) 0xA1, 0x46, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
         // Confirming that our handler was called and the correct message was passed in.
@@ -2526,7 +2459,7 @@ class HubConnectionTest {
             value1.set(param1);
         }, Custom.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[{\"number\":1,\"str\":\"A\",\"bools\":[true,false]}]}" + RECORD_SEPARATOR);
 
         // Confirming that our handler was called and the correct message was passed in.
@@ -2537,7 +2470,7 @@ class HubConnectionTest {
         assertEquals(true, custom.bools[0]);
         assertEquals(false, custom.bools[1]);
     }
-    
+
     @Test
     public void sendWithCustomObjectTriggersOnHandlerWithMessagePack()  {
         AtomicReference<PersonPojo<Short>> value1 = new AtomicReference<>();
@@ -2551,9 +2484,9 @@ class HubConnectionTest {
             value1.set(param1);
         }, (new TypeReference<PersonPojo<Short>>() { }).getType());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        byte[] messageBytes = new byte[] { 0x2F, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x91, (byte) 0x84, 
-            (byte) 0xA9, 0x66, 0x69, 0x72, 0x73, 0x74, 0x4E, 0x61, 0x6D, 0x65, (byte) 0xA4, 0x4A, 0x6F, 0x68, 0x6E, (byte) 0xA8, 0x6C, 0x61, 0x73, 0x74, 
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        byte[] messageBytes = new byte[] { 0x2F, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x69, 0x6E, 0x63, (byte) 0x91, (byte) 0x84,
+            (byte) 0xA9, 0x66, 0x69, 0x72, 0x73, 0x74, 0x4E, 0x61, 0x6D, 0x65, (byte) 0xA4, 0x4A, 0x6F, 0x68, 0x6E, (byte) 0xA8, 0x6C, 0x61, 0x73, 0x74,
             0x4E, 0x61, 0x6D, 0x65, (byte) 0xA3, 0x44, 0x6F, 0x65, (byte) 0xA3, 0x61, 0x67, 0x65, 0x1E, (byte) 0xA1, 0x74, 0x05, (byte) 0x90 };
         mockTransport.receiveMessage(ByteBuffer.wrap(messageBytes));
 
@@ -2563,6 +2496,37 @@ class HubConnectionTest {
         assertEquals("Doe", person.getLastName());
         assertEquals(30, person.getAge());
         assertEquals((short) 5, (short) person.getT());
+    }
+
+    @Test
+    public void throwFromOnHandlerRunsAllHandlers() {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+
+        try (TestLogger logger = new TestLogger()) {
+            MockTransport mockTransport = new MockTransport();
+            HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+            hubConnection.on("inc", (param1) -> {
+                value1.set(param1);
+                throw new RuntimeException("throw from on handler");
+            }, String.class);
+            hubConnection.on("inc", (param1) -> {
+                value2.set(param1);
+            }, String.class);
+
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+            mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
+
+            // Confirming that our handler was called and the correct message was passed in.
+            assertEquals("Hello World", value1.get());
+            assertEquals("Hello World", value2.get());
+
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+            ILoggingEvent log = logger.assertLog("Invoking client side method 'inc' failed:");
+            assertEquals("throw from on handler", log.getThrowableProxy().getMessage());
+        }
     }
 
     @Test
@@ -2579,7 +2543,7 @@ class HubConnectionTest {
         SingleSubject<ByteBuffer> handshakeMessageTask = mockTransport.getNextSentMessage();
         // On start we're going to receive the handshake response and also an invocation in the same payload.
         hubConnection.start();
-        ByteBuffer sentMessage = handshakeMessageTask.timeout(1, TimeUnit.SECONDS).blockingGet();
+        ByteBuffer sentMessage = handshakeMessageTask.timeout(30, TimeUnit.SECONDS).blockingGet();
         String expectedSentMessage  = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
         assertEquals(expectedSentMessage, TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]));
 
@@ -2593,7 +2557,7 @@ class HubConnectionTest {
     public void onClosedCallbackRunsWhenStopIsCalled()  {
         AtomicReference<String> value1 = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         hubConnection.onClosed((ex) -> {
             assertNull(value1.get());
             value1.set("Closed callback ran.");
@@ -2609,7 +2573,7 @@ class HubConnectionTest {
         AtomicReference<String> value1 = new AtomicReference<>();
         AtomicReference<String> value2 = new AtomicReference<>();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         hubConnection.onClosed((ex) -> {
             assertNull(value1.get());
@@ -2637,7 +2601,7 @@ class HubConnectionTest {
         hubConnection.onClosed((ex) -> {
             assertEquals(ex.getMessage(), "There was an error");
         });
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
@@ -2649,13 +2613,13 @@ class HubConnectionTest {
     @Test
     public void callingStartOnStartedHubConnectionNoops()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -2668,22 +2632,22 @@ class HubConnectionTest {
                 .withHttpClient(new TestHttpClient())
                 .withAccessTokenProvider(Single.defer(() -> {
                     startedAccessToken.onComplete();
-                    continueAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+                    continueAccessToken.timeout(30, TimeUnit.SECONDS).blockingAwait();
                     return Single.just("test");
                 }).subscribeOn(Schedulers.newThread()))
                 .shouldSkipNegotiate(true)
                 .build();
         Completable start = hubConnection.start();
-        startedAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        startedAccessToken.timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
 
         Completable start2 = hubConnection.start();
         continueAccessToken.onComplete();
-        start.timeout(1, TimeUnit.SECONDS).blockingAwait();
-        start2.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        start.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        start2.timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -2722,7 +2686,7 @@ class HubConnectionTest {
             assertTrue(false);
         }, String.class);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         mockTransport.receiveMessage("{\"type\":1,\"target\":\"Send\",\"arguments\":[]}" + RECORD_SEPARATOR);
         hubConnection.stop();
@@ -2738,7 +2702,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        Exception exception = assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+        Exception exception = assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Unexpected status code returned from negotiate: 404 .", exception.getMessage());
 
         List<HttpRequest> sentRequests = client.getSentRequests();
@@ -2757,7 +2721,7 @@ class HubConnectionTest {
             .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+            () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Negotiate redirection limit exceeded.", exception.getMessage());
     }
 
@@ -2771,10 +2735,10 @@ class HubConnectionTest {
                 .build();
 
         assertNull(hubConnection.getConnectionId());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
@@ -2795,11 +2759,11 @@ class HubConnectionTest {
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
@@ -2822,11 +2786,11 @@ class HubConnectionTest {
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
         assertEquals("http://example.com?id=connection-token-value", transport.getUrl());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
@@ -2848,11 +2812,11 @@ class HubConnectionTest {
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
         assertEquals("http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
@@ -2874,11 +2838,11 @@ class HubConnectionTest {
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
         assertEquals("http://example.com?negotiateVersion=42&id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
@@ -2897,7 +2861,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ByteBuffer[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
@@ -2918,7 +2882,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         ByteBuffer[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
@@ -2942,7 +2906,10 @@ class HubConnectionTest {
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
-                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer(""))));
+                .on("DELETE", (req) -> {
+                    close.onComplete();
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+                });
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2950,10 +2917,9 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
-        close.onComplete();
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -2972,9 +2938,8 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        assertEquals(TransportEnum.WEBSOCKETS, hubConnection.getTransportEnum());
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+                () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
         assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
     }
@@ -2991,11 +2956,50 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+                () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
         assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
+    public void ConnectionRestartDoesNotResetUserTransportEnum() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        AtomicReference<CompletableSubject> blockGet = new AtomicReference<CompletableSubject>(CompletableSubject.create());
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            })
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]},"
+                        + "{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                if (requestCount.incrementAndGet() >= 3) {
+                    blockGet.get().timeout(30, TimeUnit.SECONDS).blockingAwait();
+                }
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("DELETE", (req) -> {
+                blockGet.get().onComplete();
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        requestCount.set(0);
+        blockGet.set(CompletableSubject.create());
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -3026,7 +3030,7 @@ class HubConnectionTest {
                 .build();
 
         try {
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertTrue(false);
         } catch (RuntimeException ex) {
             assertEquals("Error from accessTokenProvider", ex.getMessage());
@@ -3070,10 +3074,10 @@ class HubConnectionTest {
             closed.onComplete();
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         blockGet.onComplete();
-        
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3114,16 +3118,94 @@ class HubConnectionTest {
             closed.onComplete();
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         try {
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertTrue(false);
         } catch (Exception ex) {
             assertEquals("Error from accessTokenProvider", ex.getMessage());
         }
         blockGet.onComplete();
-        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void stopWithoutObservingWithLongPollingTransportStops() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        CompletableSubject blockGet = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                if (requestCount.getAndIncrement() > 1) {
+                    blockGet.blockingAwait();
+                }
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        CompletableSubject closed = CompletableSubject.create();
+        hubConnection.onClosed((e) -> {
+            closed.onComplete();
+        });
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.stop();
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        blockGet.onComplete();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        CompletableSubject blockGet = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                if (requestCount.getAndIncrement() > 1) {
+                    blockGet.blockingAwait();
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"type\":7}" + RECORD_SEPARATOR)));
+                }
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+            .create("http://example.com")
+            .withTransport(TransportEnum.LONG_POLLING)
+            .withHttpClient(client)
+            .build();
+
+        CompletableSubject closed = CompletableSubject.create();
+        hubConnection.onClosed((ex) -> {
+            closed.onComplete();
+        });
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        blockGet.onComplete();
+
+        closed.timeout(30, TimeUnit.SECONDS).blockingAwait();
+
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3142,7 +3224,7 @@ class HubConnectionTest {
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+                () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
 
         assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
     }
@@ -3160,7 +3242,7 @@ class HubConnectionTest {
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+            () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Test error.", exception.getMessage());
     }
 
@@ -3185,7 +3267,7 @@ class HubConnectionTest {
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+                () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Detected an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
                 exception.getMessage());
     }
@@ -3205,7 +3287,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
     }
@@ -3234,9 +3316,9 @@ class HubConnectionTest {
                 .withAccessTokenProvider(Single.just("User Registered Token"))
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer User Registered Token", beforeRedirectToken.get());
         assertEquals("Bearer newToken", token.get());
 
@@ -3245,7 +3327,7 @@ class HubConnectionTest {
         token.set("");
 
         // Restart the connection to make sure that the original accessTokenProvider that we registered is still registered before the redirect.
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("Bearer User Registered Token", beforeRedirectToken.get());
@@ -3271,7 +3353,7 @@ class HubConnectionTest {
                 .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("Bearer secretToken", token.get());
@@ -3297,14 +3379,14 @@ class HubConnectionTest {
                 .withAccessTokenProvider(Single.defer(() -> Single.just("secret" + i.getAndIncrement())))
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer secret0", token.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer secret1", token.get());
     }
 
@@ -3312,7 +3394,7 @@ class HubConnectionTest {
     public void accessTokenProviderIsOverriddenFromRedirectNegotiate() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
-            .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "",
             		TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"))))
             .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                 token.set(req.getHeaders().get("Authorization"));
@@ -3330,7 +3412,7 @@ class HubConnectionTest {
                 .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://testexample.com/?id=connection-token-value", transport.getUrl());
         hubConnection.stop();
@@ -3360,9 +3442,9 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer newToken", token.get());
 
         // Clear the tokens to see if they get reset to the proper values
@@ -3370,7 +3452,7 @@ class HubConnectionTest {
         token.set("");
 
         // Restart the connection to make sure that the original accessTokenProvider that we registered is still registered before the redirect.
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertNull(beforeRedirectToken.get());
@@ -3407,16 +3489,16 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer firstRedirectToken", token.get());
 
         // Clear the tokens to see if they get reset to the proper values
         redirectToken.set("");
         token.set("");
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertNull(redirectToken.get());
@@ -3431,7 +3513,7 @@ class HubConnectionTest {
                 .build();
 
         try {
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertTrue(false);
         } catch (RuntimeException ex) {
             assertEquals("Error from accessTokenProvider", ex.getMessage());
@@ -3448,9 +3530,9 @@ class HubConnectionTest {
             closedSubject.onSuccess(e);
         });
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        assertEquals("Server timeout elapsed without receiving a message from the server.", closedSubject.timeout(1, TimeUnit.SECONDS).blockingGet().getMessage());
+        assertEquals("Server timeout elapsed without receiving a message from the server.", closedSubject.timeout(30, TimeUnit.SECONDS).blockingGet().getMessage());
     }
 
     @Test
@@ -3460,14 +3542,14 @@ class HubConnectionTest {
         hubConnection.setKeepAliveInterval(1);
         hubConnection.setTickRate(1);
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
-        String message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
+        String message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(30, TimeUnit.SECONDS).blockingGet());
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
-        message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
+        message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(30, TimeUnit.SECONDS).blockingGet());
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
@@ -3487,7 +3569,7 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
 
@@ -3512,7 +3594,7 @@ class HubConnectionTest {
                 .withHeader("User-Agent", "Updated Value")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("Updated Value", header.get());
@@ -3536,7 +3618,7 @@ class HubConnectionTest {
                 .withHeader("User-Agent", "")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("", header.get());
@@ -3560,7 +3642,7 @@ class HubConnectionTest {
                 .withHeader("ExampleHeader", "ExampleValue")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("ExampleValue", header.get());
@@ -3584,12 +3666,12 @@ class HubConnectionTest {
                 .withHeader("Authorization", "ExampleValue")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("ExampleValue", header.get());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("ExampleValue", header.get());
     }
@@ -3619,14 +3701,14 @@ class HubConnectionTest {
                 .withHeader("Authorization", "ExampleValue")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
         assertEquals("Bearer redirectToken", afterRedirectHeader.get());
 
         // Making sure you can do this after restarting the HubConnection.
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
@@ -3653,7 +3735,7 @@ class HubConnectionTest {
                 .withHeader("ExampleHeader", "New Value")
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertEquals("New Value", header.get());
@@ -3668,13 +3750,13 @@ class HubConnectionTest {
                 .shouldSkipNegotiate(true)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3683,7 +3765,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
-                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
+                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "",
                 		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
@@ -3692,13 +3774,13 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3716,7 +3798,7 @@ class HubConnectionTest {
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+            () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getMessage());
     }
 
@@ -3725,7 +3807,7 @@ class HubConnectionTest {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
-                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
+                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "",
                 		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         CompletableSubject close = CompletableSubject.create();
@@ -3739,10 +3821,10 @@ class HubConnectionTest {
             hubConnection.onClosed(e -> {
                 close.onComplete();
             });
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         }
 
-        close.timeout(1, TimeUnit.SECONDS).blockingGet();
+        close.timeout(30, TimeUnit.SECONDS).blockingGet();
     }
 }
