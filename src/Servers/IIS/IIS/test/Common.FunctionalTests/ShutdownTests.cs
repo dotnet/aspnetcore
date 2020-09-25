@@ -422,13 +422,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await ConfigurationTouchedStress(HostingModel.InProcess);
         }
 
-        [ConditionalFact]
-        [RequiresNewShim]
-        public async Task ConfigurationTouchedStress_OutOfProcess()
-        {
-            await ConfigurationTouchedStress(HostingModel.OutOfProcess);
-        }
-
         private async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
