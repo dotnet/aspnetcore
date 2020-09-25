@@ -117,6 +117,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
+        [Fact]
+        public async Task DownloadHref_DoesNotGracefullyDisconnect_TheCurrentCircuit()
+        {
+            // Arrange & Act
+            var element = Browser.FindElement(By.Id("download-href"));
+            element.Click();
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+        }
+
         private void Log(WriteContext wc)
         {
             if ((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
