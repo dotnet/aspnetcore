@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
-        
+
         [Fact]
         public void ActivityBaggagePreservesItemsOrder()
         {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             });
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
-            
+
             var expectedBaggage = new []
             {
                 KeyValuePair.Create("Key1","value1"),
