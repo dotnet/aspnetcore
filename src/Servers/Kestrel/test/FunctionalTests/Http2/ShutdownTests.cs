@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [CollectDump]
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/9985", Queues = "Fedora.28.Amd64;Fedora.28.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25046")]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -100,7 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21521")] // Test still quarantined due to Sockets.Functional tests.
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
