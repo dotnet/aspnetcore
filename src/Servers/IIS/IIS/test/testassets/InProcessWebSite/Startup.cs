@@ -1029,5 +1029,12 @@ namespace TestSite
             Assert.Equal("�", value);
             return Task.CompletedTask;
         }
+
+        public Task IncreaseRequestLimit(HttpContext httpContext)
+        {
+            var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            maxRequestBodySizeFeature.MaxRequestBodySize = 2;
+            return Task.CompletedTask;
+        }
     }
 }
