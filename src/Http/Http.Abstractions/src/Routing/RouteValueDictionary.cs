@@ -661,11 +661,18 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
+        /// <summary>
+        /// Enumerates the elements of <see cref="RouteValueDictionary" />.
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
         {
             private readonly RouteValueDictionary _dictionary;
             private int _index;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="Enumerator"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="RouteValueDictionary"/> to enumerate.</param>
             public Enumerator(RouteValueDictionary dictionary)
             {
                 if (dictionary == null)
@@ -679,14 +686,25 @@ namespace Microsoft.AspNetCore.Routing
                 _index = 0;
             }
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
             public KeyValuePair<string, object?> Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
+            /// <summary>
+            /// Releases resources used by <see cref="Enumerator"/>.
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// Advances the enumerator to the next element of the <see cref="RouteValueDictionary"/>.
+            /// </summary>
+            /// <returns><see langword="true"/> if the enumerator was successfully advanced to the next element,
+            /// <see langword="false" /> if the enumerator has passed the end of the collection.</returns>
             // Similar to the design of List<T>.Enumerator - Split into fast path and slow path for inlining friendliness
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
@@ -721,6 +739,9 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
+            /// <summary>
+            /// Sets the enumerator to its initial position, which is before the first element in the <see cref="RouteValueDictionary"/>.
+            /// </summary>
             public void Reset()
             {
                 Current = default;

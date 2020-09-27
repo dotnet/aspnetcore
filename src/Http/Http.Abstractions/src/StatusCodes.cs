@@ -3,9 +3,12 @@
 
 namespace Microsoft.AspNetCore.Http
 {
-    // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+    /// <summary>
+    /// Constants for status codes as listed on http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+    /// </summary>
     public static class StatusCodes
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public const int Status100Continue = 100;
         public const int Status101SwitchingProtocols = 101;
         public const int Status102Processing = 102;

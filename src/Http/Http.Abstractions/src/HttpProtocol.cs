@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -18,9 +19,17 @@ namespace Microsoft.AspNetCore.Http
         // and allow us to optimize comparisons when these constants are used.
 
         // Please do NOT change these to 'const'
+
+        /// <summary>Represents the HTTP/1.0 protocol version.</summary>
         public static readonly string Http10 = "HTTP/1.0";
+
+        /// <summary>Represents the HTTP/1.1 protocol version.</summary>
         public static readonly string Http11 = "HTTP/1.1";
+
+        /// <summary>Represents the HTTP/2 protocol version.</summary>
         public static readonly string Http2 = "HTTP/2";
+
+        /// <summary>Represents the HTTP/3 protocol version.</summary>
         public static readonly string Http3 = "HTTP/3";
 
         /// <summary>

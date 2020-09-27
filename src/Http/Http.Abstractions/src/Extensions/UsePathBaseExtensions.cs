@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="pathBase">The path base to extract.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder UsePathBase(this IApplicationBuilder app, PathString pathBase)
         {
             if (app == null)

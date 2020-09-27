@@ -456,14 +456,14 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Implicitly creates a new PathString from the given string.
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">A string to implicitly convert.</param>
         public static implicit operator PathString(string? s)
             => ConvertFromString(s);
 
         /// <summary>
-        /// Implicitly calls ToString().
+        /// Implicitly creates a string frm the given <see cref="PathString"/>.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">A path to implicitly convert.</param>
         public static implicit operator string(PathString path)
             => path.ToString();
 

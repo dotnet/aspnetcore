@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Builds the <see cref="AuthenticationScheme"/> instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="AuthenticationScheme"/>.</returns>
         public AuthenticationScheme Build()
         {
             if (HandlerType is null)

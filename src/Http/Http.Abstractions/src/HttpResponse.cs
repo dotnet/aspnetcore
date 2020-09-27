@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -138,14 +137,14 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public virtual Task StartAsync(CancellationToken cancellationToken = default) { throw new NotImplementedException(); }
 
         /// <summary>
         /// Flush any remaining response headers, data, or trailers.
         /// This may throw if the response is in an invalid state such as a Content-Length mismatch.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual Task CompleteAsync() { throw new NotImplementedException(); }
     }
 }

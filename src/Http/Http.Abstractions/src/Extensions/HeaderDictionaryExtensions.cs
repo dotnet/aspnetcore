@@ -5,6 +5,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extension methods for <see cref="IHeaderDictionary"/>.
+    /// </summary>
     public static class HeaderDictionaryExtensions
     {
         /// <summary>

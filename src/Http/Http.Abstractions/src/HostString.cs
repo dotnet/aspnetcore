@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Primitives;
 
@@ -21,7 +22,8 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a new HostString without modification. The value should be Unicode rather than punycode, and may have a port.
         /// IPv4 and IPv6 addresses are also allowed, and also may have ports.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The host portion of a URI.
+        /// The value should be Unicode rather than punycode. IPv6 addresses must use square braces.</param>
         public HostString(string value)
         {
             _value = value;
@@ -30,7 +32,8 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Creates a new HostString from its host and port parts.
         /// </summary>
-        /// <param name="host">The value should be Unicode rather than punycode. IPv6 addresses must use square braces.</param>
+        /// <param name="host">The host portion of a URI.
+        /// The value should be Unicode rather than punycode. IPv6 addresses must use square braces.</param>
         /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
         public HostString(string host, int port)
         {
@@ -65,6 +68,9 @@ namespace Microsoft.AspNetCore.Http
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if <see cref="Value"/> is not null or empty, otherwise <see langword="false"/>.
+        /// </summary>
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }

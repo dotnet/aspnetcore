@@ -18,14 +18,40 @@ namespace Microsoft.AspNetCore.Http
         // and allow us to optimize comparisons when these constants are used.
 
         // Please do NOT change these to 'const'
+        /// <summary>Represents an HTTP CONNECT protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.6. </remarks>
         public static readonly string Connect = "CONNECT";
+
+        /// <summary>Represents an HTTP DELETE protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.5</remarks>
         public static readonly string Delete = "DELETE";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.1</remarks>
         public static readonly string Get = "GET";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.2</remarks>
         public static readonly string Head = "HEAD";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.7</remarks>
         public static readonly string Options = "OPTIONS";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc5789</remarks>
         public static readonly string Patch = "PATCH";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.3</remarks>
         public static readonly string Post = "POST";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.4</remarks>
         public static readonly string Put = "PUT";
+
+        /// <summary>Represents an HTTP GET protocol method.</summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc7231#section-4.3.8</remarks>
         public static readonly string Trace = "TRACE";
 
         /// <summary>
@@ -137,10 +163,11 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        ///  Returns the equivalent static instance, or the original instance if none match. This conversion is optional but allows for performance optimizations when comparing method values elsewhere.
+        ///  Returns the equivalent static instance, or the original instance if none match.
+        ///  This conversion is optional but allows for performance optimizations when comparing method values elsewhere.
         /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="method">The HTTP method name to canonicalize.</param>
+        /// <returns>The canonicalized HTTP method name.</returns>
         public static string GetCanonicalizedValue(string method) => method switch
         {
             string _ when IsGet(method) => Get,

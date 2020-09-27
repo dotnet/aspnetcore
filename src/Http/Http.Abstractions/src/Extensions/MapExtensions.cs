@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="pathMatch">The request path to match.</param>
         /// <param name="configuration">The branch to take for positive path matches.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
             return Map(app, pathMatch, preserveMatchedPathSegment: false, configuration);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pathMatch">The request path to match.</param>
         /// <param name="preserveMatchedPathSegment">if false, matched path would be removed from Request.Path and added to Request.PathBase.</param>
         /// <param name="configuration">The branch to take for positive path matches.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool preserveMatchedPathSegment, Action<IApplicationBuilder> configuration)
         {
             if (app == null)

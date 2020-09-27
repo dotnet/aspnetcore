@@ -4,22 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Options to configure authentication.
+    /// </summary>
     public class AuthenticationOptions
     {
         private readonly IList<AuthenticationSchemeBuilder> _schemes = new List<AuthenticationSchemeBuilder>();
 
         /// <summary>
-        /// Returns the schemes in the order they were added (important for request handling priority)
+        /// Gets the schemes in the order they were added (important for request handling priority)
         /// </summary>
         public IEnumerable<AuthenticationSchemeBuilder> Schemes => _schemes;
 
         /// <summary>
-        /// Maps schemes by name.
+        /// Gets a mapping of names to authentication schemes.
         /// </summary>
         public IDictionary<string, AuthenticationSchemeBuilder> SchemeMap { get; } = new Dictionary<string, AuthenticationSchemeBuilder>(StringComparer.Ordinal);
 

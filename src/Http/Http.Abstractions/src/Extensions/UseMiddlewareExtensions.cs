@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <typeparam name="TMiddleware">The middleware type.</typeparam>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder UseMiddleware<[DynamicallyAccessedMembers(MiddlewareAccessibility)]TMiddleware>(this IApplicationBuilder app, params object[] args)
         {
             return app.UseMiddleware(typeof(TMiddleware), args);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="middleware">The middleware type.</param>
         /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware, params object[] args)
         {
             if (typeof(IMiddleware).GetTypeInfo().IsAssignableFrom(middleware.GetTypeInfo()))

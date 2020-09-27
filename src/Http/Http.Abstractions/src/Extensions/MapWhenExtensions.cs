@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Branches the request pipeline based on the result of the given predicate.
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="predicate">Invoked with the request environment to determine if the branch should be taken</param>
         /// <param name="configuration">Configures a branch to take</param>
-        /// <returns></returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder MapWhen(this IApplicationBuilder app, Predicate predicate, Action<IApplicationBuilder> configuration)
         {
             if (app == null)

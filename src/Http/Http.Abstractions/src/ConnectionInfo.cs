@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Gets information about the current connection.
+    /// </summary>
     public abstract class ConnectionInfo
     {
         /// <summary>
@@ -15,16 +18,36 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public abstract string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IPAddress"/> for the connecting client.
+        /// </summary>
         public abstract IPAddress? RemoteIpAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the port for the connecting client.
+        /// </summary>
         public abstract int RemotePort { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IPAddress"/> for the host.
+        /// </summary>
         public abstract IPAddress? LocalIpAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the port for the host.
+        /// </summary>
         public abstract int LocalPort { get; set; }
 
+        /// <summary>
+        /// Gets or sets client certificates associated with the connection.
+        /// </summary>
         public abstract X509Certificate2? ClientCertificate { get; set; }
 
+        /// <summary>
+        /// Asynchronously retries the client certificate.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         public abstract Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken());
     }
 }

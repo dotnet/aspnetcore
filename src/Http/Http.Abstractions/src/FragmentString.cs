@@ -105,6 +105,11 @@ namespace Microsoft.AspNetCore.Http
             return new FragmentString(fragmentValue);
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="FragmentString "/> is equal to the current <see cref="FragmentString"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="FragmentString"/> to compare the current instance with.</param>
+        /// <returns><see langword="true"/> if the specified value is equal to the current instance; otherwise, <see langword="false"/>.</returns>
         public bool Equals(FragmentString other)
         {
             if (!HasValue && !other.HasValue)
@@ -114,6 +119,11 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Determines whether the specified value is equal to the current <see cref="FragmentString"/>.
+        /// </summary>
+        /// <param name="obj">The <see cref="object"/> to compare the current instance with.</param>
+        /// <returns><see langword="true"/> if the specified value is equal to the current instance; otherwise, <see langword="false"/>.</returns>
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
@@ -123,16 +133,32 @@ namespace Microsoft.AspNetCore.Http
             return obj is FragmentString && Equals((FragmentString)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             return (HasValue ? _value.GetHashCode() : 0);
         }
 
+        /// <summary>
+        /// Determines if the two <see cref="FragmentString"/> have the same value.
+        /// </summary>
+        /// <param name="left">The first instance to compare.</param>
+        /// <param name="right">The second instance to compare.</param>
+        /// <returns><see langword="true" /> if the two are the same, otherwise <see langword="false" />.</returns>
         public static bool operator ==(FragmentString left, FragmentString right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Determines if the two <see cref="FragmentString"/> have the different values.
+        /// </summary>
+        /// <param name="left">The first instance to compare.</param>
+        /// <param name="right">The second instance to compare.</param>
+        /// <returns><see langword="true" /> if the two are different, otherwise <see langword="false" />.</returns>
         public static bool operator !=(FragmentString left, FragmentString right)
         {
             return !left.Equals(right);

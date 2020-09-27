@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="middleware">A function that handles the request or calls the given next function.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         public static IApplicationBuilder Use(this IApplicationBuilder app, Func<HttpContext, Func<Task>, Task> middleware)
         {
             return app.Use(next =>

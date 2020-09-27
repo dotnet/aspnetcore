@@ -201,6 +201,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <summary>
+        /// Returns all currently registered <see cref="AuthenticationScheme"/> instances.
+        /// </summary>
+        /// <returns>All currently registered <see cref="AuthenticationScheme"/> instances.</returns>
         public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
             => Task.FromResult(_schemesCopy);
     }

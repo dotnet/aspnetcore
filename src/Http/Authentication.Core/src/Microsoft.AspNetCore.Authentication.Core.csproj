@@ -9,6 +9,8 @@
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+
+    <NoWarn />
   </PropertyGroup>
 
   <ItemGroup>

@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Creates a query string composed from the given name value pairs.
         /// </summary>
-        /// <param name="parameters"></param>
+        /// <param name="parameters">A sequence of name and value pairs.</param>
         /// <returns>The resulting QueryString</returns>
         public static QueryString Create(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Creates a query string composed from the given name value pairs.
         /// </summary>
-        /// <param name="parameters"></param>
+        /// <param name="parameters">A sequence of name value pairs.</param>
         /// <returns>The resulting QueryString</returns>
         public static QueryString Create(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
@@ -170,6 +170,14 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Adds the contents of <paramref name="other" /> to this <see cref="QueryString"/> instance.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to add.</param>
+        /// <returns>
+        /// The <paramref name="other" /> instance if this instance does not have a value. Otherwise, this instance
+        /// after the copy operation.
+        /// </returns>
         public QueryString Add(QueryString other)
         {
             if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
@@ -185,6 +193,12 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(Value + "&" + other.Value.Substring(1));
         }
 
+        /// <summary>
+        /// Adds the name and value pair to the <see cref="QueryString"/> instance.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The <see cref="QueryString"/> instance after the operation has completed.</returns>
         public QueryString Add(string name, string value)
         {
             if (name == null)
@@ -202,6 +216,11 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="QueryString "/> is equal to the current <see cref="QueryString"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to compare the current instance with.</param>
+        /// <returns><see langword="true"/> if the specified value is equal to the current instance; otherwise, <see langword="false"/>.</returns>
         public bool Equals(QueryString other)
         {
             if (!HasValue && !other.HasValue)
@@ -211,6 +230,11 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(Value, other.Value, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Determines whether the specified value is equal to the current <see cref="QueryString"/>.
+        /// </summary>
+        /// <param name="obj">The <see cref="object"/> to compare the current instance with.</param>
+        /// <returns><see langword="true"/> if the specified value is equal to the current instance; otherwise, <see langword="false"/>.</returns>
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
@@ -220,21 +244,43 @@ namespace Microsoft.AspNetCore.Http
             return obj is QueryString && Equals((QueryString)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
             return (HasValue ? Value!.GetHashCode() : 0);
         }
 
+        /// <summary>
+        /// Determines if the two <see cref="QueryString"/> have the same value.
+        /// </summary>
+        /// <param name="left">The first instance to compare.</param>
+        /// <param name="right">The second instance to compare.</param>
+        /// <returns><see langword="true" /> if the two are the same, otherwise <see langword="false" />.</returns>
         public static bool operator ==(QueryString left, QueryString right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Determines if the two <see cref="QueryString"/> have the different values.
+        /// </summary>
+        /// <param name="left">The first instance to compare.</param>
+        /// <param name="right">The second instance to compare.</param>
+        /// <returns><see langword="true" /> if the two are different, otherwise <see langword="false" />.</returns>
         public static bool operator !=(QueryString left, QueryString right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Adds the contents of the two query strings.
+        /// </summary>
+        /// <param name="left">The first instance to add.</param>
+        /// <param name="right">The second instance to add.</param>
+        /// <returns>The result of adding the two.</returns>
         public static QueryString operator +(QueryString left, QueryString right)
         {
             return left.Add(right);
