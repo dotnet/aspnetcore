@@ -611,6 +611,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             while (_keepAlive)
             {
+                if (InitialExecutionContext is null)
+                {
+                    // If this is a first request on a non-Http2Connection, capture a clean ExecutionContext.
+                    InitialExecutionContext = ExecutionContext.Capture();
+                }
+                else
+                {
+                    // Clear any AsyncLocals set during the request; back to a clean state ready for next request
+                    // And/or reset to Http2Connection's ExecutionContext giving access to the connection logging scope
+                    // and any other AsyncLocals set by connection middleware.
+                    ExecutionContext.Restore(InitialExecutionContext);
+                }
+
                 BeginRequestProcessing();
 
                 var result = default(ReadResult);
@@ -627,19 +640,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // Connection finished, stop processing requests
                     return;
-                }
-
-                if (InitialExecutionContext is null)
-                {
-                    // If this is a first request on a non-Http2Connection, capture a clean ExecutionContext.
-                    InitialExecutionContext = ExecutionContext.Capture();
-                }
-                else
-                {
-                    // Clear any AsyncLocals set during the request; back to a clean state ready for next request
-                    // And/or reset to Http2Connection's ExecutionContext giving access to the connection logging scope
-                    // and any other AsyncLocals set by connection middleware.
-                    ExecutionContext.Restore(InitialExecutionContext);
                 }
 
                 var messageBody = CreateMessageBody();
