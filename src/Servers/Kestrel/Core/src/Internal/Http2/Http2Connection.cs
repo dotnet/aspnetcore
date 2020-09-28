@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
+            // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
             _initialExecutionContext = ExecutionContext.Capture();
 
             _frameWriter = new Http2FrameWriter(
