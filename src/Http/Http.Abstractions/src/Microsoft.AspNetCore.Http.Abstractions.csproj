@@ -14,8 +14,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-
-    <NoWarn />
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

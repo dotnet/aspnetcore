@@ -39,15 +39,15 @@ namespace Microsoft.AspNetCore.Http
         public abstract int LocalPort { get; set; }
 
         /// <summary>
-        /// Gets or sets client certificates associated with the connection.
+        /// Gets or sets the client certificate associated with the connection.
         /// </summary>
         public abstract X509Certificate2? ClientCertificate { get; set; }
 
         /// <summary>
-        /// Asynchronously retries the client certificate.
+        /// Asynchronously retrieves the client certificate.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
-        /// <returns>The task object representing the asynchronous operation.</returns>
+        /// <returns>The client certificate if available.</returns>
         public abstract Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken());
     }
 }

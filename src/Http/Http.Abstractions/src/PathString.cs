@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Http
             => ConvertFromString(s);
 
         /// <summary>
-        /// Implicitly creates a string frm the given <see cref="PathString"/>.
+        /// Implicitly creates an escaped string from the given <see cref="PathString"/>.
         /// </summary>
         /// <param name="path">A path to implicitly convert.</param>
         public static implicit operator string(PathString path)

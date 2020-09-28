@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Extension methods for <see cref="HttpResponse"/> to work with the 'Trailer' response header.
+    /// Extension methods for <see cref="HttpResponse"/> to work with response trailer headers.
     /// </summary>
     public static class ResponseTrailerExtensions
     {
