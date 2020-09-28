@@ -105,7 +105,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
         protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
-        protected ExecutionContext InitialExecutionContext { get; set; }
 
         public string ConnectionIdFeature { get; set; }
         public bool HasStartedConsumingRequestBody { get; set; }
@@ -611,17 +610,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             while (_keepAlive)
             {
-                if (InitialExecutionContext is null)
+                if (_context.InitialExecutionContext is null)
                 {
                     // If this is a first request on a non-Http2Connection, capture a clean ExecutionContext.
-                    InitialExecutionContext = ExecutionContext.Capture();
+                    _context.InitialExecutionContext = ExecutionContext.Capture();
                 }
                 else
                 {
                     // Clear any AsyncLocals set during the request; back to a clean state ready for next request
                     // And/or reset to Http2Connection's ExecutionContext giving access to the connection logging scope
                     // and any other AsyncLocals set by connection middleware.
-                    ExecutionContext.Restore(InitialExecutionContext);
+                    ExecutionContext.Restore(_context.InitialExecutionContext);
                 }
 
                 BeginRequestProcessing();

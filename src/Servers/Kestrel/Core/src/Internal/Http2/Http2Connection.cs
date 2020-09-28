@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
         private readonly HttpConnectionContext _context;
-        private readonly ExecutionContext _initialExecutionContext;
         private readonly Http2FrameWriter _frameWriter;
         private readonly Pipe _input;
         private readonly Task _inputTask;
@@ -85,8 +84,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
+
             // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
-            _initialExecutionContext = ExecutionContext.Capture();
+            _context.InitialExecutionContext = ExecutionContext.Capture();
 
             _frameWriter = new Http2FrameWriter(
                 context.Transport.Output,
@@ -629,8 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             return new Http2Stream<TContext>(
                 application,
-                CreateHttp2StreamContext(),
-                _initialExecutionContext);
+                CreateHttp2StreamContext());
         }
 
         private Http2StreamContext CreateHttp2StreamContext()
@@ -651,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ConnectionInputFlowControl = _inputFlowControl,
                 ConnectionOutputFlowControl = _outputFlowControl,
                 TimeoutControl = TimeoutControl,
+                InitialExecutionContext = _context.InitialExecutionContext,
             };
         }
 

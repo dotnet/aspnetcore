@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
-using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -13,11 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context, ExecutionContext initialExecutionContext) 
+        public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context) 
         {
             Initialize(context);
             _application = application;
-            InitialExecutionContext = initialExecutionContext;
         }
 
         public override void Execute()

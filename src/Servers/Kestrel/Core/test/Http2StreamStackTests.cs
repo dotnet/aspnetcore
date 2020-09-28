@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ClientPeerSettings = new Http2PeerSettings()
             };
 
-            return new Http2Stream<HttpContext>(new DummyApplication(), context, initialExecutionContext: null)
+            return new Http2Stream<HttpContext>(new DummyApplication(), context)
             {
                 DrainExpirationTicks = expirationTicks
             };
