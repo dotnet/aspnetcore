@@ -24,6 +24,13 @@ parameters:
   #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
   runAsPublic: false
 
+  # Optional: Enable running the source-build jobs to build repo from source
+  runSourceBuild: false
+
+  # Optional: Parameters for source-build template.
+  #           See /eng/common/templates/jobs/source-build.yml for options
+  sourceBuildParameters: []
+
 # Internal resources (telemetry, microbuild) can only be accessed from non-public projects,
 # and some (Microbuild) should only be applied to non-PR cases for internal builds.
 
@@ -43,6 +50,13 @@ jobs:
 
       name: ${{ job.job }}
 
+- ${{ if eq(parameters.runSourceBuild, true) }}:
+  - template: /eng/common/templates/jobs/source-build.yml
+    parameters:
+      allCompletedJobId: Source_Build_Complete
+      ${{ each parameter in parameters.sourceBuildParameters }}:
+        ${{ parameter.key }}: ${{ parameter.value }}
+
 - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
     - template: ../job/publish-build-assets.yml
@@ -55,6 +69,8 @@ jobs:
         - ${{ if eq(parameters.publishBuildAssetsDependsOn, '') }}:
           - ${{ each job in parameters.jobs }}:
             - ${{ job.job }}
+        - ${{ if eq(parameters.runSourceBuild, true) }}:
+          - Source_Build_Complete
         pool:
           vmImage: vs2017-win2016
         runAsPublic: ${{ parameters.runAsPublic }}
