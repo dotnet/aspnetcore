@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Extension methods for the IIS In-Process.
+    /// </summary>
     public static class WebHostBuilderIISExtensions
     {
         /// <summary>

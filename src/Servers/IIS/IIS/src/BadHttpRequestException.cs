@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {

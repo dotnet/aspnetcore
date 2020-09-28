@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     /// <summary>
-    /// Defaults to configure IIS with.
+    /// Defaults to configure IIS Out-Of-Process with.
     /// </summary>
     public class IISDefaults
     {

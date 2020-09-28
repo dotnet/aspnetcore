@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Server.IIS;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Options to configure IIS In-Process with.
+    /// </summary>
     public class IISServerOptions
     {
         /// <summary>

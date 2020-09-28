@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly bool _isWebsocketsSupported;
 
         /// <summary>
-        /// 
+        /// The middleware that enables IIS Out-Of-Process to work.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="loggerFactory"></param>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         /// <summary>
-        /// 
+        /// The middleware that enables IIS Out-Of-Process to work.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="loggerFactory"></param>
@@ -111,9 +111,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         /// <summary>
-        /// 
+        /// Invoke the middleware.
         /// </summary>
-        /// <param name="httpContext"></param>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <returns></returns>
         public async Task Invoke(HttpContext httpContext)
         {
