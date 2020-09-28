@@ -40,12 +40,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// <summary>
         /// The middleware that enables IIS Out-Of-Process to work.
         /// </summary>
-        /// <param name="next"></param>
-        /// <param name="loggerFactory"></param>
-        /// <param name="options"></param>
-        /// <param name="pairingToken"></param>
-        /// <param name="authentication"></param>
-        /// <param name="applicationLifetime"></param>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         // Can't break public API, so creating a second constructor to propagate the isWebsocketsSupported flag.
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -60,13 +60,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// <summary>
         /// The middleware that enables IIS Out-Of-Process to work.
         /// </summary>
-        /// <param name="next"></param>
-        /// <param name="loggerFactory"></param>
-        /// <param name="options"></param>
-        /// <param name="pairingToken"></param>
-        /// <param name="isWebsocketsSupported"></param>
-        /// <param name="authentication"></param>
-        /// <param name="applicationLifetime"></param>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="isWebsocketsSupported">Whether websockets are supported by IIS.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<IISOptions> options,
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// Invoke the middleware.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))

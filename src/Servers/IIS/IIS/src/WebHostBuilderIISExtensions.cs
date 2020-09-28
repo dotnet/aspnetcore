@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Hosting
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.
         /// The app will also be configured to capture startup errors.
         /// </summary>
-        /// <param name="hostBuilder"></param>
-        /// <returns></returns>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseIIS(this IWebHostBuilder hostBuilder)
         {
             if (hostBuilder == null)

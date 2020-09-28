@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.IIS
 {
     /// <summary>
-    /// Defaults to configure IIS In-Process with.
+    /// String constants used to configure IIS In-Process.
     /// </summary>
     public class IISServerDefaults
     {

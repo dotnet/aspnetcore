@@ -10,14 +10,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     /// <summary>
     /// The <see cref="IHostingStartup"/> to add IISIntegration to apps.
     /// </summary>
+    /// <remarks>
+    /// This API isn't meant to be used by user code.
+    /// </remarks>
     public class IISHostingStartup : IHostingStartup
     {
         /// <summary>
-        /// Configures the middleware pipeline.
-        /// </summary>
-        /// <remarks>
         /// Adds IISIntegration into the middleware pipeline.
-        /// </remarks>
+        /// </summary>
         /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
         public void Configure(IWebHostBuilder builder)
         {

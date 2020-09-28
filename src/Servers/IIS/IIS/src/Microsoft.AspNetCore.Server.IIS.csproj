@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -12,7 +12,8 @@
     <IsPackable>false</IsPackable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
-    <NoWarn>CA1416</NoWarn>
+    <NoWarn/>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

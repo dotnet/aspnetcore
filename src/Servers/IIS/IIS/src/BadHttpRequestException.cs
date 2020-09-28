@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+    ///<inheritdoc/>
     [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Reason = reason;
         }
 
+        ///<inheritdoc/>
         public new int StatusCode { get => base.StatusCode; }
 
         internal RequestRejectionReason Reason { get; }
