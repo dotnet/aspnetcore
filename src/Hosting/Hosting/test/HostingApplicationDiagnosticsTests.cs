@@ -345,6 +345,42 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
 
+        [Fact]
+        public void ActivityBaggagePreservesItemsOrder()
+        {
+            var diagnosticListener = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
+
+            diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
+                s =>
+                {
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"Request-Id", "ParentId1"},
+                    {"Correlation-Context", "Key1=value1, Key2=value2, Key1=value3"} // duplicated keys allowed by the contract
+                }
+            });
+            hostingApplication.CreateContext(features);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
+
+            var expectedBaggage = new []
+            {
+                KeyValuePair.Create("Key1","value1"),
+                KeyValuePair.Create("Key2","value2"),
+                KeyValuePair.Create("Key1","value3")
+            };
+
+            Assert.Equal(expectedBaggage, Activity.Current.Baggage);
+        }
 
         [Fact]
         public void ActivityTraceParentAndTraceStateFromHeaders()
