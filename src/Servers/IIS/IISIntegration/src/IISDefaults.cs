@@ -3,10 +3,22 @@
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
+    /// <summary>
+    /// Defaults to configure IIS with.
+    /// </summary>
     public class IISDefaults
     {
+        /// <summary>
+        /// Default authentication scheme, which is "Windows".
+        /// </summary>
         public const string AuthenticationScheme = "Windows";
+        /// <summary>
+        /// Default negotiate string, which is "Negotiate".
+        /// </summary>
         public const string Negotiate = "Negotiate";
+        /// <summary>
+        /// Default ntlm string, which is "NTLM".
+        /// </summary>
         public const string Ntlm = "NTLM";
     }
 }

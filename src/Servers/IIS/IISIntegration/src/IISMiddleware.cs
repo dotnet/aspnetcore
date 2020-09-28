@@ -17,6 +17,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
+    /// <summary>
+    /// The middleware that enables IIS Out-Of-Process to work.
+    /// </summary>
     public class IISMiddleware
     {
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
@@ -34,6 +37,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly bool _isWebsocketsSupported;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="loggerFactory"></param>
+        /// <param name="options"></param>
+        /// <param name="pairingToken"></param>
+        /// <param name="authentication"></param>
+        /// <param name="applicationLifetime"></param>
         // Can't break public API, so creating a second constructor to propagate the isWebsocketsSupported flag.
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -45,6 +57,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="loggerFactory"></param>
+        /// <param name="options"></param>
+        /// <param name="pairingToken"></param>
+        /// <param name="isWebsocketsSupported"></param>
+        /// <param name="authentication"></param>
+        /// <param name="applicationLifetime"></param>
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<IISOptions> options,
@@ -88,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _isWebsocketsSupported = isWebsocketsSupported;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
         public async Task Invoke(HttpContext httpContext)
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
