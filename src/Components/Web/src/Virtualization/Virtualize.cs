@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-            => $"height: {itemsInSpacer * _itemSize}px;";
+            => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;";
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
@@ -367,7 +368,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", $"height: {_itemSize}px;");
+            builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px;");
             builder.CloseElement();
         };
 
