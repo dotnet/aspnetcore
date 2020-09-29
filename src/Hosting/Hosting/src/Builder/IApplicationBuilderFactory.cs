@@ -6,8 +6,16 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Hosting.Builder
 {
+    /// <summary>
+    /// Provides an interface for implementing a factory that produces <see cref="IApplicationBuilder"/> instances.
+    /// </summary>
     public interface IApplicationBuilderFactory
     {
+        /// <summary>
+        /// Create a <see cref="IApplicationBuilder" /> builder given a <paramref name="serverFeatures" />
+        /// </summary>
+        /// <param name="serverFeatures">A <see cref="IFeatureCollection"/> of HTTP features.</param>
+        /// <returns>A <see cref="IApplicationBuilder"/> configured with <paramref name="serverFeatures"/>.</returns>
         IApplicationBuilder CreateBuilder(IFeatureCollection serverFeatures);
     }
 }

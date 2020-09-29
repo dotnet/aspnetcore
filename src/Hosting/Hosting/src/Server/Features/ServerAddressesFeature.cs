@@ -7,10 +7,19 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Hosting.Server.Features
 {
+    /// <summary>
+    /// Specifies the address used by the server.
+    /// </summary>
     public class ServerAddressesFeature : IServerAddressesFeature
     {
+        /// <summary>
+        /// A <see cref="ICollection{T}" /> of addresses used by the server.
+        /// </summary>
         public ICollection<string> Addresses { get; } = new List<string>();
 
+        /// <summary>
+        /// <c>true</c> to prefer URLs configured on the <see typeparamref="Microsoft.AspNetCore.Hosting.IWebHostBuilder"/>; otherwise <c>false</c>.
+        /// </summary>
         public bool PreferHostingUrls { get; set; }
     }
 }

@@ -33,6 +33,10 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         /// </summary>
         internal void Start() => OnStart(Array.Empty<string>());
 
+        /// <summary>
+        /// Executes lifecycle methods when ASP.NET Core starts.
+        /// </summary>
+        /// <param name="args">The command line arguments passed to the service.</param>
         protected sealed override void OnStart(string[] args)
         {
             OnStarting(args);
@@ -57,6 +61,9 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
                 });
         }
 
+        /// <summary>
+        /// Executes lifecycle methods when ASP.NET Core stops.
+        /// </summary>
         protected sealed override void OnStop()
         {
             _stopRequestedByWindows = true;
