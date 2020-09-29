@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Sets or remove a string value from the <see cref="Items"/> collection.
+        /// Set or remove a string value from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
         /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
