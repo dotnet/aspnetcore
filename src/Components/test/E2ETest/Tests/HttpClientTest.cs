@@ -134,9 +134,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             string WaitAndGetResponseText()
             {
-                new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                    driver => driver.FindElement(By.Id("response-text")) != null);
-                return app.FindElement(By.Id("response-text")).Text;
+                return Browser.Exists(By.Id("response-text")).Text;
             }
         }
 
@@ -150,9 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             _appElement.FindElement(By.Id("send-request")).Click();
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.Id("response-status")) != null);
-            _responseStatus = _appElement.FindElement(By.Id("response-status"));
+            _responseStatus = Browser.Exists(By.Id("response-status"));
             _responseBody = _appElement.FindElement(By.Id("response-body"));
             _responseHeaders = _appElement.FindElement(By.Id("response-headers"));
         }
