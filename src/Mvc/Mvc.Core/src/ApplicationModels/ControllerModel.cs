@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ControllerModel"/>.
+        /// </summary>
+        /// <param name="controllerType">The type of the controller.</param>
+        /// <param name="attributes">The attributes.</param>
         public ControllerModel(
             TypeInfo controllerType,
             IReadOnlyList<object> attributes)
@@ -41,6 +46,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ControllerModel"/>.
+        /// </summary>
+        /// <param name="other">The other controller model.</param>
         public ControllerModel(ControllerModel other)
         {
             if (other == null)
@@ -85,8 +94,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        /// <summary>
+        /// The application.
+        /// </summary>
         public ApplicationModel Application { get; set; }
 
+        /// <summary>
+        /// The attributes.
+        /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
         MemberInfo ICommonModel.MemberInfo => ControllerType;
@@ -103,8 +118,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public TypeInfo ControllerType { get; }
 
+        /// <summary>
+        /// The properties.
+        /// </summary>
         public IList<PropertyModel> ControllerProperties { get; }
 
+        /// <summary>
+        /// The filter metadata.
+        /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
@@ -127,6 +148,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public IDictionary<object, object> Properties { get; }
 
+        /// <summary>
+        /// The selector models.
+        /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
         /// <summary>
