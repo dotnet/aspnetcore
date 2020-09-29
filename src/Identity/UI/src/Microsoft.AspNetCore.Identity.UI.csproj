@@ -12,6 +12,7 @@
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
