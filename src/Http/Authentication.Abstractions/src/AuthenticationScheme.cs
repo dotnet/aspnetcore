@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication
     public class AuthenticationScheme
     {
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of <see cref="AuthenticationScheme"/>.
         /// </summary>
         /// <param name="name">The name for the authentication scheme.</param>
         /// <param name="displayName">The display name for the authentication scheme.</param>

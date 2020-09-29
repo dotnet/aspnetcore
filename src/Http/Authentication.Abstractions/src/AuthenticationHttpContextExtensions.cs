@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Authentication
     public static class AuthenticationHttpContextExtensions
     {
         /// <summary>
-        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/> scheme.
+        /// Authenticate the current request using the default authentication scheme.
+        /// The default authentication scheme can be configured using <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The <see cref="AuthenticateResult"/>.</returns>
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication
             context.AuthenticateAsync(scheme: null);
 
         /// <summary>
-        /// Extension method for authenticate.
+        /// Authenticate the current request using the specified scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -31,7 +32,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices.GetRequiredService<IAuthenticationService>().AuthenticateAsync(context, scheme);
 
         /// <summary>
-        /// Extension method for Challenge.
+        /// Challenge the current request using the specified scheme.
+        /// An authentication challenge can be issued when an unauthenticated user requests an endpoint that requires authentication.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -40,7 +42,9 @@ namespace Microsoft.AspNetCore.Authentication
             context.ChallengeAsync(scheme, properties: null);
 
         /// <summary>
-        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultChallengeScheme"/> scheme.
+        /// Challenge the current request using the default challenge scheme.
+        /// An authentication challenge can be issued when an unauthenticated user requests an endpoint that requires authentication.
+        /// The default challenge scheme can be configured using <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The task.</returns>
@@ -48,7 +52,9 @@ namespace Microsoft.AspNetCore.Authentication
             context.ChallengeAsync(scheme: null, properties: null);
 
         /// <summary>
-        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultChallengeScheme"/> scheme.
+        /// Challenge the current request using the default challenge scheme.
+        /// An authentication challenge can be issued when an unauthenticated user requests an endpoint that requires authentication.
+        /// The default challenge scheme can be configured using <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
@@ -57,7 +63,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.ChallengeAsync(scheme: null, properties: properties);
 
         /// <summary>
-        /// Extension method for Challenge.
+        /// Challenge the current request using the specified scheme.
+        /// An authentication challenge can be issued when an unauthenticated user requests an endpoint that requires authentication.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -67,7 +74,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices.GetRequiredService<IAuthenticationService>().ChallengeAsync(context, scheme, properties);
 
         /// <summary>
-        /// Extension method for Forbid.
+        /// Forbid the current request using the specified scheme.
+        /// Forbid is used when an authenticated user attempts to access a resource they are not permitted to access.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -76,7 +84,9 @@ namespace Microsoft.AspNetCore.Authentication
             context.ForbidAsync(scheme, properties: null);
 
         /// <summary>
-        /// Extension method for Forbid using the <see cref="AuthenticationOptions.DefaultForbidScheme"/> scheme..
+        /// Forbid the current request using the default forbid scheme.
+        /// Forbid is used when an authenticated user attempts to access a resource they are not permitted to access.
+        /// The default forbid scheme can be configured using <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The task.</returns>
@@ -84,7 +94,9 @@ namespace Microsoft.AspNetCore.Authentication
             context.ForbidAsync(scheme: null, properties: null);
 
         /// <summary>
-        /// Extension method for Forbid.
+        /// Forbid the current request using the default forbid scheme.
+        /// Forbid is used when an authenticated user attempts to access a resource they are not permitted to access.
+        /// The default forbid scheme can be configured using <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
@@ -93,7 +105,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.ForbidAsync(scheme: null, properties: properties);
 
         /// <summary>
-        /// Extension method for Forbid.
+        /// Forbid the current request using the specified scheme.
+        /// Forbid is used when an authenticated user attempts to access a resource they are not permitted to access.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -103,7 +116,7 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices.GetRequiredService<IAuthenticationService>().ForbidAsync(context, scheme, properties);
 
         /// <summary>
-        /// Extension method for SignIn.
+        /// Sign in a principal for the specified scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -113,7 +126,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.SignInAsync(scheme, principal, properties: null);
 
         /// <summary>
-        /// Extension method for SignIn using the <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
+        /// Sign in a principal for the default authentication scheme.
+        /// The default scheme for signing in can be configured using <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="principal">The user.</param>
@@ -122,7 +136,8 @@ namespace Microsoft.AspNetCore.Authentication
             context.SignInAsync(scheme: null, principal: principal, properties: null);
 
         /// <summary>
-        /// Extension method for SignIn using the <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
+        /// Sign in a principal for the default authentication scheme.
+        /// The default scheme for signing in can be configured using <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="principal">The user.</param>
@@ -132,7 +147,7 @@ namespace Microsoft.AspNetCore.Authentication
             context.SignInAsync(scheme: null, principal: principal, properties: properties);
 
         /// <summary>
-        /// Extension method for SignIn.
+        /// Sign in a principal for the specified scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -143,14 +158,16 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignInAsync(context, scheme, principal, properties);
 
         /// <summary>
-        /// Extension method for SignOut using the <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// Sign out a principal for the default authentication scheme.
+        /// The default scheme for signing out can be configured using <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The task.</returns>
         public static Task SignOutAsync(this HttpContext context) => context.SignOutAsync(scheme: null, properties: null);
 
         /// <summary>
-        /// Extension method for SignOut using the <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// Sign out a principal for the default authentication scheme.
+        /// The default scheme for signing out can be configured using <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
@@ -158,7 +175,7 @@ namespace Microsoft.AspNetCore.Authentication
         public static Task SignOutAsync(this HttpContext context, AuthenticationProperties? properties) => context.SignOutAsync(scheme: null, properties: properties);
 
         /// <summary>
-        /// Extension method for SignOut.
+        /// Sign out a principal for the specified scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -166,7 +183,7 @@ namespace Microsoft.AspNetCore.Authentication
         public static Task SignOutAsync(this HttpContext context, string? scheme) => context.SignOutAsync(scheme, properties: null);
 
         /// <summary>
-        /// Extension method for SignOut.
+        /// Sign out a principal for the specified scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -176,21 +193,22 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignOutAsync(context, scheme, properties);
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the specified scheme and returns the value for the token.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
+        /// <returns>The value of the token if present.</returns>
         public static Task<string?> GetTokenAsync(this HttpContext context, string? scheme, string tokenName) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().GetTokenAsync(context, scheme, tokenName);
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the default authentication scheme and returns the value for the token.
+        /// The default authentication scheme can be configured using <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
+        /// <returns>The value of the token if present.</returns>
         public static Task<string?> GetTokenAsync(this HttpContext context, string tokenName) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().GetTokenAsync(context, tokenName);
     }
