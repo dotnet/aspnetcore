@@ -201,6 +201,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <inheritdoc />
         public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
             => Task.FromResult(_schemesCopy);
     }
