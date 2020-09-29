@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods on <see cref="IEndpointRouteBuilder"/> to add routes to <see cref="Hub"/>s.
+    /// </summary>
     public static class HubEndpointRouteBuilderExtensions
     {
         private const DynamicallyAccessedMemberTypes HubAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods;
