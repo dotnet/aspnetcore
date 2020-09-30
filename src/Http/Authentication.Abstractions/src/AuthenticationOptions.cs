@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Options to configure authentication.
+    /// </summary>
     public class AuthenticationOptions
     {
         private readonly IList<AuthenticationSchemeBuilder> _schemes = new List<AuthenticationSchemeBuilder>();
@@ -93,7 +96,8 @@ namespace Microsoft.AspNetCore.Authentication
         public string? DefaultForbidScheme { get; set; }
 
         /// <summary>
-        /// If true, SignIn should throw if attempted with a ClaimsPrincipal.Identity.IsAuthenticated = false.
+        /// If true, SignIn should throw if attempted with a user is not authenticated.
+        /// A user is considered authenticated if <see cref="ClaimsIdentity.IsAuthenticated"/> returns <see langword="true" /> for the <see cref="ClaimsPrincipal"/> associated with the HTTP request.
         /// </summary>
         public bool RequireAuthenticatedSignIn { get; set; } = true;
     }
