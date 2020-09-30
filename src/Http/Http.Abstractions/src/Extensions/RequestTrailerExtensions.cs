@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="request">The <see cref="HttpRequest"/>.</param>
         /// <param name="trailerName">The trailer header to read.</param>
+        <returns>The requested trailed header value.</returns>
         public static StringValues GetTrailer(this HttpRequest request, string trailerName)
         {
             var feature = request.HttpContext.Features.Get<IHttpRequestTrailersFeature>();

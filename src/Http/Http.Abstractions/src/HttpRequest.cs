@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Reads the request body if it is a form.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that on completion returns the <see cref="IFormCollection"/>.</returns>
+        /// <returns>The <see cref="IFormCollection"/>.</returns>
         public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
 
         /// <summary>

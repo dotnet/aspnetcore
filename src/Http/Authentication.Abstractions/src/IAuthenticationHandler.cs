@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="scheme">The <see cref="AuthenticationScheme"/> scheme.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         Task InitializeAsync(AuthenticationScheme scheme, HttpContext context);
 
         /// <summary>
@@ -29,14 +28,12 @@ namespace Microsoft.AspNetCore.Authentication
         /// Challenge behavior.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         Task ChallengeAsync(AuthenticationProperties? properties);
 
         /// <summary>
         /// Forbid behavior.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
         Task ForbidAsync(AuthenticationProperties? properties);
     }
 }

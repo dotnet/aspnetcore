@@ -144,7 +144,6 @@ namespace Microsoft.AspNetCore.Http
         /// Flush any remaining response headers, data, or trailers.
         /// This may throw if the response is in an invalid state such as a Content-Length mismatch.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual Task CompleteAsync() { throw new NotImplementedException(); }
     }
 }
