@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly IServiceProviderFactory<TBuilder> _factory;
 
         /// <summary>
-        ///
+        /// Constructor for StartupBase class.
         /// </summary>
-        /// <param name="factory"></param>
+        /// <param name="factory">A factory used to generate <see cref="IServiceProvider"/> instances.</param>
         public StartupBase(IServiceProviderFactory<TBuilder> factory)
         {
             _factory = factory;

@@ -12,14 +12,10 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
     /// </summary>
     public class ServerAddressesFeature : IServerAddressesFeature
     {
-        /// <summary>
-        /// An <see cref="ICollection{T}" /> of addresses used by the server.
-        /// </summary>
+        /// <inheritdoc />
         public ICollection<string> Addresses { get; } = new List<string>();
 
-        /// <summary>
-        /// <c>true</c> to prefer URLs configured on the <see typeparamref="Microsoft.AspNetCore.Hosting.IWebHostBuilder"/>; otherwise <c>false</c>.
-        /// </summary>
+        /// <inheritdoc />
         public bool PreferHostingUrls { get; set; }
     }
 }
