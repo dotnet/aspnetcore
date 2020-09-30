@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// </summary>
     internal sealed class Http1UpgradeMessageBody : Http1MessageBody
     {
-        public Http1UpgradeMessageBody(Http1Connection context)
-            : base(context)
+        public Http1UpgradeMessageBody(Http1Connection context, bool keepAlive)
+            : base(context, keepAlive)
         {
             RequestUpgrade = true;
         }
