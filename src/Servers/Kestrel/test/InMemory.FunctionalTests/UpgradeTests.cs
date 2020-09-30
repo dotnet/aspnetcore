@@ -343,5 +343,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await appCompletedTcs.Task.DefaultTimeout();
             }
         }
+
+        [Fact]
+        public async Task DoesNotCloseConnectionWithout101Response()
+        {
+            var requestCount = 0;
+
+            await using (var server = new TestServer(async context =>
+            {
+                if (requestCount++ > 0)
+                {
+                    await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                }
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
     }
 }
