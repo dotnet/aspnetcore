@@ -407,6 +407,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
+        /// <inheritdoc/>
         public override IReadOnlyList<ModelMetadata> BoundConstructorParameters => _details.BoundConstructorParameters;
 
         /// <inheritdoc />
@@ -561,6 +562,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public override Action<object, object> PropertySetter => _details.PropertySetter;
 
+        /// <inheritdoc/>
         public override Func<object[], object> BoundConstructorInvoker => _details.BoundConstructorInvoker;
 
         internal DefaultMetadataDetails Details => _details;

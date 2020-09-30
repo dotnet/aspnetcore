@@ -9,10 +9,19 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// Cache for <see cref="IClientModelValidator"/>s.
+    /// </summary>
     public class ClientValidatorCache
     {
         private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
 
+        /// <summary>
+        /// Gets the <see cref="IClientModelValidator"/> for the metadata from the cache, using the validatorProvider to create when needed.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> being validated.</param>
+        /// <param name="validatorProvider">The <see cref="IClientModelValidatorProvider"/> which will be used to create validators when needed.</param>
+        /// <returns>The list of <see cref="IClientModelValidator"/>s.</returns>
         public IReadOnlyList<IClientModelValidator> GetValidators(ModelMetadata metadata, IClientModelValidatorProvider validatorProvider)
         {
             if (metadata.MetadataKind == ModelMetadataKind.Property &&

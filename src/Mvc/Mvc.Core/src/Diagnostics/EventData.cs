@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
+        /// <summary>
+        /// A struct that represents an Enumerator
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
         {
             private readonly EventData _eventData;
@@ -47,6 +50,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
 
             private int _index;
 
+            /// <summary>
+            /// Current keyvalue pair.
+            /// </summary>
             public KeyValuePair<string, object> Current { get; private set; }
 
             internal Enumerator(EventData eventData)
@@ -57,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
                 Current = default;
             }
 
+            /// <inheritdoc/>
             public bool MoveNext()
             {
                 var index = _index + 1;
@@ -71,6 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
                 return true;
             }
 
+            /// <inheritdoc/>
             public void Dispose() { }
             object IEnumerator.Current => Current;
             void IEnumerator.Reset() => throw new NotSupportedException();
