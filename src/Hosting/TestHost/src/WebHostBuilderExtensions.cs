@@ -13,8 +13,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost
 {
+    /// <summary>
+    /// Contains extensions for configuring the <see cref="IWebHostBuilder" /> instance.
+    /// </summary>
     public static class WebHostBuilderExtensions
     {
+        /// <summary>
+        /// Enables the <see cref="TestServer" /> service.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseTestServer(this IWebHostBuilder builder)
         {
             return builder.ConfigureServices(services =>
@@ -44,6 +52,12 @@ namespace Microsoft.AspNetCore.TestHost
             return host.GetTestServer().CreateClient();
         }
 
+        /// <summary>
+        /// Configures the <see cref="IWebHostBuilder" /> instance with the services provided in <paramref name="servicesConfiguration" />.
+        /// </summary>
+        /// <param name="webHostBuilder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="servicesConfiguration">An <see cref="Action"/> that registers services onto the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)
         {
             if (webHostBuilder == null)
@@ -73,6 +87,13 @@ namespace Microsoft.AspNetCore.TestHost
             return webHostBuilder;
         }
 
+        /// <summary>
+        /// Configures the <see cref="IWebHostBuilder" /> instance with the services provided in <paramref name="servicesConfiguration" />.
+        /// </summary>
+        /// <param name="webHostBuilder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="servicesConfiguration">An <see cref="Action"/> that registers services onto the <typeparamref name="TContainer"/>.</param>
+        /// <typeparam name="TContainer">A collection of service descriptors.</typeparam>
+        /// <returns></returns>
         public static IWebHostBuilder ConfigureTestContainer<TContainer>(this IWebHostBuilder webHostBuilder, Action<TContainer> servicesConfiguration)
         {
             if (webHostBuilder == null)
@@ -94,6 +115,13 @@ namespace Microsoft.AspNetCore.TestHost
             return webHostBuilder;
         }
 
+        /// <summary>
+        /// Sets the content root of relative to the <paramref name="solutionRelativePath" />.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="solutionRelativePath">The directory of the solution file.</param>
+        /// <param name="solutionName">The name of the solution file to make the content root relative to.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
             this IWebHostBuilder builder,
@@ -103,6 +131,14 @@ namespace Microsoft.AspNetCore.TestHost
             return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
         }
 
+        /// <summary>
+        /// Sets the content root of relative to the <paramref name="solutionRelativePath" />.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="solutionRelativePath">The directory of the solution file.</param>
+        /// <param name="applicationBasePath">The root of the app's directory.</param>
+        /// <param name="solutionName">The name of the solution file to make the content root relative to.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
             this IWebHostBuilder builder,
