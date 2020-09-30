@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Contains methods to verify the request protocol version of an HTTP request. 
+    /// Contains methods to verify the request protocol version of an HTTP request.
     /// </summary>
     public static class HttpProtocol
     {
@@ -18,13 +18,26 @@ namespace Microsoft.AspNetCore.Http
         // and allow us to optimize comparisons when these constants are used.
 
         // Please do NOT change these to 'const'
+
+        /// <summary>
+        /// Constant for HTTP protocol version 1.0.
+        /// </summary>
         public static readonly string Http10 = "HTTP/1.0";
+        /// <summary>
+        /// Constant for HTTP protocol version 1.1.
+        /// </summary>
         public static readonly string Http11 = "HTTP/1.1";
+        /// <summary>
+        /// Constant for HTTP protocol version 2.
+        /// </summary>
         public static readonly string Http2 = "HTTP/2";
+        /// <summary>
+        /// Constant for HTTP protcol version 3.
+        /// </summary>
         public static readonly string Http3 = "HTTP/3";
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request protocol is HTTP/1.0. 
+        /// Returns a value that indicates if the HTTP request protocol is HTTP/1.0.
         /// </summary>
         /// <param name="protocol">The HTTP request protocol.</param>
         /// <returns>
@@ -36,7 +49,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request protocol is HTTP/1.1. 
+        /// Returns a value that indicates if the HTTP request protocol is HTTP/1.1.
         /// </summary>
         /// <param name="protocol">The HTTP request protocol.</param>
         /// <returns>
@@ -48,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request protocol is HTTP/2. 
+        /// Returns a value that indicates if the HTTP request protocol is HTTP/2.
         /// </summary>
         /// <param name="protocol">The HTTP request protocol.</param>
         /// <returns>
@@ -60,7 +73,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request protocol is HTTP/3. 
+        /// Returns a value that indicates if the HTTP request protocol is HTTP/3.
         /// </summary>
         /// <param name="protocol">The HTTP request protocol.</param>
         /// <returns>

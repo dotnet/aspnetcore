@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Contains methods to verify the request method of an HTTP request. 
+    /// Contains methods to verify the request method of an HTTP request.
     /// </summary>
     public static class HttpMethods
     {
@@ -18,18 +18,45 @@ namespace Microsoft.AspNetCore.Http
         // and allow us to optimize comparisons when these constants are used.
 
         // Please do NOT change these to 'const'
+        /// <summary>
+        /// Constant for HTTP "CONNECT" method.
+        /// </summary>
         public static readonly string Connect = "CONNECT";
+        /// <summary>
+        /// Constant for HTTP "DELETE" method.
+        /// </summary>
         public static readonly string Delete = "DELETE";
+        /// <summary>
+        /// Constant for HTTP "GET" method.
+        /// </summary>
         public static readonly string Get = "GET";
+        /// <summary>
+        /// Constant for HTTP "HEAD" method.
+        /// </summary>
         public static readonly string Head = "HEAD";
+        /// <summary>
+        /// Constant for HTTP "OPTIONS" method.
+        /// </summary>
         public static readonly string Options = "OPTIONS";
+        /// <summary>
+        /// Constant for HTTP "PATCH" method.
+        /// </summary>
         public static readonly string Patch = "PATCH";
+        /// <summary>
+        /// Constant for HTTP "POST" method.
+        /// </summary>
         public static readonly string Post = "POST";
+        /// <summary>
+        /// Constant for HTTP "PUT" method.
+        /// </summary>
         public static readonly string Put = "PUT";
+        /// <summary>
+        /// Constant for HTTP "TRACE" method.
+        /// </summary>
         public static readonly string Trace = "TRACE";
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is CONNECT. 
+        /// Returns a value that indicates if the HTTP request method is CONNECT.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -41,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is DELETE. 
+        /// Returns a value that indicates if the HTTP request method is DELETE.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -53,7 +80,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is GET. 
+        /// Returns a value that indicates if the HTTP request method is GET.
         /// </summary>
         /// <param name="method">The  HTTP request method.</param>
         /// <returns>
@@ -65,7 +92,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is HEAD. 
+        /// Returns a value that indicates if the HTTP request method is HEAD.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -77,7 +104,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is OPTIONS. 
+        /// Returns a value that indicates if the HTTP request method is OPTIONS.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -89,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is PATCH. 
+        /// Returns a value that indicates if the HTTP request method is PATCH.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -101,7 +128,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is POST. 
+        /// Returns a value that indicates if the HTTP request method is POST.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -113,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is PUT. 
+        /// Returns a value that indicates if the HTTP request method is PUT.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -125,7 +152,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is TRACE. 
+        /// Returns a value that indicates if the HTTP request method is TRACE.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -156,7 +183,7 @@ namespace Microsoft.AspNetCore.Http
         };
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP methods are the same. 
+        /// Returns a value that indicates if the HTTP methods are the same.
         /// </summary>
         /// <param name="methodA">The first HTTP request method to compare.</param>
         /// <param name="methodB">The second HTTP request method to compare.</param>
