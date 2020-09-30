@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Endpoints[459] = CreateEndpoint("/providers/Microsoft.ADHybridHealthService/services/{serviceName}/metricmetadata/{metricName}", "GET");
             Endpoints[460] = CreateEndpoint("/providers/Microsoft.ADHybridHealthService/services/{serviceName}/servicemembers/{serviceMemberId}", "DELETE");
             Endpoints[461] = CreateEndpoint("/providers/Microsoft.ADHybridHealthService/services/{serviceName}/servicemembers/{serviceMemberId}", "GET");
-            Endpoints[462] = CreateEndpoint("/providers/Microsoft.ADHybridHealthService/services/{serviceName}/TenantWhitelisting/{featureName}", "GET");
+            Endpoints[462] = CreateEndpoint("/providers/Microsoft.ADHybridHealthService/services/{serviceName}/TenantAllowlisting/{featureName}", "GET");
             Endpoints[463] = CreateEndpoint("/providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}", "GET");
             Endpoints[464] = CreateEndpoint("/providers/Microsoft.Capacity/reservationOrders/{reservationOrderId}/reservations/{reservationId}", "PATCH");
             Endpoints[465] = CreateEndpoint("/providers/Microsoft.Intune/locations/{hostName}/androidPolicies/{policyName}", "GET");
@@ -7030,7 +7030,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Requests[462] = new DefaultHttpContext();
             Requests[462].RequestServices = CreateServices();
             Requests[462].Request.Method = HttpMethods.GetCanonicalizedValue("GET");
-            Requests[462].Request.Path = "/providers/Microsoft.ADHybridHealthService/services/15c9d56b-4a/TenantWhitelisting/57c79c6d-29";
+            Requests[462].Request.Path = "/providers/Microsoft.ADHybridHealthService/services/15c9d56b-4a/TenantAllowlisting/57c79c6d-29";
             Requests[463] = new DefaultHttpContext();
             Requests[463].RequestServices = CreateServices();
             Requests[463].Request.Method = HttpMethods.GetCanonicalizedValue("GET");
