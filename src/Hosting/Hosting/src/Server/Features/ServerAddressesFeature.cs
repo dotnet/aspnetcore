@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
     public class ServerAddressesFeature : IServerAddressesFeature
     {
         /// <summary>
-        /// A <see cref="ICollection{T}" /> of addresses used by the server.
+        /// An <see cref="ICollection{T}" /> of addresses used by the server.
         /// </summary>
         public ICollection<string> Addresses { get; } = new List<string>();
 

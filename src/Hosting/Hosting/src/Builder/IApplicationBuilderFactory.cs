@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Hosting.Builder
     public interface IApplicationBuilderFactory
     {
         /// <summary>
-        /// Create a <see cref="IApplicationBuilder" /> builder given a <paramref name="serverFeatures" />
+        /// Create an <see cref="IApplicationBuilder" /> builder given a <paramref name="serverFeatures" />
         /// </summary>
-        /// <param name="serverFeatures">A <see cref="IFeatureCollection"/> of HTTP features.</param>
-        /// <returns>A <see cref="IApplicationBuilder"/> configured with <paramref name="serverFeatures"/>.</returns>
+        /// <param name="serverFeatures">An <see cref="IFeatureCollection"/> of HTTP features.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/> configured with <paramref name="serverFeatures"/>.</returns>
         IApplicationBuilder CreateBuilder(IFeatureCollection serverFeatures);
     }
 }

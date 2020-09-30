@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.TestHost
     public static class WebHostBuilderFactory
     {
         /// <summary>
-        /// Resolves a <see cref="IWebHostBuilder" /> defined in the entry point of an assembly.
+        /// Resolves an <see cref="IWebHostBuilder" /> defined in the entry point of an assembly.
         /// </summary>
-        /// <param name="assembly">The assembly to look for a <see cref="IWebHostBuilder"/> in.</param>
+        /// <param name="assembly">The assembly to look for an <see cref="IWebHostBuilder"/> in.</param>
         /// <param name="args">The arguments to use when creating the <see cref="IWebHostBuilder"/> instance.</param>
-        /// <returns>A <see cref="IWebHostBuilder"/> instance retrieved from the assembly in <paramref name="assembly"/>.</returns>
+        /// <returns>An <see cref="IWebHostBuilder"/> instance retrieved from the assembly in <paramref name="assembly"/>.</returns>
         public static IWebHostBuilder CreateFromAssemblyEntryPoint(Assembly assembly, string[] args)
         {
             var factory = HostFactoryResolver.ResolveWebHostBuilderFactory<IWebHostBuilder>(assembly);
@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// Resolves a <see cref="IWebHostBuilder" /> defined in an assembly where <typeparamref name="T"/> is declared.
+        /// Resolves an <see cref="IWebHostBuilder" /> defined in an assembly where <typeparamref name="T"/> is declared.
         /// </summary>
         /// <param name="args">The arguments to use when creating the <see cref="IWebHostBuilder"/> instance.</param>
         /// <typeparam name="T">Type contained in the target assembly</typeparam>
-        /// <returns>A <see cref="IWebHostBuilder"/> instance retrieved from the assembly.</returns>
+        /// <returns>An <see cref="IWebHostBuilder"/> instance retrieved from the assembly.</returns>
         public static IWebHostBuilder CreateFromTypesAssemblyEntryPoint<T>(string[] args) =>
             CreateFromAssemblyEntryPoint(typeof(T).Assembly, args);
     }

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Creates a <see cref="IServiceProvider" /> instance for a given <see cref="ConfigureServices(IServiceCollection)" />.
+        /// Creates an <see cref="IServiceProvider" /> instance for a given <see cref="ConfigureServices(IServiceCollection)" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="IServiceProvider"/>.</returns>
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Creates a <see cref="IServiceProvider" /> instance for a given <see cref="IServiceCollection" />.
+        /// Creates an <see cref="IServiceProvider" /> instance for a given <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="IServiceProvider"/>.</returns>
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Configures services onto a container.
+        /// Sets up the service container.
         /// </summary>
         /// <param name="builder">The builder associated with the container to configure.</param>
         public virtual void ConfigureContainer(TBuilder builder)

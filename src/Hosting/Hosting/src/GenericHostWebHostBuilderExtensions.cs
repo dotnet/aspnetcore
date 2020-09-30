@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Contains extensions for a <see cref="IHostBuilder"/>.
+    /// Contains extensions for an <see cref="IHostBuilder"/>.
     /// </summary>
     public static class GenericHostWebHostBuilderExtensions
     {

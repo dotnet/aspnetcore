@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// Gets or sets the base address associated with the test server. Defaults to http://localhost/.
+        /// Gets or sets the base address associated with the HttpClient returned by the test server. Defaults to http://localhost/.
         /// </summary>
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.TestHost
         public IServiceProvider Services { get; }
 
         /// <summary>
-        /// Gets the collection of HTTP features associated with the test server.
+        /// Gets the collection of server features associated with the test server.
         /// </summary>
         public IFeatureCollection Features { get; }
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses to the test server.
+        /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
         /// </summary>
         public HttpMessageHandler CreateHandler()
         {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// Creates a <see cref="HttpClient" /> for processing HTTP requests/responses to the test server.
+        /// Creates a <see cref="HttpClient" /> for processing HTTP requests/responses with the test server.
         /// </summary>
         public HttpClient CreateClient()
         {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// Creates a <see cref="WebSocketClient" /> for interacting with the
+        /// Creates a <see cref="WebSocketClient" /> for interacting with the test server.
         /// </summary>
         public WebSocketClient CreateWebSocketClient()
         {

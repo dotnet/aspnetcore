@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.Builder
         private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
-        /// Initialize a new factory instance with a <see cref="IServiceProvider" />.
+        /// Initialize a new factory instance with an <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> used to resolve dependencies and initialize components.</param>
         public ApplicationBuilderFactory(IServiceProvider serviceProvider)
@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Hosting.Builder
         }
 
         /// <summary>
-        /// Create a <see cref="IApplicationBuilder" /> builder given a <paramref name="serverFeatures" />.
+        /// Create an <see cref="IApplicationBuilder" /> builder given a <paramref name="serverFeatures" />.
         /// </summary>
-        /// <param name="serverFeatures">A <see cref="IFeatureCollection"/> of HTTP features.</param>
-        /// <returns>A <see cref="IApplicationBuilder"/> configured with <paramref name="serverFeatures"/>.</returns>
+        /// <param name="serverFeatures">An <see cref="IFeatureCollection"/> of HTTP features.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/> configured with <paramref name="serverFeatures"/>.</returns>
         public IApplicationBuilder CreateBuilder(IFeatureCollection serverFeatures)
         {
             return new ApplicationBuilder(_serviceProvider, serverFeatures);

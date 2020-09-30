@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Builder;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Provides an interface for extending the middleware pipeline with new Configure methods.
+    /// Provides an interface for extending the middleware pipeline with new Configure methods. <see cref="IStartupFilter" /> can be used to add defaults to the beginning or end of the pipeline without having to make the app author explicitly register middleware. 
     /// </summary>
     public interface IStartupFilter
     {

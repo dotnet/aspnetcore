@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Contains extensions for managing the lifecycle of a <see cref="IWebHost"/>.
+    /// Contains extensions for managing the lifecycle of an <see cref="IWebHost"/>.
     /// </summary>
     public static class WebHostExtensions
     {
