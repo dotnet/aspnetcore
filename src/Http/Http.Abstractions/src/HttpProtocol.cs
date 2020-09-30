@@ -20,19 +20,19 @@ namespace Microsoft.AspNetCore.Http
         // Please do NOT change these to 'const'
 
         /// <summary>
-        /// Constant for HTTP protocol version 1.0.
+        ///  HTTP protocol version 1.0.
         /// </summary>
         public static readonly string Http10 = "HTTP/1.0";
         /// <summary>
-        /// Constant for HTTP protocol version 1.1.
+        ///  HTTP protocol version 1.1.
         /// </summary>
         public static readonly string Http11 = "HTTP/1.1";
         /// <summary>
-        /// Constant for HTTP protocol version 2.
+        ///  HTTP protocol version 2.
         /// </summary>
         public static readonly string Http2 = "HTTP/2";
         /// <summary>
-        /// Constant for HTTP protcol version 3.
+        ///  HTTP protcol version 3.
         /// </summary>
         public static readonly string Http3 = "HTTP/3";
 

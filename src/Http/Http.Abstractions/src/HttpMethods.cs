@@ -19,39 +19,39 @@ namespace Microsoft.AspNetCore.Http
 
         // Please do NOT change these to 'const'
         /// <summary>
-        /// Constant for HTTP "CONNECT" method.
+        /// HTTP "CONNECT" method.
         /// </summary>
         public static readonly string Connect = "CONNECT";
         /// <summary>
-        /// Constant for HTTP "DELETE" method.
+        /// HTTP "DELETE" method.
         /// </summary>
         public static readonly string Delete = "DELETE";
         /// <summary>
-        /// Constant for HTTP "GET" method.
+        /// HTTP "GET" method.
         /// </summary>
         public static readonly string Get = "GET";
         /// <summary>
-        /// Constant for HTTP "HEAD" method.
+        /// HTTP "HEAD" method.
         /// </summary>
         public static readonly string Head = "HEAD";
         /// <summary>
-        /// Constant for HTTP "OPTIONS" method.
+        /// HTTP "OPTIONS" method.
         /// </summary>
         public static readonly string Options = "OPTIONS";
         /// <summary>
-        /// Constant for HTTP "PATCH" method.
+        /// HTTP "PATCH" method.
         /// </summary>
         public static readonly string Patch = "PATCH";
         /// <summary>
-        /// Constant for HTTP "POST" method.
+        /// HTTP "POST" method.
         /// </summary>
         public static readonly string Post = "POST";
         /// <summary>
-        /// Constant for HTTP "PUT" method.
+        /// HTTP "PUT" method.
         /// </summary>
         public static readonly string Put = "PUT";
         /// <summary>
-        /// Constant for HTTP "TRACE" method.
+        /// HTTP "TRACE" method.
         /// </summary>
         public static readonly string Trace = "TRACE";
 
