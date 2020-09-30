@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    /// <summary>
+    /// A <see cref="IUrlHelper"/> that 
+    /// </summary>
     public abstract class UrlHelperBase : IUrlHelper
     {
         // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
@@ -20,6 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Perf: Reuse the RouteValueDictionary across multiple calls of Action for this UrlHelper
         private readonly RouteValueDictionary _routeValueDictionary;
 
+        /// <summary>
+        /// Initializes an instance of a <see cref="UrlHelperBase"/>
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         protected UrlHelperBase(ActionContext actionContext)
         {
             if (actionContext == null)
@@ -101,7 +108,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-
         /// <inheritdoc />
         public virtual string Content(string contentPath)
         {
@@ -138,6 +144,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public abstract string RouteUrl(UrlRouteContext routeContext);
 
+        /// <summary>
+        /// Gets a <see cref="RouteValuesAddress"/> using the specified values.
+        /// </summary>
+        /// <param name="values">The values to use.</param>
+        /// <returns>A <see cref="RouteValueDictionary"/> with the specified values.</returns>
         protected RouteValueDictionary GetValuesDictionary(object values)
         {
             // Perf: RouteValueDictionary can be cast to IDictionary<string, object>, but it is
@@ -167,6 +178,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new RouteValueDictionary(values);
         }
 
+        /// <summary>
+        /// Generate a url using the specified values.
+        /// </summary>
+        /// <param name="protocol">The protocol.</param>
+        /// <param name="host">The host.</param>
+        /// <param name="virtualPath">The virtual path.</param>
+        /// <param name="fragment">The fragment.</param>
+        /// <returns></returns>
         protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment)
         {
             if (virtualPath == null)

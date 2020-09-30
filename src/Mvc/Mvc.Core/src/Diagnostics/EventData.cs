@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,11 +7,26 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
+    /// <summary>
+    /// A base class that for an event.
+    /// </summary>
     public abstract class EventData : IReadOnlyList<KeyValuePair<string, object>>
     {
+        /// <summary>
+        /// The namespace of the event.
+        /// </summary>
         protected const string EventNamespace = "Microsoft.AspNetCore.Mvc.";
 
+        /// <summary>
+        /// The event count.
+        /// </summary>
         protected abstract int Count { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         protected abstract KeyValuePair<string, object> this[int index] { get; }
 
         int IReadOnlyCollection<KeyValuePair<string, object>>.Count => Count;
