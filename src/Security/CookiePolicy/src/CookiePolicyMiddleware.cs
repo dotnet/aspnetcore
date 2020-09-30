@@ -53,8 +53,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
         /// <summary>
         /// Invokes the middleware.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The <see cref="HttpContext" />.</param>
         public Task Invoke(HttpContext context)
         {
             var feature = context.Features.Get<IResponseCookiesFeature>() ?? new ResponseCookiesFeature(context.Features);
