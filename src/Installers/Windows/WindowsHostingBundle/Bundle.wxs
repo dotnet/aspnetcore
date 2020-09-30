@@ -19,8 +19,10 @@
         <RelatedBundle Action="Upgrade" Id="{EA47395A-BC9B-3ECC-8229-229BC9528DF6}"/>
         <?endif?>
 
-        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
         <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
+        <!--'Microsoft .NET Core 3.1.9 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{E4913286-9840-380A-8743-3DF839147FF0}"/>
         <!--'Microsoft .NET Core 3.1.8 - Windows Server Hosting'-->
         <RelatedBundle Action="Upgrade" Id="{81D96996-6F29-3BAC-82C6-9156FE1BD5FB}"/>
         <!--'Microsoft .NET Core 3.1.7 - Windows Server Hosting'-->

@@ -24,9 +24,11 @@
         <?endif?>
         <?endif?>
 
-        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
         <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
         <?if $(var.Platform)=x64?>
+        <!--'Microsoft ASP.NET Core 3.1.9 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{9BD9F5C9-7DE4-3A3C-AB10-29B30D48CB39}"/>
         <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
         <RelatedBundle Action="Upgrade" Id="{BA264433-7668-3F63-BA27-0B842B591B41}"/>
         <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
@@ -47,8 +49,10 @@
         <RelatedBundle Action="Upgrade" Id="{A65A6022-E10B-3AEF-802C-B9AFE0B000E2}"/>
         <?endif?>
 
-        <!-- Ensure upgrades from 3.1.0 thru 3.1.8 for x64. -->
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
         <?if $(var.Platform)=x86?>
+        <!--'Microsoft ASP.NET Core 3.1.9 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{BE2349EF-BC78-3E42-B29C-E61D12E02FE4}"/>
         <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
         <RelatedBundle Action="Upgrade" Id="{F9E1048A-39B9-3AE1-8AA1-6B054A204A84}"/>
         <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
