@@ -17,6 +17,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Contains extensions for configuring an <see cref="IWebHostBuilder" />.
+    /// </summary>
     public static class WebHostBuilderExtensions
     {
         /// <summary>

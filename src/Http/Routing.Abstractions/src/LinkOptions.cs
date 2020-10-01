@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Configures options for generated URLs.
+    /// </summary>
     public class LinkOptions
     {
         /// <summary>
@@ -13,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
 
         /// <summary>
         /// Gets or sets a value indicating whether a generated query strings are lowercase.
-        /// This property will be unless <see cref="LowercaseUrls" /> is also <c>true</c>.
+        /// This property will be false unless <see cref="LowercaseUrls" /> is also <c>true</c>.
         /// </summary>
         public bool? LowercaseQueryStrings { get; set; }
 

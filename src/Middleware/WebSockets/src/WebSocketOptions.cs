@@ -7,10 +7,13 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Configuration options for the WebSocketMiddleware
+    /// Configuration options for the WebSocketMiddleware.
     /// </summary>
     public class WebSocketOptions
     {
+        /// <summary>
+        /// Constructs the <see cref="WebSocketOptions"/> class with default values.
+        /// </summary>
         public WebSocketOptions()
         {
             KeepAliveInterval = TimeSpan.FromMinutes(2);

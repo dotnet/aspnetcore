@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         /// </summary>
         internal void Start() => OnStart(Array.Empty<string>());
 
+        /// <inheritdoc />
         protected sealed override void OnStart(string[] args)
         {
             OnStarting(args);
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
                 });
         }
 
+        /// <inheritdoc />
         protected sealed override void OnStop()
         {
             _stopRequestedByWindows = true;

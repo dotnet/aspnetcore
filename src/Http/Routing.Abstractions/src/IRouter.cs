@@ -11,16 +11,16 @@ namespace Microsoft.AspNetCore.Routing
     public interface IRouter
     {
         /// <summary>
-        /// Asynchronously routes given the current context.
+        /// Asynchronously routes based on the current <paramref name="context"/>.
         /// </summary>
         /// <param name="context">A <see cref="RouteContext"/> instance.</param>
         Task RouteAsync(RouteContext context);
 
         /// <summary>
-        /// Creates a <see cref="VirtualPathData"/> from the given <see cref="VirtualPathContext"/>.
+        /// Returns the URL that is assicated with the route details provided in <paramref name="context"/>
         /// </summary>
         /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
-        /// <returns>A <see cref="VirtualPathData"/> instance.</returns>
+        /// <returns>A <see cref="VirtualPathData"/> object. Can be null.</returns>
         VirtualPathData? GetVirtualPath(VirtualPathContext context);
     }
 }
