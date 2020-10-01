@@ -65,6 +65,9 @@ namespace Microsoft.AspNetCore.Http
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns true if the host is set.
+        /// </summary>
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }

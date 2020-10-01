@@ -148,8 +148,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("h1")).Text == "Hello, world!");
+            var element = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello, world!", () => element.Text);
         }
     }
 }
