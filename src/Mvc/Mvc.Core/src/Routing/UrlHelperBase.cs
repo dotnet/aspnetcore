@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
-    /// A <see cref="IUrlHelper"/> that 
+    /// An abstraction for <see cref="IUrlHelper" />.
     /// </summary>
     public abstract class UrlHelperBase : IUrlHelper
     {
