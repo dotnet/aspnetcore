@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         string ICommonModel.Name => ControllerName;
 
         /// <summary>
-        /// Gets or setes the name of this controller.
+        /// Gets or sets the name of this controller.
         /// </summary>
         public string ControllerName { get; set; }
 

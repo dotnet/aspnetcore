@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public new IReadOnlyList<object> Attributes => base.Attributes;
 
         /// <summary>
-        /// The property info.
+        /// The <see cref="PropertyInfo"/>.
         /// </summary>
         public PropertyInfo PropertyInfo { get; }
 

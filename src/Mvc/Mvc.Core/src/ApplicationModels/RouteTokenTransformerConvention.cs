@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Called to determine whether an action should apply.
         /// </summary>
         /// <param name="action">The <see cref="ActionModel"/>.</param>
-        /// <returns>Whether the action should apply.</returns>
+        /// <returns><see langword="true"/> if the the action should apply.</returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
     }
 }

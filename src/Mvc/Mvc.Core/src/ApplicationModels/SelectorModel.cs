@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Intializes a new <see cref="SelectorModel"/>.
         /// </summary>
-        /// <param name="other">The model to copy from.</param>
+        /// <param name="other">The <see cref="SelectorModel"/> to copy from.</param>
         public SelectorModel(SelectorModel other)
         {
             if (other == null)
