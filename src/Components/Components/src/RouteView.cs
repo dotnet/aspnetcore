@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Components
         [Parameter]
         public Type DefaultLayout { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RouteView"/>.
+        /// </summary>
         public RouteView()
         {
             // Cache the delegate instances
