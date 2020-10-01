@@ -16,7 +16,7 @@ The below table lists all the `area-`labels used in the `aspnetcore` repository 
 | area-middleware | BrennanConroy | |
 | area-mvc | mkArtakMSFT | |
 | area-perf | sebastienros | |
-| area-platform | BrennanConroy | |
+| area-platform | JunTaoLuo | |
 | area-security | blowdart | |
 | area-servers | BrennanConroy | |
 | area-signalr | BrennanConroy | |
