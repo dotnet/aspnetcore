@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected ILogger Logger { get; }
 
         /// <summary>
-        /// Sets headers and logs
+        /// Sets etag and last modified headers.
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <param name="result">The <see cref="FileResult"/>.</param>
