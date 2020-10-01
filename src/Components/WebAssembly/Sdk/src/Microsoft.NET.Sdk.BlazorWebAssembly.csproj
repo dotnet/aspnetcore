@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>MSBuild support for building Blazor WebAssembly apps.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
@@ -9,7 +9,7 @@
     <SdkOutputPath>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</SdkOutputPath>
 
     <!-- Allow assemblies outside of lib in the package -->
-    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <NoWarn>$(NoWarn.Replace('1591', ''));NU5100</NoWarn>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
 
