@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// A filter that specifies the type of the value and status code returned by the action.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
-        /// </summary>       
+        /// </summary>
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(int statusCode)
             : this(typeof(void), statusCode)
