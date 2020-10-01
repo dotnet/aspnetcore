@@ -242,7 +242,7 @@
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>4.0.0-alpha05</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverChromeDriverPackageVersion>85.0.4183.8300</SeleniumWebDriverChromeDriverPackageVersion>
+    <SeleniumWebDriverChromeDriverPackageVersion>86.0.4240.2200-beta</SeleniumWebDriverChromeDriverPackageVersion>
     <SeleniumWebDriverPackageVersion>4.0.0-alpha05</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
