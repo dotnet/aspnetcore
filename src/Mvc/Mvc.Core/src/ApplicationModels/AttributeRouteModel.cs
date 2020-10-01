@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="values">The token values to use.</param>
-        /// <returns></returns>
+        /// <returns>A new string with the replaced values.</returns>
         public static string ReplaceTokens(string template, IDictionary<string, string> values)
         {
             return ReplaceTokens(template, values, routeTokenTransformer: null);
