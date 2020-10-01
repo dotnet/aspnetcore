@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public virtual Task SigningIn(CookieSigningInContext context) => OnSigningIn(context);
 
         /// <summary>
-        /// Invoked after sign in is completed.
+        /// Invoked after sign in has completed.
         /// </summary>
         /// <param name="context">The <see cref="CookieSignedInContext"/>.</param>
         public virtual Task SignedIn(CookieSignedInContext context) => OnSignedIn(context);

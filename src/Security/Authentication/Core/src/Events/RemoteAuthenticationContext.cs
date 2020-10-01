@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Authentication
         public void Success() => Result = HandleRequestResult.Success(new AuthenticationTicket(Principal!, Properties, Scheme.Name));
 
         /// <summary>
-        /// Calls <see cref="HandleRequestResult.Fail(Exception)"/> indicating that authentication failed.
+        /// Indicates that authentication failed.
         /// </summary>
         /// <param name="failure">The exception associated with the failure.</param>
         public void Fail(Exception failure) => Result = HandleRequestResult.Fail(failure);
 
         /// <summary>
-        /// Calls <see cref="HandleRequestResult.Fail(string)"/> indicating that authentication failed.
+        /// Indicates that authentication failed.
         /// </summary>
         /// <param name="failureMessage">The exception associated with the failure.</param>
         public void Fail(string failureMessage) => Result = HandleRequestResult.Fail(failureMessage);

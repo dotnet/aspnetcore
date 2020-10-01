@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Authentication
     public class PolicySchemeHandler : SignInAuthenticationHandler<PolicySchemeOptions>
     {
         /// <summary>
-        /// Initializes a new isntance of <see cref="PolicySchemeHandler"/>.
+        /// Initializes a new instance of <see cref="PolicySchemeHandler"/>.
         /// </summary>
         /// <param name="options">The monitor for the options instance.</param>
         /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>

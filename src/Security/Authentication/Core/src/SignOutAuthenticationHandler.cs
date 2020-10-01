@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication
         where TOptions : AuthenticationSchemeOptions, new()
     {
         /// <summary>
-        /// Initializes a new isntance of <see cref="SignOutAuthenticationHandler{TOptions}"/>.
+        /// Initializes a new instance of <see cref="SignOutAuthenticationHandler{TOptions}"/>.
         /// </summary>
         /// <param name="options">The monitor for the options instance.</param>
         /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>

@@ -51,12 +51,12 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Gets the path that triggered authentication.
+        /// Gets the path as seen by the authentication middleware.
         /// </summary>
         protected PathString OriginalPath => Context.Features.Get<IAuthenticationFeature>()?.OriginalPath ?? Request.Path;
 
         /// <summary>
-        /// Gets the path base that triggered authentication.
+        /// Gets the path base as seen by the authentication middleware.
         /// </summary>
         protected PathString OriginalPathBase => Context.Features.Get<IAuthenticationFeature>()?.OriginalPathBase ?? Request.PathBase;
 

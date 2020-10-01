@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
-    /// A ccontract for securing data.
+    /// A contract for securing data.
     /// </summary>
     /// <typeparam name="TData">The type of the data to protect.</typeparam>
     public interface ISecureDataFormat<TData>
