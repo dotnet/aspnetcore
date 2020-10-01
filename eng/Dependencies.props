@@ -94,15 +94,17 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />

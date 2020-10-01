@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// The name of the policy which needs to be applied.
         /// </summary>
-        string PolicyName { get; set; }
+        string? PolicyName { get; set; }
     }
 }

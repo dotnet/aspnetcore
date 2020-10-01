@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
             return MapHealthChecksCore(endpoints, pattern, options);
         }
 
-        private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder endpoints, string pattern, HealthCheckOptions options)
+        private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder endpoints, string pattern, HealthCheckOptions? options)
         {
             if (endpoints.ServiceProvider.GetService(typeof(HealthCheckService)) == null)
             {
