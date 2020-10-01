@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="template">The template.</param>
         /// <param name="values">The token values to use.</param>
         /// <param name="routeTokenTransformer">The route token transformer.</param>
-        /// <returns></returns>
+        /// <returns>A new string with the replaced values.</returns>
         public static string ReplaceTokens(string template, IDictionary<string, string> values, IOutboundParameterTransformer routeTokenTransformer)
         {
             var builder = new StringBuilder();

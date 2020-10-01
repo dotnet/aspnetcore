@@ -22,11 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         /// </summary>
         protected abstract int Count { get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         protected abstract KeyValuePair<string, object> this[int index] { get; }
 
         int IReadOnlyCollection<KeyValuePair<string, object>>.Count => Count;

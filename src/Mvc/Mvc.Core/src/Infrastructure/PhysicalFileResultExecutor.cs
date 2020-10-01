@@ -110,8 +110,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// Obsolete. This API is no longer called.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(string path)
         {
