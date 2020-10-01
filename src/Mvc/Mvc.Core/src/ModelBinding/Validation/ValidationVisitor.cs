@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Validate all the child nodes using the specified strategy.
         /// </summary>
         /// <param name="strategy">The validation strategy.</param>
-        /// <returns>True if all children are valid.</returns>
+        /// <returns><see langword="true" if all children are valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitChildren(IValidationStrategy strategy)
         {
             var isValid = true;
