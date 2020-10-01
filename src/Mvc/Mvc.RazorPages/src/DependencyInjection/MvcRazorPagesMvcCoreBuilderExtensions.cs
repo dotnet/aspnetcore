@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Register services needed for RazorPages.
+        /// Register services needed for Razor Pages.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
         /// <param name="setupAction">The action to setup the <see cref="RazorPagesOptions"/>.</param>
