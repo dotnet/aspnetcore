@@ -5,7 +5,7 @@ The below table lists all the `area-`labels used in the `aspnetcore` repository 
 | area-azure | BrennanConroy | |
 | area-blazor | mkArtakMSFT | Blazor server and Blazor WASM related |
 | area-commandlinetools |  mkArtakMSFT | dev certs, dotnet watch,  |
-| area-dataprotection | BrennanConroy | |
+| area-dataprotection | Pilchie | |
 | area-grpc | shirhatti | |
 | area-healthchecks | mkArtakMSFT | |
 | area-hosting | BrennanConroy | |
