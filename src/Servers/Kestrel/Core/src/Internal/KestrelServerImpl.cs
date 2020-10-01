@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         // For testing
-        internal KestrelServerImpl(IEnumerable<IConnectionListenerFactory> transportFactories, ServiceContext serviceContext)
-            : this(transportFactories, null, serviceContext)
+        internal KestrelServerImpl(IConnectionListenerFactory transportFactory, ServiceContext serviceContext)
+            : this(new[] { transportFactory }, null, serviceContext)
         {
         }
 

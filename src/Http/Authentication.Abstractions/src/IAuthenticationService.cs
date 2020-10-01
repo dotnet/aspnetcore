@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Challenge the specified authentication scheme.
+        /// An authentication challenge can be issued when an unauthenticated user requests an endpoint that requires authentication.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Forbids the specified authentication scheme.
+        /// Forbid is used when an authenticated user attempts to access a resource they are not permitted to access.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>

@@ -13,6 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.TestHost
 {
+    /// <summary>
+    /// An <see cref="IServer"/> implementation for executing tests.
+    /// </summary>
     public class TestServer : IServer
     {
         private IWebHost _hostInstance;
@@ -69,8 +72,14 @@ namespace Microsoft.AspNetCore.TestHost
             Services = host.Services;
         }
 
+        /// <summary>
+        /// Gets or sets the base address associated with the HttpClient returned by the test server. Defaults to http://localhost/.
+        /// </summary>
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
 
+        /// <summary>
+        /// Gets the <see cref="IWebHost" /> instance associated with the test server.
+        /// </summary>
         public IWebHost Host
         {
             get
@@ -80,8 +89,14 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
+        /// <summary>
+        /// Gets the service provider associated with the test server.
+        /// </summary>
         public IServiceProvider Services { get; }
 
+        /// <summary>
+        /// Gets the collection of server features associated with the test server.
+        /// </summary>
         public IFeatureCollection Features { get; }
 
         /// <summary>
@@ -99,17 +114,26 @@ namespace Microsoft.AspNetCore.TestHost
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
         }
 
+        /// <summary>
+        /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
+        /// </summary>
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
             return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
+        /// <summary>
+        /// Creates a <see cref="HttpClient" /> for processing HTTP requests/responses with the test server.
+        /// </summary>
         public HttpClient CreateClient()
         {
             return new HttpClient(CreateHandler()) { BaseAddress = BaseAddress };
         }
 
+        /// <summary>
+        /// Creates a <see cref="WebSocketClient" /> for interacting with the test server.
+        /// </summary>
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
@@ -159,6 +183,9 @@ namespace Microsoft.AspNetCore.TestHost
             return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Dispoes the <see cref="IWebHost" /> object associated with the test server.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)

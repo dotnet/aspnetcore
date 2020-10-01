@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    /// <summary>
+    /// The default authentication handler with IIS In-Process
+    /// </summary>
     public class IISServerAuthenticationHandler : IAuthenticationHandler
     {
         private HttpContext _context;
@@ -15,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         internal AuthenticationScheme Scheme { get; private set; }
 
+        ///<inheritdoc/>
         public Task<AuthenticateResult> AuthenticateAsync()
         {
             var user = _iisHttpContext.WindowsUser;
@@ -28,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        ///<inheritdoc/>
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
             // We would normally set the www-authenticate header here, but IIS does that for us.
@@ -35,12 +40,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return Task.CompletedTask;
         }
 
+        ///<inheritdoc/>
         public Task ForbidAsync(AuthenticationProperties properties)
         {
             _context.Response.StatusCode = 403;
             return Task.CompletedTask;
         }
 
+        ///<inheritdoc/>
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
             _iisHttpContext = context.Features.Get<IISHttpContext>();

@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using BasicTestApp;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,9 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             _appElement.FindElement(By.Id("send-request")).Click();
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.Id("response-status")) != null);
-            _responseStatus = _appElement.FindElement(By.Id("response-status"));
+            _responseStatus = Browser.Exists(By.Id("response-status"));
             _responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
             _testOutcome = _appElement.FindElement(By.Id("test-outcome"));
         }
