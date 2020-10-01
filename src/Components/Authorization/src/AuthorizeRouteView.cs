@@ -30,6 +30,9 @@ namespace Microsoft.AspNetCore.Components.Authorization
         private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
         private readonly RenderFragment _renderAuthorizingDelegate;
 
+        /// <summary>
+        /// Initialize a new instance of a <see cref="AuthorizeRouteView"/>.
+        /// </summary>
         public AuthorizeRouteView()
         {
             // Cache the rendering delegates so that we only construct new closure instances
