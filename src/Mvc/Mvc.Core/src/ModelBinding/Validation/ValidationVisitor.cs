@@ -281,6 +281,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="metadata">The model metadata.</param>
         /// <param name="key">The key to validate.</param>
         /// <param name="model">The model to validate.</param>
+        /// <see langword="true"/> if the specified model key is valid, otherwise <see langword="false"/>.
         /// <returns>Whether the the specified model key is valid.</returns>
         protected virtual bool Visit(ModelMetadata metadata, string key, object model)
         {
@@ -390,7 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Validate complex types, this covers everything VisitSimpleType does not i.e. both enumerations and complex types. 
         /// </summary>
         /// <param name="defaultStrategy">The default validation strategy to use.</param>
-        /// <returns><see langword="true" if valid, otherwise <see langword="false" />.</returns>
+        /// <returns><see langword="true" /> if valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitComplexType(IValidationStrategy defaultStrategy)
         {
             var isValid = true;
@@ -437,7 +438,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Validate all the child nodes using the specified strategy.
         /// </summary>
         /// <param name="strategy">The validation strategy.</param>
-        /// <returns><see langword="true" if all children are valid, otherwise <see langword="false" />.</returns>
+        /// <returns><see langword="true" /> if all children are valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitChildren(IValidationStrategy strategy)
         {
             var isValid = true;
