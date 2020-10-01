@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<TestRouterWithLazyAssembly>();
             Browser.Exists(By.Id("blazor-error-ui"));
 
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
         }
 

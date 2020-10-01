@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void JsonSerializationCasesWork()
         {
-            Browser.Equal("Lord Smythe", () => Browser.FindElement(By.Id("deserialized-name")).Text);
-            Browser.Equal("68", () => Browser.FindElement(By.Id("deserialized-age")).Text);
-            Browser.Equal("Vexed", () => Browser.FindElement(By.Id("deserialized-mood")).Text);
+            Browser.Equal("Lord Smythe", () => Browser.Exists(By.Id("deserialized-name")).Text);
+            Browser.Equal("68", () => Browser.Exists(By.Id("deserialized-age")).Text);
+            Browser.Equal("Vexed", () => Browser.Exists(By.Id("deserialized-mood")).Text);
         }
     }
 }

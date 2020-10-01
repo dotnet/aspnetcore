@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void SignalRClientWorksWithLongPolling()
         {
-            Browser.FindElement(By.Id("hub-url")).SendKeys(
+            Browser.Exists(By.Id("hub-url")).SendKeys(
                 new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
-            var target = new SelectElement(Browser.FindElement(By.Id("transport-type")));
+            var target = new SelectElement(Browser.Exists(By.Id("transport-type")));
             target.SelectByText("LongPolling");
-            Browser.FindElement(By.Id("hub-connect")).Click();
+            Browser.Exists(By.Id("hub-connect")).Click();
 
             Browser.Equal("SignalR Client: Echo LongPolling",
                 () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
@@ -55,11 +55,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void SignalRClientWorksWithWebSockets()
         {
-            Browser.FindElement(By.Id("hub-url")).SendKeys(
+            Browser.Exists(By.Id("hub-url")).SendKeys(
                 new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
-            var target = new SelectElement(Browser.FindElement(By.Id("transport-type")));
+            var target = new SelectElement(Browser.Exists(By.Id("transport-type")));
             target.SelectByText("WebSockets");
-            Browser.FindElement(By.Id("hub-connect")).Click();
+            Browser.Exists(By.Id("hub-connect")).Click();
 
             Browser.Equal("SignalR Client: Echo WebSockets",
                 () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
