@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,15 +29,31 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
+        public async Task MvcTemplate_NoAuthFSharp()
+        {
+            // Setup AssemblyTestLog
+            var assemblyLog = AssemblyTestLog.Create(Assembly.GetExecutingAssembly(), baseDirectory: Project.ArtifactsLogDir);
+            using var testLog = assemblyLog.StartTestLog(Output, nameof(MvcTemplateTest), out var loggerFactory);
+            var logger = loggerFactory.CreateLogger("TestLogger");
+
+            await MvcTemplateCore(languageOverride: "F#", logger);
+        }
 
         [ConditionalFact]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
-
-        private async Task MvcTemplateCore(string languageOverride)
+        public async Task MvcTemplate_NoAuthCSharp()
         {
-            Project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+            // Setup AssemblyTestLog
+            var assemblyLog = AssemblyTestLog.Create(Assembly.GetExecutingAssembly(), baseDirectory: Project.ArtifactsLogDir);
+            using var testLog = assemblyLog.StartTestLog(Output, nameof(MvcTemplateTest), out var loggerFactory);
+            var logger = loggerFactory.CreateLogger("TestLogger");
+
+            await MvcTemplateCore(languageOverride: null, logger);
+        }
+
+        private async Task MvcTemplateCore(string languageOverride, ILogger logger)
+        {
+            Project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), new TestOutputLogger(logger));
 
             var createResult = await Project.RunDotNetNewAsync("mvc", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));

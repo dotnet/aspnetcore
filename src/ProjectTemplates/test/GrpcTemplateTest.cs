@@ -34,7 +34,7 @@ namespace Templates.Test
             using var testLog = assemblyLog.StartTestLog(Output, nameof(GrpcTemplateTest), out var loggerFactory);
             var logger = loggerFactory.CreateLogger("TestLogger");
 
-            Project = await ProjectFactory.GetOrCreateProject("grpc", Output);
+            Project = await ProjectFactory.GetOrCreateProject("grpc", new TestOutputLogger(logger));
 
             var createResult = await Project.RunDotNetNewAsync("grpc");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
