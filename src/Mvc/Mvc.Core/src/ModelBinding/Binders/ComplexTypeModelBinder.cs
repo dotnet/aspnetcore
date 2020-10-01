@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
         }
 
+        /// <inheritdoc/>
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)

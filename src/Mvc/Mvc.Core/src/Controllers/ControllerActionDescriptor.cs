@@ -10,17 +10,33 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
+    /// <summary>
+    /// A descriptor for an action of a controller.
+    /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerActionDescriptor : ActionDescriptor
     {
+        /// <summary>
+        /// The name of the controller.
+        /// </summary>
         public string ControllerName { get; set; }
 
+        /// <summary>
+        /// The name of the action.
+        /// </summary>
         public virtual string ActionName { get; set; }
 
+        /// <summary>
+        /// The <see cref="MethodInfo"/>.
+        /// </summary>
         public MethodInfo MethodInfo { get; set; }
 
+        /// <summary>
+        /// The <see cref="TypeInfo"/> of the controller..
+        /// </summary>
         public TypeInfo ControllerTypeInfo { get; set; }
 
+        /// <inheritdoc />
         public override string DisplayName
         {
             get
