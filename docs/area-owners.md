@@ -9,7 +9,6 @@ The below table lists all the `area-`labels used in the `aspnetcore` repository 
 | area-grpc | shirhatti | |
 | area-healthchecks | mkArtakMSFT | |
 | area-hosting | BrennanConroy | |
-| area-httpclientfactory | mkArtakMSFT | |
 | area-identity | blowdart | |
 | area-infrastructure | dougbu | |
 | area-installers | dougbu | |
