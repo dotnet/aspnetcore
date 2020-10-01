@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public abstract string RouteUrl(UrlRouteContext routeContext);
 
         /// <summary>
-        /// Gets a <see cref="RouteValuesAddress"/> using the specified values.
+        /// Gets a <see cref="RouteValueDictionary"/> using the specified values.
         /// </summary>
         /// <param name="values">The values to use.</param>
         /// <returns>A <see cref="RouteValueDictionary"/> with the specified values.</returns>
