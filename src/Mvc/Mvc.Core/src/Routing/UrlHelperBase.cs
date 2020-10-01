@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <param name="host">The host.</param>
         /// <param name="virtualPath">The virtual path.</param>
         /// <param name="fragment">The fragment.</param>
-        /// <returns></returns>
+        /// <returns>The generated url</returns>
         protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment)
         {
             if (virtualPath == null)
