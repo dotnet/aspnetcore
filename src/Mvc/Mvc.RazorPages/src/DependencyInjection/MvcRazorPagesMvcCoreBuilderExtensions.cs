@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class MvcRazorPagesMvcCoreBuilderExtensions
     {
         /// <summary>
-        /// Register services needed for RazorPages.
+        /// Register services needed for Razor Pages.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
