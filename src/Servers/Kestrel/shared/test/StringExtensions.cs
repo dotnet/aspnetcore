@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Testing
                 .Replace("\r", @"\x0D")
                 .Replace("\n", @"\x0A")
                 .Replace("\0", @"\x00")
+                .Replace("\x80", @"\x80")
                 + ellipsis;
         }
     }

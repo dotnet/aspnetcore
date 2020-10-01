@@ -33,9 +33,7 @@
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
       "src\\Servers\\Kestrel\\samples\\http2cat\\http2cat.csproj",
-      "src\\Servers\\Kestrel\\samples\\QuicSampleApp\\QuicSampleApp.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj",
-      "src\\Servers\\Kestrel\\samples\\QuicSampleClient\\QuicSampleClient.csproj",
       "src\\Servers\\Kestrel\\samples\\Http3SampleApp\\Http3SampleApp.csproj"
     ]
   }

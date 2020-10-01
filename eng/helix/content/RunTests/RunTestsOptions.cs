@@ -50,6 +50,11 @@ namespace RunTests
                     aliases: new string[] { "--helixTimeout" },
                     description: "The timeout duration of the Helix job")
                 { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--source" },
+                    description: "The restore sources to use during testing")
+                { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
             };
 
             var parseResult = command.Parse(args);

@@ -165,6 +165,48 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
         }
 
+        [Fact]
+        public async Task Build_LazyLoadExplicitAssembly_InvalidAssembly()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibraryInvalid.dll' />
+</ItemGroup>
+");
+            // Act
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            // Assert
+            Assert.BuildError(result, "BLAZORSDK1001");
+            Assert.BuildFailed(result);
+        }
+
+        [Fact]
+        public async Task Publish_LazyLoadExplicitAssembly_InvalidAssembly()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibraryInvalid.dll' />
+</ItemGroup>
+");
+            // Act
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            // Assert
+            Assert.BuildError(result, "BLAZORSDK1001");
+            Assert.BuildFailed(result);
+        }
+
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
         {
             return JsonSerializer.Deserialize<BootJsonData>(

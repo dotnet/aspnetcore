@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         [InlineData("capturing_lambda")]
         [InlineData("unbound_lambda")]
         [InlineData("unbound_lambda_nested")]

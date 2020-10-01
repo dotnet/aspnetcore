@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     /// </summary>
     public class CorsPolicy
     {
+        private Func<string, bool> _isOriginAllowed;
         private TimeSpan? _preflightMaxAge;
 
         /// <summary>
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         public CorsPolicy()
         {
-            IsOriginAllowed = DefaultIsOriginAllowed;
+            _isOriginAllowed = DefaultIsOriginAllowed;
         }
 
         /// <summary>
@@ -72,9 +73,25 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         /// <summary>
+        /// Gets a value indicating if <see cref="IsOriginAllowed"/> is the default function that is set in the CorsPolicy constructor.
+        /// </summary>
+        internal bool IsDefaultIsOriginAllowed { get; private set; } = true;
+
+        /// <summary>
         /// Gets or sets a function which evaluates whether an origin is allowed.
         /// </summary>
-        public Func<string, bool> IsOriginAllowed { get; set; }
+        public Func<string, bool> IsOriginAllowed
+        {
+            get
+            {
+                return _isOriginAllowed;
+            }
+            set
+            {
+                _isOriginAllowed = value;
+                IsDefaultIsOriginAllowed = false;
+            }
+        }
 
         /// <summary>
         /// Gets the headers that the resource might use and can be exposed.

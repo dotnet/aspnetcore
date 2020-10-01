@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25931")]
         public virtual async Task Publish_Project()
         {
             using (CreateTestProject())

@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
                 }
 
-                _pipeReader.Complete();
+                await _pipeReader.CompleteAsync();
 
                 // Signal via WriteStreamSuffixAsync to the stream that output has finished.
                 // Stream state will move to RequestProcessingStatus.ResponseCompleted
