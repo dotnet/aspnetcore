@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// Stores <see cref="HubConnectionContext"/>s by ID.
     /// </summary>
+    /// <remarks>
+    /// This API is meant for internal usage.
+    /// </remarks>
     public class HubConnectionStore
     {
         private readonly ConcurrentDictionary<string, HubConnectionContext> _connections =

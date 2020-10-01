@@ -12,8 +12,9 @@ namespace Microsoft.AspNetCore.Http.Connections
     public class WebSocketOptions
     {
         /// <summary>
-        /// Controls the amount of time the WebSocket transport will wait for a graceful close before starting an ungraceful close.
+        /// Gets or sets the amount of time the WebSocket transport will wait for a graceful close before starting an ungraceful close.
         /// </summary>
+        /// <value>Defaults to 5 seconds</value>
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
