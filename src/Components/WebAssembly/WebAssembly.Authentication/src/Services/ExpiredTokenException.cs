@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
 
         /// <summary>
-        /// Navigates to the <see cref="AccessTokenResult.RedirectUrl"/>.
+        /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
         /// </summary>
         public void Redirect() => _navigation.NavigateTo(_tokenResult.RedirectUrl);
     }
