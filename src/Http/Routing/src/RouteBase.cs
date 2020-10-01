@@ -14,6 +14,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Base class implementation of an <see cref="IRouter"/>.
+    /// </summary>
     public abstract class RouteBase : IRouter, INamedRouter
     {
         private readonly object _loggersLock = new object();
@@ -23,6 +26,15 @@ namespace Microsoft.AspNetCore.Routing
         private ILogger? _logger;
         private ILogger? _constraintLogger;
 
+        /// <summary>
+        /// Creates a new <see cref="RouteBase"/> instance.
+        /// </summary>
+        /// <param name="template">The route template.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="constraintResolver">A <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="defaults">The default values for parameters in the route.</param>
+        /// <param name="constraints">The constraints for the route.</param>
+        /// <param name="dataTokens">The data tokens for the route.</param>
         public RouteBase(
             string? template,
             string? name,
@@ -56,20 +68,45 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Gets the set of constraints associated with each route.
+        /// </summary>
         public virtual IDictionary<string, IRouteConstraint> Constraints { get; protected set; }
 
+        /// <summary>
+        /// Gets the resolver used for resolving inline constraints.
+        /// </summary>
         protected virtual IInlineConstraintResolver ConstraintResolver { get; set; }
 
+        /// <summary>
+        /// Gets the data tokens associated with the route.
+        /// </summary>
         public virtual RouteValueDictionary DataTokens { get; protected set; }
 
+        /// <summary>
+        /// Gets the default values for each route parameter.
+        /// </summary>
         public virtual RouteValueDictionary Defaults { get; protected set; }
 
+        /// <inheritdoc />
         public virtual string? Name { get; protected set; }
 
+        /// <summary>
+        /// Gets the <see cref="RouteTemplate"/> associated with the route.
+        /// </summary>
         public virtual RouteTemplate ParsedTemplate { get; protected set; }
 
+        /// <summary>
+        /// Executes asynchronously whenever routing occurs.
+        /// </summary>
+        /// <param name="context">A <see cref="RouteContext"/> instance.</param>
         protected abstract Task OnRouteMatched(RouteContext context);
 
+        /// <summary>
+        /// Executes whenever a virtual path is dervied from a <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
+        /// <returns>A <see cref="VirtualPathData"/> instance.</returns>
         protected abstract VirtualPathData? OnVirtualPathGenerated(VirtualPathContext context);
 
         /// <inheritdoc />
@@ -168,6 +205,12 @@ namespace Microsoft.AspNetCore.Routing
             return pathData;
         }
 
+        /// <summary>
+        /// Extracts constatins from a given <see cref="RouteTemplate"/>.
+        /// </summary>
+        /// <param name="inlineConstraintResolver">A <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="parsedTemplate">A <see cref="RouteTemplate"/> instance.</param>
+        /// <param name="constraints">A collection of constraints on the route template.</param>
         protected static IDictionary<string, IRouteConstraint> GetConstraints(
             IInlineConstraintResolver inlineConstraintResolver,
             RouteTemplate parsedTemplate,
@@ -199,6 +242,11 @@ namespace Microsoft.AspNetCore.Routing
             return constraintBuilder.Build();
         }
 
+        /// <summary>
+        /// Gets the default values for parameters in a templates.
+        /// </summary>
+        /// <param name="parsedTemplate">A <see cref="RouteTemplate"/> instance.</param>
+        /// <param name="defaults">A collection of defaults for each parameter.</param>
         protected static RouteValueDictionary GetDefaults(
             RouteTemplate parsedTemplate,
             RouteValueDictionary? defaults)
@@ -296,6 +344,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return ParsedTemplate.TemplateText!;

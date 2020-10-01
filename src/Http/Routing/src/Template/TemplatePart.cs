@@ -10,13 +10,23 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
+    /// <summary>
+    /// Represents a part of a route template segment.
+    /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplatePart
     {
+        /// <summary>
+        /// Constructor for a new <see cref="TemplatePart"/> instance.
+        /// </summary>
         public TemplatePart()
         {
         }
 
+        /// <summary>
+        /// Creates a <see cref="TemplatePart"/> instance given a <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">A <see cref="RoutePatternPart"/> instance representing the route part.</param>
         public TemplatePart(RoutePatternPart other)
         {
             IsLiteral = other.IsLiteral || other.IsSeparator;
@@ -47,6 +57,11 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        /// <summary>
+        /// Create a <see cref="TemplatePart"/> representing a literal route part.
+        /// </summary>
+        /// <param name="text">The text of the literate route part.</param>
+        /// <returns>A <see cref="TemplatePart"/> instance.</returns>
         public static TemplatePart CreateLiteral(string text)
         {
             return new TemplatePart()
@@ -56,6 +71,15 @@ namespace Microsoft.AspNetCore.Routing.Template
             };
         }
 
+        /// <summary>
+        /// Creates a <see cref="TemplatePart"/> representing a paramter part.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="isCatchAll"><see langword="true"/> if the parameter is a catch-all parameter.</param>
+        /// <param name="isOptional"><see langword="true"/> if the parameter is an optional parameter.</param>
+        /// <param name="defaultValue">The default value of the parameter.</param>
+        /// <param name="inlineConstraints">A collection of constraints associated with the parameter.</param>
+        /// <returns>A <see cref="TemplatePart"/> instance.</returns>
         public static TemplatePart CreateParameter(
             string name,
             bool isCatchAll,
@@ -79,14 +103,41 @@ namespace Microsoft.AspNetCore.Routing.Template
             };
         }
 
+        /// <summary>
+        /// <see langword="true"/> if the route part is is a catch-all part (e.g. /*).
+        /// </summary>
         public bool IsCatchAll { get; private set; }
+        /// <summary>
+        /// <see langword="true"/> if the route part is represents a literal value.
+        /// </summary>
         public bool IsLiteral { get; private set; }
+        /// <summary>
+        /// <see langword="true"/> if the route part represents a parameterized value.
+        /// </summary>
         public bool IsParameter { get; private set; }
+        /// <summary>
+        /// <see langword="true"/> if the route part represents an optional part.
+        /// </summary>
         public bool IsOptional { get; private set; }
+        /// <summary>
+        /// <see langword="true"/> if the route part represents an optional seperator.
+        /// </summary>
         public bool IsOptionalSeperator { get; set; }
+        /// <summary>
+        /// The name of the route parameter. Can be null.
+        /// </summary>
         public string? Name { get; private set; }
+        /// <summary>
+        /// The textual representation of the route paramter. Can be null. Used to represent route seperators and literal parts.
+        /// </summary>
         public string? Text { get; private set; }
+        /// <summary>
+        /// The default value for route paramters. Can be null.
+        /// </summary>
         public object? DefaultValue { get; private set; }
+        /// <summary>
+        /// The constraints associates with a route paramter.
+        /// </summary>
         public IEnumerable<InlineConstraint> InlineConstraints { get; private set; } = Enumerable.Empty<InlineConstraint>();
 
         internal string? DebuggerToString()
@@ -101,6 +152,10 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="RoutePatternPart"/> for the route part designated by the <see cref="TemplatePart"/>.
+        /// </summary>
+        /// <returns>A <see cref="RoutePatternPart"/> instance.</returns>
         public RoutePatternPart ToRoutePatternPart()
         {
             if (IsLiteral && IsOptionalSeperator)

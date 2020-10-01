@@ -11,11 +11,18 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
+    /// <summary>
+    /// Represents the template for a route.
+    /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
     public class RouteTemplate
     {
         private const string SeparatorString = "/";
 
+        /// <summary>
+        /// Creates a new <see cref="RouteTemplate"/> given <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">A <see cref="RoutePattern"/> instance.</param>
         public RouteTemplate(RoutePattern other)
         {
             if (other == null)
@@ -42,6 +49,12 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        /// <summary>
+        /// Creates a new route template instance given the <paramref name="template"/> string
+        /// and a list of <paramref name="segments"/>. Computes the parameters in the route template.
+        /// </summary>
+        /// <param name="template">A string representation of the route template.</param>
+        /// <param name="segments">A list of <see cref="TemplateSegment"/>.</param>
         public RouteTemplate(string template, List<TemplateSegment> segments)
         {
             if (segments == null)
@@ -68,12 +81,27 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        /// <summary>
+        /// Gets the strign representation of the route template.
+        /// </summary>
         public string? TemplateText { get; }
 
+        /// <summary>
+        /// Gets the list of <see cref="TemplatePart"/> that represent that parameters defined in the route template.
+        /// </summary>
+        /// <value></value>
         public IList<TemplatePart> Parameters { get; }
 
+        /// <summary>
+        /// Gets the list of <see cref="TemplateSegment"/> that compromise the route template.
+        /// </summary>
         public IList<TemplateSegment> Segments { get; }
 
+        /// <summary>
+        /// Gets the <see cref="TemplateSegment"/> at a given index.
+        /// </summary>
+        /// <param name="index">The index of the element to retrieve.</param>
+        /// <returns>A <see cref="TemplateSegment"/> instance.</returns>
         public TemplateSegment? GetSegment(int index)
         {
             if (index < 0)
@@ -109,7 +137,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Converts the <see cref="RouteTemplate"/> to the equivalent 
+        /// Converts the <see cref="RouteTemplate"/> to the equivalent
         /// <see cref="RoutePattern"/>
         /// </summary>
         /// <returns>A <see cref="RoutePattern"/>.</returns>

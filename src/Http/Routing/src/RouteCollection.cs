@@ -14,6 +14,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Supports managing a collection fo multiple routes.
+    /// </summary>
     public class RouteCollection : IRouteCollection
     {
         private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
@@ -24,16 +27,24 @@ namespace Microsoft.AspNetCore.Routing
 
         private RouteOptions? _options;
 
+        /// <summary>
+        /// Gets the route at a given index.
+        /// </summary>
+        /// <value></value>
         public IRouter this[int index]
         {
             get { return _routes[index]; }
         }
 
+        /// <summary>
+        /// Gets the total number of routes registered in the collection.
+        /// </summary>
         public int Count
         {
             get { return _routes.Count; }
         }
 
+        /// <inheritdoc />
         public void Add(IRouter router)
         {
             if (router == null)
@@ -57,6 +68,7 @@ namespace Microsoft.AspNetCore.Routing
             _routes.Add(router);
         }
 
+        /// <inheritdoc />
         public async virtual Task RouteAsync(RouteContext context)
         {
             // Perf: We want to avoid allocating a new RouteData for each route we need to process.
@@ -88,6 +100,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <inheritdoc />
         public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             EnsureOptions(context.HttpContext);
