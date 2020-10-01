@@ -11,6 +11,13 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class RemoteFailureContext : HandleRequestContext<RemoteAuthenticationOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="RemoteFailureContext"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The <see cref="AuthenticationScheme"/>.</param>
+        /// <param name="options">The <see cref="RemoteAuthenticationOptions"/>.</param>
+        /// <param name="failure">User friendly error message for the error.</param>
         public RemoteFailureContext(
             HttpContext context,
             AuthenticationScheme scheme,
