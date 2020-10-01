@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Validate complex types, this covers everything VisitSimpleType does not i.e. both enumerations and complex types. 
         /// </summary>
         /// <param name="defaultStrategy">The default validation strategy to use.</param>
-        /// <returns>True if valie.</returns>
+        /// <returns><see langword="true" if valid, otherwise <see langword="false" />.</returns>
         protected virtual bool VisitComplexType(IValidationStrategy defaultStrategy)
         {
             var isValid = true;
