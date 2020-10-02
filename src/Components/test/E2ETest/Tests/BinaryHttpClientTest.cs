@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void SetValue(string elementId, string value)
         {
-            var element = Browser.FindElement(By.Id(elementId));
+            var element = Browser.Exists(By.Id(elementId));
             element.Clear();
             element.SendKeys(value);
         }

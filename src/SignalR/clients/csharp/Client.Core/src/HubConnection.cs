@@ -35,8 +35,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// </remarks>
     public partial class HubConnection : IAsyncDisposable
     {
+        /// <summary>
+        /// The default timeout which specifies how long to wait for a message before closing the connection. Default is 30 seconds.
+        /// </summary>
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
+
+        /// <summary>
+        /// The default timeout which specifies how long to wait for the handshake to respond before closing the connection. Default is 15 seconds.
+        /// </summary>
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
+
+        /// <summary>
+        /// The default interval that the client will send keep alive messages to let the server know to not close the connection. Default is 15 second interval.
+        /// </summary>
         public static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(15);
 
         // This lock protects the connection state.

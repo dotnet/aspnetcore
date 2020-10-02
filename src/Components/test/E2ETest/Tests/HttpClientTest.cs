@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
             SetValue("request-uri", targetUri.AbsoluteUri);
             SetValue("request-body", requestBody ?? string.Empty);
-            new SelectElement(Browser.FindElement(By.Id("request-method")))
+            new SelectElement(Browser.Exists(By.Id("request-method")))
                 .SelectByText(requestMethod);
 
             _appElement.FindElement(By.Id("send-request")).Click();
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void SetValue(string elementId, string value)
         {
-            var element = Browser.FindElement(By.Id(elementId));
+            var element = Browser.Exists(By.Id(elementId));
             element.Clear();
             element.SendKeys(value);
         }

@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// A collection of contants for HTTP status codes.
+    /// A collection of constants for HTTP status codes.
     ///
     /// Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
     /// </summary>

@@ -15,6 +15,9 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
+    /// <summary>
+    /// Supports processing and binding parameter values in a route template.
+    /// </summary>
     public class TemplateBinder
     {
         private readonly UrlEncoder _urlEncoder;
@@ -159,7 +162,12 @@ namespace Microsoft.AspNetCore.Routing.Template
             _slots = AssignSlots(_pattern, _filters);
         }
 
-        // Step 1: Get the list of values we're going to try to use to match and generate this URI
+        /// <summary>
+        /// Generates the parameter values in the route.
+        /// </summary>
+        /// <param name="ambientValues">The values associated with the current request.</param>
+        /// <param name="values">The route values to process.</param>
+        /// <returns>A <see cref="TemplateValuesResult"/> instance. Can be null.</returns>
         public TemplateValuesResult? GetValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
         {
             // Make a new copy of the slots array, we'll use this as 'scratch' space
@@ -424,10 +432,14 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // Step 1.5: Process constraints
-        //
-        // Processes the constraints **if** they were passed in to the TemplateBinder constructor.
-        // Returns true on success
-        // Returns false + sets the name/constraint for logging on failure.
+        /// <summary>
+        /// Processes the constraints **if** they were passed in to the TemplateBinder constructor.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="combinedValues">A dictionary that contains the parameters for the route.</param>
+        /// <param name="parameterName">The name of the parameter.</param>
+        /// <param name="constraint">The constraint object.</param>
+        /// <returns><see langword="true"/> if constraints were processed succesfully and false otherwise.</returns>
         public bool TryProcessConstraints(HttpContext? httpContext, RouteValueDictionary combinedValues, out string? parameterName, out IRouteConstraint? constraint)
         {
             var constraints = _constraints;
@@ -447,6 +459,11 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // Step 2: If the route is a match generate the appropriate URI
+        /// <summary>
+        /// Returns a string representation of the URI associated with the route.
+        /// </summary>
+        /// <param name="acceptedValues">A dictionary that contains the parameters for the route.</param>
+        /// <returns>The string representation of the route.</returns>
         public string? BindValues(RouteValueDictionary acceptedValues)
         {
             var context = _pool.Get();

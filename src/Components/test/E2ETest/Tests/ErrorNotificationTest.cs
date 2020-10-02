@@ -36,15 +36,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void ShowsErrorNotification_OnError_Dismiss()
         {
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
-            var causeErrorButton = Browser.FindElement(By.Id("throw-simple-exception"));
+            var causeErrorButton = Browser.Exists(By.Id("throw-simple-exception"));
             causeErrorButton.Click();
 
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
 
-            var reload = Browser.FindElement(By.ClassName("reload"));
+            var reload = Browser.Exists(By.ClassName("reload"));
             reload.Click();
 
             Browser.DoesNotExist(By.TagName("button"));
@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void ShowsErrorNotification_OnError_Reload()
         {
             var causeErrorButton = Browser.Exists(By.Id("throw-simple-exception"));
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
             causeErrorButton.Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
-            var dismiss = Browser.FindElement(By.ClassName("dismiss"));
+            var dismiss = Browser.Exists(By.ClassName("dismiss"));
             dismiss.Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: none;']"));
         }
