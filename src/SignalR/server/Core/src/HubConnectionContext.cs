@@ -147,6 +147,12 @@ namespace Microsoft.AspNetCore.SignalR
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Write a <see cref="HubMessage"/> to the connection.
+        /// </summary>
+        /// <param name="message">The <see cref="HubMessage"/> being written.</param>
+        /// <param name="cancellationToken">Cancels the in progress write.</param>
+        /// <returns>A <see cref="ValueTask"/> that represents the completion of the write. If the write throws this task will still complete successfully.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
