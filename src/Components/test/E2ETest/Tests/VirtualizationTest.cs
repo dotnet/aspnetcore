@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void AlwaysFillsVisibleCapacity_Sync()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
-            var topSpacer = Browser.FindElement(By.Id("sync-container")).FindElement(By.TagName("div"));
+            var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
             var expectedInitialSpacerStyle = "height: 0px;";
 
             int initialItemCount = 0;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void AlwaysFillsVisibleCapacity_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
-            var finishLoadingButton = Browser.FindElement(By.Id("finish-loading-button"));
+            var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
 
             // Check that no items or placeholders are visible.
             // No data fetches have happened so we don't know how many items there are.
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Wait until items have been rendered.
             Browser.True(() => (initialItemCount = GetItemCount()) > 0);
 
-            var itemSizeInput = Browser.FindElement(By.Id("item-size-input"));
+            var itemSizeInput = Browser.Exists(By.Id("item-size-input"));
 
             // Change the item size.
             itemSizeInput.SendKeys("\b\b\b10\n");
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void RerendersWhenItemSizeShrinks_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
-            var finishLoadingButton = Browser.FindElement(By.Id("finish-loading-button"));
+            var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
 
             // Load the initial set of items.
             finishLoadingButton.Click();
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.True(() => (initialItemCount = GetItemCount()) > 0);
             Browser.Equal(0, GetPlaceholderCount);
 
-            var itemSizeInput = Browser.FindElement(By.Id("item-size-input"));
+            var itemSizeInput = Browser.Exists(By.Id("item-size-input"));
 
             // Change the item size.
             itemSizeInput.SendKeys("\b\b\b10\n");
@@ -170,8 +170,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CancelsOutdatedRefreshes_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
-            var cancellationCount = Browser.FindElement(By.Id("cancellation-count"));
-            var finishLoadingButton = Browser.FindElement(By.Id("finish-loading-button"));
+            var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
+            var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
 
             // Load the initial set of items.
             finishLoadingButton.Click();
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<VirtualizationComponent>();
             var expectedInitialSpacerStyle = "height: 0px;";
-            var topSpacer = Browser.FindElement(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
+            var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
             Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
 
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<VirtualizationDataChanges>();
 
             // Initial data
-            var container = Browser.FindElement(By.Id("using-items"));
+            var container = Browser.Exists(By.Id("using-items"));
             Browser.Collection(() => GetPeopleNames(container),
                 name => Assert.Equal("Person 1", name),
                 name => Assert.Equal("Person 2", name),
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<VirtualizationDataChanges>();
 
             // Initial data
-            var container = Browser.FindElement(By.Id("using-itemsprovider"));
+            var container = Browser.Exists(By.Id("using-itemsprovider"));
             Browser.Collection(() => GetPeopleNames(container),
                 name => Assert.Equal("Person 1", name),
                 name => Assert.Equal("Person 2", name),
@@ -263,14 +263,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<VirtualizationDataChanges>();
 
             // Initial data
-            var container = Browser.FindElement(By.Id("using-items"));
+            var container = Browser.Exists(By.Id("using-items"));
             Browser.Collection(() => GetPeopleNames(container),
                 name => Assert.Equal("Person 1", name),
                 name => Assert.Equal("Person 2", name),
                 name => Assert.Equal("Person 3", name));
 
             // Add another item
-            Browser.FindElement(By.Id("add-person-to-fixed-list")).Click();
+            Browser.Exists(By.Id("add-person-to-fixed-list")).Click();
 
             // See changes
             Browser.Collection(() => GetPeopleNames(container),
@@ -286,14 +286,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<VirtualizationDataChanges>();
 
             // Initial data
-            var container = Browser.FindElement(By.Id("using-itemsprovider"));
+            var container = Browser.Exists(By.Id("using-itemsprovider"));
             Browser.Collection(() => GetPeopleNames(container),
                 name => Assert.Equal("Person 1", name),
                 name => Assert.Equal("Person 2", name),
                 name => Assert.Equal("Person 3", name));
 
             // Add another item
-            Browser.FindElement(By.Id("add-person-to-itemsprovider")).Click();
+            Browser.Exists(By.Id("add-person-to-itemsprovider")).Click();
 
             // Initially this has no effect because we don't re-query the provider until told to do so
             Browser.Collection(() => GetPeopleNames(container),
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 name => Assert.Equal("Person 3", name));
 
             // Request refresh
-            Browser.FindElement(By.Id("refresh-itemsprovider")).Click();
+            Browser.Exists(By.Id("refresh-itemsprovider")).Click();
 
             // See changes
             Browser.Collection(() => GetPeopleNames(container),
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<VirtualizationDataChanges>();
 
             // Mutate the data
-            var container = Browser.FindElement(By.Id("using-itemsprovider"));
+            var container = Browser.Exists(By.Id("using-itemsprovider"));
             var itemToMutate = container.FindElements(By.ClassName("person"))[1];
             itemToMutate.FindElement(By.TagName("button")).Click();
 
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 name => Assert.Equal("Person 3", name));
 
             // Refresh and verify the mutation was reverted
-            Browser.FindElement(By.Id("refresh-itemsprovider")).Click();
+            Browser.Exists(By.Id("refresh-itemsprovider")).Click();
             Browser.Collection(() => GetPeopleNames(container),
                 name => Assert.Equal("Person 1", name),
                 name => Assert.Equal("Person 2", name),

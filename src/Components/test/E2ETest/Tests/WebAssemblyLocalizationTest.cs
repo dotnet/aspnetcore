@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
             Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
 
-            var messageDisplay = Browser.FindElement(By.Id("message-display"));
+            var messageDisplay = Browser.Exists(By.Id("message-display"));
             Assert.Equal(message, messageDisplay.Text);
         }
     }
