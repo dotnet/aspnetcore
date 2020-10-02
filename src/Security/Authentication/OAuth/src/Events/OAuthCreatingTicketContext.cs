@@ -108,8 +108,16 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// </summary>
         public ClaimsIdentity Identity => Principal?.Identity as ClaimsIdentity;
 
+        /// <summary>
+        /// Examines <see cref="User"/>, determine if the requisite data is present, and optionally add it
+        /// to <see cref="Identity"/>.
+        /// </summary>
         public void RunClaimActions() => RunClaimActions(User);
 
+        /// <summary>
+        /// Examines the specified <paramref name="userData"/>, determine if the requisite data is present, and optionally add it
+        /// to <see cref="Identity"/>.
+        /// </summary>
         public void RunClaimActions(JsonElement userData)
         {
             foreach (var action in Options.ClaimActions)

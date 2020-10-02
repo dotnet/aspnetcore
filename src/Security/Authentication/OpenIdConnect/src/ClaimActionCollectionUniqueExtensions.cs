@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect.Claims;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Extension methods for <see cref="ClaimActionCollection"/>.
+    /// </summary>
     public static class ClaimActionCollectionUniqueExtensions
     {
         /// <summary>

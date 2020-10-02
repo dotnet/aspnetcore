@@ -20,8 +20,15 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
+    /// <summary>
+    /// An authentication handler that supports OAuth.
+    /// </summary>
+    /// <typeparam name="TOptions">The type of options.</typeparam>
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
+        /// <summary>
+        /// Gets the <see cref="HttpClient"/> instance used to communicate with the remote authentication provider.
+        /// </summary>
         protected HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -34,6 +41,10 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
+        /// </summary>
+        /// <inheritdoc />
         public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -44,6 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OAuthEvents());
 
+        /// <inheritdoc />
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             var query = Request.Query;
@@ -173,6 +185,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             }
         }
 
+        /// <summary>
+        /// Sends the code challenge and receives the authorization code from the remote provider.
+        /// </summary>
+        /// <param name="context">The <see cref="OAuthCodeExchangeContext"/>.</param>
+        /// <returns>The response <see cref="OAuthTokenResponse"/>.</returns>
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(OAuthCodeExchangeContext context)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
@@ -219,6 +236,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             return output.ToString();
         }
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticationTicket"/> from the specified <paramref name="tokens"/>.
+        /// </summary>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="tokens">The <see cref="OAuthTokenResponse"/>.</param>
+        /// <returns>The <see cref="AuthenticationTicket"/>.</returns>
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             using (var user = JsonDocument.Parse("{}"))
@@ -229,6 +253,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             }
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))
@@ -258,6 +283,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Logger.HandleChallenge(location, cookie);
         }
 
+        /// <summary>
+        /// Constructs the OAuth challenge url.
+        /// </summary>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="redirectUri">The url to redirect to once the challenge is completed.</param>
+        /// <returns>The challenge url.</returns>
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
