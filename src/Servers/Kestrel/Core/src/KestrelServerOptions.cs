@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
-        /// Typically initialized by UseKestrel()"/>.
+        /// Typically initialized by UseKestrel().
         /// </summary>
         public IServiceProvider ApplicationServices { get; set; }
 

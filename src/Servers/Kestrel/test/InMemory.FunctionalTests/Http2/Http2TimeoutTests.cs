@@ -147,7 +147,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task PING_NoKeepAliveTimeout_DoesNotResetKeepAliveTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;

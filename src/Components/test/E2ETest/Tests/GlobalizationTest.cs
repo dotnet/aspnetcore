@@ -87,7 +87,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         // We need to do step 4 to make sure that the value we're entering can "stick" in the form field.
         // We can't use ".Text" because DOM reasons :(
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
