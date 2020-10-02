@@ -3,12 +3,16 @@
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
+    /// <inheritdoc/>
     public class StatusCodeReExecuteFeature : IStatusCodeReExecuteFeature
     {
+        /// <inheritdoc/>
         public string OriginalPath { get; set; }
 
+        /// <inheritdoc/>
         public string OriginalPathBase { get; set; }
 
+        /// <inheritdoc/>
         public string OriginalQueryString { get; set; }
     }
 }
