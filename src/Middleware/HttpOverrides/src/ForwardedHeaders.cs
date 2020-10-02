@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
     public enum ForwardedHeaders
     {
         /// <summary>
-        /// Do not processed any forwarders
+        /// Do not process any forwarders
         /// </summary>
         None = 0,
         /// <summary>

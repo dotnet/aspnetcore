@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// Determine whether a given The <see cref="IPAddress"/> is part of the IP network.
         /// </summary>
         /// <param name="address">The <see cref="IPAddress"/>.</param>
-        /// <returns><c>true</c> if the <see cref="IPAddress"/> is part of the IP network. Otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the <see cref="IPAddress"/> is part of the IP network. Otherwise, <see langword="false"/>.</returns>
         public bool Contains(IPAddress address)
         {
             if (Prefix.AddressFamily != address.AddressFamily)

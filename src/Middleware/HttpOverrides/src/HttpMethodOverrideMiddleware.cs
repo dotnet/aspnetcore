@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// Executes the middleware.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-        /// <returns>A task that represents the execution of this middleware.</returns>
         public async Task Invoke(HttpContext context)
         {
             if (HttpMethods.IsPost(context.Request.Method))
