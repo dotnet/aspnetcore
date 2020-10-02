@@ -128,14 +128,14 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>6.0.0-alpha.1.20479.10</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>6.0.0-alpha.1.20480.2</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>6.0.0-alpha.1.20480.2</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <dotnetefPackageVersion>6.0.0-alpha.1.20502.4</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignPackageVersion>6.0.0-alpha.1.20502.4</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.20478.3</MicrosoftDotNetBuildTasksInstallersPackageVersion>
   </PropertyGroup>
