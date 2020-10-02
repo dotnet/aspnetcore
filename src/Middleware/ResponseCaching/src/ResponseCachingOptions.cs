@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Microsoft.AspNetCore.ResponseCaching
 {
     /// <summary>
-    /// Options for configuring the response caching middleware.
+    /// Options for configuring the <see cref="ResponseCachingMiddleware"/>.
     /// </summary>
     public class ResponseCachingOptions
     {
