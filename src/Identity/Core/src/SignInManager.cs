@@ -667,7 +667,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
             }
 
-            var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var providerKey = auth.Principal.FindFirstValue(Options.ClaimsIdentity.UserIdClaimType);
             var provider = items[LoginProviderKey] as string;
             if (providerKey == null || provider == null)
             {
