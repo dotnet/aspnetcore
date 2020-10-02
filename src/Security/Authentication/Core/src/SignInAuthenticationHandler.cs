@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -16,9 +15,17 @@ namespace Microsoft.AspNetCore.Authentication
     public abstract class SignInAuthenticationHandler<TOptions> : SignOutAuthenticationHandler<TOptions>, IAuthenticationSignInHandler
         where TOptions : AuthenticationSchemeOptions, new()
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="SignInAuthenticationHandler{TOptions}"/>.
+        /// </summary>
+        /// <param name="options">The monitor for the options instance.</param>
+        /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         public SignInAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc/>
         public virtual Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardSignIn);
