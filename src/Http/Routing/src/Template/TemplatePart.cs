@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class TemplatePart
     {
         /// <summary>
-        /// Constructor for a new <see cref="TemplatePart"/> instance.
+        /// Constructs a new <see cref="TemplatePart"/> instance.
         /// </summary>
         public TemplatePart()
         {

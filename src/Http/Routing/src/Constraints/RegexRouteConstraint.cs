@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
-    /// Represents a route constrainted from a regular expression.
+    /// Constrains a route parameter to match a regular expression.
     /// </summary>
     public class RegexRouteConstraint : IRouteConstraint
     {

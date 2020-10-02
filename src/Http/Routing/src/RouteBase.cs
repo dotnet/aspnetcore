@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="template">The route template.</param>
         /// <param name="name">The name of the route.</param>
-        /// <param name="constraintResolver">A <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="constraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
         /// <param name="defaults">The default values for parameters in the route.</param>
         /// <param name="constraints">The constraints for the route.</param>
         /// <param name="dataTokens">The data tokens for the route.</param>
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Extracts constatins from a given <see cref="RouteTemplate"/>.
         /// </summary>
-        /// <param name="inlineConstraintResolver">A <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="inlineConstraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
         /// <param name="parsedTemplate">A <see cref="RouteTemplate"/> instance.</param>
         /// <param name="constraints">A collection of constraints on the route template.</param>
         protected static IDictionary<string, IRouteConstraint> GetConstraints(

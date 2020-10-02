@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class TemplateSegment
     {
         /// <summary>
-        /// Constructor for a new <see cref="TemplateSegment"/>.
+        /// Constructs a new <see cref="TemplateSegment"/> instance.
         /// </summary>
         public TemplateSegment()
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Constructor for a new <see cref="TemplateSegment"/> given another <see cref="RoutePatternPathSegment"/>.
+        /// Constructs a new <see cref="TemplateSegment"/> instance given another <see cref="RoutePatternPathSegment"/>.
         /// </summary>
         /// <param name="other">A <see cref="RoutePatternPathSegment"/> instance.</param>
         public TemplateSegment(RoutePatternPathSegment other)

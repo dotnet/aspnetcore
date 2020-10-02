@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public interface INodeBuilderPolicy
     {
         /// <summary>
-        /// Evaluates if the polocy matches any of the endpoints provided in <paramref name="endpoints"/>.
+        /// Evaluates if the policy matches any of the endpoints provided in <paramref name="endpoints"/>.
         /// </summary>
         /// <param name="endpoints">A list of <see cref="Endpoint"/>.</param>
         /// <returns><see langword="true"/> if the policy applies to any of the provided <paramref name="endpoints"/>.</returns>

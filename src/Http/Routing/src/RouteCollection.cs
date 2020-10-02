@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Gets the route at a given index.
         /// </summary>
-        /// <value></value>
+        /// <value>The route at the given index.</value>
         public IRouter this[int index]
         {
             get { return _routes[index]; }

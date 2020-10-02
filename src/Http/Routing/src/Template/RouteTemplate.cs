@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         private const string SeparatorString = "/";
 
         /// <summary>
-        /// Creates a new <see cref="RouteTemplate"/> given <paramref name="other"/>.
+        /// Constructs a new <see cref="RouteTemplate"/> instance given <paramref name="other"/>.
         /// </summary>
         /// <param name="other">A <see cref="RoutePattern"/> instance.</param>
         public RouteTemplate(RoutePattern other)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Creates a new route template instance given the <paramref name="template"/> string
+        /// Constructs a a new <see cref="RouteTemplate" /> instance given the <paramref name="template"/> string
         /// and a list of <paramref name="segments"/>. Computes the parameters in the route template.
         /// </summary>
         /// <param name="template">A string representation of the route template.</param>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Gets the strign representation of the route template.
+        /// Gets the string representation of the route template.
         /// </summary>
         public string? TemplateText { get; }
 

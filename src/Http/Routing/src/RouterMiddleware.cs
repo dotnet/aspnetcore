@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly IRouter _router;
 
         /// <summary>
-        /// Constructor for <see cref="RouterMiddleware"/> with a given <paramref name="router"/>.
+        /// Constructs a new <see cref="RouterMiddleware"/> instance with a given <paramref name="router"/>.
         /// </summary>
         /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>

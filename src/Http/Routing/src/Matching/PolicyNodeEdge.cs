@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public readonly struct PolicyNodeEdge
     {
         /// <summary>
-        /// Constructor of a new <see cref="PolicyNodeEdge"/> instance.
+        /// Constructs a new <see cref="PolicyNodeEdge"/> instance.
         /// </summary>
         /// <param name="state">Represents the match heuristic of the policy.</param>
         /// <param name="endpoints">Represents the endpoints that match the policy</param>

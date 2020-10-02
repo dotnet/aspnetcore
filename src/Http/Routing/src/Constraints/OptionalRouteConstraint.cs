@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public class OptionalRouteConstraint : IRouteConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="OptionalRouteConstraint"/> instace given the <paramref name="innerConstraint"/>.
+        /// Creates a new <see cref="OptionalRouteConstraint"/> instance given the <paramref name="innerConstraint"/>.
         /// </summary>
         /// <param name="innerConstraint"></param>
         public OptionalRouteConstraint(IRouteConstraint innerConstraint)
