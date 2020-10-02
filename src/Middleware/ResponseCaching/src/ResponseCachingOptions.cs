@@ -5,6 +5,9 @@ using System.ComponentModel;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
+    /// <summary>
+    /// Options for configuring the response caching middleware.
+    /// </summary>
     public class ResponseCachingOptions
     {
         /// <summary>
