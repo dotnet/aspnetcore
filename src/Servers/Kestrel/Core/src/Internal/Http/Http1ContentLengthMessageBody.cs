@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
-
     internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
     {
         private ReadResult _readResult;
@@ -23,12 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _finalAdvanceCalled;
         private bool _cannotResetInputPipe;
 
-        public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Http1Connection context)
-            : base(context)
+        public Http1ContentLengthMessageBody(Http1Connection context, long contentLength, bool keepAlive)
+            : base(context, keepAlive)
         {
-            RequestKeepAlive = keepAlive;
             _contentLength = contentLength;
-            _unexaminedInputLength = _contentLength;
+            _unexaminedInputLength = contentLength;
         }
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)

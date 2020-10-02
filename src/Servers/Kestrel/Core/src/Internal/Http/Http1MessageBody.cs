@@ -18,9 +18,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly Http1Connection _context;
         protected bool _completed;
 
-        protected Http1MessageBody(Http1Connection context) : base(context)
+        protected Http1MessageBody(Http1Connection context, bool keepAlive) : base(context)
         {
             _context = context;
+            RequestKeepAlive = keepAlive;
         }
 
         [StackTraceHidden]
@@ -118,14 +119,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
             var keepAlive = httpVersion != HttpVersion.Http10;
-
             var upgrade = false;
+
             if (headers.HasConnection)
             {
                 var connectionOptions = HttpHeaders.ParseConnection(headers.HeaderConnection);
 
                 upgrade = (connectionOptions & ConnectionOptions.Upgrade) != 0;
-                keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) != 0;
+                keepAlive = keepAlive || (connectionOptions & ConnectionOptions.KeepAlive) != 0;
+                keepAlive = keepAlive && (connectionOptions & ConnectionOptions.Close) == 0;
             }
 
             if (upgrade)
@@ -136,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 context.OnTrailersComplete(); // No trailers for these.
-                return new Http1UpgradeMessageBody(context);
+                return new Http1UpgradeMessageBody(context, keepAlive);
             }
 
             if (headers.HasTransferEncoding)
@@ -157,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // TODO may push more into the wrapper rather than just calling into the message body
                 // NBD for now.
-                return new Http1ChunkedEncodingMessageBody(keepAlive, context);
+                return new Http1ChunkedEncodingMessageBody(context, keepAlive);
             }
 
             if (headers.ContentLength.HasValue)
@@ -169,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
                 }
 
-                return new Http1ContentLengthMessageBody(keepAlive, contentLength, context);
+                return new Http1ContentLengthMessageBody(context, contentLength, keepAlive);
             }
 
             // If we got here, request contains no Content-Length or Transfer-Encoding header.
