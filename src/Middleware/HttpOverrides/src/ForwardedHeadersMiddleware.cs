@@ -15,6 +15,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
+    /// <summary>
+    /// A middleware for forwarding proxied headers onto the current request.
+    /// </summary>
     public class ForwardedHeadersMiddleware
     {
         private static readonly bool[] HostCharValidity = new bool[127];
@@ -62,6 +65,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
             }
         }
 
+        /// <summary>
+        /// Create a new <see cref="ForwardedHeadersMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="options">The <see cref="ForwardedHeadersOptions"/> for configuring the middleware.</param>
         public ForwardedHeadersMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<ForwardedHeadersOptions> options)
         {
             if (next == null)
@@ -137,12 +146,21 @@ namespace Microsoft.AspNetCore.HttpOverrides
                            || string.Equals("0.0.0.0", host, StringComparison.Ordinal)); // IPv4 Any
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
+        /// <returns>A task that represents the execution of this middleware.</returns>
         public Task Invoke(HttpContext context)
         {
             ApplyForwarders(context);
             return _next(context);
         }
 
+        /// <summary>
+        /// Forward the proxied headers to the given <see cref="HttpContext"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         public void ApplyForwarders(HttpContext context)
         {
             // Gather expected headers.

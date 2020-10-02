@@ -7,6 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods for enabling <see cref="ForwardedHeadersMiddleware"/>.
+    /// </summary>
     public static class ForwardedHeadersExtensions
     {
         private const string ForwardedHeadersAdded = "ForwardedHeadersAdded";
