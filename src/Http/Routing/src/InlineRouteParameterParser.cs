@@ -7,8 +7,16 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Contains methods for parsing processing constraints from a route definition.
+    /// </summary>
     public static class InlineRouteParameterParser
     {
+        /// <summary>
+        /// Parses a string representing the provided <paramref name="routeParameter"/> into a <see cref="TemplatePart"/>.
+        /// </summary>
+        /// <param name="routeParameter">A string representation of the route parameter.</param>
+        /// <returns>A <see cref="TemplatePart"/> instance.</returns>
         public static TemplatePart ParseRouteParameter(string routeParameter)
         {
             if (routeParameter == null)

@@ -87,6 +87,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </typeparam>
     public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> where TMetadata : class
     {
+        /// <summary>
+        /// A default instance of the <see cref="EndpointMetadataComparer"/>.
+        /// </summary>
         public static readonly EndpointMetadataComparer<TMetadata> Default = new DefaultComparer<TMetadata>();
 
         /// <summary>
