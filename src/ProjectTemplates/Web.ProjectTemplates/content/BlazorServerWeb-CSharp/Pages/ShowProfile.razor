@@ -24,61 +24,21 @@ else
             <td>Name</td>
             <td>@user.DisplayName</td>
         </tr>
-        <tr>
-            <td>Photo</td>
-            <td>
-                @{
-                    if (photo != null)
-                    {
-                        <img style="margin: 5px 0; width: 150px" src="data:image/jpeg;base64, @photo" />
-                    }
-                    else
-                    {
-                        <h3>NO PHOTO</h3>
-                        <p>Check user profile in Azure Active Directory to add a photo.</p>
-                    }
-                }
-            </td>
-        </tr>
     </table>
 }
 
 @code {
     User user;
-    string photo;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             user = await GraphServiceClient.Me.Request().GetAsync();
-            photo = await GetPhoto();
         }
         catch (Exception ex)
         {
             ConsentHandler.HandleException(ex);
         }
     }
-
-    protected async Task<string> GetPhoto()
-    {
-        string photo;
-
-        try
-        {
-            using (var photoStream = await GraphServiceClient.Me.Photo.Content.Request().GetAsync())
-            {
-                byte[] photoByte = ((System.IO.MemoryStream)photoStream).ToArray();
-                photo = Convert.ToBase64String(photoByte);
-                this.StateHasChanged();
-            }
-
-        }
-        catch (Exception)
-        {
-            photo = null;
-        }
-        return photo;
-    }
-
 }
