@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Creates a <see cref="TemplatePart"/> instance given a <paramref name="other"/>.
+        /// Constructs a new <see cref="TemplatePart"/> instance given a <paramref name="other"/>.
         /// </summary>
         /// <param name="other">A <see cref="RoutePatternPart"/> instance representing the route part.</param>
         public TemplatePart(RoutePatternPart other)

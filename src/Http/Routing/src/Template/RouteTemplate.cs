@@ -89,7 +89,6 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <summary>
         /// Gets the list of <see cref="TemplatePart"/> that represent that parameters defined in the route template.
         /// </summary>
-        /// <value></value>
         public IList<TemplatePart> Parameters { get; }
 
         /// <summary>
