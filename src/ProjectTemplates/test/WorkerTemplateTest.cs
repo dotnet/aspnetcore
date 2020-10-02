@@ -14,11 +14,21 @@ namespace Templates.Test
         public WorkerTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = new TestOutputLogger(Logger);
         }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]

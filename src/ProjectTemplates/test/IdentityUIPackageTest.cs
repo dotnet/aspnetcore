@@ -17,12 +17,22 @@ namespace Templates.Test
         public IdentityUIPackageTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = new TestOutputLogger(Logger);
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
 
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         public static string[] Bootstrap4ContentFiles { get; } = new string[]
         {

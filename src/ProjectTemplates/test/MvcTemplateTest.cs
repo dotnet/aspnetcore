@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Templates.Test
 {
@@ -18,11 +19,22 @@ namespace Templates.Test
         public MvcTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = new TestOutputLogger(Logger);
         }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-        public ITestOutputHelper Output { get; }
+
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [Fact]
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");

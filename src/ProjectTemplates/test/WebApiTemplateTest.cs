@@ -15,12 +15,22 @@ namespace Templates.Test
         public WebApiTemplateTest(ProjectFactoryFixture factoryFixture)
         {
             FactoryFixture = factoryFixture;
-            Output = new TestOutputLogger(Logger);
         }
 
         public ProjectFactoryFixture FactoryFixture { get; }
 
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [Theory]
         [InlineData("IndividualB2C", null)]

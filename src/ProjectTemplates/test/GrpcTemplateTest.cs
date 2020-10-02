@@ -16,11 +16,21 @@ namespace Templates.Test
         public GrpcTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = new TestOutputLogger(Logger);
         }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [ConditionalFact]
         [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]

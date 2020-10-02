@@ -35,7 +35,6 @@ namespace Templates.Test
         public BaselineTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = new TestOutputLogger(Logger);
         }
 
         public Project Project { get; set; }
@@ -67,7 +66,18 @@ namespace Templates.Test
         }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [Theory]
         [MemberData(nameof(TemplateBaselines))]
