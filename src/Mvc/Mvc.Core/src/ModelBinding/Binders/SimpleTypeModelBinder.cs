@@ -115,6 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,

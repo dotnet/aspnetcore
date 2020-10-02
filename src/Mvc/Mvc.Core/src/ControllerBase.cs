@@ -191,6 +191,9 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ProblemDetailsFactory"/>.
+        /// </summary>
         public ProblemDetailsFactory ProblemDetailsFactory
         {
             get

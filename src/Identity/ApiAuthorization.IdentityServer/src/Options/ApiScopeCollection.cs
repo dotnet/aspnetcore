@@ -8,6 +8,9 @@ using IdentityServer4.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
+    /// <summary>
+    /// A collection of <see cref="ApiScope"/>.
+    /// </summary>
     public class ApiScopeCollection : Collection<ApiScope>
     {
         /// <summary>

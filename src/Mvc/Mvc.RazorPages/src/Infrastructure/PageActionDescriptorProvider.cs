@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,12 +13,21 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionDescriptorProvider"/> for PageActions
+    /// </summary>
     public class PageActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly IPageRouteModelProvider[] _routeModelProviders;
         private readonly MvcOptions _mvcOptions;
         private readonly IPageRouteModelConvention[] _conventions;
 
+        /// <summary>
+        /// Instantiates a new instance of <see cref="PageActionDescriptorProvider"/>.
+        /// </summary>
+        /// <param name="pageRouteModelProviders">The <see cref="IPageRouteModelProvider"/>s to use.</param>
+        /// <param name="mvcOptionsAccessor">The <see cref="MvcOptions"/>.</param>
+        /// <param name="pagesOptionsAccessor">The <see cref="RazorPagesOptions"/>.</param>
         public PageActionDescriptorProvider(
             IEnumerable<IPageRouteModelProvider> pageRouteModelProviders,
             IOptions<MvcOptions> mvcOptionsAccessor,
@@ -32,8 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .ToArray();
         }
 
+        /// <inheritdoc/>
         public int Order { get; set; } = -900; // Run after the default MVC provider, but before others.
 
+        /// <inheritdoc/>
         public void OnProvidersExecuting(ActionDescriptorProviderContext context)
         {
             var pageRouteModels = BuildModel();
@@ -44,6 +55,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Build the model.
+        /// </summary>
+        /// <returns>The list of <see cref="PageRouteModel"/>.</returns>
         protected IList<PageRouteModel> BuildModel()
         {
             var context = new PageRouteModelProviderContext();
@@ -61,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return context.RouteModels;
         }
 
+        /// <inheritdoc/>
         public void OnProvidersExecuted(ActionDescriptorProviderContext context)
         {
         }

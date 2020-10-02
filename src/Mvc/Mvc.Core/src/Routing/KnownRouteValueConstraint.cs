@@ -13,11 +13,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    /// <summary>
+    /// A <see cref="IRouteConstraint"/> that represents a known route value.
+    /// </summary>
     public class KnownRouteValueConstraint : IRouteConstraint
     {
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private RouteValuesCollection _cachedValuesCollection;
 
+        /// <summary>
+        /// Initializes an instance of <see cref="KnownRouteValueConstraint"/>.
+        /// </summary>
+        /// <param name="actionDescriptorCollectionProvider">The <see cref="IActionDescriptorCollectionProvider"/>.</param>
         public KnownRouteValueConstraint(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
             if (actionDescriptorCollectionProvider == null)
@@ -28,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         }
 
+        /// <inheritdoc/>
         public bool Match(
             HttpContext httpContext,
             IRouter route,

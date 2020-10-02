@@ -5,12 +5,16 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// Type that provides access to an <see cref="ActionContext"/>.
+    /// </summary>
     public class ActionContextAccessor : IActionContextAccessor
     {
         internal static readonly IActionContextAccessor Null = new NullActionContextAccessor();
 
         private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
 
+        /// <inheritdoc/>
         public ActionContext ActionContext
         {
             get { return _storage.Value; }
