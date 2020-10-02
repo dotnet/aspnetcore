@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class BaselineTest
+    public class BaselineTest : LoggedTest
     {
         private static readonly Regex TemplateNameRegex = new Regex(
             "new (?<template>[a-zA-Z]+)",
@@ -32,10 +32,10 @@ namespace Templates.Test
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
             TimeSpan.FromSeconds(1));
 
-        public BaselineTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public BaselineTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = output;
+            Output = new TestOutputLogger(Logger);
         }
 
         public Project Project { get; set; }

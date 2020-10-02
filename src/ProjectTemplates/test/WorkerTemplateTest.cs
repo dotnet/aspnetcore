@@ -9,15 +9,14 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
-    public class WorkerTemplateTest
+    public class WorkerTemplateTest : LoggedTest
     {
-        public WorkerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public WorkerTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = output;
+            Output = new TestOutputLogger(Logger);
         }
 
-        public Project Project { get; set; }
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
@@ -27,35 +26,35 @@ namespace Templates.Test
         [InlineData("F#")]
         public async Task WorkerTemplateAsync(string language)
         {
-            Project = await ProjectFactory.GetOrCreateProject(
+            var project = await ProjectFactory.GetOrCreateProject(
                 $"worker-{ language.ToLowerInvariant()[0] }sharp",
                 Output);
 
-            var createResult = await Project.RunDotNetNewAsync("worker", language: language);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            var createResult = await project.RunDotNetNewAsync("worker", language: language);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync(hasListeningUri: false))
+            using (var aspNetProcess = project.StartBuiltProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: false))
+            using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
             }
         }
     }

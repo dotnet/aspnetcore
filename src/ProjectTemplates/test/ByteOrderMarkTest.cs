@@ -5,18 +5,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class ByteOrderMarkTest
+    public class ByteOrderMarkTest : LoggedTest
     {
         private readonly ITestOutputHelper _output;
 
-        public ByteOrderMarkTest(ITestOutputHelper output)
+        public ByteOrderMarkTest()
         {
-            _output = output;
+            _output = new TestOutputLogger(Logger);
         }
 
         [Theory]

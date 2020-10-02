@@ -8,7 +8,7 @@ namespace Templates.Test.Helpers
 {
     internal class TestOutputLogger : ITestOutputHelper
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public TestOutputLogger(ILogger logger)
         {
