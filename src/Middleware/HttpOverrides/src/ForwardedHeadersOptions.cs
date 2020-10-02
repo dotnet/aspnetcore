@@ -31,19 +31,22 @@ namespace Microsoft.AspNetCore.Builder
         public string ForwardedProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedProtoHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
+        /// Gets or sets the header used to store the original value of client IP before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalForHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalForHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalHostHeaderName"/>
+        /// Gets or sets the header used to store the original value of the Host header field before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalHostHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalHostHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalHostHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalProtoHeaderName"/>
+        /// Gets or sets the header used to store the original scheme (HTTP/HTTPS) before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalProtoHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalProtoHeaderName;
