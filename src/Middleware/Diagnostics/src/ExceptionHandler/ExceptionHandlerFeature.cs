@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
-    /// 
+    /// A feature containing the path and error of the original request for examination by an exception handler.
     /// </summary>
     public class ExceptionHandlerFeature : IExceptionHandlerPathFeature
     {
