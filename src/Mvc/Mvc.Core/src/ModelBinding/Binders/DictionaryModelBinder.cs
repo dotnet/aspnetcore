@@ -252,6 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return base.CreateEmptyCollection(targetType);
         }
 
+        /// <inheritdoc/>
         public override bool CanCreateInstance(Type targetType)
         {
             if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))

@@ -249,11 +249,24 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return result.Substring(startIndex, subStringLength);
         }
 
+        /// <summary>
+        /// Replaces the tokens in the template with the provided values.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="values">The token values to use.</param>
+        /// <returns>A new string with the replaced values.</returns>
         public static string ReplaceTokens(string template, IDictionary<string, string> values)
         {
             return ReplaceTokens(template, values, routeTokenTransformer: null);
         }
 
+        /// <summary>
+        /// Replaces the tokens in the template with the provided values and route token transformer.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="values">The token values to use.</param>
+        /// <param name="routeTokenTransformer">The route token transformer.</param>
+        /// <returns>A new string with the replaced values.</returns>
         public static string ReplaceTokens(string template, IDictionary<string, string> values, IOutboundParameterTransformer routeTokenTransformer)
         {
             var builder = new StringBuilder();

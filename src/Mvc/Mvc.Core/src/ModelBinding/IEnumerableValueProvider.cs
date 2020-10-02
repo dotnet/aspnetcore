@@ -5,8 +5,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
+    /// <summary>
+    /// Interface representing an enumerable <see cref="IValueProvider"/>.
+    /// </summary>
     public interface IEnumerableValueProvider : IValueProvider
     {
+        /// <summary>
+        /// Gets the keys for a specific prefix.
+        /// </summary>
+        /// <param name="prefix">The prefix to enumerate.</param>
+        /// <returns>The keys for the prefix.</returns>
         IDictionary<string, string> GetKeysFromPrefix(string prefix);
     }
 }

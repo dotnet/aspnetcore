@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -6,8 +6,12 @@ using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
+    /// <summary>
+    /// An <see cref="IViewLocationExpander"/> for PageView.
+    /// </summary>
     public class PageViewLocationExpander : IViewLocationExpander
     {
+        /// <inheritdoc/>
         public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
         {
             if ((context.ActionContext.ActionDescriptor is PageActionDescriptor) && !string.IsNullOrEmpty(context.PageName))
@@ -61,6 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
+        /// <inheritdoc/>
         public void PopulateValues(ViewLocationExpanderContext context)
         {
             // The value we care about - 'page' is already part of the system. We don't need to add it manually.
