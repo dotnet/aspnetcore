@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>.
+        /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>. By default this produces a plain text response that includes the status code.
         /// </summary>
         public Func<StatusCodeContext, Task> HandleAsync { get; set; }
     }

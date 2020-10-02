@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
-    /// <inheritdoc/>
+    /// <summary>Default implementation for <see cref="IStatusCodeReExecuteFeature" />.</summary>
     public class StatusCodeReExecuteFeature : IStatusCodeReExecuteFeature
     {
         /// <inheritdoc/>

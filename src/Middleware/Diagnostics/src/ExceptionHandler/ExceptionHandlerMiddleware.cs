@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// Executes the middleware.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-        /// <returns>A task that represents the execution of this middleware.</returns>
         public Task Invoke(HttpContext context)
         {
             ExceptionDispatchInfo edi;
