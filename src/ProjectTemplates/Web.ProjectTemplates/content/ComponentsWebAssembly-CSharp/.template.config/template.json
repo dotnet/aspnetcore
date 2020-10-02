@@ -211,6 +211,61 @@
             "Server/Controllers/OidcConfigurationController.cs",
             "Server/Models/ApplicationUser.cs"
           ]
+        },
+        {
+          "condition": "(!GenerateApi)",
+          "exclude": [
+            "Client/Pages/CallWebApi.razor",
+            "Server/Controllers/CallWebApiController.cs"
+          ]
+        },
+        {
+          "condition": "(!GenerateGraph)",
+          "exclude": [
+            "Client/Shared/NavMenu.CallsMicrosoftGraph.razor",
+            "Client/Pages/ShowProfile.razor",
+            "Server/Controllers/ShowProfileController.cs"
+            ]
+        },
+         {
+          "condition": "(!GenerateApiOrGraph && Hosted)",
+          "rename": {
+            "Client/Shared/NavMenu.NoGraphOrApi.razor": "Client/Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Client/Shared/NavMenu.CallsMicrosoftGraph.razor",
+            "Client/Shared/NavMenu.CallsWebApi.razor"
+          ]
+        },
+        {
+          "condition": "(!GenerateApiOrGraph && !Hosted)",
+          "rename": {
+            "Client/Shared/NavMenu.NoGraphOrApi.razor": "Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Client/Shared/NavMenu.CallsMicrosoftGraph.razor",
+            "Client/Shared/NavMenu.CallsWebApi.razor"
+          ]
+        },
+        {
+          "condition": "(GenerateGraph)",
+          "rename": {
+            "Client/Shared/NavMenu.CallsMicrosoftGraph.razor": "Client/Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Client/Shared/NavMenu.NoGraphOrApi.razor",
+            "Client/Shared/NavMenu.CallsWebApi.razor"
+          ]
+        },
+        {
+          "condition": "(GenerateApi)",
+          "rename": {
+            "Client/Shared/NavMenu.CallsWebApi.razor": "Client/Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Client/Shared/NavMenu.NoGraphOrApi.razor",
+            "Client/Shared/NavMenu.CallsMicrosoftGraph.razor"
+          ]
         }
       ]
     }
@@ -474,11 +529,11 @@
     },
     "GenerateApi": {
         "type": "computed",
-        "value": "(( (IndividualB2CAuth && !Hosted) || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
+        "value": "(( (IndividualB2CAuth && !Hosted) || (OrganizationalAuth && Hosted)) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
         "type": "computed",
-        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph && Hosted)"
     },
     "GenerateApiOrGraph": {
         "type": "computed",

@@ -1,0 +1,36 @@
+﻿@page "/showprofile"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using ComponentsWebAssembly_CSharp.Shared
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h1>Call Graph</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (profile == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @profile
+}
+
+@code {
+    private string profile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            profile = await Http.GetStringAsync("showProfile");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}
