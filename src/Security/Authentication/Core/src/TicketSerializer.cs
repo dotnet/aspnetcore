@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="ClaimsIdentity" />.
+        /// Writes the specified <paramref name="identity" />.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter" />.</param>
         /// <param name="identity">The <see cref="ClaimsIdentity" />.</param>
