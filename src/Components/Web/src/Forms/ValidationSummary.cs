@@ -92,6 +92,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void Dispose(bool disposing)
         {
         }
