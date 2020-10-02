@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
@@ -41,11 +40,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             builder.Query = newQueryString;
             return builder.Uri;
-        }
-
-        internal static bool IsRunningInBrowser()
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
         }
     }
 }

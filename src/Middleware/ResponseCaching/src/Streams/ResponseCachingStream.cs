@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
         }

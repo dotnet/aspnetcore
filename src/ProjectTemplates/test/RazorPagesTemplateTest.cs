@@ -27,7 +27,7 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
         public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -98,8 +98,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -127,16 +126,17 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("razorpages");
 
+            // Note: if any links are updated here, MvcTemplateTest.cs should be updated as well
             var pages = new List<Page> {
                 new Page
                 {
                     Url = PageUrls.ForgotPassword,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -145,10 +145,10 @@ namespace Templates.Test
                     Url = PageUrls.HomeUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
                     }
@@ -158,10 +158,10 @@ namespace Templates.Test
                     Url = PageUrls.PrivacyUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -170,10 +170,10 @@ namespace Templates.Test
                     Url = PageUrls.LoginUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
                         PageUrls.ResendEmailConfirmation,
@@ -185,10 +185,10 @@ namespace Templates.Test
                     Url = PageUrls.RegisterUrl,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
                     }
