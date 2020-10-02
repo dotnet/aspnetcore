@@ -5,10 +5,12 @@ using System;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
+    /// Default implementation for <see cref="IResponseCachingFeature" />
     public class ResponseCachingFeature : IResponseCachingFeature
     {
         private string[] _varyByQueryKeys;
 
+        /// <inheritdoc />
         public string[] VaryByQueryKeys
         {
             get
