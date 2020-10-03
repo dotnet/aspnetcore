@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// called when <see cref="LocationChanging"/> the fact that any event handlers are present or not changes.
+        /// Called when <see cref="LocationChanging"/> the fact that any event handlers are present or not changes.
         /// this can be used by descendants to inform the JSRuntime that there are locationchanging event handlers
         /// </summary>
         /// <param name="value">true if there are eventhandlers</param>
