@@ -448,17 +448,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var uri = $"{_serverFixture.RootUri}subdir/LocationChangingCancel";
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
-            //Attempt to navigate with navigateto should fail
-            app.FindElement(By.Id("test-button")).Click();
-            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
             //Attempt to navigate by using the back/forward button (or calling history/back / forward) should fail
             var jsExecutor = (IJavaScriptExecutor)Browser;
             jsExecutor.ExecuteScript("history.back()");
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
+            //Attempt to navigate with navigateto should fail
+            app.FindElement(By.Id("test-button")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
             //Attempt to navigate with clicking a link should fail
             app.FindElement(By.Id("test-link")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate to an external site with navigateto should fail
+            app.FindElement(By.Id("test-button-gotoexternal")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate to an external site with clicking a link should fail
+            app.FindElement(By.Id("test-link-gotoexternal")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate to an invalid web page should fail
+            //As we are canceling the navigation before it will be picked up by the router, the user won't see an error here
+            app.FindElement(By.Id("test-button-gotoinvalid")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate to an invalid web page with clicking a link should fail
+            app.FindElement(By.Id("test-link-gotoinvalid")).Click();
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
             //Enable navigation again
