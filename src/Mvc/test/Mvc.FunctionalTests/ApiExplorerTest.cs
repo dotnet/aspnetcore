@@ -696,40 +696,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 expectedMediaTypes,
                 responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
         }
-        [Fact]
-        public async Task ApiExplorer_ResponseType_InheritingFromController()
-        {
-            // Arrange
-            var type = "ApiExplorerWebSite.Product";
-            var errorType = "ApiExplorerWebSite.ErrorInfo";
-
-            // Act
-            var response = await Client.GetAsync(
-                "http://localhost/ApiExplorerResponseTypeOverrideOnAction/Controller");
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-
-            Assert.Collection(
-                description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
-                responseType =>
-                {
-                    Assert.Equal(type, responseType.ResponseType);
-                    Assert.Equal(200, responseType.StatusCode);
-                    var responseFormat = Assert.Single(responseType.ResponseFormats);
-                    Assert.Equal("application/json", responseFormat.MediaType);
-                },
-                responseType =>
-                {
-                    Assert.Equal(errorType, responseType.ResponseType);
-                    Assert.Equal(500, responseType.StatusCode);
-                    var responseFormat = Assert.Single(responseType.ResponseFormats);
-                    Assert.Equal("application/json", responseFormat.MediaType);
-                });
-        }
 
         [Fact]
         public async Task ApiExplorer_ResponseType_OverrideOnAction()
