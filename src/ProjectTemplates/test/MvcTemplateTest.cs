@@ -30,7 +30,7 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
@@ -108,7 +108,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -136,16 +136,17 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("mvc");
 
+            // Note: if any links are updated here, RazorPagesTemplateTest.cs should be updated as well
             var pages = new List<Page> {
                 new Page
                 {
                     Url = PageUrls.ForgotPassword,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -154,10 +155,10 @@ namespace Templates.Test
                     Url = PageUrls.HomeUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
                     }
@@ -167,10 +168,10 @@ namespace Templates.Test
                     Url = PageUrls.PrivacyFullUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -179,10 +180,10 @@ namespace Templates.Test
                     Url = PageUrls.LoginUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
                         PageUrls.ResendEmailConfirmation,
@@ -194,10 +195,10 @@ namespace Templates.Test
                     Url = PageUrls.RegisterUrl,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
                     }
@@ -224,7 +225,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_SingleFileExe()
         {
             // This test verifies publishing an MVC app as a single file exe works. We'll limit testing

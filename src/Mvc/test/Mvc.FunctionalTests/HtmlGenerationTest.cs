@@ -306,6 +306,32 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ClientValidators_AreGeneratedDuringInitialRender()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Customer/HtmlGeneration_Customer/CustomerWithRecords");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var document = await response.GetHtmlDocumentAsync();
+
+            var numberInput = document.RequiredQuerySelector("input[id=Number]");
+            Assert.Equal("true", numberInput.GetAttribute("data-val"));
+            Assert.Equal("The field Number must be between 1 and 100.", numberInput.GetAttribute("data-val-range"));
+            Assert.Equal("The Number field is required.", numberInput.GetAttribute("data-val-required"));
+
+            var passwordInput = document.RequiredQuerySelector("input[id=Password]");
+            Assert.Equal("true", passwordInput.GetAttribute("data-val"));
+            Assert.Equal("The Password field is required.", passwordInput.GetAttribute("data-val-required"));
+
+            var addressInput = document.RequiredQuerySelector("input[id=Address]");
+            Assert.Equal("true", addressInput.GetAttribute("data-val"));
+            Assert.Equal("The Address field is required.", addressInput.GetAttribute("data-val-required"));
+        }
+
+        [Fact]
         public async Task ValidationTagHelpers_UsingRecords()
         {
             // Arrange
@@ -316,7 +342,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 new KeyValuePair<string,string>("Name", string.Empty),
                 new KeyValuePair<string,string>("Email", string.Empty),
                 new KeyValuePair<string,string>("PhoneNumber", string.Empty),
-                new KeyValuePair<string,string>("Password", string.Empty)
+                new KeyValuePair<string,string>("Password", string.Empty),
+                new KeyValuePair<string,string>("Address", string.Empty),
             };
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -337,6 +364,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             validation = document.QuerySelector("span[data-valmsg-for=Password]");
             Assert.Equal("The Password field is required.", validation.TextContent);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Address]");
+            Assert.Equal("The Address field is required.", validation.TextContent);
         }
 
         [Fact]

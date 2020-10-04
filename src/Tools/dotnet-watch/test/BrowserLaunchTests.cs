@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
-    public class BrowserLaunchTests
+    public class BrowserLaunchTests : IDisposable
     {
         private readonly WatchableApp _app;
 
@@ -63,6 +63,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             // Verify we launched the browser.
             await _app.Process.GetOutputLineStartsWithAsync(launchBrowserMessage, TimeSpan.FromMinutes(2));
+        }
+
+         public void Dispose()
+        {
+            _app.Dispose();
         }
     }
 }

@@ -877,9 +877,9 @@
       "Files": [
         "wwwroot/background.png",
         "wwwroot/exampleJsInterop.js",
-        "wwwroot/styles.css",
         "_Imports.razor",
         "Component1.razor",
+        "Component1.razor.css",
         "ExampleJsInterop.cs"
       ]
     },

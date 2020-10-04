@@ -14,7 +14,7 @@ interface BrowserFile {
   lastModified: string;
   name: string;
   size: number;
-  type: string;
+  contentType: string;
   readPromise: Promise<ArrayBuffer> | undefined;
   arrayBuffer: ArrayBuffer | undefined;
 }
@@ -42,7 +42,7 @@ function init(callbackWrapper: any, elem: InputElement): void {
         lastModified: new Date(file.lastModified).toISOString(),
         name: file.name,
         size: file.size,
-        type: file.type,
+        contentType: file.type,
         readPromise: undefined,
         arrayBuffer: undefined,
       };
@@ -86,7 +86,7 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
     lastModified: originalFile.lastModified,
     name: originalFile.name,
     size: resizedImageBlob?.size || 0,
-    type: format,
+    contentType: format,
     readPromise: undefined,
     arrayBuffer: undefined,
   };

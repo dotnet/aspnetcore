@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<TestRouterWithLazyAssembly>();
             Browser.Exists(By.Id("blazor-error-ui"));
 
-            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
         }
 
@@ -66,13 +66,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Navigate to a page with lazy loaded assemblies for the first time
             SetUrlViaPushState("/WithLazyAssembly");
-            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
+            Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
             // Wait for the page to finish loading
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("use-package-button")) != null);
-
-            var button = app.FindElement(By.Id("use-package-button"));
+            var button = Browser.Exists(By.Id("use-package-button"));
 
             // We should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -90,15 +87,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
-            // Ensure that we haven't requested the lazy loaded assembly
+            // Ensure that we haven't requested the lazy loaded assembly or its PDB
             Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+            Assert.False(HasLoadedAssembly("LazyTestContentPackage.pdb"));
 
             // Navigate to the designated route
             SetUrlViaPushState("/WithLazyLoadedRoutes");
 
             // Wait for the page to finish loading
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
+            Browser.Exists(By.Id("lazy-load-msg"));
 
             // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
@@ -111,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(renderedElement.Displayed);
         }
 
-        [Fact]
+        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
         public void ThrowsErrorForUnavailableAssemblies()
         {
             // Navigate to a page with lazy loaded assemblies for the first time

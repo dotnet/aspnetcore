@@ -93,13 +93,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                     c.Configure(context.ServerOptions);
                                 }
 
-                                return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
+                                return new KestrelServerImpl(sp.GetRequiredService<IConnectionListenerFactory>(), context);
                             });
                             configureServices(services);
                         })
                         .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                         .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                         .Configure(app => { app.Run(_app); });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.Configure<HostOptions>(option =>
+                    {
+                        option.ShutdownTimeout = TestConstants.DefaultTimeout;
+                    });
                 })
                 .Build();
 

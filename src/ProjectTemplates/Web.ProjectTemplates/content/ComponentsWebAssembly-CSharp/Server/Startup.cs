@@ -99,6 +99,9 @@ namespace ComponentsWebAssembly_CSharp.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+#if (IndividualLocalAuth)
+                app.UseMigrationsEndPoint();
+#endif
                 app.UseWebAssemblyDebugging();
             }
             else

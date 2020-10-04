@@ -3,6 +3,7 @@
 
 using System;
 using BasicTestApp;
+using Components.TestServer;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -10,7 +11,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ProtectedBrowserStorageInjectionTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
 
@@ -31,8 +32,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void ThrowsWhenInjectingProtectedLocalStorageIfAndOnlyIfWebAssembly()
         {
-            var messageElement = Browser.FindElement(By.Id("message"));
-            var injectLocalButton = Browser.FindElement(By.Id("inject-local"));
+            var messageElement = Browser.Exists(By.Id("message"));
+            var injectLocalButton = Browser.Exists(By.Id("inject-local"));
 
             Browser.Equal("Waiting for injection...", () => messageElement.Text);
 
@@ -51,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void ThrowsWhenInjectingProtectedSessionStorageIfAndOnlyIfWebAssembly()
         {
-            var messageElement = Browser.FindElement(By.Id("message"));
-            var injectSessionButton = Browser.FindElement(By.Id("inject-session"));
+            var messageElement = Browser.Exists(By.Id("message"));
+            var injectSessionButton = Browser.Exists(By.Id("inject-session"));
 
             Browser.Equal("Waiting for injection...", () => messageElement.Text);
 

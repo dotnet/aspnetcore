@@ -1,0 +1,66 @@
+parameters:
+  # This template adds arcade-powered source-build to CI.
+
+  # This is a 'steps' template, and is intended for advanced scenarios where the existing build
+  # infra has a careful build methodology that must be followed. For example, a repo
+  # (dotnet/runtime) might choose to clone the GitHub repo only once and store it as a pipeline
+  # artifact for all subsequent jobs to use, to reduce dependence on a strong network connection to
+  # GitHub. Using this steps template leaves room for that infra to be included.
+
+  # Defines the platform on which to run the steps. See 'eng/common/templates/job/source-build.yml'
+  # for details. The entire object is described in the 'job' template for simplicity, even though
+  # the usage of the properties on this object is split between the 'job' and 'steps' templates.
+  platform: {}
+
+steps:
+# Build. Keep it self-contained for simple reusability. (No source-build-specific job variables.)
+- script: |
+    set -x
+    df -h
+
+    buildConfig=Release
+    # Check if AzDO substitutes in a build config from a variable, and use it if so.
+    if [ '$(_BuildConfig)' != '$''(_BuildConfig)' ]; then
+      buildConfig='$(_BuildConfig)'
+    fi
+
+    officialBuildArgs=
+    if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
+      officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
+    fi
+
+    targetRidArgs=
+    if [ '${{ parameters.platform.targetRID }}' != '' ]; then
+      targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
+    fi
+
+    ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
+      --configuration $buildConfig \
+      --restore --build --pack --publish \
+      $officialBuildArgs \
+      $targetRidArgs \
+      /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
+      /p:ArcadeBuildFromSource=true
+  displayName: Build
+
+# Upload build logs for diagnosis.
+- task: CopyFiles@2
+  displayName: Prepare BuildLogs staging directory
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+      **/*.log
+      **/*.binlog
+      artifacts/source-build/self/prebuilt-report/**
+    TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
+    CleanTargetFolder: true
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish BuildLogs
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/BuildLogs'
+    artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
+  continueOnError: true
+  condition: succeededOrFailed()

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
-using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
@@ -46,19 +46,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "txt", "This file was uploaded to the browser and read from .NET.");
 
             // Upload the file
-            var inputFile = Browser.FindElement(By.Id("input-file"));
+            var inputFile = Browser.Exists(By.Id("input-file"));
             inputFile.SendKeys(file.Path);
 
-            var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+            var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
+            var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+            var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
             var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+            var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-            // Validate that the file was uploaded correctly
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
             Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26331")]
         public void CanUploadSingleLargeFile()
         {
             // Create a large text file
@@ -73,15 +80,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "txt", contentBuilder.ToString());
 
             // Upload the file
-            var inputFile = Browser.FindElement(By.Id("input-file"));
+            var inputFile = Browser.Exists(By.Id("input-file"));
             inputFile.SendKeys(file.Path);
 
-            var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+            var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
+            var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+            var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
             var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+            var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-            // Validate that the file was uploaded correctly
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
             Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
 
@@ -94,22 +107,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .ToList();
 
             // Upload each file
-            var inputFile = Browser.FindElement(By.Id("input-file"));
+            var inputFile = Browser.Exists(By.Id("input-file"));
             inputFile.SendKeys(string.Join("\n", files.Select(f => f.Path)));
 
-            // VAlidate that each file was uploaded correctly
+            // Validate that each file was uploaded correctly
             Assert.All(files, file =>
             {
-                var fileContainer = Browser.FindElement(By.Id($"file-{file.Name}"));
+                var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
+                var fileNameElement = fileContainer.FindElement(By.Id("file-name"));
+                var fileLastModifiedElement = fileContainer.FindElement(By.Id("file-last-modified"));
                 var fileSizeElement = fileContainer.FindElement(By.Id("file-size"));
+                var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
                 var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
+                // Validate that the file was uploaded correctly and all fields are present
+                Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
                 Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+                Browser.Equal("text/plain", () => fileContentTypeElement.Text);
                 Browser.Equal(file.Text, () => fileContentElement.Text);
             });
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";
@@ -130,11 +151,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "png", Convert.FromBase64String(base64));
 
             // Re-upload the image file (it will be converted to a JPEG and scaled to fix 640x480)
-            var inputFile = Browser.FindElement(By.Id("input-image"));
+            var inputFile = Browser.Exists(By.Id("input-image"));
             inputFile.SendKeys(file.Path);
 
             // Validate that the image was converted without error and is the correct size
-            var uploadedImage = Browser.FindElement(By.Id("image-uploaded"));
+            var uploadedImage = Browser.Exists(By.Id("image-uploaded"));
 
             Browser.Equal(480, () => uploadedImage.Size.Width);
             Browser.Equal(480, () => uploadedImage.Size.Height);
@@ -143,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void ThrowsWhenTooManyFilesAreSelected()
         {
-            var maxAllowedFilesElement = Browser.FindElement(By.Id("max-allowed-files"));
+            var maxAllowedFilesElement = Browser.Exists(By.Id("max-allowed-files"));
             maxAllowedFilesElement.Clear();
             maxAllowedFilesElement.SendKeys("1\n");
 
@@ -152,18 +173,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
 
             // Select both files
-            var inputFile = Browser.FindElement(By.Id("input-file"));
+            var inputFile = Browser.Exists(By.Id("input-file"));
             inputFile.SendKeys($"{file1.Path}\n{file2.Path}");
 
             // Validate that the proper exception is thrown
-            var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
+            var exceptionMessage = Browser.Exists(By.Id("exception-message"));
             Browser.Equal("The maximum number of files accepted is 1, but 2 were supplied.", () => exceptionMessage.Text);
         }
 
         [Fact]
         public void ThrowsWhenOversizedFileIsSelected()
         {
-            var maxFileSizeElement = Browser.FindElement(By.Id("max-file-size"));
+            var maxFileSizeElement = Browser.Exists(By.Id("max-file-size"));
             maxFileSizeElement.Clear();
             maxFileSizeElement.SendKeys("10\n");
 
@@ -171,11 +192,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var file = TempFile.Create(_tempDirectory, "txt", "This file is over 10 bytes long.");
 
             // Select the file
-            var inputFile = Browser.FindElement(By.Id("input-file"));
+            var inputFile = Browser.Exists(By.Id("input-file"));
             inputFile.SendKeys(file.Path);
 
             // Validate that the proper exception is thrown
-            var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
+            var exceptionMessage = Browser.Exists(By.Id("exception-message"));
             Browser.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", () => exceptionMessage.Text);
         }
 

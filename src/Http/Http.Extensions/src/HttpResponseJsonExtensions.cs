@@ -25,9 +25,10 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="value">The value to write as JSON.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             CancellationToken cancellationToken = default)
         {
             return response.WriteAsJsonAsync<TValue>(value, options: null, contentType: null, cancellationToken);
@@ -43,9 +44,10 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The serializer options use when serializing the value.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             JsonSerializerOptions? options,
             CancellationToken cancellationToken = default)
         {
@@ -63,9 +65,10 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The content-type to set on the response.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync<TValue>(
             this HttpResponse response,
-            [AllowNull] TValue value,
+            TValue value,
             JsonSerializerOptions? options,
             string? contentType,
             CancellationToken cancellationToken = default)
@@ -78,7 +81,7 @@ namespace Microsoft.AspNetCore.Http
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            return JsonSerializer.SerializeAsync<TValue>(response.Body, value!, options, cancellationToken);
+            return JsonSerializer.SerializeAsync<TValue>(response.Body, value, options, cancellationToken);
         }
 
         /// <summary>
@@ -90,6 +93,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="type">The type of object to write.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync(
             this HttpResponse response,
             object? value,
@@ -109,6 +113,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The serializer options use when serializing the value.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync(
             this HttpResponse response,
             object? value,
@@ -130,6 +135,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The content-type to set on the response.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsJsonAsync(
             this HttpResponse response,
             object? value,

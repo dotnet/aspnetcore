@@ -31,6 +31,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         [Required]
         public bool CacheBootResources { get; set; }
 
+        public bool LoadAllICUData { get; set; }
+
+        public string InvariantGlobalization { get; set; }
+
         public ITaskItem[] ConfigurationFiles { get; set; }
 
         [Required]
@@ -58,6 +62,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         // Internal for tests
         public void WriteBootJson(Stream output, string entryAssemblyName)
         {
+            var icuDataMode = ICUDataMode.Sharded;
+
+            if (string.Equals(InvariantGlobalization, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                icuDataMode = ICUDataMode.Invariant;
+            }
+            else if (LoadAllICUData)
+            {
+                icuDataMode = ICUDataMode.All;
+            }
+
             var result = new BootJsonData
             {
                 entryAssembly = entryAssemblyName,
@@ -66,6 +81,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 linkerEnabled = LinkerEnabled,
                 resources = new ResourcesData(),
                 config = new List<string>(),
+                icuDataMode = icuDataMode,
             };
 
             // Build a two-level dictionary of the form:
@@ -107,7 +123,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     else if (string.Equals(extension, ".pdb", StringComparison.OrdinalIgnoreCase))
                     {
                         resourceData.pdb ??= new ResourceHashesByNameDictionary();
-                        resourceList = resourceData.pdb;
+                        if (IsLazyLoadedAssembly($"{fileName}.dll"))
+                        {
+                            resourceList = resourceData.lazyAssembly;
+                        } else {
+                            resourceList = resourceData.pdb;
+                        }
                     }
                     else if (string.Equals(extension, ".dll", StringComparison.OrdinalIgnoreCase))
                     {

@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
@@ -146,15 +147,27 @@ namespace Microsoft.AspNetCore.SignalR
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Write a <see cref="HubMessage"/> to the connection.
+        /// </summary>
+        /// <param name="message">The <see cref="HubMessage"/> being written.</param>
+        /// <param name="cancellationToken">Cancels the in progress write.</param>
+        /// <returns>A <see cref="ValueTask"/> that represents the completion of the write. If the write throws this task will still complete successfully.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
+        {
+            return WriteAsync(message, ignoreAbort: false, cancellationToken);
+        }
+
+        internal ValueTask WriteAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
-                return new ValueTask(WriteSlowAsync(message, cancellationToken));
+                return new ValueTask(WriteSlowAsync(message, ignoreAbort, cancellationToken));
             }
 
-            if (_connectionAborted)
+            if (_connectionAborted && !ignoreAbort)
             {
                 _writeLock.Release();
                 return default;
@@ -182,6 +195,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="message">The serialization cache to use.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path
@@ -272,14 +286,14 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task WriteSlowAsync(HubMessage message, CancellationToken cancellationToken)
+        private async Task WriteSlowAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken)
         {
             // Failed to get the lock immediately when entering WriteAsync so await until it is available
             await _writeLock.WaitAsync(cancellationToken);
 
             try
             {
-                if (_connectionAborted)
+                if (_connectionAborted && !ignoreAbort)
                 {
                     return;
                 }
@@ -301,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task WriteSlowAsync(SerializedHubMessage message, CancellationToken cancellationToken)
         {
             // Failed to get the lock immediately when entering WriteAsync so await until it is available
-            await _writeLock.WaitAsync();
+            await _writeLock.WaitAsync(cancellationToken);
 
             try
             {

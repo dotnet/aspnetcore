@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Initialize the query string with a given value. This value must be in escaped and delimited format with
-        /// a leading '?' character. 
+        /// a leading '?' character.
         /// </summary>
         /// <param name="value">The query string to be assigned to the Value property.</param>
         public QueryString(string? value)
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         public bool HasValue => !string.IsNullOrEmpty(Value);
 
         /// <summary>
-        /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
+        /// Provides the query string escaped in a way which is correct for combining into the URI representation.
         /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
+        /// Provides the query string escaped in a way which is correct for combining into the URI representation.
         /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
@@ -170,6 +170,11 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Concatenates <paramref name="other"/> to the current query string.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to concatenate.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public QueryString Add(QueryString other)
         {
             if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
@@ -185,6 +190,13 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(Value + "&" + other.Value.Substring(1));
         }
 
+        /// <summary>
+        /// Concatenates a query string with <paramref name="name"/> and <paramref name="value"/>
+        /// to the current query string.
+        /// </summary>
+        /// <param name="name">The name of the query string to concatenate.</param>
+        /// <param name="value">The value of the query string to concatenate.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public QueryString Add(string name, string value)
         {
             if (name == null)
@@ -202,6 +214,11 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Evalutes if the current query string is equal to <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to compare.</param>
+        /// <returns><see langword="true"/> if the ssquery strings are equal.</returns>
         public bool Equals(QueryString other)
         {
             if (!HasValue && !other.HasValue)
@@ -211,6 +228,11 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(Value, other.Value, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Evaluates if the current query string is equal to an object <paramref name="obj"/>.
+        /// </summary>
+        /// <param name="obj">An object to compare.</param>
+        /// <returns><see langword="true" /> if the query strings are equal.</returns>
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
@@ -220,21 +242,43 @@ namespace Microsoft.AspNetCore.Http
             return obj is QueryString && Equals((QueryString)obj);
         }
 
+        /// <summary>
+        /// Gets a hash code for the value.
+        /// </summary>
+        /// <returns>The hash code as an <see cref="int"/>.</returns>
         public override int GetHashCode()
         {
             return (HasValue ? Value!.GetHashCode() : 0);
         }
 
+        /// <summary>
+        /// Evaluates if one query string is equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns><see langword="true" /> if the query strings are equal.</returns>
         public static bool operator ==(QueryString left, QueryString right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evaluates if one query string is not equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns><see langword="true" /> if the query strings are not equal.</returns>
         public static bool operator !=(QueryString left, QueryString right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Concatenates <paramref name="left"/> and <paramref name="right"/> into a single query string.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public static QueryString operator +(QueryString left, QueryString right)
         {
             return left.Add(right);

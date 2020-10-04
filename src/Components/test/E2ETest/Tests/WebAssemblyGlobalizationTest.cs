@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     // For now this is limited to server-side execution because we don't have the ability to set the
     // culture in client-side Blazor.
-    // This type is internal since localization currently does not work.
-    // Make it public onc https://github.com/dotnet/runtime/issues/38124 is resolved.
-    internal class WebAssemblyGlobalizationTest : GlobalizationTest<ToggleExecutionModeServerFixture<Program>>
+    public class WebAssemblyGlobalizationTest : GlobalizationTest<ToggleExecutionModeServerFixture<Program>>
     {
         public WebAssemblyGlobalizationTest(
             BrowserFixture browserFixture,

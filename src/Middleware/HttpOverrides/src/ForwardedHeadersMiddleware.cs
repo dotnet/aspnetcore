@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private bool _allowAllHosts;
-        private IList<StringSegment> _allowedHosts;
+        private IList<StringSegment>? _allowedHosts;
 
         static ForwardedHeadersMiddleware()
         {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public void ApplyForwarders(HttpContext context)
         {
             // Gather expected headers.
-            string[] forwardedFor = null, forwardedProto = null, forwardedHost = null;
+            string[]? forwardedFor = null, forwardedProto = null, forwardedHost = null;
             bool checkFor = false, checkProto = false, checkHost = false;
             int entryCount = 0;
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 checkProto = true;
                 forwardedProto = requestHeaders.GetCommaSeparatedValues(_options.ForwardedProtoHeaderName);
-                if (_options.RequireHeaderSymmetry && checkFor && forwardedFor.Length != forwardedProto.Length)
+                if (_options.RequireHeaderSymmetry && checkFor && forwardedFor!.Length != forwardedProto.Length)
                 {
                     _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-For and X-Forwarded-Proto.");
                     return;
@@ -176,8 +176,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 checkHost = true;
                 forwardedHost = requestHeaders.GetCommaSeparatedValues(_options.ForwardedHostHeaderName);
                 if (_options.RequireHeaderSymmetry
-                    && ((checkFor && forwardedFor.Length != forwardedHost.Length)
-                        || (checkProto && forwardedProto.Length != forwardedHost.Length)))
+                    && ((checkFor && forwardedFor!.Length != forwardedHost.Length)
+                        || (checkProto && forwardedProto!.Length != forwardedHost.Length)))
                 {
                     _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
                     return;
@@ -197,15 +197,15 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 // They get processed in reverse order, right to left.
                 var set = new SetOfForwarders();
-                if (checkFor && i < forwardedFor.Length)
+                if (checkFor && i < forwardedFor!.Length)
                 {
                     set.IpAndPortText = forwardedFor[forwardedFor.Length - i - 1];
                 }
-                if (checkProto && i < forwardedProto.Length)
+                if (checkProto && i < forwardedProto!.Length)
                 {
                     set.Scheme = forwardedProto[forwardedProto.Length - i - 1];
                 }
-                if (checkHost && i < forwardedHost.Length)
+                if (checkHost && i < forwardedHost!.Length)
                 {
                     set.Host = forwardedHost[forwardedHost.Length - i - 1];
                 }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 if (checkHost)
                 {
                     if (!string.IsNullOrEmpty(set.Host) && TryValidateHost(set.Host)
-                        && (_allowAllHosts || HostString.MatchesAny(set.Host, _allowedHosts)))
+                        && (_allowAllHosts || HostString.MatchesAny(set.Host, _allowedHosts!)))
                     {
                         applyChanges = true;
                         currentValues.Host = set.Host;
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         // Save the original
                         requestHeaders[_options.OriginalForHeaderName] = new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort).ToString();
                     }
-                    if (forwardedFor.Length > entriesConsumed)
+                    if (forwardedFor!.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
                         requestHeaders[_options.ForwardedForHeaderName] = forwardedFor.Take(forwardedFor.Length - entriesConsumed).ToArray();
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 {
                     // Save the original
                     requestHeaders[_options.OriginalProtoHeaderName] = request.Scheme;
-                    if (forwardedProto.Length > entriesConsumed)
+                    if (forwardedProto!.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
                         requestHeaders[_options.ForwardedProtoHeaderName] = forwardedProto.Take(forwardedProto.Length - entriesConsumed).ToArray();
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 {
                     // Save the original
                     requestHeaders[_options.OriginalHostHeaderName] = request.Host.ToString();
-                    if (forwardedHost.Length > entriesConsumed)
+                    if (forwardedHost!.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
                         requestHeaders[_options.ForwardedHostHeaderName] = forwardedHost.Take(forwardedHost.Length - entriesConsumed).ToArray();
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private struct SetOfForwarders
         {
             public string IpAndPortText;
-            public IPEndPoint RemoteIpAndPort;
+            public IPEndPoint? RemoteIpAndPort;
             public string Host;
             public string Scheme;
         }

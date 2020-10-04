@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
@@ -323,6 +324,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25623")]
         public void BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange

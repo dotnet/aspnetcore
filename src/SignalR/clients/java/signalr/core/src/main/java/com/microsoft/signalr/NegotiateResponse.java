@@ -18,6 +18,7 @@ class NegotiateResponse {
     private String error;
     private String finalUrl;
     private int version;
+    private TransportEnum chosenTransport;
 
     public NegotiateResponse(JsonReader reader) {
         try {
@@ -124,5 +125,13 @@ class NegotiateResponse {
 
     public void setFinalUrl(String url) {
         this.finalUrl = url;
+    }
+
+    public TransportEnum getChosenTransport() {
+        return chosenTransport;
+    }
+
+    public void setChosenTransport(TransportEnum chosenTransport) {
+        this.chosenTransport = chosenTransport;
     }
 }

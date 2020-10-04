@@ -20,7 +20,6 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddProtectedBrowserStorage();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +39,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub();
+                    endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });
             });

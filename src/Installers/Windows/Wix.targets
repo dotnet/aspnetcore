@@ -1,12 +1,17 @@
 <Project>
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
-    <!-- Used for generating stable upgrade codes for bundles -->
-    <Version>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).0</Version>
     <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
     <BundleVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+    <!-- Used for generating stable upgrade codes for bundles -->
+    <Version>$(BundleVersion)</Version>
+
+    <!-- ARM64 MSIs require the installer version to be at least 500. -->
+    <!-- See: https://docs.microsoft.com/en-us/windows/win32/msi/64-bit-windows-installer-packages -->
+    <DefineConstants Condition=" '$(Platform)' == 'arm64' ">$(DefineConstants);InstallerVersion=500</DefineConstants>
+    <DefineConstants Condition=" '$(Platform)' != 'arm64' ">$(DefineConstants);InstallerVersion=200</DefineConstants>
 
     <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
     <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
@@ -21,7 +26,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +34,7 @@
   </ItemGroup>
   
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
 
@@ -56,7 +61,7 @@
          the upgrade code. Bundle upgrades pivot on Major.Minor.Patch changes. For example, 3.0.1-preview 1 can upgrade to 3.0.1-preview 8, but 3.0.1
          cannot upgrade to 3.0.2 or 3.1. -->
     <PropertyGroup>
-      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion);$(Platform)</BundleGuidInputs>
+      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion);$(Platform)</BundleGuidInputs>
     </PropertyGroup>
     <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
@@ -85,11 +90,13 @@
   </Target>
 
   <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+    <MakeDir Directories="$(WixCommandPackagesDir)" />
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(WixCommandObjDir)"
+      OutputFolder="$(WixCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(InstallersOutputPath)$(PackageFileName)"
+      InstallerFile="$(InstallersOutputPath)$(PackageFileName)"
       AdditionalBasePaths="$(MSBuildProjectDirectory)"
       WixExtensions="@(WixExtension)"
       Loc="@(EmbeddedResource)"
@@ -97,14 +104,8 @@
       WixProjectFile="$(MSBuildProjectFile)"
       Fv="true"
       WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(_ResolvedWixLibraryPaths)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(WixCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(WixCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(WixCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
 </Project>

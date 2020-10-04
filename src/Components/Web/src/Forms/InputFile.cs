@@ -73,6 +73,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
 
+            if (imageFile is null)
+            {
+                throw new InvalidOperationException("ToImageFile returned an unexpected null result.");
+            }
+
             imageFile.Owner = this;
 
             return imageFile;

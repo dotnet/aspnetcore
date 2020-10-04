@@ -50,6 +50,7 @@ namespace ApiAuthSample
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {

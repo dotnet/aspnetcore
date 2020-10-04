@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private int? _hashCode;
         private IReadOnlyList<ModelMetadata>? _boundProperties;
         private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
+        private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _boundConstructorPropertyMapping;
         private Exception? _recordTypeValidatorsOnPropertiesError;
         private bool _recordTypeConstructorDetailsCalculated;
 
@@ -150,6 +151,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 CalculateRecordTypeConstructorDetails();
 
                 return _parameterMapping;
+            }
+        }
+
+        /// <summary>
+        /// A mapping from properties to their corresponding constructor parameter on a record type.
+        /// This is the inverse mapping of <see cref="BoundConstructorParameterMapping"/>.
+        /// </summary>
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorPropertyMapping
+        {
+            get
+            {
+                Debug.Assert(BoundConstructor != null, "This API can be only called for types with bound constructors.");
+                CalculateRecordTypeConstructorDetails();
+
+                return _boundConstructorPropertyMapping;
             }
         }
 
@@ -492,18 +508,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        [MemberNotNull(nameof(_parameterMapping))]
+        [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
         private void CalculateRecordTypeConstructorDetails()
         {
             if (_recordTypeConstructorDetailsCalculated)
             {
                 Debug.Assert(_parameterMapping != null);
+                Debug.Assert(_boundConstructorPropertyMapping != null);
                 return;
             }
 
-
             var boundParameters = BoundConstructor!.BoundConstructorParameters!;
             var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+            var propertyMapping = new Dictionary<ModelMetadata, ModelMetadata>();
 
             foreach (var parameter in boundParameters)
             {
@@ -514,6 +531,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 if (property != null)
                 {
                     parameterMapping[parameter] = property;
+                    propertyMapping[property] = parameter;
 
                     if (property.PropertyHasValidators)
                     {
@@ -529,6 +547,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
              _recordTypeConstructorDetailsCalculated = true;
             _parameterMapping = parameterMapping;
+            _boundConstructorPropertyMapping = propertyMapping;
         }
 
         /// <summary>

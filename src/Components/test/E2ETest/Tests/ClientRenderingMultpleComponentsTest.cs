@@ -14,9 +14,9 @@ using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class ClientRenderingMultpleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixture<MultipleComponents>>
+    public class ClientRenderingMultpleComponentsTest : E2ETest.Infrastructure.ServerTestBase<BasicTestAppServerSiteFixture<MultipleComponents>>
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Assert.Single(greets, "Hello Abraham");
             Assert.Equal(2, greets.Where(g => g == "Hello Blue fish").Count());
             Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 server prerendered without parameters
-            var content = Browser.FindElement(By.Id("test-container")).GetAttribute("innerHTML");
+            var content = Browser.Exists(By.Id("test-container")).GetAttribute("innerHTML");
             var markers = ReadMarkers(content);
             var componentSequence = markers.Select(m => m.Item1.PrerenderId != null).ToArray();
             Assert.Equal(13, componentSequence.Length);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 
         private void BeginInteractivity()
         {
-            Browser.FindElement(By.Id("load-boot-script")).Click();
+            Browser.Exists(By.Id("load-boot-script")).Click();
         }
     }
 }

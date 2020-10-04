@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
         private readonly Pipe _input;
-        private Task _inputTask;
+        private readonly Task _inputTask;
         private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
@@ -84,6 +84,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
+
+            // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
+            _context.InitialExecutionContext = ExecutionContext.Capture();
 
             _frameWriter = new Http2FrameWriter(
                 context.Transport.Output,
@@ -647,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ConnectionInputFlowControl = _inputFlowControl,
                 ConnectionOutputFlowControl = _outputFlowControl,
                 TimeoutControl = TimeoutControl,
+                InitialExecutionContext = _context.InitialExecutionContext,
             };
         }
 

@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Options to configure IIS Out-Of-Process.
+    /// </summary>
     public class IISOptions
     {
         /// <summary>

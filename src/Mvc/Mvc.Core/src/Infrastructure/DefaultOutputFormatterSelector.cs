@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// The default implementation of <see cref="OutputFormatterSelector"/>.
+    /// </summary>
     public class DefaultOutputFormatterSelector : OutputFormatterSelector
     {
         private static readonly Comparison<MediaTypeSegmentWithQuality> _sortFunction = (left, right) =>
@@ -26,6 +29,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly bool _respectBrowserAcceptHeader;
         private readonly bool _returnHttpNotAcceptable;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DefaultOutputFormatterSelector"/>
+        /// </summary>
+        /// <param name="options">Used to access <see cref="MvcOptions"/>.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public DefaultOutputFormatterSelector(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -45,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _returnHttpNotAcceptable = options.Value.ReturnHttpNotAcceptable;
         }
 
+        /// <inheritdoc/>
         public override IOutputFormatter SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
         {
             if (context == null)

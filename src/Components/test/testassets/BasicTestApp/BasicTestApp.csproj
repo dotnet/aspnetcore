@@ -8,6 +8,9 @@
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
+
+    <!-- Project supports more than one language -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +18,7 @@
     <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage" />
-    <Reference Include="Microsoft.AspNetCore.Components.Web.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
