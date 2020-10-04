@@ -88,8 +88,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
       //Path differs depending on if there are LocationChanging event handlers setup in the NavigationManager.cs class
       //Presumably most of the time the LocationChanging event will not be set, so we try and avoid an extra client / server call every time a user navigates. 
      
-      if (!hasLocationChangingListeners)
-      {
+      if (!hasLocationChangingListeners) {
         navigate(absoluteHref);
       } else {
         const changingPromise = handleLocationChanging(absoluteHref, true);
@@ -116,7 +115,7 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
     const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);
-  } else if (replace){
+  } else if (replace) {
     history.replaceState(null, '', absoluteUri)
   } else {
     // It's either an external URL, or forceLoad is requested, so do a full page load
@@ -131,10 +130,10 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
- 
-  if(!replace){
+
+  if (!replace) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  }else{
+  } else {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   }
   notifyLocationChanged(interceptedLink);
@@ -142,8 +141,7 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
 
 async function handleHistory(event: PopStateEvent)
 {
-  if (!hasLocationChangingListeners)
-  {
+  if (!hasLocationChangingListeners) {
     //No LocationChanged listeners setup in server, so avoid call to server
     await notifyLocationChanged(false);
     return;
