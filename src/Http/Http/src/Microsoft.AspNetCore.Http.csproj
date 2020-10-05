@@ -17,6 +17,7 @@
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
   </ItemGroup>
 
   <ItemGroup>

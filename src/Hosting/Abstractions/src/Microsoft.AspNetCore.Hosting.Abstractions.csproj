@@ -4,6 +4,7 @@
     <Description>ASP.NET Core hosting and startup abstractions for web applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
@@ -14,6 +15,8 @@
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -14,6 +15,8 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
   </ItemGroup>
 
 </Project>

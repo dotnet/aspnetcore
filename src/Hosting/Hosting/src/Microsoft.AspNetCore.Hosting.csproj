@@ -4,6 +4,7 @@
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
@@ -31,6 +32,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
 
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
   </ItemGroup>
 
 </Project>

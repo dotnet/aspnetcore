@@ -24,6 +24,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
   </ItemGroup>
 
   <ItemGroup>

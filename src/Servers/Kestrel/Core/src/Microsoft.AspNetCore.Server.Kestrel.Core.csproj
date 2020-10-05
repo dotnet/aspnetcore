@@ -23,6 +23,8 @@
     <Compile Include="$(SharedSourceRoot)Hpack\**\*.cs" Link="Shared\Hpack\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)SkipLocalsInit.cs" LinkBase="Shared\SkipLocalsInit.cs" />
+
   </ItemGroup>
 
   <ItemGroup>
