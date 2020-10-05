@@ -27,6 +27,7 @@ namespace Templates.Test
         public Project Project { get; private set; }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -87,6 +88,7 @@ namespace Templates.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [QuarantinedTest]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
