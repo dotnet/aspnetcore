@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             : base(context, scheme, options, properties) { }
 
         /// <summary>
-        /// Gets or sets a value that determines if this challenge was handled.
+        /// Gets a value that determines if this challenge was handled.
         /// If <see langword="true"/>, will skip any default logic for this challenge.
         /// </summary>
         public bool Handled { get; private set; }
