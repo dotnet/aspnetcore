@@ -137,6 +137,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
