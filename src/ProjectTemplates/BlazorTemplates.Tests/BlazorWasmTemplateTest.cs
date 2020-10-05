@@ -80,6 +80,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorWasmHostedTemplate_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
