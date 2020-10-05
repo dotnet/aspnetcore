@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds OpenId Connect authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
         /// The default scheme is specified by <see cref="OpenIdConnectDefaults.AuthenticationScheme"/>.
         /// <para>
-        /// OpenID Connect is a simple identity layer on top of the OAuth 2.0 protocol. It allows clients
+        /// OpenID Connect is an identity layer on top of the OAuth 2.0 protocol. It allows clients
         /// to request and receive information about authenticated sessions and end-users.
         /// </para>
         /// </summary>
@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds OpenId Connect authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
         /// The default scheme is specified by <see cref="OpenIdConnectDefaults.AuthenticationScheme"/>.
         /// <para>
-        /// OpenID Connect is a simple identity layer on top of the OAuth 2.0 protocol. It allows clients
+        /// OpenID Connect is an identity layer on top of the OAuth 2.0 protocol. It allows clients
         /// to request and receive information about authenticated sessions and end-users.
         /// </para>
         /// </summary>
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds OpenId Connect authentication to <see cref="AuthenticationBuilder"/> using the specified scheme.
         /// <para>
-        /// OpenID Connect is a simple identity layer on top of the OAuth 2.0 protocol. It allows clients
+        /// OpenID Connect is an identity layer on top of the OAuth 2.0 protocol. It allows clients
         /// to request and receive information about authenticated sessions and end-users.
         /// </para>
         /// </summary>
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds OpenId Connect authentication to <see cref="AuthenticationBuilder"/> using the specified scheme.
         /// <para>
-        /// OpenID Connect is a simple identity layer on top of the OAuth 2.0 protocol. It allows clients
+        /// OpenID Connect is an identity layer on top of the OAuth 2.0 protocol. It allows clients
         /// to request and receive information about authenticated sessions and end-users.
         /// </para>
         /// </summary>

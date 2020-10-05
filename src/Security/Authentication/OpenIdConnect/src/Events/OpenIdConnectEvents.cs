@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
         /// <summary>
-        /// Invoked after security token validation if an authorization code is present in the protocol message.
+        /// Invoked if an authorization code is present in the protocol message.
         /// </summary>
         public virtual Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context) => OnAuthorizationCodeReceived(context);
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task RemoteSignOut(RemoteSignOutContext context) => OnRemoteSignOut(context);
 
         /// <summary>
-        /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
+        /// Invoked after an authorization code is redeemed for tokens at the token endpoint.
         /// </summary>
         public virtual Task TokenResponseReceived(TokenResponseReceivedContext context) => OnTokenResponseReceived(context);
 

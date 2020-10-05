@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         }
 
         /// <summary>
-        /// Sends the code challenge and receives the authorization code from the remote provider.
+        /// Exchanges the authorization code for a authorization token from the remote provider.
         /// </summary>
         /// <param name="context">The <see cref="OAuthCodeExchangeContext"/>.</param>
         /// <returns>The response <see cref="OAuthTokenResponse"/>.</returns>

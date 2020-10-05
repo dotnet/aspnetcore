@@ -32,12 +32,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public JwtSecurityToken SecurityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the the token validation response.
+        /// Gets or sets the token endpoint response.
         /// </summary>
         public OpenIdConnectMessage TokenEndpointResponse { get; set; }
 
         /// <summary>
-        /// Gets or sets the token validation nonce.
+        /// Gets or sets the protocol nonce.
         /// </summary>
         public string Nonce { get; set; }
     }
