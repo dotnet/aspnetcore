@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="PostConfigureCookieAuthenticationOptions"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public PostConfigureCookieAuthenticationOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;

@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AccessDeniedContext : HandleRequestContext<RemoteAuthenticationOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="AccessDeniedContext"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The <see cref="AuthenticationScheme"/>.</param>
+        /// <param name="options">The <see cref="RemoteAuthenticationOptions"/>.</param>
         public AccessDeniedContext(
             HttpContext context,
             AuthenticationScheme scheme,

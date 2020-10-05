@@ -1113,13 +1113,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 RejectNonBodyTransferEncodingResponse(appCompleted);
             }
+            else if (StatusCode == StatusCodes.Status101SwitchingProtocols)
+            {
+                _keepAlive = false;
+            }
             else if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
             {
-                if (StatusCode == StatusCodes.Status101SwitchingProtocols)
-                {
-                    _keepAlive = false;
-                }
-                else if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
+                if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
                 {
                     // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                     if (CanAutoSetContentLengthZeroResponseHeader())

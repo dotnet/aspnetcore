@@ -6,6 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

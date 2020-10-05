@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         private readonly IJSRuntime _jsRuntime;
         private readonly HashSet<string> _loadedAssemblyCache;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="LazyAssemblyLoader"/>.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         public LazyAssemblyLoader(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;

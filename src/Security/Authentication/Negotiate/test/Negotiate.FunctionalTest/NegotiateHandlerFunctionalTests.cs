@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     // In theory this would work on Linux and Mac, but the client would require explicit credentials.
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public class NegotiateHandlerFunctionalTests
+    public class NegotiateHandlerFunctionalTests : LoggedTest
     {
         private static readonly Version Http11Version = new Version(1, 1);
         private static readonly Version Http2Version = new Version(2, 0);
@@ -107,6 +110,34 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var result = await client.GetAsync("/Authenticate");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
+        }
+
+        [ConditionalFact]
+        public async Task DefautCredentials_WebSocket_Success()
+        {
+            using var host = await CreateHostAsync();
+
+            var address = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.First().Replace("https://", "wss://");
+
+            using var webSocket = new ClientWebSocket
+            {
+                Options =
+                {
+                    RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                    UseDefaultCredentials = true,
+                }
+            };
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+            await webSocket.ConnectAsync(new Uri($"{address}/AuthenticateWebSocket"), cts.Token);
+
+            var receiveBuffer = new byte[13];
+            var receiveResult = await webSocket.ReceiveAsync(receiveBuffer, cts.Token);
+
+            Assert.True(receiveResult.EndOfMessage);
+            Assert.Equal(WebSocketMessageType.Text, receiveResult.MessageType);
+            Assert.Equal("Hello World!", Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count));
         }
 
         public static IEnumerable<object[]> HttpOrders =>
@@ -232,9 +263,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
         }
 
-        private static Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
+        private Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
         {
             var builder = new HostBuilder()
+                .ConfigureServices(AddTestLogging)
                 .ConfigureServices(services => services
                     .AddRouting()
                     .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
@@ -252,6 +284,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         app.UseRouting();
                         app.UseAuthentication();
+                        app.UseWebSockets();
                         app.UseEndpoints(ConfigureEndpoints);
                     });
                 });
@@ -287,6 +320,27 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var name = context.User.Identity.Name;
                 Assert.False(string.IsNullOrEmpty(name), "name");
                 await context.Response.WriteAsync(name);
+            });
+
+            builder.Map("/AuthenticateWebSocket", async context =>
+            {
+                if (!context.User.Identity.IsAuthenticated)
+                {
+                    await context.ChallengeAsync();
+                    return;
+                }
+
+                if (!context.WebSockets.IsWebSocketRequest)
+                {
+                    context.Response.StatusCode = 400;
+                    return;
+                }
+
+                Assert.False(string.IsNullOrEmpty(context.User.Identity.Name), "name");
+
+                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                await webSocket.SendAsync(Encoding.UTF8.GetBytes("Hello World!"), WebSocketMessageType.Text, endOfMessage: true, context.RequestAborted);
             });
 
             builder.Map("/AlreadyAuthenticated", async context =>

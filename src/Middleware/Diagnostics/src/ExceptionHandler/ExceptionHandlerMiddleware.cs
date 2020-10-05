@@ -16,6 +16,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
+    /// <summary>
+    /// A middleware for handling exceptions in the application.
+    /// </summary>
     public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
@@ -24,6 +27,13 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
         private readonly DiagnosticListener _diagnosticListener;
 
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="options">The options for configuring the middleware.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
         public ExceptionHandlerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -48,6 +58,10 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         public Task Invoke(HttpContext context)
         {
             ExceptionDispatchInfo edi;
