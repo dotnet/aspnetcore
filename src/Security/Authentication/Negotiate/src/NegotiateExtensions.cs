@@ -20,8 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures the <see cref="AuthenticationBuilder"/> to use Negotiate (also known as Windows, Kerberos, or NTLM) authentication
         /// using the default scheme from <see cref="NegotiateDefaults.AuthenticationScheme"/>.
         /// <para>
-        /// Windows Authentication can be used if the web app is runs on a network using Active Directory domain identities or
-        /// Windows accounts to identify users. It requires support from the operating system to authenticate users.
+        /// This authentication handler supports Kerberos on Windows and Linux servers.
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -33,8 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures the <see cref="AuthenticationBuilder"/> to use Negotiate (also known as Windows, Kerberos, or NTLM) authentication
         /// using the default scheme. The default scheme is specified by <see cref="NegotiateDefaults.AuthenticationScheme"/>.
         /// <para>
-        /// Windows Authentication can be used if the web app is runs on a network using Active Directory domain identities or
-        /// Windows accounts to identify users. It requires support from the operating system to authenticate users.
+        /// This authentication handler supports Kerberos on Windows and Linux servers.
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -47,8 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures the <see cref="AuthenticationBuilder"/> to use Negotiate (also known as Windows, Kerberos, or NTLM) authentication
         /// using the specified authentication scheme.
         /// <para>
-        /// Windows Authentication can be used if the web app is runs on a network using Active Directory domain identities or
-        /// Windows accounts to identify users. It requires support from the operating system to authenticate users.
+        /// This authentication handler supports Kerberos on Windows and Linux servers.
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -62,8 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures the <see cref="AuthenticationBuilder"/> to use Negotiate (also known as Windows, Kerberos, or NTLM) authentication
         /// using the specified authentication scheme.
         /// <para>
-        /// Windows Authentication can be used if the web app is runs on a network using Active Directory domain identities or
-        /// Windows accounts to identify users. It requires support from the operating system to authenticate users.
+        /// This authentication handler supports Kerberos on Windows and Linux servers.
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
