@@ -48,6 +48,7 @@ namespace Microsoft.JSInterop.WebAssembly
             InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
         }
 
+        /// <inheritdoc />
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
