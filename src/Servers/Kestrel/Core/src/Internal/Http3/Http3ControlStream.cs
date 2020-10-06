@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
             {
+                Input.Complete();
                 return true;
             }
 
@@ -163,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
+
                 await HandleEncodingTask();
             }
             else if (streamType == DecoderStream)

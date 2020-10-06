@@ -208,10 +208,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
-            // Start other three unidirectional streams here.
+            // An endpoint MAY avoid creating an encoder stream if it's not going to
+            // be used(for example if its encoder doesn't wish to use the dynamic
+            // table, or if the maximum size of the dynamic table permitted by the
+            // peer is zero).
+
+            // An endpoint MAY avoid creating a decoder stream if its decoder sets
+            // the maximum capacity of the dynamic table to zero.
+
+            // Don't create Encoder and Decoder as they aren't used now.
             var controlTask = CreateControlStream(application);
-            var encoderTask = CreateEncoderStream(application);
-            var decoderTask = CreateDecoderStream(application);
 
             try
             {
@@ -288,15 +294,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             stream.OnInputOrOutputCompleted();
                         }
                     }
+
+                    _inboundControlStream?.OnInputOrOutputCompleted();
+                    _inboundEncoderStream?.OnInputOrOutputCompleted();
+                    _inboundDecoderStream?.OnInputOrOutputCompleted();
                 }
 
                 OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                OutboundEncoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                OutboundDecoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
 
                 await controlTask;
-                await encoderTask;
-                await decoderTask;
             }
         }
 
@@ -404,17 +410,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public bool SetInboundControlStream(Http3ControlStream stream)
         {
-            return Interlocked.CompareExchange(ref _inboundControlStream, stream, stream) == null;
+            lock (_sync)
+            {
+                if (_inboundControlStream == null)
+                {
+                    _inboundControlStream = stream;
+                    return true;
+                }
+                return false;
+            }
         }
 
         public bool SetInboundEncoderStream(Http3ControlStream stream)
         {
-            return Interlocked.CompareExchange(ref _inboundEncoderStream, stream, stream) == null;
+            lock (_sync)
+            {
+                if (_inboundEncoderStream == null)
+                {
+                    _inboundEncoderStream = stream;
+                    return true;
+                }
+                return false;
+            }
         }
 
         public bool SetInboundDecoderStream(Http3ControlStream stream)
         {
-            return Interlocked.CompareExchange(ref _inboundDecoderStream, stream, stream) == null;
+            lock (_sync)
+            {
+                if (_inboundDecoderStream == null)
+                {
+                    _inboundDecoderStream = stream;
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
