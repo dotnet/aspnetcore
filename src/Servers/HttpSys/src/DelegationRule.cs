@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Queue = new RequestQueue(queueName, UrlPrefix, _logger, receiver: true);
         }
 
-
         /// <inheritdoc />
         public void Dispose()
         {
