@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Constants for Http.Sys.
+    /// </summary>
     public static class HttpSysDefaults
     {
         /// <summary>

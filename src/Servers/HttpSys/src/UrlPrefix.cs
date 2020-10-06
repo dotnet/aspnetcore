@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// A wide-character (UTF-16) Unicode string with a canonical form that specifies a section of URL namespace.
+    /// It is used to reserve a section of URL namespace for a user account or register a section of URL namespace for a process.
+    /// </summary>
     public class UrlPrefix
     {
         private UrlPrefix(bool isHttps, string scheme, string host, string port, int portValue, string path)
@@ -94,6 +98,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return new UrlPrefix(isHttps, scheme, host, port, portValue.Value, path);
         }
 
+        /// <summary>
+        /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx
+        /// </summary>
+        /// <param name="prefix">The string that the <see cref="UrlPrefix"/> will be created from.</param>
         public static UrlPrefix Create(string prefix)
         {
             string scheme = null;
@@ -146,26 +154,58 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Create(scheme, host, port, path);
         }
 
+        /// <summary>
+        /// Gets a value that determines if the prefix's scheme is HTTPS.
+        /// </summary>
         public bool IsHttps { get; }
+
+        /// <summary>
+        /// Gets the scheme used by the prefix.
+        /// </summary>
         public string Scheme { get; }
+
+        /// <summary>
+        /// Gets the host domain name used by the prefix.
+        /// </summary>
         public string Host { get; }
+
+        /// <summary>
+        /// Gets a string representation of the port used by the prefix.
+        /// </summary>
         public string Port { get; }
+
         internal string HostAndPort { get; }
+
+        /// <summary>
+        /// Gets an integer representation of the port used by the prefix.
+        /// </summary>
         public int PortValue { get; }
+
+        /// <summary>
+        /// Gets the path component of the prefix.
+        /// </summary>
         public string Path { get; }
+
         internal string PathWithoutTrailingSlash { get; }
+        
+        /// <summary>
+        /// Gets a string representation of the prefix
+        /// </summary>
         public string FullPrefix { get; }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             return string.Equals(FullPrefix, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return StringComparer.OrdinalIgnoreCase.GetHashCode(FullPrefix);
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return FullPrefix;

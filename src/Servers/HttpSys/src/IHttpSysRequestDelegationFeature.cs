@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Interface for delegating requests to other Http.Sys request queues.
+    /// </summary>
     public interface IHttpSysRequestDelegationFeature
     {
         /// <summary>
@@ -15,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// must not be read nor the response started before this is invoked. Check <see cref="CanDelegate"/>
         /// before invoking.
         /// </summary>
+        /// <param name="destination">The rule maintaining the handle to the destination queue.</param>
         void DelegateRequest(DelegationRule destination);
     }
 }

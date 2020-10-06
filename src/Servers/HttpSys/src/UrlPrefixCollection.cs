@@ -30,6 +30,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
         }
 
+        /// <summary>
+        /// Gets the number of elements in this collection.
+        /// </summary>
         public int Count
         {
             get
@@ -41,16 +44,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Gets a value that determines if this collection is readOnly.
+        /// </summary>
         public bool IsReadOnly
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Creates a <see cref="UrlPrefix"/> from the given string, and adds it to this collection.
+        /// </summary>
+        /// <param name="prefix">The string representing the <see cref="UrlPrefix"/> to add to this collection.</param>
         public void Add(string prefix)
         {
             Add(UrlPrefix.Create(prefix));
         }
 
+        /// <summary>
+        /// Adds a <see cref="UrlPrefix"/> to this collection.
+        /// </summary>
+        /// <param name="item">The prefix to add to this collection.</param>
         public void Add(UrlPrefix item)
         {
             lock (_prefixes)
@@ -98,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return found;
         }
 
+        /// <inheritdoc />
         public void Clear()
         {
             lock (_prefixes)
@@ -110,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <inheritdoc />
         public bool Contains(UrlPrefix item)
         {
             lock (_prefixes)
@@ -118,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <inheritdoc />
         public void CopyTo(UrlPrefix[] array, int arrayIndex)
         {
             lock (_prefixes)
@@ -126,11 +143,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <inheritdoc />
         public bool Remove(string prefix)
         {
             return Remove(UrlPrefix.Create(prefix));
         }
 
+        /// <inheritdoc />
         public bool Remove(UrlPrefix item)
         {
             lock (_prefixes)
@@ -156,6 +175,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through this collection.
+        /// </summary>
         public IEnumerator<UrlPrefix> GetEnumerator()
         {
             lock (_prefixes)
