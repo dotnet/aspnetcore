@@ -37,7 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
+        private ConnectionAbortedException _abortedException = null;
         private readonly object _protocolSelectionLock = new object();
+        private CancellationTokenSource _connectionAborted;
 
         public Http3Connection(Http3ConnectionContext context)
         {
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
+            _connectionAborted = new CancellationTokenSource();
         }
 
         internal long HighestStreamId
@@ -116,7 +119,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            // TODO figure out how to gracefully close next requests
+            if (!previousState)
+            {
+                _connectionAborted.Cancel();
+            }
         }
 
         public void OnConnectionClosed()
@@ -200,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 while (true)
                 {
-                    var streamContext = await _multiplexedContext.AcceptAsync();
+                    var streamContext = await _multiplexedContext.AcceptAsync(_connectionAborted.Token);
                     if (streamContext == null || _haveSentGoAway)
                     {
                         break;
@@ -248,14 +254,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Stream aborted/closed.
+            }
             finally
             {
                 // Abort all streams as connection has shutdown.
                 lock (_streams)
                 {
-                    foreach (var stream in _streams.Values)
+                    if (_aborted)
                     {
-                        stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                        foreach (var stream in _streams.Values)
+                        {
+                            stream.Abort(_abortedException);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var stream in _streams.Values)
+                        {
+                            stream.OnInputOrOutputCompleted();
+                        }
                     }
                 }
 
@@ -322,6 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void OnInputOrOutputCompleted()
         {
+            // TODO poison streams?
         }
 
         public void Tick(DateTimeOffset now)
@@ -330,6 +351,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void InnerAbort(ConnectionAbortedException ex)
         {
+            _abortedException = ex;
+
             lock (_sync)
             {
                 if (ControlStream != null)
@@ -337,20 +360,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // TODO need to await this somewhere or allow this to be called elsewhere?
                     ControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
                 }
+
+                _haveSentGoAway = true;
+                _connectionAborted.Cancel();
             }
-
-            _haveSentGoAway = true;
-
-            // Abort currently active streams
-            lock (_streams)
-            {
-                foreach (var stream in _streams.Values)
-                {
-                    stream.Abort(new ConnectionAbortedException("The Http3Connection has been aborted"), Http3ErrorCode.UnexpectedFrame);
-                }
-            }
-
-            // TODO need to figure out if there is server initiated connection close rather than stream close?
         }
 
         public void ApplyMaxHeaderListSize(long value)
