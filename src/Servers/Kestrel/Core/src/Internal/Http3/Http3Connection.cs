@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -21,11 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : IRequestProcessor, ITimeoutHandler
     {
-        public DynamicTable DynamicTable { get; set; }
-
         public Http3ControlStream OutboundControlStream { get; set; }
-        public Http3ControlStream OutboundEncoderStream { get; set; }
-        public Http3ControlStream OutboundDecoderStream { get; set; }
 
         private Http3ControlStream _inboundControlStream;
         private Http3ControlStream _inboundEncoderStream;
@@ -51,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             _multiplexedContext = context.ConnectionContext;
             _context = context;
-            DynamicTable = new DynamicTable(0);
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
@@ -312,20 +305,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             OutboundControlStream = stream;
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync();
-        }
-
-        private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application)
-        {
-            var stream = await CreateNewUnidirectionalStreamAsync(application);
-            OutboundEncoderStream = stream;
-            await stream.SendStreamIdAsync(id: 2);
-        }
-
-        private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application)
-        {
-            var stream = await CreateNewUnidirectionalStreamAsync(application);
-            OutboundDecoderStream = stream;
-            await stream.SendStreamIdAsync(id: 3);
         }
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application)
