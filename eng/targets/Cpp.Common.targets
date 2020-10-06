@@ -5,7 +5,7 @@
 
   <Target Name="GetVcxprojFilesToSign" BeforeTargets="SignFiles">
     <ItemGroup>
-      <FilesToSign Include="$(TargetPath)" Condition="'$(ConfigurationType)' == 'DynamicLibrary'" Authenticode="Microsoft400" />
+      <FilesToSign Include="$(TargetPath)" Condition="'$(ConfigurationType)' == 'DynamicLibrary'" Authenticode="Microsoft400" Condition="'$(PostBuildSign)' != 'true'" />
     </ItemGroup>
   </Target>
 
