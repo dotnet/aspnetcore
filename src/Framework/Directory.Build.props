@@ -7,8 +7,8 @@
     <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
     <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
 
-    <!-- Platform manifest and package override metadata. -->
-    <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
+    <!-- Platform manifest and package override metadata -->
+    <ReferencePackSharedFxVersion>$(AspNetCoreMajorMinorVersion).0</ReferencePackSharedFxVersion>
     <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
   </PropertyGroup>
 

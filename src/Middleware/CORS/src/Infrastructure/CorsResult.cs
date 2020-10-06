@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// Gets or sets the allowed origin.
         /// </summary>
-        public string AllowedOrigin { get; set; }
+        public string? AllowedOrigin { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if the origin is allowed.

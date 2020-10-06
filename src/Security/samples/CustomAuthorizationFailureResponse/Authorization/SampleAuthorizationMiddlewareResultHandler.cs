@@ -14,9 +14,9 @@ namespace CustomAuthorizationFailureResponse.Authorization
     {
         private readonly IAuthorizationMiddlewareResultHandler _handler;
 
-        public SampleAuthorizationMiddlewareResultHandler(IAuthorizationMiddlewareResultHandler handler)
+        public SampleAuthorizationMiddlewareResultHandler()
         {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _handler = new AuthorizationMiddlewareResultHandler();
         }
 
         public async Task HandleAsync(

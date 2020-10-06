@@ -52,6 +52,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _body.Complete(exception);
         }
 
+        public override ValueTask CompleteAsync(Exception exception = null)
+        {
+            ValidateState();
+
+            return _body.CompleteAsync(exception);
+        }
+
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);

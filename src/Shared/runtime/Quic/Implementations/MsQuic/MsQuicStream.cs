@@ -966,9 +966,24 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private enum ReadState
         {
+            /// <summary>
+            /// The stream is open, but there is no data available.
+            /// </summary>
             None,
+
+            /// <summary>
+            /// Data is available in <see cref="_receiveQuicBuffers"/>.
+            /// </summary>
             IndividualReadComplete,
+
+            /// <summary>
+            /// The peer has gracefully shutdown their sends / our receives; the stream's reads are complete.
+            /// </summary>
             ReadsCompleted,
+
+            /// <summary>
+            /// User has aborted the stream, either via a cancellation token on ReadAsync(), or via AbortRead().
+            /// </summary>
             Aborted
         }
 
