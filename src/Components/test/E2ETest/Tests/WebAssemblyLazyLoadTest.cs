@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Visit the route for the lazy-loaded assembly
             SetUrlViaPushState("/WithLazyAssembly");
 
-            var button = app.FindElement(By.Id("use-package-button"));
+            var button = Browser.Exists(By.Id("use-package-button"));
 
             // Now we should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -100,11 +100,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
 
-            var button = app.FindElement(By.Id("go-to-lazy-route"));
+            var button = Browser.Exists(By.Id("go-to-lazy-route"));
             button.Click();
 
             // Navigating the lazy-loaded route should show its content
-            var renderedElement = app.FindElement(By.Id("lazy-page"));
+            var renderedElement = Browser.Exists(By.Id("lazy-page"));
             Assert.True(renderedElement.Displayed);
         }
 
@@ -135,8 +135,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
 
             // Get references to the navigation links associated with the test
-            var lazyAssemblyLink = app.FindElement(By.Id("with-lazy-assembly"));
-            var lazyRoutesLink = app.FindElement(By.Id("with-lazy-routes"));
+            var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
+            var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
 
             // Click the first link and verify that it worked as expected
             lazyAssemblyLink.Click();
@@ -148,11 +148,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
 
             // Interact with that assembly to ensure it was loaded properly
-            var button = app.FindElement(By.Id("go-to-lazy-route"));
+            var button = Browser.Exists(By.Id("go-to-lazy-route"));
             button.Click();
 
             // Navigating the lazy-loaded route should show its content
-            var renderedElement = app.FindElement(By.Id("lazy-page"));
+            var renderedElement = Browser.Exists(By.Id("lazy-page"));
             Assert.True(renderedElement.Displayed);
         }
 

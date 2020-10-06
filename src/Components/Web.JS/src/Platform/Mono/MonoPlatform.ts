@@ -334,7 +334,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       return BINDING.js_to_mono_obj(Promise.resolve(0));
     }
 
-    const lazyResources = {};
+    const lazyResources: {
+      assemblies?: (ArrayBuffer | null)[],
+      pdbs?: (ArrayBuffer | null)[]
+    } = {};
     window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
@@ -372,18 +375,26 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           lazyResources["pdbs"] = values[1];
           if (lazyResources["assemblies"].length) {
             window['Blazor']._internal.readLazyAssemblies = () => {
-              const assemblyBytes = BINDING.mono_obj_array_new(lazyResources["assemblies"].length);
-              for (let i = 0; i < lazyResources["assemblies"].length; i++) {
-                const assembly = lazyResources["assemblies"][i] as ArrayBuffer;
+              const { assemblies } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
+              }
+              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const assembly = assemblies[i] as ArrayBuffer;
                 BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
               }
               return assemblyBytes;
             };
 
             window['Blazor']._internal.readLazyPdbs = () => {
-              const pdbBytes = BINDING.mono_obj_array_new(lazyResources["assemblies"].length);
-              for (let i = 0; i < lazyResources["assemblies"].length; i++) {
-                const pdb = lazyResources["pdbs"] && lazyResources["pdbs"][i] ? new Uint8Array(lazyResources["pdbs"][i] as ArrayBufferLike) : new Uint8Array();
+              const { assemblies, pdbs } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
+              }
+              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
                 BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
               }
               return pdbBytes;
