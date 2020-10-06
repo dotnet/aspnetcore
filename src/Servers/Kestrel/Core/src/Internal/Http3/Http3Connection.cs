@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly object _protocolSelectionLock = new object();
         private CancellationTokenSource _connectionAborted;
 
+        private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
+
         public Http3Connection(Http3ConnectionContext context)
         {
             _multiplexedContext = context.ConnectionContext;
@@ -50,6 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
             _connectionAborted = new CancellationTokenSource();
+
+            var httpLimits = context.ServiceContext.ServerOptions.Limits;
+
+            _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
+            _serverSettings.MaxRequestHeaderFieldSize = (uint)httpLimits.Http3.MaxRequestHeaderFieldSize;
         }
 
         internal long HighestStreamId
@@ -234,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (!quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
-                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext, _serverSettings);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                     else
@@ -330,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
             };
 
-            return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+            return new Http3ControlStream<TContext>(application, this, httpConnectionContext, _serverSettings);
         }
 
         public void HandleRequestHeadersTimeout()

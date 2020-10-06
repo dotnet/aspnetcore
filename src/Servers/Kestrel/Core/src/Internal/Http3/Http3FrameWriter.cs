@@ -68,17 +68,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         // TODO actually write settings here.
-        internal Task WriteSettingsAsync(IList<Http3PeerSettings> settings)
+        internal Task WriteSettingsAsync(IList<Http3PeerSetting> settings)
         {
             _outgoingFrame.PrepareSettings();
-            var buffer = _outputWriter.GetSpan(2);
 
+            // Two encoded length ints per setting.
+            // One encoded length int for setting size
+            // 1 byte for setting type
+            var buffer = _outputWriter.GetSpan(
+                VariableLengthIntegerHelper.MaximumEncodedLength * 2 * settings.Count + VariableLengthIntegerHelper.MaximumEncodedLength + 1);
+
+            var totalLength = 1;
             buffer[0] = (byte)_outgoingFrame.Type;
-            buffer[1] = 0;
+            buffer = buffer[1..];
 
-            _outputWriter.Advance(2);
+            var settingsLength = CalculateSettingsSize(settings);
+            var settingsBytesWritten = VariableLengthIntegerHelper.WriteInteger(buffer, settingsLength);
+            totalLength += settingsBytesWritten + settingsLength;
+
+            WriteSettings(settings, buffer);
+
+            _outgoingFrame.Length = totalLength;
+
+            _outputWriter.Advance(totalLength);
 
             return _outputWriter.FlushAsync().AsTask();
+        }
+
+        internal static int CalculateSettingsSize(IList<Http3PeerSetting> settings)
+        {
+            var length = 0;
+            foreach (var setting in settings)
+            {
+                length += VariableLengthIntegerHelper.GetByteCount((long)setting.Parameter);
+                length += VariableLengthIntegerHelper.GetByteCount(setting.Value);
+            }
+            return length;
+        }
+
+        internal static void WriteSettings(IList<Http3PeerSetting> settings, Span<byte> destination)
+        {
+            foreach (var setting in settings)
+            {
+                var parameterLength = VariableLengthIntegerHelper.WriteInteger(destination, (long)setting.Parameter);
+                destination = destination.Slice(parameterLength);
+
+                var valueLength = VariableLengthIntegerHelper.WriteInteger(destination, (long)setting.Value);
+                destination = destination.Slice(valueLength);
+            }
         }
 
         internal Task WriteStreamIdAsync(long id)

@@ -7,16 +7,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class Http3Limits
     {
-        private int _headerTableSize = 4096;
+        private int _headerTableSize = 0;
         private int _maxRequestHeaderFieldSize = 8192;
 
         /// <summary>
         /// Limits the size of the header compression table, in octets, the HPACK decoder on the server can use.
         /// <para>
-        /// Value must be greater than 0, defaults to 4096
+        /// Value must be greater than 0, defaults to 0
         /// </para>
         /// </summary>
-        public int HeaderTableSize
+        internal int HeaderTableSize
         {
             get => _headerTableSize;
             set
