@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -208,6 +209,63 @@ namespace Microsoft.AspNetCore
             Assert.Equal(2, lines.Length);
             Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
             Assert.Equal(TestData.GetTestDataValue("RuntimePackageVersion"), lines[1]);
+        }
+
+        [Fact]
+        public void RuntimeListListsContainsCorrectEntries()
+        {
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+            var expectedAssemblies = TestData.GetSharedFxDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            AssertEx.FileExists(runtimeListPath);
+
+            var runtimeListDoc = XDocument.Load(runtimeListPath);
+            var runtimeListEntries = runtimeListDoc.Root.Descendants();
+
+            _output.WriteLine("==== file contents ====");
+            _output.WriteLine(string.Join('\n', runtimeListEntries.Select(i => i.Attribute("Path").Value).OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
+
+             var actualAssemblies = runtimeListEntries
+                .Select(i =>
+                {
+                    var filePath = i.Attribute("Path").Value;
+                    var fileParts = filePath.Split('/');
+                    var fileName = fileParts[fileParts.Length - 1];
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                        ? fileName.Substring(0, fileName.Length - 4)
+                        : fileName;
+                })
+                .ToHashSet();
+
+            var missing = expectedAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(expectedAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the runtime list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the runtime list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
+
+            Assert.All(runtimeListEntries, i =>
+            {
+                var assemblyType = i.Attribute("Type").Value;
+                var assemblyPath = i.Attribute("Path").Value;
+                var fileVersion = i.Attribute("FileVersion").Value;
+
+                if (assemblyType.Equals("Managed"))
+                {
+                    var assemblyVersion = i.Attribute("AssemblyVersion").Value;
+                    Assert.True(Version.TryParse(assemblyVersion, out _), $"{assemblyPath} has assembly version {assemblyVersion}. Assembly version must be convertable to System.Version");
+                }
+
+                Assert.True(Version.TryParse(fileVersion, out _), $"{assemblyPath} has file version {fileVersion}. File version must be convertable to System.Version");
+            });
         }
     }
 }
