@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Threading;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
