@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
         internal List<Http3PeerSetting> GetNonProtocolDefaults()
         {
+            // By default, there is only one setting that is sent from server to client.
+            // Set capacity to that value.
             var list = new List<Http3PeerSetting>(1);
 
             if (HeaderTableSize != DefaultHeaderTableSize)
