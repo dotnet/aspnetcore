@@ -334,10 +334,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 Transport = streamContext.Transport,
                 TimeoutControl = _context.TimeoutControl,
                 LocalEndPoint = streamContext.LocalEndPoint as IPEndPoint,
-                RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
+                RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint,
+                ServerSettings = _serverSettings,
             };
 
-            return new Http3ControlStream<TContext>(application, this, httpConnectionContext, _serverSettings);
+            return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
         }
 
         public void HandleRequestHeadersTimeout()
