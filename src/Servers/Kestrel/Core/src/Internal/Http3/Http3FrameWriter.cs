@@ -67,8 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        // TODO actually write settings here.
-        internal Task WriteSettingsAsync(IList<Http3PeerSetting> settings)
+        internal Task WriteSettingsAsync(List<Http3PeerSetting> settings)
         {
             _outgoingFrame.PrepareSettings();
 
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return _outputWriter.FlushAsync().AsTask();
         }
 
-        internal static int CalculateSettingsSize(IList<Http3PeerSetting> settings)
+        internal static int CalculateSettingsSize(List<Http3PeerSetting> settings)
         {
             var length = 0;
             foreach (var setting in settings)
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return length;
         }
 
-        internal static void WriteSettings(IList<Http3PeerSetting> settings, Span<byte> destination)
+        internal static void WriteSettings(List<Http3PeerSetting> settings, Span<byte> destination)
         {
             foreach (var setting in settings)
             {

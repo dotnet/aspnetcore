@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public uint MaxRequestHeaderFieldSize { get; internal set; }
 
         // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
-        internal IList<Http3PeerSetting> GetNonProtocolDefaults()
+        internal List<Http3PeerSetting> GetNonProtocolDefaults()
         {
             var list = new List<Http3PeerSetting>(1);
 

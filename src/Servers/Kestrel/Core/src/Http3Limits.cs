@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Value must be greater than 0, defaults to 0
         /// </para>
         /// </summary>
+        // TODO: Make public https://github.com/dotnet/aspnetcore/issues/26666
         internal int HeaderTableSize
         {
             get => _headerTableSize;
