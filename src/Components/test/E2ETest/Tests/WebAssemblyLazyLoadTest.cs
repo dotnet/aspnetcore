@@ -134,15 +134,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
             Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
 
-            // Get references to the navigation links associated with the test
-            var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
-            var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
-
             // Click the first link and verify that it worked as expected
+            var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
             lazyAssemblyLink.Click();
+            var pkgButton = Browser.Exists(By.Id("use-package-button"));
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+            pkgButton.Click();
 
             // Navigate to the next page and verify that it loaded its assembly
+            var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
             lazyRoutesLink.Click();
             Browser.Exists(By.Id("lazy-load-msg"));
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
