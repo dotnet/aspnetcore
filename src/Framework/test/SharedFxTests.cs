@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -266,6 +267,49 @@ namespace Microsoft.AspNetCore
 
                 Assert.True(Version.TryParse(fileVersion, out _), $"{assemblyPath} has file version {fileVersion}. File version must be convertable to System.Version");
             });
+        }
+
+        [Fact]
+        public void RuntimeListListsContainsCorrectPaths()
+        {
+            var runtimePath = Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
+            if (string.IsNullOrEmpty(runtimePath))
+            {
+                return;
+            }
+
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+
+            AssertEx.FileExists(runtimeListPath);
+
+            var runtimeListDoc = XDocument.Load(runtimeListPath);
+            var runtimeListEntries = runtimeListDoc.Root.Descendants();
+
+            var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg" + Path.DirectorySeparatorChar));
+
+            ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
+
+            var actualPaths = archive.Entries
+                .Where(i => i.FullName.EndsWith(".dll"))
+                .Select(i => i.FullName).ToHashSet();
+
+            var expectedPaths = runtimeListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();
+
+            _output.WriteLine("==== package contents ====");
+            _output.WriteLine(string.Join('\n', actualPaths.OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedPaths.OrderBy(i => i)));
+
+            var missing = expectedPaths.Except(actualPaths);
+            var unexpected = actualPaths.Except(expectedPaths);
+
+            _output.WriteLine("==== missing assemblies from the runtime list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the runtime list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
         }
     }
 }
