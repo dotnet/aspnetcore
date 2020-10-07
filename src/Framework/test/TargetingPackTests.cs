@@ -313,14 +313,14 @@ namespace Microsoft.AspNetCore
             var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
             _output.WriteLine("==== file contents ====");
-            _output.WriteLine(string.Join('\n', frameworkListEntries.Select(i => i.Attribute("Path").Value).OrderBy(i => i)));
+            _output.WriteLine(string.Join('\n', frameworkListEntries.Select(i => i.Attribute("AssemblyName").Value).OrderBy(i => i)));
             _output.WriteLine("==== expected assemblies ====");
             _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
 
              var actualAssemblies = frameworkListEntries
                 .Select(i =>
                 {
-                    var fileName = i.Attribute("Path").Value;
+                    var fileName = i.Attribute("AssemblyName").Value;
                     return fileName.EndsWith(".dll", StringComparison.Ordinal)
                         ? fileName.Substring(0, fileName.Length - 4)
                         : fileName;
