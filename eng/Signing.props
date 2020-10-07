@@ -14,6 +14,7 @@
     <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <CommonFilesToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+    <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
   </ItemGroup>
   <Choose>
     <!-- When post build signing is false - Sign as normal.
@@ -57,8 +58,9 @@
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cab" CertificateName="None" />
     <!-- If doing post build sign, explicitly give MSIs a cert. If doing in build signing,
-         this is handled by the wix targets -->
+         this is handled by the wix targets, and .msi should be "None" -->
     <FileExtensionSignInfo Include=".msi" CertificateName="Microsoft400" Condition="'$(PostBuildSign)' == 'true'" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileSignInfo Include="aspnetcore.dll" CertificateName="Microsoft400" />

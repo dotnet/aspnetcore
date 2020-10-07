@@ -43,13 +43,19 @@
 
   <!-- Overwrite the wix package drop creation target to create a lit
        package instead. -->
-  <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+  <Target Name="CreateWixPackageDrop" AfterTargets="CopyToArtifactsDirectory">
+    <ItemGroup>
+      <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(OutputName).wixlib" />
+      <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(PackageFileName)"
+        Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' " />
+    </ItemGroup>
+
     <CreateLitCommandPackageDrop
       LitCommandWorkingDir="$(WixCommandObjDir)"
       OutputFolder="$(WixCommandPackagesDir)"
       WixExtensions="@(WixExtension)"
       Bf="true"
-      InstallerFile="$(InstallersOutputPath)$(OutputName).wixlib"
+      InstallerFile="%(WixInstallerFilesToProcess.Identity)"
       WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(WixLibrary)">
       <Output TaskParameter="OutputFile" PropertyName="_LitCommandPackageNameOutput" />
     </CreateLitCommandPackageDrop>
