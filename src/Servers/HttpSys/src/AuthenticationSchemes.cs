@@ -5,7 +5,6 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    // REVIEW: this appears to be very similar to System.Net.AuthenticationSchemes
     /// <summary>
     /// Specifies protocols for authentication.
     /// </summary>
@@ -13,8 +12,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public enum AuthenticationSchemes
     {
         /// <summary>
-        /// No authentication is allowed. A client requesting an <see cref="AuthenticationManager"/> object with this flag set will
-        /// always receive a 403 Forbidden status. Use this flag when a resource should never be served to a client.
+        /// No authentication is enabled. This should only be used when HttpSysOptions.Authentication.AllowAnonymous is enabled (see <see cref="AuthenticationManager.AllowAnonymous"/>).
         /// </summary>
         None = 0x0,
 

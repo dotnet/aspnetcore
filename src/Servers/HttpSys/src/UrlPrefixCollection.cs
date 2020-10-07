@@ -30,9 +30,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
         }
 
-        /// <summary>
-        /// Gets the number of elements in this collection.
-        /// </summary>
+        /// <inheritdoc />
         public int Count
         {
             get

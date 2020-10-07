@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     /// <summary>
-    /// Constants for Http.Sys.
+    /// Constants for HttpSys.
     /// </summary>
     public static class HttpSysDefaults
     {

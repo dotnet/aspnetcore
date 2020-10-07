@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     /// <summary>
-    /// Exception thrown by Http.Sys when an error occurs
+    /// Exception thrown by HttpSys when an error occurs
     /// </summary>
     [SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable")]
     public class HttpSysException : Win32Exception

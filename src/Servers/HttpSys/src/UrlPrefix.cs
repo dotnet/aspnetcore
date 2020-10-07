@@ -8,8 +8,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     /// <summary>
-    /// A wide-character (UTF-16) Unicode string with a canonical form that specifies a section of URL namespace.
-    /// It is used to reserve a section of URL namespace for a user account or register a section of URL namespace for a process.
+    /// A set of URL parameters used to listen for incoming requests.
     /// </summary>
     public class UrlPrefix
     {
