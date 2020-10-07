@@ -71,24 +71,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             _outgoingFrame.PrepareSettings();
 
-            // Two encoded length ints per setting.
-            // One encoded length int for setting size
-            // 1 byte for setting type
-            var buffer = _outputWriter.GetSpan(
-                VariableLengthIntegerHelper.MaximumEncodedLength * 2 * settings.Count + VariableLengthIntegerHelper.MaximumEncodedLength + 1);
+            // Calculate how long settings are before allocating.
 
+            var settingsLength = CalculateSettingsSize(settings);
+
+            // Call GetSpan with enough room for
+            // - One encoded length int for setting size
+            // - 1 byte for setting type
+            // - settings length
+            var buffer = _outputWriter.GetSpan(settingsLength + VariableLengthIntegerHelper.MaximumEncodedLength + 1);
+
+            // Length start at 1 for type
             var totalLength = 1;
+
+            // Write setting type
             buffer[0] = (byte)_outgoingFrame.Type;
             buffer = buffer[1..];
 
-            var settingsLength = CalculateSettingsSize(settings);
+            // Write settings length
             var settingsBytesWritten = VariableLengthIntegerHelper.WriteInteger(buffer, settingsLength);
+            buffer = buffer.Slice(settingsBytesWritten);
+
             totalLength += settingsBytesWritten + settingsLength;
 
             WriteSettings(settings, buffer);
 
+            // Advance pipe writer and flush
             _outgoingFrame.Length = totalLength;
-
             _outputWriter.Advance(totalLength);
 
             return _outputWriter.FlushAsync().AsTask();
