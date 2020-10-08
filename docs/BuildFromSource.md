@@ -42,7 +42,8 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
-> Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
+> :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
+> :bulb: Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
 
 ```ps1
 PS> ./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}] [-Channel {Release|Preview}]
@@ -52,9 +53,9 @@ PS> ./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Profe
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-If you already have Visual Studio installed, you can use the installation script above to ensure that you have the correct components installed.
+The  [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
-The  [global.json](/global.json) and [eng/scripts/vs.json](/eng/scripts/vs.json) provide a description of the components required to support building the repo.
+> :bulb: The `IntallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
 
 **[Git](https://git-scm.org)**
 
@@ -72,7 +73,7 @@ NodeJS installes the Node package manager (npm) by default. This repo depends on
 npm install -g yarn
 ```
 
-**Java Development Kit**
+**Java Development Kit in Windows**
 
 This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:
   * OpenJDK <https://jdk.java.net/>
@@ -90,7 +91,11 @@ The build should find any JDK 11 or newer installation on the machine as long as
 
 **Chrome**
 
-This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
+This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
+
+**Wix (Optional)**
+
+If you plan on working with the Windows installers defined in [src/Installers/Windows](../src/Installers/Windows), you will need to install the Wix toolkit from https://wixtoolset.org/releases/.
 
 ### On macOS/Linux
 
@@ -105,6 +110,8 @@ You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is requ
 If netier utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
 
 **Git**
+
+If you've made it this far, you've already got `Git` installed. Sit back, relax, and move on to the next requirement.
 
 **[NodeJS](https://nodejs.org)**
 
@@ -124,7 +131,7 @@ This repo contains some Java source code that depends on an install of the JDK v
   * OpenJDK <https://jdk.java.net/>
   * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-Similar to the instructions above for Windows, be sure that the the `JAVA_HOME` environment variable is set to the location of your Java installation.
+Similar to [the instructions above for Windows](#java-development-kit-in-windows), be sure that the the `JAVA_HOME` environment variable is set to the location of your Java installation.
 
 ## Step 3: Build the repo
 
@@ -132,13 +139,15 @@ Before opening our .sln/.slnf files in Visual Studio or VS Code, you will need t
 
 ### In Visual Studio
 
-To build a version of the repo locally, you'll need to execute the following command.
+To set up your project for development on Visual Studio, you'll need to execute the following command.
 
 ```ps1
 PS1> .\restore.cmd
 ```
 
-This will download the required tools and build the entire repository once. At that point, you should be able
+> :bulb: If you happen to be working on macOS or Linux, you can use the `restore.sh` command.
+
+This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
    > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
@@ -160,6 +169,8 @@ PS1> cd src\Components
 PS1> .\startvs.cmd
 ```
 
+After opening the solution in Visual Studio, you can build/rebuild using the controls in Visual Studio.
+
 #### A brief interlude on solution files
 
 We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio
@@ -175,7 +186,6 @@ These principles guide how we create and manage .slnf files:
 2. Solution files group together projects which are frequently edited at the same time.
 3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
 
-
 ### In Visual Studio Code
 
 Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
@@ -183,6 +193,8 @@ You can find more info on this in the "Building on command-line" section below.
 
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
 Use these command to launch VS Code with the right settings.
+
+> :bulb: Note that you'll need to launch Visual Studio Code from the command line in order to ensure that it picks up the environment variables. To learn more about the Visual Studio Code CLI, you can check out [the docs page](https://code.visualstudio.com/docs/editor/command-line).
 
 On Windows (requires PowerShell):
 
@@ -200,14 +212,14 @@ source activate.sh
 code .
 ```
 
-Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
-to the process in WSL.  You can workaround this by explicitly setting the environment variables
-in `~/.vscode-server/server-env-setup`.
-See https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script for details.
+> :bulb: Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
+> to the process in WSL.  You can workaround this by explicitly setting the environment variables
+> in `~/.vscode-server/server-env-setup`.
+> See https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script for details.
 
 ## Building on command-line
 
-You can also build the entire project on command line with the `build.cmd`/`.sh` scripts.
+When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
 On Windows:
 
@@ -266,7 +278,7 @@ On macOS/Linux:
 ./build.sh --test
 ```
 
-> :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made.
+> :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
 
 ### Building a subset of the code
 
