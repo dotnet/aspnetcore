@@ -145,17 +145,17 @@ namespace Microsoft.AspNetCore.Identity
         {
             if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user)))
             {
-                Logger.LogWarning(0, "User cannot sign in without a confirmed email.");
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedEmail, "User cannot sign in without a confirmed email.");
                 return false;
             }
             if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user)))
             {
-                Logger.LogWarning(1, "User cannot sign in without a confirmed phone number.");
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedPhoneNumber, "User cannot sign in without a confirmed phone number.");
                 return false;
             }
             if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
             {
-                Logger.LogWarning(4, "User cannot sign in without a confirmed account.");
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedAccount, "User cannot sign in without a confirmed account.");
                 return false;
             }
             return true;
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
-            Logger.LogDebug(4, "Failed to validate a security stamp.");
+            Logger.LogDebug(EventIds.SecurityStampValidationFailedId4, "Failed to validate a security stamp.");
             return null;
         }
 
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
-            Logger.LogDebug(5, "Failed to validate a security stamp.");
+            Logger.LogDebug(EventIds.TwoFactorSecurityStampValidationFailed, "Failed to validate a security stamp.");
             return null;
         }
 
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Identity
 
                 return SignInResult.Success;
             }
-            Logger.LogWarning(2, "User failed to provide the correct password.");
+            Logger.LogWarning(EventIds.InvalidPassword, "User failed to provide the correct password.");
 
             if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>A locked out SignInResult</returns>
         protected virtual Task<SignInResult> LockedOut(TUser user)
         {
-            Logger.LogWarning(3, "User is currently locked out.");
+            Logger.LogWarning(EventIds.UserLockedOut, "User is currently locked out.");
             return Task.FromResult(SignInResult.LockedOut);
         }
 
