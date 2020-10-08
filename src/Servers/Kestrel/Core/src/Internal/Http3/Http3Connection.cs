@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (!quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
-                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext, _serverSettings);
+                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                     else
