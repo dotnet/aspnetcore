@@ -37,7 +37,7 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 > :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
 
-**[Visual Studio 2019](https://visualstudio.com)**
+#### [Visual Studio 2019](https://visualstudio.com)
 
 Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
@@ -57,15 +57,15 @@ The  [global.json](/global.json) file specifies the minimum requirements needed 
 
 > :bulb: The `IntallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
 
-**[Git](https://git-scm.org)**
+#### [Git](https://git-scm.org)
 
 If you're reading this, you probably already have Git installed to support cloning the repo as outlined in Step 1.
 
-**[NodeJS](https://nodejs.org)**
+#### [NodeJS](https://nodejs.org)
 
 Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at https://nodejs.org.
 
-**[Yarn](https://yarnpkg.com/)**
+#### [Yarn](https://yarnpkg.com/)
 
 NodeJS installes the Node package manager (npm) by default. This repo depends on yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
 
@@ -73,7 +73,7 @@ NodeJS installes the Node package manager (npm) by default. This repo depends on
 npm install -g yarn
 ```
 
-**Java Development Kit in Windows**
+#### Java Development Kit in Windows*
 
 This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:
   * OpenJDK <https://jdk.java.net/>
@@ -89,11 +89,11 @@ The build should find any JDK 11 or newer installation on the machine as long as
       * Set `JAVA_HOME` to `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script.
       * Set `JAVA_HOME` to `C:/Program Files/Java/jdk<version>/` if you installed the JDK globally.
 
-**Chrome**
+#### Chrome
 
 This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
 
-**Wix (Optional)**
+#### Wix (Optional)
 
 If you plan on working with the Windows installers defined in [src/Installers/Windows](../src/Installers/Windows), you will need to install the Wix toolkit from https://wixtoolset.org/releases/.
 
@@ -103,21 +103,21 @@ You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is requ
 
 > :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
 
-**curl/wget**
+#### curl/wget
 
 `curl` and `wget` are command line tools that can be used to download files from an HTTP server. Either utility will need to be installed in order to complete the setup. Typically, these will be included on your machine by default.
 
 If netier utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
 
-**Git**
+##### Git
 
 If you've made it this far, you've already got `Git` installed. Sit back, relax, and move on to the next requirement.
 
-**[NodeJS](https://nodejs.org)**
+#### [NodeJS](https://nodejs.org)
 
 Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at https://nodejs.org.
 
-**[Yarn](https://yarnpkg.com/)**
+#### [Yarn](https://yarnpkg.com/)
 
 NodeJS installes the Node package manager (npm) by default. This repo depends on yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
 
@@ -125,7 +125,7 @@ NodeJS installes the Node package manager (npm) by default. This repo depends on
 $ npm install -g yarn
 ```
 
-**Java Development Kit**
+#### Java Development Kit
 
 This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:
   * OpenJDK <https://jdk.java.net/>
