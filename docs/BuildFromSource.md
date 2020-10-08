@@ -29,7 +29,7 @@ git submodule update --init --recursive
 
 ## Step 2: Install pre-requisites
 
-Developing the aspnetcore repo requires some additional tools to build the source code and run integration tests.
+Developing in the aspnetcore repo requires some additional tools to build the source code and run integration tests.
 
 ### On Windows
 
@@ -42,13 +42,13 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 Visual Studio 2019 (16.8) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
-> Even if you have installed Visual Studio, still recommend you should use this script to install again to avoid errors due to missing components just in case.
+> Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
 
 ```ps1
-PS> ./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}]
+PS> ./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}] [-Channel {Release|Preview}]
 ```
 
-> :bulb: To allow executing the setup script, you may need to update the execution policy on your machine.
+> :bulb: To execute the setup script or other PowerShell scripts in the repo, you may need to update the execution policy on your machine.
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
@@ -94,7 +94,7 @@ This repo contains a Selenium-based tests require a version of Chrome to be inst
 
 ### On macOS/Linux
 
-You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is required if you're building on macOS. If you're building on Linux, your machine will need to meet the [].NET Core Linux preequisities](https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites).
+You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is required if you're building on macOS. If you're building on Linux, your machine will need to meet the [.NET Core Linux preequisities](https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites).
 
 > :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
 
@@ -130,7 +130,7 @@ Similar to the instructions above for Windows, be sure that the the `JAVA_HOME` 
 
 Before opening our .sln/.slnf files in Visual Studio or VS Code, you will need to build the repo locally.
 
-### On Visual Studio
+### In Visual Studio
 
 To build a version of the repo locally, you'll need to execute the following command.
 
@@ -176,7 +176,7 @@ These principles guide how we create and manage .slnf files:
 3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
 
 
-### On Visual Studio Code
+### In Visual Studio Code
 
 Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
 You can find more info on this in the "Building on command-line" section below.
