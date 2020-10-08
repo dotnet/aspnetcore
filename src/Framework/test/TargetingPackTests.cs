@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -347,6 +348,48 @@ namespace Microsoft.AspNetCore
                 Assert.True(Version.TryParse(assemblyVersion, out _), $"{assemblyPath} has assembly version {assemblyVersion}. Assembly version must be convertable to System.Version");
                 Assert.True(Version.TryParse(fileVersion, out _), $"{assemblyPath} has file version {fileVersion}. File version must be convertable to System.Version");
             });
+        }
+
+        [Fact]
+        public void FrameworkListListsContainsCorrectPaths()
+        {
+            if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                return;
+            }
+
+            var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
+
+            AssertEx.FileExists(frameworkListPath);
+
+            var frameworkListDoc = XDocument.Load(frameworkListPath);
+            var frameworkListEntries = frameworkListDoc.Root.Descendants();
+
+            var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg" + Path.DirectorySeparatorChar));
+
+            ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
+
+            var actualPaths = archive.Entries
+                .Where(i => i.FullName.EndsWith(".dll"))
+                .Select(i => i.FullName).ToHashSet();
+
+            var expectedPaths = frameworkListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();
+
+            _output.WriteLine("==== package contents ====");
+            _output.WriteLine(string.Join('\n', actualPaths.OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedPaths.OrderBy(i => i)));
+
+            var missing = expectedPaths.Except(actualPaths);
+            var unexpected = actualPaths.Except(expectedPaths);
+
+            _output.WriteLine("==== missing assemblies from the runtime list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the runtime list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
         }
     }
 }
