@@ -318,54 +318,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("connections-per-second", this, () => _totalConnections)
+                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("connections-per-second", this, () => Volatile.Read(ref _totalConnections))
                 {
                     DisplayName = "Connection Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
 
-                _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => _totalConnections)
+                _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => Volatile.Read(ref _totalConnections))
                 {
                     DisplayName = "Total Connections",
                 };
 
-                _tlsHandshakesPerSecondCounter ??= new IncrementingPollingCounter("tls-handshakes-per-second", this, () => _totalTlsHandshakes)
+                _tlsHandshakesPerSecondCounter ??= new IncrementingPollingCounter("tls-handshakes-per-second", this, () => Volatile.Read(ref _totalTlsHandshakes))
                 {
                     DisplayName = "TLS Handshake Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
 
-                _totalTlsHandshakesCounter ??= new PollingCounter("total-tls-handshakes", this, () => _totalTlsHandshakes)
+                _totalTlsHandshakesCounter ??= new PollingCounter("total-tls-handshakes", this, () => Volatile.Read(ref _totalTlsHandshakes))
                 {
                     DisplayName = "Total TLS Handshakes",
                 };
 
-                _currentTlsHandshakesCounter ??= new PollingCounter("current-tls-handshakes", this, () => _currentTlsHandshakes)
+                _currentTlsHandshakesCounter ??= new PollingCounter("current-tls-handshakes", this, () => Volatile.Read(ref _currentTlsHandshakes))
                 {
                     DisplayName = "Current TLS Handshakes"
                 };
 
-                _failedTlsHandshakesCounter ??= new PollingCounter("failed-tls-handshakes", this, () => _failedTlsHandshakes)
+                _failedTlsHandshakesCounter ??= new PollingCounter("failed-tls-handshakes", this, () => Volatile.Read(ref _failedTlsHandshakes))
                 {
                     DisplayName = "Failed TLS Handshakes"
                 };
 
-                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => _currentConnections)
+                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => Volatile.Read(ref _currentConnections))
                 {
                     DisplayName = "Current Connections"
                 };
 
-                _connectionQueueLengthCounter ??= new PollingCounter("connection-queue-length", this, () => _connectionQueueLength)
+                _connectionQueueLengthCounter ??= new PollingCounter("connection-queue-length", this, () => Volatile.Read(ref _connectionQueueLength))
                 {
                     DisplayName = "Connection Queue Length"
                 };
 
-                _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => _httpRequestQueueLength)
+                _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => Volatile.Read(ref _httpRequestQueueLength))
                 {
                     DisplayName = "Request Queue Length"
                 };
 
-                _currrentUpgradedHttpRequestsCounter ??= new PollingCounter("current-upgraded-requests", this, () => _currentUpgradedHttpRequests)
+                _currrentUpgradedHttpRequestsCounter ??= new PollingCounter("current-upgraded-requests", this, () => Volatile.Read(ref _currentUpgradedHttpRequests))
                 {
                     DisplayName = "Current Upgraded Requests (WebSockets)"
                 };
