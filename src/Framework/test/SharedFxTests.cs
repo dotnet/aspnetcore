@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore
             var runtimeListDoc = XDocument.Load(runtimeListPath);
             var runtimeListEntries = runtimeListDoc.Root.Descendants();
 
-            var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg" + Path.DirectorySeparatorChar));
+            var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg"));
 
             ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 

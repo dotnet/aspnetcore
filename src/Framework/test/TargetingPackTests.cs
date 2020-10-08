@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore
             var frameworkListDoc = XDocument.Load(frameworkListPath);
             var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
-            var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg" + Path.DirectorySeparatorChar));
+            var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg"));
 
             ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
