@@ -32,7 +32,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
         public async Task EmptyWebTemplateCSharp()
         {
             await EmtpyTemplateCore(languageOverride: null);

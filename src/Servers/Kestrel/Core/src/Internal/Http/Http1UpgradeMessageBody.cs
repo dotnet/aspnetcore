@@ -23,33 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This returns IsEmpty so we can avoid draining the body (since it's basically an endless stream)
         public override bool IsEmpty => true;
 
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ThrowIfCompleted();
-            return _context.Input.ReadAsync(cancellationToken);
-        }
-
-        public override bool TryRead(out ReadResult result)
-        {
-            ThrowIfCompleted();
-            return _context.Input.TryRead(out result);
-        }
-
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            _context.Input.AdvanceTo(consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             _context.Input.AdvanceTo(consumed, examined);
-        }
-
-        public override void Complete(Exception exception)
-        {
-            // Don't call Connection.Complete.
-            _context.ReportApplicationError(exception);
-            _completed = true;
         }
 
         public override void CancelPendingRead()
@@ -62,9 +38,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        public override Task StopAsync()
+        public override ValueTask StopAsync()
         {
-            return Task.CompletedTask;
+            return default;
         }
 
         public override bool TryReadInternal(out ReadResult readResult)

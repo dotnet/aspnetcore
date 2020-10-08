@@ -4,6 +4,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -17,8 +18,15 @@ namespace JwtSample
 {
     public class Startup
     {
-        private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        private readonly SymmetricSecurityKey SecurityKey;
         private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+
+        public Startup()
+        {
+            var key = new byte[16];
+            RandomNumberGenerator.Fill(key);
+            SecurityKey = new SymmetricSecurityKey(key);
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
