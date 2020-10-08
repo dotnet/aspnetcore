@@ -106,7 +106,7 @@ namespace RunTests
                             // These are the only extensions that end up in the shared fx directory
                             if (entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
                                 entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
-                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) ||
+                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
                                 entry.Name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                             {
                                 entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name), overwrite: true);
