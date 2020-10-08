@@ -462,8 +462,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 {
                     Logger.InvalidAuthenticationRequestUrl(redirectUri);
                 }
-
-                Response.Redirect(redirectUri);
+                if (IsAjaxRequest(Context.Request))
+                {
+                    Response.Headers["Location"] = redirectUri;
+                    Response.StatusCode = 401;
+                }
+                else
+                    Response.Redirect(redirectUri);
                 return;
             }
             else if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.FormPost)
@@ -1334,6 +1339,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ex.Data["error_description"] = description;
             ex.Data["error_uri"] = errorUri;
             return ex;
+        }
+
+        private static bool IsAjaxRequest(HttpRequest request)
+        {
+            return string.Equals(request.Query["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal) ||
+                string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal);
         }
     }
 }

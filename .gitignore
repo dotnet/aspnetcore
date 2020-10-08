@@ -43,3 +43,4 @@ msbuild.ProjectImports.zip
 StyleCop.Cache
 UpgradeLog.htm
 .idea
+/src/Framework/App.Ref/src/PackageOverrides.txt
