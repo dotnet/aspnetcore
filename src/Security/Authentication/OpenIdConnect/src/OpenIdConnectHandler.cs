@@ -468,7 +468,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     Response.StatusCode = 401;
                 }
                 else
+               {
                     Response.Redirect(redirectUri);
+               }
                 return;
             }
             else if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.FormPost)
