@@ -159,6 +159,7 @@ namespace CodeGenerator
                 "ETag",
                 "Location",
                 "Proxy-Authenticate",
+                "Proxy-Connection",
                 "Retry-After",
                 "Server",
                 "Set-Cookie",
@@ -766,6 +767,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {header.SetBit()};
             _headers._{header.Identifier} = value;
             _headers._raw{header.Identifier} = raw;
+        }}")}
+{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
+        public void Clear{header.Identifier}()
+        {{
+            {header.ClearBit()};
+            _headers._{header.Identifier} = default;
+            {(header.EnhancedSetter ? $"_headers._raw{header.Identifier} = null;" : "")}
         }}")}
         protected override int GetCountFast()
         {{

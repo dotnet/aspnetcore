@@ -1088,6 +1088,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var hasConnection = responseHeaders.HasConnection;
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
 
+            // https://tools.ietf.org/html/rfc7540#section-8.1.2.2
+            // Such intermediaries SHOULD also remove other connection-specific header fields, such as Keep-Alive,
+            // Proxy-Connection, Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection header field.
+            if (_httpVersion > Http.HttpVersion.Http11)
+            {
+                responseHeaders.ClearTransferEncoding();
+                responseHeaders.ClearConnection();
+                responseHeaders.ClearKeepAlive();
+                responseHeaders.ClearUpgrade();
+                responseHeaders.ClearProxyConnection();
+
+                hasTransferEncoding = false;
+                hasConnection = false;
+            }
+
             if (_keepAlive &&
                 hasConnection &&
                 (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)
