@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    enum Http3SettingType : long
+    internal enum Http3SettingType : long
     {
         QPackMaxTableCapacity = 0x1,
         /// <summary>
