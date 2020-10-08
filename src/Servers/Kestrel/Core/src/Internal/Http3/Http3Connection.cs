@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly object _protocolSelectionLock = new object();
         private CancellationTokenSource _connectionAborted;
 
+        private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
+
         public Http3Connection(Http3ConnectionContext context)
         {
             _multiplexedContext = context.ConnectionContext;
@@ -50,6 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
             _connectionAborted = new CancellationTokenSource();
+
+            var httpLimits = context.ServiceContext.ServerOptions.Limits;
+
+            _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
+            _serverSettings.MaxRequestHeaderFieldSize = (uint)httpLimits.Http3.MaxRequestHeaderFieldSize;
         }
 
         internal long HighestStreamId
@@ -326,7 +333,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 streamContext.LocalEndPoint as IPEndPoint,
                 streamContext.RemoteEndPoint as IPEndPoint,
                 streamContext.Transport,
-                streamContext);
+                streamContext,
+                _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
             return new Http3ControlStream<TContext>(application, this, httpConnectionContext);

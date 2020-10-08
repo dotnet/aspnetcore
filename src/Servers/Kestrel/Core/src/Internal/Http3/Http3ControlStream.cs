@@ -22,23 +22,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3FrameWriter _frameWriter;
         private readonly Http3Connection _http3Connection;
-        private readonly HttpConnectionContext _context;
+        private readonly Http3StreamContext _context;
+        private readonly Http3PeerSettings _serverPeerSettings;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;
 
         private bool _haveReceivedSettingsFrame;
 
-        public Http3ControlStream(Http3Connection http3Connection, HttpConnectionContext context)
+        public Http3ControlStream(Http3Connection http3Connection, Http3StreamContext context)
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
-
             _http3Connection = http3Connection;
             _context = context;
+            _serverPeerSettings = context.ServerSettings;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
-                context.ConnectionContext,
+                context.StreamContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal async ValueTask SendSettingsFrameAsync()
         {
-            await _frameWriter.WriteSettingsAsync(new List<Http3PeerSettings>());
+            await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
         }
 
         private async ValueTask<long> TryReadStreamIdAsync()

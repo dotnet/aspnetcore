@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoApplication = async context =>
             {
-                var buffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
+                var buffer = new byte[16 * 1024];
                 var received = 0;
 
                 while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public long Error { get; set; }
 
-            private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
+            private readonly byte[] _headerEncodingBuffer = new byte[16 * 1024];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             private long _bytesReceived;
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return http3WithPayload.Payload;
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http3PeerSettings.DefaultMaxFrameSize)
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = 16 * 1024)
             {
                 var frame = new Http3FrameWithPayload();
 

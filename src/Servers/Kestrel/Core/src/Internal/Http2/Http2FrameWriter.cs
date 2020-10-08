@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                        Value (32)                             |
             +---------------------------------------------------------------+
         */
-        public ValueTask<FlushResult> WriteSettingsAsync(IList<Http2PeerSetting> settings)
+        public ValueTask<FlushResult> WriteSettingsAsync(List<Http2PeerSetting> settings)
         {
             lock (_writeLock)
             {
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        internal static void WriteSettings(IList<Http2PeerSetting> settings, Span<byte> destination)
+        internal static void WriteSettings(List<Http2PeerSetting> settings, Span<byte> destination)
         {
             foreach (var setting in settings)
             {
