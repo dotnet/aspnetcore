@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using System.Globalization;
 
 namespace TestServer
 {
@@ -29,6 +30,10 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var enUs = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = enUs;
+            CultureInfo.DefaultThreadCurrentUICulture = enUs;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
