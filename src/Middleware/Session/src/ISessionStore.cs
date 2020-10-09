@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Session
         /// Create a new or resume an <see cref="ISession"/>.
         /// </summary>
         /// <param name="sessionKey">A unique key used to lookup the session.</param>
-        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will be expire.</param>
+        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will expire.</param>
         /// <param name="ioTimeout">
         /// The maximum amount of time <see cref="ISession.LoadAsync(System.Threading.CancellationToken)"/> and
         /// <see cref="ISession.CommitAsync(System.Threading.CancellationToken)"/> are allowed take.

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
 {
     /// <summary>
     /// An <see cref="IApplicationBuilder"/> decorator used by <see cref="AnalysisStartupFilter"/>
-    /// to add <see cref="AnalysisMiddleware"/> before after each other middleware in the pipeline.
+    /// to add <see cref="AnalysisMiddleware"/> before and after each other middleware in the pipeline.
     /// </summary>
     public class AnalysisBuilder : IApplicationBuilder
     {

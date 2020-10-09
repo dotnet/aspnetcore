@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// <see cref="IServiceCollection"/> extension methods for propagating request headers to an <see cref="System.Net.Http.HttpClient"/>.
+    /// <see cref="IServiceCollection"/> extension methods for <cref="HeaderPropagationMiddleware"/> which propagates request headers to an <see cref="System.Net.Http.HttpClient"/>.
     /// </summary>
     public static class HeaderPropagationServiceCollectionExtensions
     {

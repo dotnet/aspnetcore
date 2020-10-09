@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Session
         /// </summary>
         /// <param name="cache">The <see cref="IDistributedCache"/> used to store the session data.</param>
         /// <param name="sessionKey">A unique key used to lookup the session.</param>
-        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will be expire.</param>
+        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will expire.</param>
         /// <param name="ioTimeout">
         /// The maximum amount of time <see cref="LoadAsync(CancellationToken)"/> and <see cref="CommitAsync(CancellationToken)"/> are allowed take.
         /// </param>
