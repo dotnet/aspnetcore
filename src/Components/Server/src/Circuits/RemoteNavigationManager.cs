@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <inheritdoc />
         protected override void SetHasLocationChangingListeners(bool value)
         {
-            _jsRuntime.InvokeAsync<object>(Interop.SetHasLocationChangingListeners, value);
+            _jsRuntime?.InvokeAsync<object>(Interop.SetHasLocationChangingListeners, value);
         }
 
         private static class Log
