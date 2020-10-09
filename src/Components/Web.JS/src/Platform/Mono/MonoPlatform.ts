@@ -334,6 +334,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       return BINDING.js_to_mono_obj(Promise.resolve(0));
     }
 
+    const lazyResources: {
+      assemblies?: (ArrayBuffer | null)[],
+      pdbs?: (ArrayBuffer | null)[]
+    } = {};
     window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
@@ -364,31 +368,40 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
         .map(async resource => (await resource.response).arrayBuffer()));
 
+
       return BINDING.js_to_mono_obj(
         Promise.all([resourcePromises, pdbPromises]).then(values => {
-          const resourcesToLoad = values[0];
-          const pdbsToLoad = values[1];
-          if (resourcesToLoad.length) {
+          lazyResources["assemblies"] = values[0];
+          lazyResources["pdbs"] = values[1];
+          if (lazyResources["assemblies"].length) {
             window['Blazor']._internal.readLazyAssemblies = () => {
-              const assemblyBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (let i = 0; i < resourcesToLoad.length; i++) {
-                const assembly = resourcesToLoad[i] as ArrayBuffer;
+              const { assemblies } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
+              }
+              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const assembly = assemblies[i] as ArrayBuffer;
                 BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
               }
               return assemblyBytes;
             };
 
             window['Blazor']._internal.readLazyPdbs = () => {
-              const pdbBytes = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (let i = 0; i < resourcesToLoad.length; i++) {
-                const pdb = pdbsToLoad && pdbsToLoad[i] ? new Uint8Array(pdbsToLoad[i] as ArrayBufferLike) : new Uint8Array();
+              const { assemblies, pdbs } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
+              }
+              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
                 BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
               }
               return pdbBytes;
             };
           }
 
-          return resourcesToLoad.length;
+          return lazyResources["assemblies"].length;
         }));
     }
   });

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication
     public class AuthenticationBuilder
     {
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of <see cref="AuthenticationBuilder"/>.
         /// </summary>
         /// <param name="services">The services being configured.</param>
         public AuthenticationBuilder(IServiceCollection services)

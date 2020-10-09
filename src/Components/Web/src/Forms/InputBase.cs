@@ -287,6 +287,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             return newDictionaryCreated;
         }
 
+        /// <inheritdoc/>
         protected virtual void Dispose(bool disposing)
         {
         }

@@ -12,6 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// An opinionated abstraction for an <see cref="AuthenticationHandler{TOptions}"/> that performs authentication using a separately hosted
+    /// provider.
+    /// </summary>
+    /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
+
     public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
         where TOptions : RemoteAuthenticationOptions, new()
     {
@@ -19,6 +25,9 @@ namespace Microsoft.AspNetCore.Authentication
         private const string CorrelationMarker = "N";
         private const string AuthSchemeKey = ".AuthScheme";
 
+        /// <summary>
+        /// The authentication scheme used by default for signin.
+        /// </summary>
         protected string? SignInScheme => Options.SignInScheme;
 
         /// <summary>
@@ -31,15 +40,32 @@ namespace Microsoft.AspNetCore.Authentication
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RemoteAuthenticationHandler{TOptions}" />.
+        /// </summary>
+        /// <param name="options">The monitor for the options instance.</param>
+        /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock) { }
 
+
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync()
             => Task.FromResult<object>(new RemoteAuthenticationEvents());
 
+        /// <summary>
+        /// Gets a value that determines if the current authentication request should be handled by <see cref="HandleRequestAsync" />.
+        /// </summary>
+        /// <returns><see langword="true"/> to handle the operation, otherwise <see langword="false"/>.</returns>
         public virtual Task<bool> ShouldHandleRequestAsync()
             => Task.FromResult(Options.CallbackPath == Request.Path);
 
+        /// <summary>
+        /// Handles the current authentication request.
+        /// </summary>
+        /// <returns><see langword="true"/> if authentication was handled, otherwise <see langword="false"/>.</returns>
         public virtual async Task<bool> HandleRequestAsync()
         {
             if (!await ShouldHandleRequestAsync())
@@ -156,6 +182,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         protected abstract Task<HandleRequestResult> HandleRemoteAuthenticateAsync();
 
+        /// <inheritdoc />
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var result = await Context.AuthenticateAsync(SignInScheme);
@@ -182,9 +209,14 @@ namespace Microsoft.AspNetCore.Authentication
             return AuthenticateResult.Fail("Remote authentication does not directly support AuthenticateAsync");
         }
 
+        /// <inheritdoc />
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
             => Context.ForbidAsync(SignInScheme);
 
+        /// <summary>
+        /// Produces a cookie containing a nonce used to correlate the current remote authentication request.
+        /// </summary>
+        /// <param name="properties"></param>
         protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
         {
             if (properties == null)
@@ -205,6 +237,11 @@ namespace Microsoft.AspNetCore.Authentication
             Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
         }
 
+        /// <summary>
+        /// Validates that the current request correlates wit hthe 
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <returns></returns>
         protected virtual bool ValidateCorrelationId(AuthenticationProperties properties)
         {
             if (properties == null)
@@ -242,6 +279,11 @@ namespace Microsoft.AspNetCore.Authentication
             return true;
         }
 
+        /// <summary>
+        /// Derived types may override this method to handle access denied errors.
+        /// </summary>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>The <see cref="HandleRequestResult"/>.</returns>
         protected virtual async Task<HandleRequestResult> HandleAccessDeniedErrorAsync(AuthenticationProperties properties)
         {
             Logger.AccessDeniedError();

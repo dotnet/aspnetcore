@@ -21,9 +21,6 @@
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
-  
-    <!-- Tests are disabled due to https://github.com/dotnet/aspnetcore/issues/25322 -->
-    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>

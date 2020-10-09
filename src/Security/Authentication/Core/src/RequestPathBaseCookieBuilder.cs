@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         protected virtual string? AdditionalPath { get; }
 
+        /// <summary>
+        /// Configures <see cref="CookieOptions.Path"/> if not explicitly configured.
+        /// </summary>
+        /// <inheritdoc />
         public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
         {
             // check if the user has overridden the default value of path. If so, use that instead of our default value.

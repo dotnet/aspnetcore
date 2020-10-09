@@ -30,10 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly Pipe _requestBodyPipe;
         private ReadResult _readResult;
 
-        public Http1ChunkedEncodingMessageBody(bool keepAlive, Http1Connection context)
-            : base(context)
+        public Http1ChunkedEncodingMessageBody(Http1Connection context, bool keepAlive)
+            : base(context, keepAlive)
         {
-            RequestKeepAlive = keepAlive;
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 

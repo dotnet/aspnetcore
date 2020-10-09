@@ -5,8 +5,18 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Base context type for handling authentication request.
+    /// </summary>
+    /// <typeparam name="TOptions"></typeparam>
     public class HandleRequestContext<TOptions> : BaseContext<TOptions> where TOptions : AuthenticationSchemeOptions
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="HandleRequestContext{TOptions}"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The <see cref="AuthenticationScheme"/>.</param>
+        /// <param name="options">The authentication scheme options.</param>
         protected HandleRequestContext(
             HttpContext context,
             AuthenticationScheme scheme,
