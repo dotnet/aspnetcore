@@ -154,13 +154,7 @@ to open the .sln file or one of the project specific .slnf files to work on the 
    > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
 
-To open the solution file in Visual Studio, run the following command.
-
-```ps1
-PS1> .\startvs.cmd
-```
-
-This will open the solution file for the entire repo. Typically, you want to focus on a single project within the monorepo. For example,
+Typically, you want to focus on a single project within the monorepo. For example,
 if you want to work on Blazor WebAssembly, you'll need to launch the solution file for that project by changing into the `src/Components`
 directory and executing `startvs.cmd` in that directory like so:
 
@@ -170,6 +164,8 @@ PS1> .\startvs.cmd
 ```
 
 After opening the solution in Visual Studio, you can build/rebuild using the controls in Visual Studio.
+
+> :exclamation: VS for Mac does not currently support opening .slnf files so you must use VS Code when developing on macOS. 
 
 #### A brief interlude on solution files
 
