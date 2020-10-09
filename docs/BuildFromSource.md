@@ -119,7 +119,7 @@ Building the repo requires version 10.14.2 or newer of Node. You can find instal
 
 #### [Yarn](https://yarnpkg.com/)
 
-NodeJS installes the Node package manager (npm) by default. This repo depends on yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
+NodeJS installs the Node package manager (npm) by default. This repo depends on yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
 
 ```bash
 $ npm install -g yarn
@@ -260,7 +260,7 @@ On macOS/Linux:
 source ./activate.sh
 ```
 
-> :bulb: Be sure to set the environment variables using the script above before executing the `dotnet` command inside the repo.
+> :bulb: Be sure to set the environment variables using the "activate" script above before executing the `dotnet` command inside the repo.
 
 ### Running tests on command-line
 
