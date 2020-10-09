@@ -37,7 +37,6 @@
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true'">
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
   </ItemGroup>
 
   <!-- arm64 queues for helix-matrix.yml pipeline -->
