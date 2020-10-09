@@ -78,5 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2MaxConcurrentStreamsReached(string connectionId);
 
         void InvalidResponseHeaderRemoved();
+        
+        void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId);
     }
 }

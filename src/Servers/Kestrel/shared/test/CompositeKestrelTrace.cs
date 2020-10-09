@@ -241,5 +241,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.InvalidResponseHeaderRemoved();
             _trace2.InvalidResponseHeaderRemoved();
         }
+        public void Http3ConnectionClosed(string connectionId, int highestOpenedStreamId)
+        {
+            _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+            _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+        }
     }
 }

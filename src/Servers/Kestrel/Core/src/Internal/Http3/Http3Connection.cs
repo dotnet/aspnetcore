@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _aborted;
         private ConnectionAbortedException _abortedException = null;
         private readonly object _protocolSelectionLock = new object();
-        private CancellationTokenSource _connectionAborted;
+        private readonly CancellationTokenSource _connectionAborted;
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
 
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (OperationCanceledException)
             {
-                // Stream aborted/closed.
+                Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
             }
             finally
             {
