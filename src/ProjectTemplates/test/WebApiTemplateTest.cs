@@ -44,11 +44,11 @@ namespace Templates.Test
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
         public async Task WebApiTemplateCSharp_WithoutOpenAPI()
         {
             var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);
