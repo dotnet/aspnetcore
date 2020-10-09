@@ -309,11 +309,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
       const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
 
-      if (resourceLoader.bootConfig.icuDataMode == ICUDataMode.Sharded && culturesToLoad && culturesToLoad[0] !== applicationCulture) {
-        // We load an initial icu file based on the browser's locale. However if the application's culture requires a different set, flag this as an error.
-        throw new Error('To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application\'s project file.');
-      }
-
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
           .filter(culture => satelliteResources.hasOwnProperty(culture))
@@ -339,6 +334,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       return BINDING.js_to_mono_obj(Promise.resolve(0));
     }
 
+    const lazyResources: {
+      assemblies?: (ArrayBuffer | null)[],
+      pdbs?: (ArrayBuffer | null)[]
+    } = {};
     window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
@@ -354,23 +353,55 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
 
+      let pdbPromises: Promise<(ArrayBuffer | null)[]> | undefined;
+      if (hasDebuggingEnabled()) {
+        const pdbs = resourceLoader.bootConfig.resources.pdb;
+        const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'))
+        if (pdbs) {
+          pdbPromises = Promise.all(pdbsToLoad
+            .map(pdb => lazyAssemblies.hasOwnProperty(pdb) ? resourceLoader.loadResource(pdb, `_framework/${pdb}`, lazyAssemblies[pdb], 'pdb') : null)
+            .map(async resource => resource ? (await resource.response).arrayBuffer() : null));
+        }
+      }
+
       const resourcePromises = Promise.all(assembliesMarkedAsLazy
         .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
         .map(async resource => (await resource.response).arrayBuffer()));
 
+
       return BINDING.js_to_mono_obj(
-        resourcePromises.then(resourcesToLoad => {
-          if (resourcesToLoad.length) {
+        Promise.all([resourcePromises, pdbPromises]).then(values => {
+          lazyResources["assemblies"] = values[0];
+          lazyResources["pdbs"] = values[1];
+          if (lazyResources["assemblies"].length) {
             window['Blazor']._internal.readLazyAssemblies = () => {
-              const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
-              for (var i = 0; i < resourcesToLoad.length; i++) {
-                BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+              const { assemblies } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
               }
-              return array;
+              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const assembly = assemblies[i] as ArrayBuffer;
+                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
+              }
+              return assemblyBytes;
+            };
+
+            window['Blazor']._internal.readLazyPdbs = () => {
+              const { assemblies, pdbs } = lazyResources;
+              if (!assemblies) {
+                return BINDING.mono_obj_array_new(0);
+              }
+              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
+              for (let i = 0; i < assemblies.length; i++) {
+                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
+                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
+              }
+              return pdbBytes;
             };
           }
 
-          return resourcesToLoad.length;
+          return lazyResources["assemblies"].length;
         }));
     }
   });
@@ -381,6 +412,14 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     }
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
+    if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Sharded) {
+      MONO.mono_wasm_setenv('__BLAZOR_SHARDED_ICU',  '1');
+
+      if (resourceLoader.startOptions.applicationCulture) {
+        // If a culture is specified via start options use that to initialize the Emscripten \  .NET culture.
+        MONO.mono_wasm_setenv('LANG',  `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
+      }
+    }
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     let timeZone = "UTC";
     try {
@@ -498,7 +537,7 @@ async function loadTimezone(timeZoneResource: LoadingResource): Promise<void> {
 
 function getICUResourceName(bootConfig: BootJsonData, culture: string | undefined): string {
   const combinedICUResourceName = 'icudt.dat';
-  if (!culture || bootConfig.icuDataMode == ICUDataMode.All) {
+  if (!culture || bootConfig.icuDataMode === ICUDataMode.All) {
     return combinedICUResourceName;
   }
 

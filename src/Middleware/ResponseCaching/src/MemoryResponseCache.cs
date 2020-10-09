@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public IResponseCacheEntry Get(string key)
+        public IResponseCacheEntry? Get(string key)
         {
             var entry = _cache.Get(key);
 

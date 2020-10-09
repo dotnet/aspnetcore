@@ -8,6 +8,7 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

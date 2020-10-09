@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class StringOutputFormatter : TextOutputFormatter
     {
+        /// <summary>
+        /// Initializes a new <see cref="StringOutputFormatter"/>.
+        /// </summary>
         public StringOutputFormatter()
         {
             SupportedEncodings.Add(Encoding.UTF8);
@@ -20,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedMediaTypes.Add("text/plain");
         }
 
+        /// <inheritdoc/>
         public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             if (context == null)
@@ -36,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return false;
         }
 
+        /// <inheritdoc/>
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding encoding)
         {
             if (context == null)

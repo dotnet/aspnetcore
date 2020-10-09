@@ -43,6 +43,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
+        /// <summary>
+        /// Gets the bytes of a successful handshake message.
+        /// </summary>
+        /// <param name="protocol">The protocol being used for the connection.</param>
+        /// <returns>The bytes of a successful handshake message.</returns>
         public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol) => _successHandshakeData.Span;
 
         /// <summary>

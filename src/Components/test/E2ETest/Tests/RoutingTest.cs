@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Not a component")).Click();
-            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
+            Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
         }
 
         [Fact]
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Now follow a link out of the SPA entirely
             app.FindElement(By.LinkText("Not a component")).Click();
-            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
+            Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
             Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html"));
 
             // Now click back
@@ -546,10 +546,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             SetUrlViaPushState("/LongPage1");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("loading-banner")) != null);
-
-            Assert.True(app.FindElement(By.Id("loading-banner")) != null);
+            Browser.Exists(By.Id("loading-banner"));
         }
 
         [Fact]

@@ -123,7 +123,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     else if (string.Equals(extension, ".pdb", StringComparison.OrdinalIgnoreCase))
                     {
                         resourceData.pdb ??= new ResourceHashesByNameDictionary();
-                        resourceList = resourceData.pdb;
+                        if (IsLazyLoadedAssembly($"{fileName}.dll"))
+                        {
+                            resourceList = resourceData.lazyAssembly;
+                        } else {
+                            resourceList = resourceData.pdb;
+                        }
                     }
                     else if (string.Equals(extension, ".dll", StringComparison.OrdinalIgnoreCase))
                     {

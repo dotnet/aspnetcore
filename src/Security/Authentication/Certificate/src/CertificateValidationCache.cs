@@ -14,9 +14,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     /// </summary>
     public class CertificateValidationCache : ICertificateValidationCache
     {
-        private MemoryCache _cache;
-        private CertificateValidationCacheOptions _options;
+        private readonly MemoryCache _cache;
+        private readonly CertificateValidationCacheOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CertificateValidationCache"/>.
+        /// </summary>
+        /// <param name="options">An accessor to <see cref="CertificateValidationCacheOptions"/></param>
         public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options)
         {
             _options = options.Value;

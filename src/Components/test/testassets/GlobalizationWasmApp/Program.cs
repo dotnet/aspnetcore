@@ -29,7 +29,11 @@ namespace GlobalizationWasmApp
         {
             var uri = new Uri(host.Services.GetService<NavigationManager>().Uri);
 
-            var cultureName = HttpUtility.ParseQueryString(uri.Query)["dotNetCulture"] ?? HttpUtility.ParseQueryString(uri.Query)["culture"];
+            var cultureName = HttpUtility.ParseQueryString(uri.Query)["dotNetCulture"];
+            if (cultureName is null)
+            {
+                return;
+            }
 
             var culture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = culture;

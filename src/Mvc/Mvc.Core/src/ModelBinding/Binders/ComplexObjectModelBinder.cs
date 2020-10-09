@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)

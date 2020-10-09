@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// An interface that allows access to an ApiExplorerModel.
+    /// </summary>
     public interface IApiExplorerModel
     {
+        /// <summary>
+        /// The ApiExporerModel.
+        /// </summary>
         ApiExplorerModel ApiExplorer { get; set; }
     }
 }

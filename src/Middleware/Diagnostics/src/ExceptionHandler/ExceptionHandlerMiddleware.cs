@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -14,6 +16,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
+    /// <summary>
+    /// A middleware for handling exceptions in the application.
+    /// </summary>
     public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
@@ -22,6 +27,13 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
         private readonly DiagnosticListener _diagnosticListener;
 
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="options">The options for configuring the middleware.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
         public ExceptionHandlerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -46,6 +58,10 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         public Task Invoke(HttpContext context)
         {
             ExceptionDispatchInfo edi;
@@ -69,7 +85,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             static async Task Awaited(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
             {
-                ExceptionDispatchInfo edi = null;
+                ExceptionDispatchInfo? edi = null;
                 try
                 {
                     await task;
@@ -109,16 +125,16 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
-                    Path = originalPath.Value,
+                    Path = originalPath.Value!,
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-                await _options.ExceptionHandler(context);
+                await _options.ExceptionHandler!(context);
 
-                if (context.Response.StatusCode != StatusCodes.Status404NotFound)
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
                     if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                     {

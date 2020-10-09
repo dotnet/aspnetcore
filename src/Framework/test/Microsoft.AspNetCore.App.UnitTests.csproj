@@ -48,6 +48,7 @@
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
+    <Reference Include="NuGet.Versioning" />
   </ItemGroup>
 
   <ItemGroup>

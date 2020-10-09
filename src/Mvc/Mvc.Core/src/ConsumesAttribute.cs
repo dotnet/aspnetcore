@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Mvc
         IConsumesActionConstraint,
         IApiRequestMetadataProvider
     {
+        /// <summary>
+        /// The order for consumes attribute.
+        /// </summary>
+        /// <value>Defaults to 200</value>
         public static readonly int ConsumesActionConstraintOrder = 200;
 
         /// <summary>

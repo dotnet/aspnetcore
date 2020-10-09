@@ -17,7 +17,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     public class JwtBearerOptions : AuthenticationSchemeOptions
     {
         private JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
-        
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtBearerOptions"/>.
+        /// </summary>
         public JwtBearerOptions()
         {
             SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication
         private AuthenticationProperties? _properties;
 
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of <see cref="ResultContext{TOptions}"/>.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="scheme">The authentication scheme.</param>

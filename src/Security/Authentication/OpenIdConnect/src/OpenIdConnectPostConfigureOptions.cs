@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectPostConfigureOptions"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public OpenIdConnectPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;

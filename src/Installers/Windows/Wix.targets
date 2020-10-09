@@ -1,12 +1,12 @@
 <Project>
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
-    <!-- Used for generating stable upgrade codes for bundles -->
-    <Version>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).0</Version>
     <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
     <BundleVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+    <!-- Used for generating stable upgrade codes for bundles -->
+    <Version>$(BundleVersion)</Version>
 
     <!-- ARM64 MSIs require the installer version to be at least 500. -->
     <!-- See: https://docs.microsoft.com/en-us/windows/win32/msi/64-bit-windows-installer-packages -->
@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +34,7 @@
   </ItemGroup>
   
   <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
 
@@ -61,7 +61,7 @@
          the upgrade code. Bundle upgrades pivot on Major.Minor.Patch changes. For example, 3.0.1-preview 1 can upgrade to 3.0.1-preview 8, but 3.0.1
          cannot upgrade to 3.0.2 or 3.1. -->
     <PropertyGroup>
-      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion);$(Platform)</BundleGuidInputs>
+      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion);$(Platform)</BundleGuidInputs>
     </PropertyGroup>
     <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />

@@ -12,6 +12,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// A factory for creating <see cref="HttpContext" /> instances.
+    /// </summary>
     public class DefaultHttpContextFactory : IHttpContextFactory
     {
         private readonly IHttpContextAccessor? _httpContextAccessor;
@@ -20,6 +23,10 @@ namespace Microsoft.AspNetCore.Http
 
         // This takes the IServiceProvider because it needs to support an ever expanding
         // set of services that flow down into HttpContext features
+        /// <summary>
+        /// Creates a factory for creating <see cref="HttpContext" /> instances.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when retrieving services.</param>
         public DefaultHttpContextFactory(IServiceProvider serviceProvider)
         {
             // May be null
@@ -30,6 +37,11 @@ namespace Microsoft.AspNetCore.Http
 
         internal IHttpContextAccessor? HttpContextAccessor => _httpContextAccessor;
 
+        /// <summary>
+        /// Create an <see cref="HttpContext"/> instance given an <paramref name="featureCollection" />.
+        /// </summary>
+        /// <param name="featureCollection"></param>
+        /// <returns>An initialized <see cref="HttpContext"/> object.</returns>
         public HttpContext Create(IFeatureCollection featureCollection)
         {
             if (featureCollection is null)
@@ -67,6 +79,9 @@ namespace Microsoft.AspNetCore.Http
             return httpContext;
         }
 
+        /// <summary>
+        /// Clears the current <see cref="HttpContext" />.
+        /// </summary>
         public void Dispose(HttpContext httpContext)
         {
             if (_httpContextAccessor != null)

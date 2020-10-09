@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC features that use Newtonsoft.Json. Includes input and output formatters for JSON and JSON PATCH.</Description>
@@ -7,6 +7,7 @@
     <PackageTags>aspnetcore;aspnetcoremvc;json</PackageTags>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);JSONNET</DefineConstants>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

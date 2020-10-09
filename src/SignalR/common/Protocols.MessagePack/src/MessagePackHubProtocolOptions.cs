@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// The <see cref="MessagePackHubProtocol"/> options.
+    /// </summary>
     public class MessagePackHubProtocolOptions
     {
         private MessagePackSerializerOptions? _messagePackSerializerOptions;

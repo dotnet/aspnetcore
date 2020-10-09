@@ -166,9 +166,9 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRef))
                 {
-                    var refPath = $"Microsoft.AspNetCore.App.Ref";
+                    var refPath = $"{Options.DotnetRoot}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
                     Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
-                    ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
+                    ZipFile.ExtractToDirectory(Options.AspNetRef, refPath);
 
                     DisplayContents(refPath);
                 }

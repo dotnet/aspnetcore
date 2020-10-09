@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public sealed class DataTokensMetadata : IDataTokensMetadata
     {
+        /// <summary>
+        /// Constructor for a new <see cref="DataTokensMetadata"/> given <paramref name="dataTokens"/>.
+        /// </summary>
+        /// <param name="dataTokens">The data tokens.</param>
         public DataTokensMetadata(IReadOnlyDictionary<string, object> dataTokens)
         {
             if (dataTokens == null)

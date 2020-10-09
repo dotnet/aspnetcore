@@ -4,9 +4,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
-    <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
-
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallersAndChecksums</PublishDependsOnTargets>
 
     <_UploadPathRoot>aspnetcore</_UploadPathRoot>
@@ -15,23 +12,23 @@
   <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
-    <FilesToPublishToSymbolServer Include="$(ArtifactsDir)\symbols\**\*.pdb" />
+    <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
 
     <!-- Prepare for _PublishInstallersAndChecksums target. -->
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.jar" UploadPathSegment="jar" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.pom" UploadPathSegment="jar" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.tgz" UploadPathSegment="npm" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.deb" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.exe" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.msi" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.rpm" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.tar.gz" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.version" UploadPathSegment="Runtime"
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.jar" UploadPathSegment="jar" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.pom" UploadPathSegment="jar" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.deb" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime"
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.wixlib" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.zip" UploadPathSegment="Runtime" />
-    <_ChecksumsToPublish Include="$(ArtifactsDir)\**\*.sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
+    <_ChecksumsToPublish Include="$(ArtifactsDir)**\*.sha512" />
   </ItemGroup>
 
   <Target Name="_PublishInstallersAndChecksums">
@@ -67,6 +64,10 @@
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
+
+      <!-- Set up ItemsToSign for the push task to pick up. -->
+      <ItemsToSign Remove="@(ItemsToSign)" />
+      <ItemsToSign Include="@(ItemsToSignPostBuild)" />
     </ItemGroup>
   </Target>
 </Project>

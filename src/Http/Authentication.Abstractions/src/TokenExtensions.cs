@@ -80,6 +80,13 @@ namespace Microsoft.AspNetCore.Authentication
             return properties.Items.TryGetValue(tokenKey, out var value) ? value : null;
         }
 
+        /// <summary>
+        /// Updates the value of a token if already present.
+        /// </summary>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> to update.</param>
+        /// <param name="tokenName">The token name.</param>
+        /// <param name="tokenValue">The token value.</param>
+        /// <returns><see langword="true"/> if the token was updated, otherwise <see langword="false"/>.</returns>
         public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string tokenValue)
         {
             if (properties == null)
@@ -101,7 +108,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Returns all of the AuthenticationTokens contained in the properties.
+        /// Returns all of the <see cref="AuthenticationToken"/> instances contained in the properties.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The authentication tokens.</returns>
@@ -130,23 +137,23 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the specified authentication scheme and returns the value for the token.
         /// </summary>
         /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
+        /// <returns>The value of the token if present.</returns>
         public static Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
             => auth.GetTokenAsync(context, scheme: null, tokenName: tokenName);
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the specified authentication scheme and returns the value for the token.
         /// </summary>
         /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
+        /// <returns>The value of the token if present.</returns>
         public static async Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string? scheme, string tokenName)
         {
             if (auth == null)

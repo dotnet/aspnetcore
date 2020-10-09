@@ -35,8 +35,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
-    <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
-
     <!--
       We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
       We need both to compose the targeting pack with reference assemblies and xml docs.
@@ -52,7 +50,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Runtime extensions transport paths -->
     <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
 
-    <!-- Platform manifest override metadata. -->
+    <!-- Package overrides and platform manifest metadata. -->
+    <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
+    <!-- PackageOverrides.txt is written in GeneratePackageOverrides target unless servicing. -->
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' != 'true'">$(TargetDir)$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <!-- PlatformManifest.txt is written in App.Runtime's GenerateSharedFxDepsFile target but not used here when servicing. -->
     <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
     <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
   </PropertyGroup>
@@ -84,7 +87,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
       _ResolveTargetingPackContent;
-      GeneratePackageConflictManifest;
+      GeneratePackageOverrides;
       IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
@@ -143,31 +146,41 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).xml')"
           Condition="Exists('%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName).xml')" />
+      <!-- Grab remaining .xml files from packages -->
+      <AspNetCoreReferenceDocXml
+          Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')"
+          Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
-      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePackageOverridesPath)" PackagePath="$(ManifestsPackagePath)" />
       <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="GeneratePackageConflictManifest"
+  <Target Name="GeneratePackageOverrides"
+          Condition=" '$(IsServicingBuild)' != 'true' "
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="$(MSBuildAllProjects)"
-          Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
+          Outputs="$(ReferencePackageOverridesPath">
     <ItemGroup>
-      <!-- Use package version for non-Extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+      <!-- Use package version for non-Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+          Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
-      <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
+      <!-- Use NETCore.App.Runtime version for Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')" />
 
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
+          Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
     </ItemGroup>
 
     <WriteLinesToFile
         Lines="@(_AspNetCoreAppPackageOverrides)"
-        File="$(TargetDir)$(PackageConflictManifestFileName)"
+        File="$(ReferencePackageOverridesPath)"
         Overwrite="true" />
   </Target>
 
