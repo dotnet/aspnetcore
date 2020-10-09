@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
-    <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
+    <Compile Include="..\IIS.Shared.FunctionalTests\Properties\AssemblyInfo.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
     <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
