@@ -382,3 +382,13 @@ Example of running the `MvcSandbox` project:
 `.\startvs.cmd .\src\Mvc\Mvc.sln`
 
 ![Web host options in Visual Studio](./vs-iis-express-aspnet-core-mvc-sandbox.jpg)
+
+### Common error: error : Unable to load the service index for &hellip;
+
+When attempting to restore servicing tags e.g. `v3.1.7`,  the NuGet.config file may contain internal feeds that are not accessible. This will result in errors such as
+
+``` text
+...\aspnetcore\.dotnet\sdk\3.1.103\NuGet.targets(123,5): error : Unable to load the service index for source https://pkgs.dev.azure.com/dnceng/_packaging/darc-int-dotnet-extensions-784b0ffa/nuget/v3/index.json. [...\Temp\1gsd3rdo.srb\restore.csproj] [...\.nuget\packages\microsoft.dotnet.arcade.sdk\1.0.0-beta.20213.4\tools\Tools.proj]
+```
+
+The `darc-int-...` feeds in NuGet.config are used only when building internally and are not needed after the tags are created. Delete all such entries in the file and retry.
