@@ -74,7 +74,7 @@ namespace Templates.Test
         };
 
         [ConditionalFact]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/26776")]
         public async Task IdentityUIPackage_WorksWithDifferentOptions()
         {
             var packageOptions = new Dictionary<string, string>();
