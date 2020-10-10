@@ -374,7 +374,7 @@ namespace CodeGenerator
                 // This identifier will match the names in HeadersNames.cs
                 if (identifer.StartsWith(':'))
                 {
-                    identifer = char.ToUpper(identifer[1]) + identifer.Substring(2);
+                    identifer = char.ToUpperInvariant(identifer[1]) + identifer.Substring(2);
                 }
 
                 return identifer;

@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            var getStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpper(), resolver, out var outValue, out message);
+            var getStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpperInvariant(), resolver, out var outValue, out message);
 
             // Assert
             Assert.False(getStatus);

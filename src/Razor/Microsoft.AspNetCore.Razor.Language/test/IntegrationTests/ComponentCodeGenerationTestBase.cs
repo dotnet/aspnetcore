@@ -3353,7 +3353,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem=string Item=""@(""hi"")"">
-  <div>@context.ToLower()</div>
+  <div>@context.ToLowerInvariant()</div>
 </MyComponent>");
 
             // Assert
@@ -3383,7 +3383,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
-  <div>@context.ToLower()</div>
+  <div>@context.ToLowerInvariant()</div>
 </MyComponent>");
 
             // Assert
@@ -3415,7 +3415,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
-  <GenericFragment>@context.ToLower()</GenericFragment>
+  <GenericFragment>@context.ToLowerInvariant()</GenericFragment>
   <IntFragment>@context</IntFragment>
 </MyComponent>");
 
@@ -3446,7 +3446,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <Test.MyComponent Item=""@(""hi"")"">
-  <div>@context.ToLower()</div>
+  <div>@context.ToLowerInvariant()</div>
 </Test.MyComponent>");
 
             // Assert
@@ -3483,7 +3483,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem1=string TItem2=int Item=""@(""hi"")"">
-  <ChildContent><div>@context.ToLower()</div></ChildContent>
+  <ChildContent><div>@context.ToLowerInvariant()</div></ChildContent>
 <AnotherChildContent Context=""item"">
   @System.Math.Max(0, item.Item);
 </AnotherChildContent>
@@ -3526,7 +3526,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"" Items=@(new List<long>())>
-  <ChildContent><div>@context.ToLower()</div></ChildContent>
+  <ChildContent><div>@context.ToLowerInvariant()</div></ChildContent>
 <AnotherChildContent Context=""item"">
   @System.Math.Max(0, item.Item);
 </AnotherChildContent>
@@ -4548,7 +4548,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<Test.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>; }
+@{ RenderFragment<Test.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLowerInvariant()</li>; }
 <MyComponent Template=""@template""/>
 ");
 

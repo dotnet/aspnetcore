@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 index++;
-                if (name[index] != char.ToUpper(conventionName[0]))
+                if (name[index] != char.ToUpperInvariant(conventionName[0]))
                 {
                     // Verify the first letter from convention is upper case. In this case 'n' from "name"
                     return false;

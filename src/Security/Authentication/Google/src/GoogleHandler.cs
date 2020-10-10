@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLower(), (bool?)null);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLowerInvariant(), (bool?)null);
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);

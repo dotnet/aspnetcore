@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var filePath = "/Views/About/About.cshtml";
-            var lowerCaseTestFolder = TestFolder.ToLower();
+            var lowerCaseTestFolder = TestFolder.ToLowerInvariant();
             var fileSystem = new DefaultRazorProjectFileSystem(lowerCaseTestFolder);
 
             // Act
