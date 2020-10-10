@@ -9,10 +9,18 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.MiddlewareAnalysis
 {
+    /// <summary>
+    /// An <see cref="IApplicationBuilder"/> decorator used by <see cref="AnalysisStartupFilter"/>
+    /// to add <see cref="AnalysisMiddleware"/> before and after each other middleware in the pipeline.
+    /// </summary>
     public class AnalysisBuilder : IApplicationBuilder
     {
         private const string NextMiddlewareName = "analysis.NextMiddlewareName";
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AnalysisBuilder"/>. 
+        /// </summary>
+        /// <param name="inner">The <see cref="IApplicationBuilder"/> to decorate.</param>
         public AnalysisBuilder(IApplicationBuilder inner)
         {
             InnerBuilder = inner;
@@ -20,22 +28,26 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
 
         private IApplicationBuilder InnerBuilder { get; }
 
+        /// <inheritdoc />
         public IServiceProvider ApplicationServices
         {
             get { return InnerBuilder.ApplicationServices; }
             set { InnerBuilder.ApplicationServices = value; }
         }
 
+        /// <inheritdoc />
         public IDictionary<string, object> Properties
         {
             get { return InnerBuilder.Properties; }
         }
 
+        /// <inheritdoc />
         public IFeatureCollection ServerFeatures
         {
             get { return InnerBuilder.ServerFeatures;}
         }
 
+        /// <inheritdoc />
         public RequestDelegate Build()
         {
             // Add one maker at the end before the default 404 middleware (or any fancy Join middleware).
@@ -43,11 +55,13 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
                 .Build();
         }
 
+        /// <inheritdoc />
         public IApplicationBuilder New()
         {
             return new AnalysisBuilder(InnerBuilder.New());
         }
 
+        /// <inheritdoc />
         public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
             string middlewareName = string.Empty; // UseMiddleware doesn't work with null params.

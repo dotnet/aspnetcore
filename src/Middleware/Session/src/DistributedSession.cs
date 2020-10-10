@@ -14,6 +14,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Session
 {
+    /// <summary>
+    /// An <see cref="ISession"/> backed by an <see cref="IDistributedCache"/>.
+    /// </summary>
     public class DistributedSession : ISession
     {
         private const int IdByteCount = 16;
@@ -35,6 +38,23 @@ namespace Microsoft.AspNetCore.Session
         private string _sessionId;
         private byte[] _sessionIdBytes;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DistributedSession"/>.
+        /// </summary>
+        /// <param name="cache">The <see cref="IDistributedCache"/> used to store the session data.</param>
+        /// <param name="sessionKey">A unique key used to lookup the session.</param>
+        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will expire.</param>
+        /// <param name="ioTimeout">
+        /// The maximum amount of time <see cref="LoadAsync(CancellationToken)"/> and <see cref="CommitAsync(CancellationToken)"/> are allowed take.
+        /// </param>
+        /// <param name="tryEstablishSession">
+        /// A callback invoked during <see cref="Set(string, byte[])"/> to verify that modifying the session is currently valid.
+        /// If the callback returns <see langword="false"/>, <see cref="Set(string, byte[])"/> throws an <see cref="InvalidOperationException"/>.
+        /// <see cref="SessionMiddleware"/> provides a callback that returns <see langword="false"/> if the session was not established
+        /// prior to sending the response.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="isNewSessionKey"><see langword="true"/> if establishing a new session; <see langword="false"/> if resuming a session.</param>
         public DistributedSession(
             IDistributedCache cache,
             string sessionKey,
@@ -74,6 +94,7 @@ namespace Microsoft.AspNetCore.Session
             _isNewSessionKey = isNewSessionKey;
         }
 
+        /// <inheritdoc />
         public bool IsAvailable
         {
             get
@@ -83,6 +104,7 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public string Id
         {
             get
@@ -109,6 +131,7 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<string> Keys
         {
             get
@@ -118,12 +141,14 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public bool TryGetValue(string key, out byte[] value)
         {
             Load();
             return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
+        /// <inheritdoc />
         public void Set(string key, byte[] value)
         {
             if (value == null)
@@ -151,12 +176,14 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public void Remove(string key)
         {
             Load();
             _isModified |= _store.Remove(new EncodedKey(key));
         }
 
+        /// <inheritdoc />
         public void Clear()
         {
             Load();
@@ -196,9 +223,10 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
+        /// <inheritdoc />
         public async Task LoadAsync(CancellationToken cancellationToken = default)
         {
+            // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
             if (!_loaded)
             {
                 using (var timeout = new CancellationTokenSource(_ioTimeout))
@@ -232,6 +260,7 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             using (var timeout = new CancellationTokenSource(_ioTimeout))
@@ -419,6 +448,5 @@ namespace Microsoft.AspNetCore.Session
             }
             return output;
         }
-
     }
 }
