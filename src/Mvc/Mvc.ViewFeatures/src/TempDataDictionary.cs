@@ -82,12 +82,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             get
             {
-                Load();
                 object value;
                 if (TryGetValue(key, out value))
                 {
-                    // Mark the key for deletion since it is read.
-                    _initialKeys.Remove(key);
                     return value;
                 }
                 return null;
