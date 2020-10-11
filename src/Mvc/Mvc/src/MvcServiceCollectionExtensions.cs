@@ -20,6 +20,22 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class MvcServiceCollectionExtensions
     {
         /// <summary>
+        /// Adds nothing to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+        public static IMvcBuilder AddAbsolutelyNothing(this IServiceCollection services)
+        {
+            var partManager = services
+                .LastOrDefault(d => d.ServiceType == typeof(ApplicationPartManager))
+                ?.ImplementationInstance
+                as ApplicationPartManager;
+            var builder = new MvcBuilder(services, partManager);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds MVC services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>

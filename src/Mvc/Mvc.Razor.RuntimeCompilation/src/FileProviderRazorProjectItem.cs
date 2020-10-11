@@ -48,7 +48,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         /// <summary>
         /// The <see cref="IFileInfo"/>.
         /// </summary>
-        public IFileInfo FileInfo { get; }
+        private IFileInfo FileInfo { get; }
+
+        /// <summary>
+        /// The <see cref="Boolean" />.
+        /// </summary>
+        /// <value></value>
+        public bool DoesNothing { get; } = true;
 
         /// <inheritdoc/>
         public override string BasePath { get; }
