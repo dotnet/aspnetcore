@@ -18,7 +18,7 @@
     <NoWarn Condition="'$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(ISBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.*.txt') AND
+  <ItemGroup Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
       '$(IsImplementationProject)' == 'true' AND
       '$(DotNetBuildFromSource)' != 'true' AND
       ! $(RepoRelativeProjectDir.Contains('Tools')) ">
@@ -26,7 +26,7 @@
   </ItemGroup>
   <Target Name="_CheckIgnoredPublicApiFiles"
       BeforeTargets="Build;Restore"
-      Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.*.txt') AND
+      Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
       !('$(IsImplementationProject)' == 'true' AND
         '$(DotNetBuildFromSource)' != 'true' AND
         ! $(RepoRelativeProjectDir.Contains('Tools'))) ">
