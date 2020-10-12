@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
         {
-            await HtmlGenerationWebSite_GeneratesExpectedResults("image", antiforgeryPath: null);
+            await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
         }
 
         [Fact]
