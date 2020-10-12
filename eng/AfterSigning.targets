@@ -16,6 +16,7 @@
       <InstallerFiles Include="$(InstallersOutputPath)**\*.zip" Exclude="$(InstallersOutputPath)**\*.wixpack.zip" />
       <InstallerFiles Include="$(InstallersOutputPath)**\*.tar.gz" />
       <InstallerFiles Include="$(InstallersOutputPath)**\*.wixlib" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.deb" />
       <InstallerFiles Include="$(InstallersOutputPath)**\*.rpm" />
       <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
         <DestinationPath>%(FullPath).sha512</DestinationPath>
