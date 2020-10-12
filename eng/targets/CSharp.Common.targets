@@ -19,17 +19,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
-      '$(IsImplementationProject)' == 'true' AND
       '$(DotNetBuildFromSource)' != 'true' AND
+      '$(IsImplementationProject)' == 'true' AND
       ! $(RepoRelativeProjectDir.Contains('Tools')) ">
     <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
   </ItemGroup>
   <Target Name="_CheckIgnoredPublicApiFiles"
       BeforeTargets="Build;Restore"
       Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
-      !('$(IsImplementationProject)' == 'true' AND
         '$(DotNetBuildFromSource)' != 'true' AND
-        ! $(RepoRelativeProjectDir.Contains('Tools'))) ">
+        !('$(IsImplementationProject)' == 'true' AND
+          ! $(RepoRelativeProjectDir.Contains('Tools'))) ">
     <Warning Text="Public API baseline files ignored." />
   </Target>
 
