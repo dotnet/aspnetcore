@@ -2,11 +2,9 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.1.22</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.22</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.1.2</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.2</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.3</SystemIOPipelinesPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.23</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.23</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.4</SystemIOPipelinesPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -27,6 +25,8 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.1.23</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.23</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingRedisPackageVersion>2.1.2</MicrosoftExtensionsCachingRedisPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.1.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
