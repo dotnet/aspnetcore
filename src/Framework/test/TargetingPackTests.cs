@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore
             ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
             var actualPaths = archive.Entries
-                .Where(i => i.FullName.EndsWith(".dll"))
+                .Where(i => i.FullName.EndsWith(".dll", StringComparison.Ordinal))
                 .Select(i => i.FullName).ToHashSet();
 
             var expectedPaths = frameworkListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();
