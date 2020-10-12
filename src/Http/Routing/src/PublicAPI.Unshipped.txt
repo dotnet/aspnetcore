@@ -175,7 +175,7 @@ Microsoft.AspNetCore.Routing.Matching.CandidateState.Endpoint.get -> Microsoft.A
 Microsoft.AspNetCore.Routing.Matching.CandidateState.Score.get -> int
 Microsoft.AspNetCore.Routing.Matching.CandidateState.Values.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer
-Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>
+~Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>
 Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>.Compare(Microsoft.AspNetCore.Http.Endpoint? x, Microsoft.AspNetCore.Http.Endpoint? y) -> int
 Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>.EndpointMetadataComparer() -> void
 Microsoft.AspNetCore.Routing.Matching.EndpointSelector

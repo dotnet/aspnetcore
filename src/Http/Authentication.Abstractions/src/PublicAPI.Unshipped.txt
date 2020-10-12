@@ -44,7 +44,7 @@ Microsoft.AspNetCore.Authentication.AuthenticationProperties.ExpiresUtc.get -> S
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.ExpiresUtc.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetBool(string! key) -> bool?
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetDateTimeOffset(string! key) -> System.DateTimeOffset?
-Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetParameter<T>(string! key) -> T
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetParameter<T>(string! key) -> T?
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetString(string! key) -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.IsPersistent.get -> bool
 Microsoft.AspNetCore.Authentication.AuthenticationProperties.IsPersistent.set -> void
