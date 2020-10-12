@@ -13,7 +13,7 @@ namespace System.Net.Http
         {
             if (args != null)
             {
-                return string.Format(CultureInfo.InvariantCulture, resourceFormat, args);
+                return string.Format(CultureInfo.CurrentCulture, resourceFormat, args);
             }
 
             return resourceFormat;
