@@ -238,7 +238,7 @@ namespace MusicStore.Controllers
 #endif
             }
 
-            ModelState.AddModelError("", string.Format(CultureInfo.InvariantCulture, "We could not locate an account with email : {0}", model.Email));
+            ModelState.AddModelError("", string.Format(CultureInfo.CurrentCulture, "We could not locate an account with email : {0}", model.Email));
 
             // If we got this far, something failed, redisplay form
             return View(model);

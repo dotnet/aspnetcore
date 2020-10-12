@@ -195,7 +195,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
         private static string GetCacheKey(int id)
         {
-            return $"album_{id}";
+            return string.Format(CultureInfo.InvariantCulture, "album_{0}", id);
         }
 
         // NOTE: this is used for end to end testing only
