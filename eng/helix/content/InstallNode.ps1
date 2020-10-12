@@ -15,7 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-$InstallDir = 'node' # Always install to 'node' subdir
+$InstallDir = '.' # Always install to workitem root
 
 Set-StrictMode -Version 1
 
