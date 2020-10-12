@@ -145,6 +145,7 @@
       win-x86;
       win-arm;
       win-arm64;
+      osx-arm64;
       osx-x64;
       linux-musl-x64;
       linux-musl-arm;
