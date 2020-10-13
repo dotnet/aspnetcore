@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -262,14 +263,14 @@ namespace Microsoft.AspNetCore.Hosting
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
                 string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                if (baggage.Length > 0)
+
+                // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+                // An order could be important if baggage has two items with the same key (that is allowed by the contract)
+                for (var i = baggage.Length - 1; i >= 0; i--)
                 {
-                    foreach (var item in baggage)
+                    if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
                     {
-                        if (NameValueHeaderValue.TryParse(item, out var baggageItem))
-                        {
-                            activity.AddBaggage(baggageItem.Name.ToString(), baggageItem.Value.ToString());
-                        }
+                        activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
                     }
                 }
             }
