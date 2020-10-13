@@ -11,7 +11,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
 
     <TestAppsRoot Condition="'$(IsHelixJob)' != 'true'">$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
-    <TestAppsRoot Condition="'$(IsHelixJob)' == 'true'">$(MSBuildThisFileDirectory)\</TestAppsRoot>
+    <TestAppsRoot Condition="'$(IsHelixJob)' == 'true'">%HELIX_WORKITEM_ROOT%</TestAppsRoot>
   </PropertyGroup>
 
   <Import Project="$(SharedSourceRoot)MSBuild.Testing\MSBuild.Testing.targets" />
