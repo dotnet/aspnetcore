@@ -462,6 +462,16 @@ namespace TestSite
             }
         }
 
+        private async Task ReadRequestBodyLarger(HttpContext ctx)
+        {
+            var readBuffer = new byte[4096];
+            var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 4096);
+            while (result != 0)
+            {
+                result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 4096);
+            }
+        }
+
         private int _requestsInFlight = 0;
         private async Task ReadAndCountRequestBody(HttpContext ctx)
         {
@@ -1017,6 +1027,13 @@ namespace TestSite
         {
             var value = context.Request.Headers["foo"];
             Assert.Equal("�", value);
+            return Task.CompletedTask;
+        }
+
+        public Task IncreaseRequestLimit(HttpContext httpContext)
+        {
+            var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            maxRequestBodySizeFeature.MaxRequestBodySize = 2;
             return Task.CompletedTask;
         }
     }

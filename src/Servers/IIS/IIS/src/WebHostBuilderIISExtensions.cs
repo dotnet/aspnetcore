@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
                             options => {
                                 options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                                 options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
+                                options.MaxRequestBodySize = iisConfigData.maxRequestBodySize;
                                 options.IisMaxRequestSizeLimit = iisConfigData.maxRequestBodySize;
                             }
                         );
