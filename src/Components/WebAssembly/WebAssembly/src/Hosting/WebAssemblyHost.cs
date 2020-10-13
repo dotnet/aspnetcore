@@ -74,7 +74,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _disposed = true;
 
-            _renderer?.Dispose();
+            if (_renderer != null)
+            {
+                await _renderer.DisposeAsync();
+            }
 
             if (_scope is IAsyncDisposable asyncDisposableScope)
             {
