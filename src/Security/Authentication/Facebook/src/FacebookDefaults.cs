@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Authentication.Facebook
 {
     /// <summary>
-    /// Default values related to Facebook-based authentication handler.
+    /// Default values for the Facebook authentication handler.
     /// </summary>
     public static class FacebookDefaults
     {
         /// <summary>
-        /// The default scheme for Facebook authentication. Defaults to <c>Facebook</c>.
+        /// The default scheme for Facebook authentication. The value is <c>Facebook</c>.
         /// </summary>
         public const string AuthenticationScheme = "Facebook";
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v8.0/dialog/oauth";
 
         /// <summary>
-        /// The OAuth endpoint used to exchange access tokens.
+        /// The OAuth endpoint used to retrieve access tokens.
         /// </summary>
         public static readonly string TokenEndpoint = "https://graph.facebook.com/v8.0/oauth/access_token";
 

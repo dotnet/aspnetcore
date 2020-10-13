@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// Gets or sets the value for the "domain_hint" parameter value being used for a challenge request.
         /// <para>
         /// If included, authentication will skip the email-based discovery process that user goes through on the sign-in page,
-        /// leading to a slightly more streamlined user experience 
+        /// leading to a slightly more streamlined user experience.
         /// </para>
         /// </summary>
         public string DomainHint

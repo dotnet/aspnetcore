@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         /// https://developers.facebook.com/docs/graph-api/reference/user
         /// </summary>
         /// <value>
-        /// Defaults to include the following fields: "name", "email", "first_name", and "last_name".
+        /// Defaults to include the following fields if none are specified: "name", "email", "first_name", and "last_name".
         /// </value>
         public ICollection<string> Fields { get; } = new HashSet<string>();
     }
