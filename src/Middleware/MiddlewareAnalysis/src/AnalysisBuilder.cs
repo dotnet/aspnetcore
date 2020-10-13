@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             set { InnerBuilder.ApplicationServices = value; }
         }
 
+        /// <inheritdoc />
         public IDictionary<string, object?> Properties
         {
             get { return InnerBuilder.Properties; }
