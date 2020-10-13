@@ -67,7 +67,7 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin"
+    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin;" + $Env:CD
     Write-Host "Found package-lock.json, running $InstallDir\npm install"
     Invoke-Expression "$InstallDir\npm.cmd install"
 }
