@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 var repositoryRoot = BuildVariables.RepoRoot;
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
-                var testAppsRoot = BuildVariables.TestAppsRoot;
+                var testAppsRoot = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix") ? AppContext.BaseDirectory : BuildVariables.TestAppsRoot;
 
                 foreach (var project in new string[] { originalProjectName, }.Concat(additionalProjects))
                 {
