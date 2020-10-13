@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _targetingPackTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _targetingPackTfm = TestData.GetDefaultNetCoreTargetFramework();
             var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
                 TestData.GetTestDataValue("TargetingPackLayoutRoot") :
                 Environment.GetEnvironmentVariable("DOTNET_ROOT");

@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     return default;
                 }
-                
+
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
 

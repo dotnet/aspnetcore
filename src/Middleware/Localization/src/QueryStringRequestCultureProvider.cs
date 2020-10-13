@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Localization
         public string UIQueryStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Localization
                 return NullProviderCultureResult;
             }
 
-            string queryCulture = null;
-            string queryUICulture = null;
+            string? queryCulture = null;
+            string? queryUICulture = null;
 
             if (!string.IsNullOrWhiteSpace(QueryStringKey))
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Localization
 
             var providerResultCulture = new ProviderCultureResult(queryCulture, queryUICulture);
 
-            return Task.FromResult(providerResultCulture);
+            return Task.FromResult<ProviderCultureResult?>(providerResultCulture);
         }
     }
 }

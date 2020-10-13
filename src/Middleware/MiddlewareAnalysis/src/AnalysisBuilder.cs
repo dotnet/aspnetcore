@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -35,8 +36,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             set { InnerBuilder.ApplicationServices = value; }
         }
 
-        /// <inheritdoc />
-        public IDictionary<string, object> Properties
+        public IDictionary<string, object?> Properties
         {
             get { return InnerBuilder.Properties; }
         }
@@ -64,11 +64,10 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         /// <inheritdoc />
         public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
-            string middlewareName = string.Empty; // UseMiddleware doesn't work with null params.
-            object middlewareNameObj;
-            if (Properties.TryGetValue(NextMiddlewareName, out middlewareNameObj))
+            var middlewareName = string.Empty; // UseMiddleware doesn't work with null params.
+            if (Properties.TryGetValue(NextMiddlewareName, out var middlewareNameObj) && middlewareNameObj != null)
             {
-                middlewareName = middlewareNameObj?.ToString();
+                middlewareName = middlewareNameObj.ToString();
                 Properties.Remove(NextMiddlewareName);
             }
 

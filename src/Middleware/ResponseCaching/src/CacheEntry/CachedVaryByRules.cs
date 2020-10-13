@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal class CachedVaryByRules : IResponseCacheEntry
     {
-        public string VaryByKeyPrefix { get; set; }
+        public string VaryByKeyPrefix { get; set; } = default!;
 
         public StringValues Headers { get; set; }
 

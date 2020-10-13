@@ -25,6 +25,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <summary>
         /// The <see cref="HttpRequest.QueryString"/> of the original request.
         /// </summary>
-        string OriginalQueryString { get; set; }
+        string? OriginalQueryString { get; set; }
     }
 }

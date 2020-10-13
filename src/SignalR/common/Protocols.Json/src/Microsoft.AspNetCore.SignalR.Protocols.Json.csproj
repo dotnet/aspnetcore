@@ -24,4 +24,8 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
 </Project>
