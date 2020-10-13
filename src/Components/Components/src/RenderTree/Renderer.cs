@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
             List<Exception> exceptions = null;
-            List<ValueTask> asyncDisposables = null;
+            List<Task> asyncDisposables = null;
             foreach (var componentState in _componentStateById.Values)
             {
                 Log.DisposingComponent(_logger, componentState);
@@ -779,8 +779,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     try
                     {
                         var task = asyncDisposable.DisposeAsync();
-                        asyncDisposables ??= new();
-                        asyncDisposables.Add(task);
+                        if (!task.IsCompletedSuccessfully)
+                        {
+                            asyncDisposables ??= new();
+                            asyncDisposables.Add(task.AsTask());
+                        }
                     }
                     catch (Exception exception)
                     {
@@ -812,7 +815,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 _disposeTask = HandleAsyncExceptions(asyncDisposables);
             }
 
-            async Task HandleAsyncExceptions(List<ValueTask> tasks)
+            async Task HandleAsyncExceptions(List<Task> tasks)
             {
                 List<Exception> asyncExceptions = null;
                 foreach (var task in tasks)
@@ -855,6 +858,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_disposeTask != null)
             {
                 await _disposeTask;
