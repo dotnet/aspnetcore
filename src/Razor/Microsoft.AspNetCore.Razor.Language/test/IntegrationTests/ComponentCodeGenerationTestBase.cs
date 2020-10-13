@@ -1775,7 +1775,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> header = (context) => @<div>@context.ToLower()</div>; }
+@{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <MyComponent Header=@header>
     Some Content
 </MyComponent>");
@@ -1811,7 +1811,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> header = (context) => @<div>@context.ToLower()</div>; }
+@{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <MyComponent Header=@header>
   <ChildContent>Some Content</ChildContent>
   <Footer>Bye!</Footer>
@@ -3415,7 +3415,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
-  <GenericFragment>@context.ToLowerInvariant()</GenericFragment>
+  <GenericFragment>@context.ToLower()</GenericFragment>
   <IntFragment>@context</IntFragment>
 </MyComponent>");
 
@@ -4548,7 +4548,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<Test.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLowerInvariant()</li>; }
+@{ RenderFragment<Test.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>; }
 <MyComponent Template=""@template""/>
 ");
 
