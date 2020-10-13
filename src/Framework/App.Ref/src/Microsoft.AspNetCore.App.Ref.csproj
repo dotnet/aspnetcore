@@ -147,6 +147,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
+      <!-- Grab remaining .xml files from packages -->
+      <AspNetCoreReferenceDocXml 
+          Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')" 
+          Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
