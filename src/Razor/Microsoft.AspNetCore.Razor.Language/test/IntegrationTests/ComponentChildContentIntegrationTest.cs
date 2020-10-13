@@ -93,7 +93,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> template = @<div>@context.ToLowerInvariant()</div>; }
+@{ RenderFragment<string> template = @<div>@context.ToLower()</div>; }
 <RenderChildContent ChildContent=""@template.WithValue(""HI"")"">
 Some Content
 </RenderChildContent>");
@@ -111,7 +111,7 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> template = @<div>@context.ToLowerInvariant()</div>; }
+@{ RenderFragment<string> template = @<div>@context.ToLower()</div>; }
 <RenderChildContent ChildContent=""@template.WithValue(""HI"")"">
 <ChildContent>
 Some Content

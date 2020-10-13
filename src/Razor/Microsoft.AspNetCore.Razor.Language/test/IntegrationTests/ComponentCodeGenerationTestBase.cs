@@ -1775,7 +1775,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
+@{ RenderFragment<string> header = (context) => @<div>@context.ToLower()</div>; }
 <MyComponent Header=@header>
     Some Content
 </MyComponent>");
@@ -1811,7 +1811,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
+@{ RenderFragment<string> header = (context) => @<div>@context.ToLower()</div>; }
 <MyComponent Header=@header>
   <ChildContent>Some Content</ChildContent>
   <Footer>Bye!</Footer>
@@ -3353,7 +3353,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem=string Item=""@(""hi"")"">
-  <div>@context.ToLowerInvariant()</div>
+  <div>@context.ToLower()</div>
 </MyComponent>");
 
             // Assert
@@ -3383,7 +3383,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
-  <div>@context.ToLowerInvariant()</div>
+  <div>@context.ToLower()</div>
 </MyComponent>");
 
             // Assert
@@ -3446,7 +3446,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <Test.MyComponent Item=""@(""hi"")"">
-  <div>@context.ToLowerInvariant()</div>
+  <div>@context.ToLower()</div>
 </Test.MyComponent>");
 
             // Assert
@@ -3483,7 +3483,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem1=string TItem2=int Item=""@(""hi"")"">
-  <ChildContent><div>@context.ToLowerInvariant()</div></ChildContent>
+  <ChildContent><div>@context.ToLower()</div></ChildContent>
 <AnotherChildContent Context=""item"">
   @System.Math.Max(0, item.Item);
 </AnotherChildContent>
@@ -3526,7 +3526,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"" Items=@(new List<long>())>
-  <ChildContent><div>@context.ToLowerInvariant()</div></ChildContent>
+  <ChildContent><div>@context.ToLower()</div></ChildContent>
 <AnotherChildContent Context=""item"">
   @System.Math.Max(0, item.Item);
 </AnotherChildContent>
