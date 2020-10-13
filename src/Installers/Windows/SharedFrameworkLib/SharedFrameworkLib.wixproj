@@ -47,7 +47,7 @@
     <ItemGroup>
       <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(OutputName).wixlib" />
       <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(PackageFileName)"
-        Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' " />
+        Condition=" '$(SkipCopyToArtifactsDirectory)' != 'true' " />
     </ItemGroup>
 
     <CreateLitCommandPackageDrop
