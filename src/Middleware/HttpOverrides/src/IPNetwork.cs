@@ -1,12 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
+    /// <summary>
+    /// A representation of an IP network based on CIDR notation.
+    /// </summary>
     public class IPNetwork
     {
+        /// <summary>
+        /// Create a new <see cref="IPNetwork"/> with the specified <see cref="IPAddress"/> and prefix length.
+        /// </summary>
+        /// <param name="prefix">The <see cref="IPAddress"/>.</param>
+        /// <param name="prefixLength">The prefix length.</param>
         public IPNetwork(IPAddress prefix, int prefixLength)
         {
             Prefix = prefix;
@@ -15,6 +23,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Mask = CreateMask();
         }
 
+        /// <summary>
+        /// Get the <see cref="IPAddress"/> that represents the prefix for the network.
+        /// </summary>
         public IPAddress Prefix { get; }
 
         private byte[] PrefixBytes { get; }
@@ -26,6 +37,11 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         private byte[] Mask { get; }
 
+        /// <summary>
+        /// Determine whether a given The <see cref="IPAddress"/> is part of the IP network.
+        /// </summary>
+        /// <param name="address">The <see cref="IPAddress"/>.</param>
+        /// <returns><see langword="true"/> if the <see cref="IPAddress"/> is part of the IP network. Otherwise, <see langword="false"/>.</returns>
         public bool Contains(IPAddress address)
         {
             if (Prefix.AddressFamily != address.AddressFamily)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    ///
+    /// Interface for implementing a router.
     /// </summary>
     public interface IRouter
     {

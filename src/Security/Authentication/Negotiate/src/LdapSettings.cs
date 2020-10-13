@@ -76,6 +76,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         internal MemoryCache ClaimsCache { get; set; }
 
+        /// <summary>
+        /// Validates the <see cref="LdapSettings"/>.
+        /// </summary>
         public void Validate()
         {
             if (EnableLdapClaimResolution)

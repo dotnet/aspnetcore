@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Represents the configurable options on a route.
+    /// </summary>
     public class RouteOptions
     {
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
@@ -64,6 +67,9 @@ namespace Microsoft.AspNetCore.Routing
         /// </remarks>
         public bool SuppressCheckForUnhandledSecurityMetadata { get; set; }
 
+        /// <summary>
+        /// Gets or sets a collection of constraints on the current route.
+        /// </summary>
         public IDictionary<string, Type> ConstraintMap
         {
             get

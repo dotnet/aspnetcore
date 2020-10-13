@@ -144,54 +144,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void ConnectionQueuedStart(BaseConnectionContext connection)
         {
             Interlocked.Increment(ref _connectionQueueLength);
-            if (IsEnabled())
-            {
-                ConnectionQueuedStart(
-                    connection.ConnectionId,
-                    connection.LocalEndPoint?.ToString(),
-                    connection.RemoteEndPoint?.ToString());
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(6, Level = EventLevel.Informational)]
-        private void ConnectionQueuedStart(string connectionId,
-            string localEndPoint,
-            string remoteEndPoint)
-        {
-            WriteEvent(
-                6,
-                connectionId,
-                localEndPoint,
-                remoteEndPoint
-            );
         }
 
         [NonEvent]
         public void ConnectionQueuedStop(BaseConnectionContext connection)
         {
             Interlocked.Decrement(ref _connectionQueueLength);
-            if (IsEnabled())
-            {
-                ConnectionQueuedStop(
-                    connection.ConnectionId,
-                    connection.LocalEndPoint?.ToString(),
-                    connection.RemoteEndPoint?.ToString());
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(7, Level = EventLevel.Informational)]
-        private void ConnectionQueuedStop(string connectionId,
-            string localEndPoint,
-            string remoteEndPoint)
-        {
-            WriteEvent(
-                7,
-                connectionId,
-                localEndPoint,
-                remoteEndPoint
-            );
         }
 
         [NonEvent]
@@ -245,70 +203,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void RequestQueuedStart(HttpProtocol httpProtocol, string httpVersion)
         {
             Interlocked.Increment(ref _httpRequestQueueLength);
-            // avoid allocating the trace identifier unless logging is enabled
-            if (IsEnabled())
-            {
-                RequestQueuedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(11, Level = EventLevel.Informational)]
-        private void RequestQueuedStart(string connectionId, string requestId, string httpVersion)
-        {
-            WriteEvent(11, connectionId, requestId, httpVersion);
         }
 
         [NonEvent]
         public void RequestQueuedStop(HttpProtocol httpProtocol, string httpVersion)
         {
             Interlocked.Decrement(ref _httpRequestQueueLength);
-            // avoid allocating the trace identifier unless logging is enabled
-            if (IsEnabled())
-            {
-                RequestQueuedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(12, Level = EventLevel.Informational)]
-        private void RequestQueuedStop(string connectionId, string requestId, string httpVersion)
-        {
-            WriteEvent(12, connectionId, requestId, httpVersion);
         }
 
         [NonEvent]
         public void RequestUpgradedStart(HttpProtocol httpProtocol)
         {
             Interlocked.Increment(ref _currentUpgradedHttpRequests);
-            if (IsEnabled())
-            {
-                RequestUpgradedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(13, Level = EventLevel.Informational)]
-        private void RequestUpgradedStart(string connectionId, string requestId, string httpVersion, string path, string method)
-        {
-            WriteEvent(13, connectionId, requestId, httpVersion, path, method);
         }
 
         [NonEvent]
         public void RequestUpgradedStop(HttpProtocol httpProtocol)
         {
             Interlocked.Decrement(ref _currentUpgradedHttpRequests);
-            if (IsEnabled())
-            {
-                RequestUpgradedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(14, Level = EventLevel.Informational)]
-        private void RequestUpgradedStop(string connectionId, string requestId, string httpVersion, string path, string method)
-        {
-            WriteEvent(14, connectionId, requestId, httpVersion, path, method);
         }
 
         protected override void OnEventCommand(EventCommandEventArgs command)

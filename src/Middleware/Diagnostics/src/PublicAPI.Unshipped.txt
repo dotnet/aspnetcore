@@ -6,6 +6,8 @@ Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.SourceCodeLineCount.g
 Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.SourceCodeLineCount.set -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.AllowStatusCode404Response.get -> bool
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.AllowStatusCode404Response.set -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlerOptions() -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.set -> void

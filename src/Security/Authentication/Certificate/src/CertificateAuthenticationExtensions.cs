@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 
 using Microsoft.AspNetCore.Authentication.Certificate;
@@ -15,6 +16,11 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Adds certificate authentication.
+        /// <para>
+        /// Certificate authentication uses a authentication handler that validates client certificate and
+        /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
+        /// See https://tools.ietf.org/html/rfc5246#section-7.4.4 to read more about certicate authentication.
+        /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
@@ -23,6 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds certificate authentication.
+        /// <para>
+        /// Certificate authentication uses a authentication handler that validates client certificate and
+        /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
+        /// See https://tools.ietf.org/html/rfc5246#section-7.4.4 to read more about certicate authentication.
+        /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme"></param>
@@ -32,6 +43,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds certificate authentication.
+        /// <para>
+        /// Certificate authentication uses a authentication handler that validates client certificate and
+        /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
+        /// See https://tools.ietf.org/html/rfc5246#section-7.4.4 to read more about certicate authentication.
+        /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="configureOptions"></param>
@@ -41,6 +57,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds certificate authentication.
+        /// <para>
+        /// Certificate authentication uses a authentication handler that validates client certificate and
+        /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
+        /// See https://tools.ietf.org/html/rfc5246#section-7.4.4 to read more about certicate authentication.
+        /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme"></param>
@@ -54,6 +75,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds certificate authentication.
+        /// <para>
+        /// Certificate authentication uses a authentication handler that validates client certificate and
+        /// raises an event where the certificate is resolved to a <see cref="ClaimsPrincipal"/>.
+        /// See https://tools.ietf.org/html/rfc5246#section-7.4.4 to read more about certicate authentication.
+        /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="configureOptions"></param>

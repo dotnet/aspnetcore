@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             Navigate(ServerPathBase, noReload: false);
             Browser.MountTestComponent<GracefulTermination>();
-            Browser.Equal("Graceful Termination", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Graceful Termination", () => Browser.Exists(By.TagName("h1")).Text);
 
             GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnect_TheCurrentCircuit()
         {
             // Arrange & Act
-            var element = Browser.FindElement(By.Id("mailto-link"));
+            var element = Browser.Exists(By.Id("mailto-link"));
             element.Click();
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DownloadAction_DoesNotGracefullyDisconnect_TheCurrentCircuit()
         {
             // Arrange & Act
-            var element = Browser.FindElement(By.Id("download-link"));
+            var element = Browser.Exists(By.Id("download-link"));
             element.Click();
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DownloadHref_DoesNotGracefullyDisconnect_TheCurrentCircuit()
         {
             // Arrange & Act
-            var element = Browser.FindElement(By.Id("download-href"));
+            var element = Browser.Exists(By.Id("download-href"));
             element.Click();
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 

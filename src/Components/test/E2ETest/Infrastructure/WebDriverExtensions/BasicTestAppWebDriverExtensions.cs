@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest
             var testSelector = browser.WaitUntilTestSelectorReady();
             testSelector.SelectByValue("none");
             testSelector.SelectByValue(componentTypeName);
-            return browser.FindElement(By.TagName("app"));
+            return browser.Exists(By.TagName("app"));
         }
 
         public static SelectElement WaitUntilTestSelectorReady(this IWebDriver browser)

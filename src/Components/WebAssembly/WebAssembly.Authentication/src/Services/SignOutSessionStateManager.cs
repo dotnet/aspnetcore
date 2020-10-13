@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             PropertyNameCaseInsensitive = true,
         };
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="SignOutSessionStateManager"/>.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         public SignOutSessionStateManager(IJSRuntime jsRuntime) => _jsRuntime = jsRuntime;
 
         /// <summary>

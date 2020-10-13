@@ -117,6 +117,9 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public TimeSpan RemoteAuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(15);
 
+        /// <summary>
+        /// Gets or sets a value that allows subscribing to remote authentication events.
+        /// </summary>
         public new RemoteAuthenticationEvents Events
         {
             get => (RemoteAuthenticationEvents)base.Events!;

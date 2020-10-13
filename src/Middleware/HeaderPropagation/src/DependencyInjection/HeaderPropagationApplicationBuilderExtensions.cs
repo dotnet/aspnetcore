@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// <see cref="IApplicationBuilder"/> extension methods for <see cref="HeaderPropagationMiddleware"/> which propagates request headers to an <see cref="HttpClient"/>.
+    /// </summary>
     public static class HeaderPropagationApplicationBuilderExtensions
     {
         private static readonly string _unableToFindServices = string.Format(

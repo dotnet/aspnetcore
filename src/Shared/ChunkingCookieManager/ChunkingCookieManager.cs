@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Internal
         private const string ChunkKeySuffix = "C";
         private const string ChunkCountPrefix = "chunks-";
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ChunkingCookieManager"/>.
+        /// </summary>
         public ChunkingCookieManager()
         {
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.

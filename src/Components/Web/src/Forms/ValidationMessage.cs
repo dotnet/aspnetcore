@@ -80,6 +80,10 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
+        /// <summary>
+        /// Called to dispose this instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> if called within <see cref="IDisposable.Dispose"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
         }

@@ -23,10 +23,6 @@ namespace RepoTasks
         [Required]
         public string TargetFile { get; set; }
 
-        public string ManagedRoot { get; set; } = "";
-
-        public string NativeRoot { get; set; } = "";
-
         /// <summary>
         /// Extra attributes to place on the root node.
         ///
@@ -53,7 +49,8 @@ namespace RepoTasks
                     AssemblyName = FileUtilities.GetAssemblyName(item.ItemSpec),
                     FileVersion = FileUtilities.GetFileVersion(item.ItemSpec),
                     IsNative = item.GetMetadata("IsNativeImage") == "true",
-                    IsSymbolFile = item.GetMetadata("IsSymbolFile") == "true"
+                    IsSymbolFile = item.GetMetadata("IsSymbolFile") == "true",
+                    PackagePath = item.GetMetadata("PackagePath")
                 })
                 .Where(f =>
                     !f.IsSymbolFile &&
@@ -65,7 +62,7 @@ namespace RepoTasks
                     new XAttribute("Type", f.IsNative ? "Native" : "Managed"),
                     new XAttribute(
                         "Path",
-                        Path.Combine(f.IsNative ? NativeRoot : ManagedRoot, f.Filename).Replace('\\', '/')));
+                        Path.Combine(f.PackagePath, f.Filename).Replace('\\', '/')));
 
                 if (f.AssemblyName != null)
                 {

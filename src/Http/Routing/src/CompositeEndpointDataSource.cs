@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Routing
             _dataSources = dataSources;
         }
 
+        /// <summary>
+        /// Instantiates a <see cref="CompositeEndpointDataSource"/> object from <paramref name="endpointDataSources"/>.
+        /// </summary>
+        /// <param name="endpointDataSources">An collection of <see cref="EndpointDataSource" /> objects.</param>
+        /// <returns>A <see cref="CompositeEndpointDataSource"/> </returns>
         public CompositeEndpointDataSource(IEnumerable<EndpointDataSource> endpointDataSources) : this()
         {
             _dataSources = new List<EndpointDataSource>();
@@ -62,6 +67,9 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Returns the collection of <see cref="EndpointDataSource"/> instances associated with the object.
+        /// </summary>
         public IEnumerable<EndpointDataSource> DataSources => _dataSources;
 
         /// <summary>
@@ -123,12 +131,12 @@ namespace Microsoft.AspNetCore.Routing
                 // Refresh the endpoints from datasource so that callbacks can get the latest endpoints
                 _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
 
-                // Prevent consumers from re-registering callback to inflight events as that can 
+                // Prevent consumers from re-registering callback to inflight events as that can
                 // cause a stackoverflow
                 // Example:
                 // 1. B registers A
                 // 2. A fires event causing B's callback to get called
-                // 3. B executes some code in its callback, but needs to re-register callback 
+                // 3. B executes some code in its callback, but needs to re-register callback
                 //    in the same callback
                 var oldTokenSource = _cts;
                 var oldToken = _consumerChangeToken;

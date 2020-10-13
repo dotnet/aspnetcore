@@ -157,6 +157,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             return false;
         }
 
+        /// <inheritdoc/>
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "a");
