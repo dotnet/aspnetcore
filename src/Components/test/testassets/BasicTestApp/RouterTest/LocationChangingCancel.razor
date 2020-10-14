@@ -8,8 +8,9 @@
 @implements IDisposable
 
 <button id="test-button" @onclick=@( () => NavigationManager.NavigateTo("LocationChangingStart"))>Navigate</button>
-<button id="test-button-gotoexternal" @onclick=@( () => NavigationManager.NavigateTo("www.google.com"))>Navigate</button>
-<button id="test-button-gotoinvalid" @onclick=@( () => NavigationManager.NavigateTo("thispagedoesnotexist"))>Navigate</button>
+<button id="test-button-gotoexternal" @onclick=@( () => NavigationManager.NavigateTo("www.google.com"))>Navigate external</button>
+<button id="test-button-gotoinvalid" @onclick=@( () => NavigationManager.NavigateTo("thispagedoesnotexist"))>Navigate invalid</button>
+<button id="test-button-forceload" @onclick=@( () => NavigationManager.NavigateTo("LocationChangingStart", true))>Navigate forced</button>
 <a id="test-link" href="LocationChangingStart">Can We</a>>
 <a id="test-link-gotoexternal" href="www.google.com">Can We go external</a>>
 <a id="test-link-gotoinvalid" href="thispagedoesnotexist">Can We go invalid</a>>

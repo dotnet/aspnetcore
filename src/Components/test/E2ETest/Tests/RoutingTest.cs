@@ -475,6 +475,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             app.FindElement(By.Id("test-button-gotoinvalid")).Click();
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
+            //Attempt to navigate with navigateto and forceload=true should fail
+            app.FindElement(By.Id("test-button-forceload")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
             //Attempt to navigate to an invalid web page with clicking a link should fail
             app.FindElement(By.Id("test-link-gotoinvalid")).Click();
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
