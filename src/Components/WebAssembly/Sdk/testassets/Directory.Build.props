@@ -12,6 +12,8 @@
     <!-- Do not resolve Reference ItemGroup since it has a different semantic meaning in Razor test apps -->
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
 
+    <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
+
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'AspNetCore.sln'))\</RepoRoot>
 
     <RazorSdkCurrentVersionProps>$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
