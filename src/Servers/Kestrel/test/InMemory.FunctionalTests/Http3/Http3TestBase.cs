@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             // Skip all heartbeat and lifetime notification feature registrations.
-            _connectionTask = _connection.InnerProcessRequestsAsync(new DummyApplication(application));
+            _connectionTask = _connection.InnerProcessStreamsAsync(new DummyApplication(application));
 
             await Task.CompletedTask;
         }

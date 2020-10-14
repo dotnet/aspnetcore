@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal class Http3Connection : IRequestProcessor, ITimeoutHandler
+    internal class Http3Connection : ITimeoutHandler
     {
         public DynamicTable DynamicTable { get; set; }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
+        public Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
             try
             {
@@ -102,23 +102,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
 
-                await InnerProcessRequestsAsync(httpApplication);
+                return InnerProcessStreamsAsync(httpApplication);
             }
             catch (Exception ex)
             {
-                Log.LogCritical(0, ex, $"Unexpected exception in {nameof(Http3Connection)}.{nameof(ProcessRequestsAsync)}.");
+                Log.LogCritical(0, ex, $"Unexpected exception in {nameof(Http3Connection)}.{nameof(ProcessStreamsAsync)}.");
             }
-            finally
-            {
-            }
+
+            return Task.CompletedTask;
         }
 
-        // For testing only
-        internal void Initialize()
-        {
-        }
-
-        public void StopProcessingNextRequest()
+        public void StopProcessingStreams()
         {
             bool previousState;
             lock (_protocolSelectionLock)
@@ -180,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    StopProcessingNextRequest();
+                    StopProcessingStreams();
                     break;
                 case TimeoutReason.RequestHeaders:
                     HandleRequestHeadersTimeout();
@@ -275,13 +269,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         foreach (var stream in _streams.Values)
                         {
                             stream.Abort(_abortedException);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var stream in _streams.Values)
-                        {
-                            stream.OnInputOrOutputCompleted();
                         }
                     }
                 }
