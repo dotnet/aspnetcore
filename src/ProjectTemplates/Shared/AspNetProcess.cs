@@ -12,6 +12,7 @@ using System.Net.Security;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
