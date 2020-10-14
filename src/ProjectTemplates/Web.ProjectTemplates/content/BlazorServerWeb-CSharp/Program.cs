@@ -15,6 +15,7 @@ namespace BlazorServerWeb_CSharp
     {
         public static void Main(string[] args)
         {
+            AppContextSwitches.Apply();
             CreateHostBuilder(args).Build().Run();
         }
 

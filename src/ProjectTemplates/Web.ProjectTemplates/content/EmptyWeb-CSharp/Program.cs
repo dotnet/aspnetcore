@@ -13,6 +13,7 @@ namespace Company.WebApplication1
     {
         public static void Main(string[] args)
         {
+            AppContextSwitches.Apply();
             CreateHostBuilder(args).Build().Run();
         }
 
