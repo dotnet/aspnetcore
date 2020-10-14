@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
+using NuGet.Frameworks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit;
@@ -207,6 +208,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
 
             Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+
+            // Validate that the scroll event completed successfully
+            var lastElement = Browser.Exists(By.Id("999"));
+            Browser.True(() => lastElement.Displayed);
 
             // Validate that the top spacer has expanded.
             Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
