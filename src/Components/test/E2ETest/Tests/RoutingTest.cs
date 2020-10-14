@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -665,18 +664,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
         }
 
+        [Theory]
+        [InlineData("/WithParameters/Name/Ñoño ñi/LastName/O'Jkl")]
+        [InlineData("/WithParameters/Name/[Ñoño ñi]/LastName/O'Jkl")]
+        [InlineData("/other?abc=Ñoño ñi")]
+        [InlineData("/other?abc=[Ñoño ñi]")]
+        public void CanArriveAtPageWithSpecialURL(string relativeUrl)
+        {
+            SetUrlViaPushState(relativeUrl, true);
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
+            Browser.Equal("none", () => errorUi.GetCssValue("display"));
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
             set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
         }
 
-        private string SetUrlViaPushState(string relativeUri)
+        private string SetUrlViaPushState(string relativeUri, bool forceLoad = false)
         {
             var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
             var jsExecutor = (IJavaScriptExecutor)Browser;
             var absoluteUri = new Uri(_serverFixture.RootUri, $"{pathBaseWithoutHash}{relativeUri}");
-            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
+            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}', {(forceLoad ? "true" : "false")})");
 
             return absoluteUri.AbsoluteUri;
         }

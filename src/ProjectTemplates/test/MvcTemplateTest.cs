@@ -118,7 +118,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/26776")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
