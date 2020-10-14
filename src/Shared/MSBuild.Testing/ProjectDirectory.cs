@@ -163,6 +163,8 @@ $@"<Project>
                 {
                     var srcFile = Path.Combine(repositoryRoot, file);
                     var destinationFile = Path.Combine(projectRoot, file);
+                    Console.WriteLine($"srcFile: {srcFile}");
+                    Console.WriteLine($"destinationFile: {destinationFile}");
                     File.Copy(srcFile, destinationFile);
                 }
             }
