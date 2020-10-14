@@ -20,8 +20,10 @@
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <HelixContent Include="..\testassets\**\*" />
+    <HelixContent Include="$(RepoRoot)global.json" />
+    <HelixContent Include="$(RepoRoot)eng\Versions.props" />
   </ItemGroup>
 
   <ItemGroup>
