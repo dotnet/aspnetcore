@@ -510,11 +510,8 @@ namespace Templates.Test
             // Start fresh always
             if (usesAuth)
             {
-                try
-                {
-                    Browser.ExecuteJavaScript("sessionStorage.clear()");
-                    Browser.ExecuteJavaScript("localStorage.clear()");
-                } catch (WebDriverException) { } // 3rd party cookies disabled will result in this error.
+                Browser.ExecuteJavaScript("sessionStorage.clear()");
+                Browser.ExecuteJavaScript("localStorage.clear()");
                 Browser.Manage().Cookies.DeleteAllCookies();
                 Browser.Navigate().Refresh();
             }
