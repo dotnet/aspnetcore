@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// If no compression providers are specified then GZip is used by default.
         /// </summary>
         /// <param name="services">Services to use when instantiating compression providers.</param>
-        /// <param name="options"></param>
+        /// <param name="options">The options for this instance.</param>
         public ResponseCompressionProvider(IServiceProvider services, IOptions<ResponseCompressionOptions> options)
         {
             if (services == null)
