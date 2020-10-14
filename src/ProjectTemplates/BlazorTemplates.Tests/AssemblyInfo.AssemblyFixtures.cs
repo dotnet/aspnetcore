@@ -9,4 +9,5 @@ using Xunit;
 
 [assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(ProjectFactoryFixture))]
 [assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(SeleniumStandaloneServer))]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
