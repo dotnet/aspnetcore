@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var webConfigContents = "test webconfig contents";
             AddFileToProject(project, "web.config", webConfigContents);
 
-            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", $"/p:PublishIISAssets=true");
 
             Assert.BuildPassed(result);
 
