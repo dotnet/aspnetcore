@@ -666,6 +666,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "NullReferenceException https://github.com/dotnet/aspnetcore/issues/26839")]
         public async Task ClientDisconnectStress()
         {
             var maxRequestSize = 1000;
