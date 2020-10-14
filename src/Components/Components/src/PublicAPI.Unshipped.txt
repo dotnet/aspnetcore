@@ -119,11 +119,14 @@ Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get -> string!
 Microsoft.AspNetCore.Components.NavigationManager.BaseUri.set -> void
 Microsoft.AspNetCore.Components.NavigationManager.Initialize(string! baseUri, string! uri) -> void
 Microsoft.AspNetCore.Components.NavigationManager.LocationChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs!>!
+Microsoft.AspNetCore.Components.NavigationManager.LocationChanging -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs!>!
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigationManager() -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanged(bool isInterceptedLink) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanging(string! uri, bool isInterceptedLink, bool forceLoad) -> bool
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string! uri) -> string!
+Microsoft.AspNetCore.Components.NavigationManager.UpdateHasLocationChangingEventHandlers() -> void
 Microsoft.AspNetCore.Components.NavigationManager.Uri.get -> string!
 Microsoft.AspNetCore.Components.NavigationManager.Uri.set -> void
 Microsoft.AspNetCore.Components.OwningComponentBase
@@ -273,6 +276,13 @@ Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.IsNavigationIntercepted.get -> bool
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.Location.get -> string!
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.LocationChangedEventArgs(string! location, bool isNavigationIntercepted) -> void
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.Cancel.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.Cancel.set -> void
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.ForceLoad.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.IsNavigationIntercepted.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.Location.get -> string!
+Microsoft.AspNetCore.Components.Routing.LocationChangingEventArgs.LocationChangingEventArgs(string! location, bool isNavigationIntercepted, bool forceLoad) -> void
 Microsoft.AspNetCore.Components.Routing.NavigationContext
 Microsoft.AspNetCore.Components.Routing.NavigationContext.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Routing.NavigationContext.Path.get -> string!
@@ -409,6 +419,7 @@ virtual Microsoft.AspNetCore.Components.ComponentBase.OnParametersSetAsync() -> 
 virtual Microsoft.AspNetCore.Components.ComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.ComponentBase.ShouldRender() -> bool
 virtual Microsoft.AspNetCore.Components.NavigationManager.EnsureInitialized() -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.SetHasLocationChangingEventHandlers(bool value) -> bool
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void

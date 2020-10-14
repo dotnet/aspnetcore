@@ -72,3 +72,4 @@ Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage
 ~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor eventDescriptor, string eventArgsJson) -> System.Threading.Tasks.Task
 ~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanging(string uri, bool isInterceptedLink) -> bool
