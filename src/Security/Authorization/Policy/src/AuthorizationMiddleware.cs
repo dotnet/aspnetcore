@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Invokes the middleware performing authentication.
+        /// Invokes the middleware performing authorization.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         public async Task Invoke(HttpContext context)
