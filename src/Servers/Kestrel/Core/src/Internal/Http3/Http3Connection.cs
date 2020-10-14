@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : ITimeoutHandler
     {
-        public DynamicTable DynamicTable { get; set; }
+        public Http3ControlStream OutboundControlStream { get; set; }
 
         public Http3ControlStream? ControlStream { get; set; }
         public Http3ControlStream? EncoderStream { get; set; }
@@ -47,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             _multiplexedContext = context.ConnectionContext;
             _context = context;
-            DynamicTable = new DynamicTable(0);
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
@@ -198,10 +195,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            // Start other three unidirectional streams here.
+            // An endpoint MAY avoid creating an encoder stream if it's not going to
+            // be used(for example if its encoder doesn't wish to use the dynamic
+            // table, or if the maximum size of the dynamic table permitted by the
+            // peer is zero).
+
+            // An endpoint MAY avoid creating a decoder stream if its decoder sets
+            // the maximum capacity of the dynamic table to zero.
+
+            // Don't create Encoder and Decoder as they aren't used now.
             var controlTask = CreateControlStream(application);
-            var encoderTask = CreateEncoderStream(application);
-            var decoderTask = CreateDecoderStream(application);
 
             try
             {
@@ -271,39 +274,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             stream.Abort(_abortedException);
                         }
                     }
+                    else
+                    {
+                        foreach (var stream in _streams.Values)
+                        {
+                            stream.OnInputOrOutputCompleted();
+                        }
+                    }
+
+                    _inboundControlStream?.OnInputOrOutputCompleted();
+                    _inboundEncoderStream?.OnInputOrOutputCompleted();
+                    _inboundDecoderStream?.OnInputOrOutputCompleted();
                 }
 
-                ControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                EncoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                DecoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
 
                 await controlTask;
-                await encoderTask;
-                await decoderTask;
             }
         }
 
         private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            ControlStream = stream;
+            OutboundControlStream = stream;
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync();
         }
 
-        private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
-        {
-            var stream = await CreateNewUnidirectionalStreamAsync(application);
-            EncoderStream = stream;
-            await stream.SendStreamIdAsync(id: 2);
-        }
-
-        private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
-        {
-            var stream = await CreateNewUnidirectionalStreamAsync(application);
-            DecoderStream = stream;
-            await stream.SendStreamIdAsync(id: 3);
-        }
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
@@ -350,10 +347,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             lock (_sync)
             {
-                if (ControlStream != null)
+                if (OutboundControlStream != null)
                 {
                     // TODO need to await this somewhere or allow this to be called elsewhere?
-                    ControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
+                    OutboundControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
                 }
 
                 _haveSentGoAway = true;
@@ -381,6 +378,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             lock(_streams)
             {
                 _streams.Remove(streamId);
+            }
+        }
+
+        public bool SetInboundControlStream(Http3ControlStream stream)
+        {
+            lock (_sync)
+            {
+                if (_inboundControlStream == null)
+                {
+                    _inboundControlStream = stream;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public bool SetInboundEncoderStream(Http3ControlStream stream)
+        {
+            lock (_sync)
+            {
+                if (_inboundEncoderStream == null)
+                {
+                    _inboundEncoderStream = stream;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public bool SetInboundDecoderStream(Http3ControlStream stream)
+        {
+            lock (_sync)
+            {
+                if (_inboundDecoderStream == null)
+                {
+                    _inboundDecoderStream = stream;
+                    return true;
+                }
+                return false;
             }
         }
     }
