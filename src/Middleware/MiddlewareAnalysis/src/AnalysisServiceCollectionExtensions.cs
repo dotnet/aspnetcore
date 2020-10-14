@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class AnalysisServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds diagnostic services to the specified <see cref="IServiceCollection" />.
+        /// Adds diagnostic services to the specified <see cref="IServiceCollection" /> by logging to
+        /// a <see cref="System.Diagnostics.DiagnosticSource"/> when middleware starts, finishes and throws.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>

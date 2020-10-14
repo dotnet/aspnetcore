@@ -1,6 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.SignalR.ClientProxyExtensions
-Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>
+~Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>
 Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.DefaultHubLifetimeManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub!>!>! logger) -> void
 Microsoft.AspNetCore.SignalR.DefaultUserIdProvider
 Microsoft.AspNetCore.SignalR.DefaultUserIdProvider.DefaultUserIdProvider() -> void
@@ -31,7 +31,7 @@ Microsoft.AspNetCore.SignalR.Hub.Dispose() -> void
 Microsoft.AspNetCore.SignalR.Hub.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 Microsoft.AspNetCore.SignalR.Hub.Groups.set -> void
 Microsoft.AspNetCore.SignalR.Hub.Hub() -> void
-Microsoft.AspNetCore.SignalR.Hub<T>
+~Microsoft.AspNetCore.SignalR.Hub<T>
 Microsoft.AspNetCore.SignalR.Hub<T>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubCallerClients<T!>!
 Microsoft.AspNetCore.SignalR.Hub<T>.Clients.set -> void
 Microsoft.AspNetCore.SignalR.Hub<T>.Hub() -> void
@@ -54,7 +54,7 @@ Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.MaximumReceiveMessageSi
 Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.MaximumReceiveMessageSize.set -> void
 Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.StreamBufferCapacity.get -> int
 Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.StreamBufferCapacity.set -> void
-Microsoft.AspNetCore.SignalR.HubConnectionHandler<THub>
+~Microsoft.AspNetCore.SignalR.HubConnectionHandler<THub>
 Microsoft.AspNetCore.SignalR.HubConnectionStore
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Add(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection) -> void
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Count.get -> int
@@ -82,7 +82,7 @@ Microsoft.AspNetCore.SignalR.HubLifetimeContext.Context.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.SignalR.HubLifetimeContext.Hub.get -> Microsoft.AspNetCore.SignalR.Hub!
 Microsoft.AspNetCore.SignalR.HubLifetimeContext.HubLifetimeContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, System.IServiceProvider! serviceProvider, Microsoft.AspNetCore.SignalR.Hub! hub) -> void
 Microsoft.AspNetCore.SignalR.HubLifetimeContext.ServiceProvider.get -> System.IServiceProvider!
-Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>
+~Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>
 Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>.HubLifetimeManager() -> void
 Microsoft.AspNetCore.SignalR.HubMetadata
 Microsoft.AspNetCore.SignalR.HubMetadata.HubMetadata(System.Type! hubType) -> void
@@ -108,20 +108,20 @@ Microsoft.AspNetCore.SignalR.HubOptions.StreamBufferCapacity.get -> int?
 Microsoft.AspNetCore.SignalR.HubOptions.StreamBufferCapacity.set -> void
 Microsoft.AspNetCore.SignalR.HubOptions.SupportedProtocols.get -> System.Collections.Generic.IList<string!>?
 Microsoft.AspNetCore.SignalR.HubOptions.SupportedProtocols.set -> void
-Microsoft.AspNetCore.SignalR.HubOptions<THub>
+~Microsoft.AspNetCore.SignalR.HubOptions<THub>
 Microsoft.AspNetCore.SignalR.HubOptions<THub>.HubOptions() -> void
 Microsoft.AspNetCore.SignalR.HubOptionsExtensions
 Microsoft.AspNetCore.SignalR.HubOptionsSetup
 Microsoft.AspNetCore.SignalR.HubOptionsSetup.Configure(Microsoft.AspNetCore.SignalR.HubOptions! options) -> void
 Microsoft.AspNetCore.SignalR.HubOptionsSetup.HubOptionsSetup(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol!>! protocols) -> void
-Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>
+~Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>
 Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>.Configure(Microsoft.AspNetCore.SignalR.HubOptions<THub!>! options) -> void
 Microsoft.AspNetCore.SignalR.IClientProxy
 Microsoft.AspNetCore.SignalR.IClientProxy.SendCoreAsync(string! method, object?[]? args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.SignalR.IGroupManager
 Microsoft.AspNetCore.SignalR.IGroupManager.AddToGroupAsync(string! connectionId, string! groupName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.SignalR.IGroupManager.RemoveFromGroupAsync(string! connectionId, string! groupName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.SignalR.IHubActivator<THub>
+~Microsoft.AspNetCore.SignalR.IHubActivator<THub>
 Microsoft.AspNetCore.SignalR.IHubActivator<THub>.Create() -> THub!
 Microsoft.AspNetCore.SignalR.IHubActivator<THub>.Release(THub! hub) -> void
 Microsoft.AspNetCore.SignalR.IHubCallerClients
@@ -140,10 +140,10 @@ Microsoft.AspNetCore.SignalR.IHubClients<T>.GroupExcept(string! groupName, Syste
 Microsoft.AspNetCore.SignalR.IHubClients<T>.Groups(System.Collections.Generic.IReadOnlyList<string!>! groupNames) -> T
 Microsoft.AspNetCore.SignalR.IHubClients<T>.User(string! userId) -> T
 Microsoft.AspNetCore.SignalR.IHubClients<T>.Users(System.Collections.Generic.IReadOnlyList<string!>! userIds) -> T
-Microsoft.AspNetCore.SignalR.IHubContext<THub, T>
+~Microsoft.AspNetCore.SignalR.IHubContext<THub, T>
 Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients<T!>!
 Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
-Microsoft.AspNetCore.SignalR.IHubContext<THub>
+~Microsoft.AspNetCore.SignalR.IHubContext<THub>
 Microsoft.AspNetCore.SignalR.IHubContext<THub>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
 Microsoft.AspNetCore.SignalR.IHubContext<THub>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 Microsoft.AspNetCore.SignalR.IHubFilter

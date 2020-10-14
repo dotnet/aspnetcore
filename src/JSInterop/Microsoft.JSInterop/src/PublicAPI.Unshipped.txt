@@ -1,12 +1,11 @@
 #nullable enable
 Microsoft.JSInterop.DotNetObjectReference
-Microsoft.JSInterop.DotNetObjectReference<TValue>
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Dispose() -> void
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Value.get -> TValue!
 Microsoft.JSInterop.IJSInProcessObjectReference
 Microsoft.JSInterop.IJSInProcessObjectReference.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
 Microsoft.JSInterop.IJSInProcessRuntime
-Microsoft.JSInterop.IJSInProcessRuntime.Invoke<T>(string! identifier, params object?[]? args) -> T
+Microsoft.JSInterop.IJSInProcessRuntime.Invoke<TResult>(string! identifier, params object?[]? args) -> TResult
 Microsoft.JSInterop.IJSObjectReference
 Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
@@ -87,11 +86,12 @@ static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeAsync<TValue>(this 
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, System.Threading.CancellationToken cancellationToken, params object?[]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, System.TimeSpan timeout, params object?[]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, params object?[]! args) -> System.Threading.Tasks.ValueTask
-static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, params object![]! args) -> System.Threading.Tasks.ValueTask<TValue>
-static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object![]! args) -> System.Threading.Tasks.ValueTask<TValue>
-static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask<TValue>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 virtual Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson) -> string?
 virtual Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson) -> void
+~Microsoft.JSInterop.DotNetObjectReference<TValue>
