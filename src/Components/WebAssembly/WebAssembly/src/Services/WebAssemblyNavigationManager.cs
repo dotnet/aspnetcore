@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             NotifyLocationChanged(isInterceptedLink);
         }
 
-        public bool HandleLocationChanging(string uri, bool isInterceptedLink)
+        public bool HandleLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
         {
-            return NotifyLocationChanging(uri , isInterceptedLink);
+            return NotifyLocationChanging(uri , isInterceptedLink, forceLoad);
         }
 
         /// <inheritdoc />
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (forceLoad || !NotifyLocationChanging(uri, false))
+            if (!NotifyLocationChanging(uri, false, forceLoad))
             {
                 DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
             }

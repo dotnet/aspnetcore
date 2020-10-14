@@ -64,9 +64,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             NotifyLocationChanged(intercepted);
         }
 
-        public bool HandleLocationChanging(string uri, bool intercepted)
+        public bool HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
         {
-            return NotifyLocationChanging(uri, intercepted);
+            return NotifyLocationChanging(uri, intercepted, forceLoad);
         }
 
         /// <inheritdoc />
@@ -86,8 +86,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             //In serverside blazor we call the locationChanging event here to avoid an extra browser / server roundtrip
-            //When forceload is set we bypass the LocationChanging event and force the browser to load the new page from the server
-            if (forceLoad || !NotifyLocationChanging(uri, false))
+            if (!NotifyLocationChanging(uri, false, forceLoad))
             {
                 _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
             }

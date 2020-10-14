@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         [JSInvokable(nameof(NotifyLocationChanging))]
         public static bool NotifyLocationChanging(string uri, bool isInterceptedLink)
         {
-            return WebAssemblyNavigationManager.Instance.HandleLocationChanging(uri, isInterceptedLink);
+            return WebAssemblyNavigationManager.Instance.HandleLocationChanging(uri, isInterceptedLink, false);
         }
 
         /// <summary>

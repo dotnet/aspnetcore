@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     Log.LocationChanging(_logger, uri, CircuitId);
                     var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                    return navigationManager.HandleLocationChanging(uri, intercepted);
+                    return navigationManager.HandleLocationChanging(uri, intercepted, false);
                 });
             }
 

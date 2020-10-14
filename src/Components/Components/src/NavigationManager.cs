@@ -237,11 +237,11 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Triggers the <see cref="LocationChanging"/> event with the current URI value.
         /// </summary>
-        protected bool NotifyLocationChanging(string uri, bool isInterceptedLink)
+        protected bool NotifyLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
         {
             try
             {
-                var evt = new LocationChangingEventArgs(uri, isInterceptedLink);
+                var evt = new LocationChangingEventArgs(uri, isInterceptedLink, forceLoad);
                 _locationChanging?.Invoke(this, evt);
                 return evt.Cancel;
             }

@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="isNavigationIntercepted">A value that determines if navigation for the link was intercepted.</param>
-        public LocationChangingEventArgs(string location, bool isNavigationIntercepted)
+        /// <param name="forceLoad">A value that shows if the forceLoad flag was set during a call to <see cref="NavigationManager.NavigateTo" /> </param>
+        public LocationChangingEventArgs(string location, bool isNavigationIntercepted, bool forceLoad)
         {
             Location = location;
             IsNavigationIntercepted = isNavigationIntercepted;
+            ForceLoad = forceLoad;
         }
 
         /// <summary>
@@ -30,6 +32,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets a value that determines if navigation for the link was intercepted.
         /// </summary>
         public bool IsNavigationIntercepted { get; }
+
+        /// <summary>
+        /// Gets a value if the Forceload flag was set during a call to <see cref="NavigationManager.NavigateTo" /> 
+        /// </summary>
+        public bool ForceLoad { get; }
 
         /// <summary>
         /// Gets or sets a value to cancel the current navigation
