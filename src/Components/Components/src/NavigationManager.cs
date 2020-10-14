@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class NavigationManager
     {
-        private bool _hasLocationChangingListeners;
-
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
@@ -41,17 +39,19 @@ namespace Microsoft.AspNetCore.Components
             {
                 AssertInitialized();
                 _locationChanging += value;
-                UpdateHasLocationChangingListeners(true);
+                UpdateHasLocationChangingEventHandlers();
             }
             remove
             {
                 AssertInitialized();
                 _locationChanging -= value;
-                UpdateHasLocationChangingListeners(_locationChanging != null);
+                UpdateHasLocationChangingEventHandlers();
             }
         }
 
         private EventHandler<LocationChangingEventArgs>? _locationChanging;
+
+        private bool _hasLocationChangingEventHandlers;
 
         // For the baseUri it's worth storing as a System.Uri so we can do operations
         // on that type. System.Uri gives us access to the original string anyway.
@@ -255,17 +255,28 @@ namespace Microsoft.AspNetCore.Components
         /// Called when <see cref="LocationChanging"/> the fact that any event handlers are present or not changes.
         /// this can be used by descendants to inform the JSRuntime that there are locationchanging event handlers
         /// </summary>
-        /// <param name="value">true if there are eventhandlers</param>
-        protected virtual void SetHasLocationChangingListeners(bool value)
+        /// <param name="value">true if there are event handlers</param>
+        /// <returns>true when the navigation subsystem could be informed that we have event handlers</returns>
+        protected virtual bool SetHasLocationChangingEventHandlers(bool value)
         {
+            return true;
         }
 
-        private void UpdateHasLocationChangingListeners(bool value)
+        /// <summary>
+        /// Calls <see cref="SetHasLocationChangingEventHandlers"/> when needed
+        /// This function is normally called when event handlers are added or removed from <see cref="LocationChanging"/>
+        /// </summary>
+        protected void UpdateHasLocationChangingEventHandlers()
         {
-            if (_hasLocationChangingListeners != value)
+            var value = _locationChanging != null;
+            if (_hasLocationChangingEventHandlers != value)
             {
-                _hasLocationChangingListeners = value;
-                SetHasLocationChangingListeners(value);
+                //If SetHasLocationChangingEventHandlers returns false, we won't update the _hasLocationChangingEventHandlers.
+                //This way we can call this function again at a later time (for example when JSRuntime is initialized, See RemoteNavigationManager)
+                if (SetHasLocationChangingEventHandlers(value))
+                {
+                    _hasLocationChangingEventHandlers = value;
+                }
             }
         }
 

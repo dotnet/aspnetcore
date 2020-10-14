@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 throw new InvalidOperationException("JavaScript runtime already initialized.");
             }
-
             _jsRuntime = jsRuntime;
+            UpdateHasLocationChangingEventHandlers();
         }
 
         public void NotifyLocationChanged(string uri, bool intercepted)
@@ -98,9 +98,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
-        protected override void SetHasLocationChangingListeners(bool value)
+        protected override bool SetHasLocationChangingEventHandlers(bool value)
         {
             _jsRuntime?.InvokeAsync<object>(Interop.SetHasLocationChangingListeners, value);
+            return _jsRuntime != null;
         }
 
         private static class Log

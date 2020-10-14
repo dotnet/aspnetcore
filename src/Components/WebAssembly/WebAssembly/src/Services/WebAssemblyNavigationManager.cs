@@ -47,9 +47,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         /// <inheritdoc />
-        protected override void SetHasLocationChangingListeners(bool value)
+        protected override bool SetHasLocationChangingEventHandlers(bool value)
         {
             DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.SetHasLocationChangingListeners, value);
+            return true;
         }
     }
 }
