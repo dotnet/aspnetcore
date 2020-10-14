@@ -1,4 +1,4 @@
-FROM selenium/standalone-chrome:3.141.59-mercury as final
+FROM selenium/standalone-chrome:latest as final
 
 ENV StressRunDuration=0
 
