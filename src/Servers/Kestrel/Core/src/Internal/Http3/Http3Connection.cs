@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _aborted;
         private ConnectionAbortedException _abortedException = null;
         private readonly object _protocolSelectionLock = new object();
-        private readonly CancellationTokenSource _connectionAborted;
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
 
@@ -48,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
-            _connectionAborted = new CancellationTokenSource();
 
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
@@ -72,8 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
+        public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
-        public Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
+        public async Task ProcessStreamsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
             try
             {
@@ -99,14 +98,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
 
-                return InnerProcessStreamsAsync(httpApplication);
+                await InnerProcessStreamsAsync(httpApplication);
             }
             catch (Exception ex)
             {
                 Log.LogCritical(0, ex, $"Unexpected exception in {nameof(Http3Connection)}.{nameof(ProcessStreamsAsync)}.");
             }
-
-            return Task.CompletedTask;
         }
 
         public void StopProcessingStreams()
@@ -117,10 +114,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            if (!previousState)
-            {
-                _connectionAborted.Cancel();
-            }
+            // send goaway
+            SendGoAway();
         }
 
         public void OnConnectionClosed()
@@ -131,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
+            // IDK what to actually do here yet.
             // TODO figure out how to gracefully close next requests
         }
 
@@ -146,7 +142,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
-                InnerAbort(ex);
+                _abortedException = ex;
+                SendGoAway();
             }
         }
 
@@ -168,25 +165,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             // In the cases that don't log directly here, we expect the setter of the timeout to also be the input
             // reader, so when the read is canceled or aborted, the reader should write the appropriate log.
+
+            // TODO what timeouts should we handle here? Is keep alive something we should care about?
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    StopProcessingStreams();
+                    SendGoAway();
+                    break;
+                case TimeoutReason.TimeoutFeature:
+                    SendGoAway();
                     break;
                 case TimeoutReason.RequestHeaders:
-                    HandleRequestHeadersTimeout();
-                    break;
                 case TimeoutReason.ReadDataRate:
-                    HandleReadDataRateTimeout();
-                    break;
                 case TimeoutReason.WriteDataRate:
-                    Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, "" /*TraceIdentifier*/); // TODO trace identifier.
-                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
-                    break;
                 case TimeoutReason.RequestBodyDrain:
-                case TimeoutReason.TimeoutFeature:
-                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
-                    break;
                 default:
                     Debug.Assert(false, "Invalid TimeoutReason");
                     break;
@@ -206,13 +198,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Don't create Encoder and Decoder as they aren't used now.
             var controlTask = CreateControlStream(application);
 
+            _timeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+
             try
             {
                 while (true)
                 {
-                    var streamContext = await _multiplexedContext.AcceptAsync(_connectionAborted.Token);
-                    if (streamContext == null || _haveSentGoAway)
+                    var streamContext = await _multiplexedContext.AcceptAsync();
+
+                    if (streamContext == null)
                     {
+                        // Done accepting streams.
                         break;
                     }
 
@@ -237,14 +233,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     if (!quicStreamFeature.CanWrite)
                     {
+                        lock (_sync)
+                        {
+                            // Goaway has already been sent, don't accept new control streams.
+                            if (_haveSentGoAway)
+                            {
+                                continue;
+                            }
+                        }
                         // Unidirectional stream
                         var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                     else
                     {
-                        // Keep track of highest stream id seen for GOAWAY
+
                         var streamId = streamIdFeature.StreamId;
+
+                        lock (_sync)
+                        {
+                            // Goaway has already been sent and stream id is higher than highest streamid.
+                            // Don't accept stream
+                            if (_haveSentGoAway && streamId > HighestStreamId)
+                            {
+                                continue;
+                            }
+                        }
+
                         HighestStreamId = streamId;
 
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
@@ -324,27 +339,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
         }
 
-        public void HandleRequestHeadersTimeout()
+        private void SendGoAway()
         {
-        }
-
-        public void HandleReadDataRateTimeout()
-        {
-        }
-
-        public void OnInputOrOutputCompleted()
-        {
-            // TODO poison streams?
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
-        }
-
-        private void InnerAbort(ConnectionAbortedException ex)
-        {
-            _abortedException = ex;
-
             lock (_sync)
             {
                 if (OutboundControlStream != null)
@@ -354,13 +350,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
 
                 _haveSentGoAway = true;
-                _connectionAborted.Cancel();
             }
         }
 
         public void ApplyMaxHeaderListSize(long value)
         {
-            // TODO something here to call OnHeader?
         }
 
         internal void ApplyBlockedStream(long value)
@@ -375,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal void RemoveStream(long streamId)
         {
-            lock(_streams)
+            lock (_streams)
             {
                 _streams.Remove(streamId);
             }
