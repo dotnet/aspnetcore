@@ -45,6 +45,7 @@ namespace Templates.Test.Helpers
             bool usePublishedAppHost = false,
             ILogger logger = null)
         {
+            var manager = CertificateManager.Instance.CleanupHttpsCertificates();
             _developmentCertificate = DevelopmentCertificate.Create(workingDirectory);
 
             _output = output;
