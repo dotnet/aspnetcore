@@ -4,14 +4,11 @@ const currentBrowserIsChrome = (window as any).chrome
   && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
 
 
-let hasReferencedPdbs = false;
-
 export function hasDebuggingEnabled() {
-  return hasReferencedPdbs && currentBrowserIsChrome;
+  return currentBrowserIsChrome;
 }
 
 export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
-  hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
 
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
@@ -23,9 +20,7 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) 
   // Even if debugging isn't enabled, we register the hotkey so we can report why it's not enabled
   document.addEventListener('keydown', evt => {
     if (evt.shiftKey && (evt.metaKey || evt.altKey) && evt.code === 'KeyD') {
-      if (!hasReferencedPdbs) {
-        console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
-      } else if (!currentBrowserIsChrome) {
+      if (!currentBrowserIsChrome) {
         console.error('Currently, only Microsoft Edge (80+), or Google Chrome, are supported for debugging.');
       } else {
         launchDebugger();
