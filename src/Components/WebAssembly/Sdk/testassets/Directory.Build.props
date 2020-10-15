@@ -13,7 +13,6 @@
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
 
     <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
-    <TargetTFM>net6.0</TargetTFM>
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'AspNetCore.sln'))\</RepoRoot>
 
     <RazorSdkCurrentVersionProps>$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(TargetTFM)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
