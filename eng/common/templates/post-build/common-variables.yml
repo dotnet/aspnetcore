@@ -29,14 +29,6 @@ variables:
   - name: NetCore_3_Tools_Channel_Id
     value: 344
 
-  # .NET Core 3.0 Internal Servicing
-  - name: InternalServicing_30_Channel_Id
-    value: 184
-
-  # .NET Core 3.0 Release
-  - name: PublicRelease_30_Channel_Id
-    value: 19
-
   # .NET Core 3.1 Release
   - name: PublicRelease_31_Channel_Id
     value: 129
