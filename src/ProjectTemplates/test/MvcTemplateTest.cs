@@ -40,7 +40,7 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("cert failure", Queues = "All.OSX") ]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
