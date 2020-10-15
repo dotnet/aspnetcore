@@ -435,8 +435,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("System.Text.Json.dll", assemblies);
 
             // No pdbs
-            // Testing this requires an update to the SDK in this repo. Re-enabling tracked via https://github.com/dotnet/aspnetcore/issues/25135
-            // Assert.Null(bootJsonData.resources.pdb);
+            Assert.Null(bootJsonData.resources.pdb);
             Assert.Null(bootJsonData.resources.satelliteResources);
 
             Assert.Contains("appsettings.json", bootJsonData.config);
