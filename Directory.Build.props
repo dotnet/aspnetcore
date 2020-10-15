@@ -93,6 +93,7 @@
       the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
     -->
     <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
+    <TargetTFM>net6.0</TargetTFM>
     <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
