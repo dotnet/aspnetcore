@@ -1,7 +1,7 @@
 <Project>
 <!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository -->
   <PropertyGroup>
-    <TargetFramework>$(TargetTFM)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
   <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\net6.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
 
