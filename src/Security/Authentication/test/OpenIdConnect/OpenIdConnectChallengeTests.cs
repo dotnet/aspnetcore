@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OpenIdConnectParameterNames.Scope,
                 OpenIdConnectParameterNames.RedirectUri);
 
-            var actual = res.Headers.Location.Query.Trim('?').Split('&').Single(seg => seg.StartsWith($"{OpenIdConnectParameterNames.ClientId}="));
+            var actual = res.Headers.Location.Query.Trim('?').Split('&').Single(seg => seg.StartsWith($"{OpenIdConnectParameterNames.ClientId}=", StringComparison.Ordinal));
             Assert.Equal($"{OpenIdConnectParameterNames.ClientId}={newClientId}", actual);
         }
 

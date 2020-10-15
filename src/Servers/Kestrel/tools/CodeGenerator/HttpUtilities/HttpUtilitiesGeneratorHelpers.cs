@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -175,13 +176,13 @@ namespace CodeGenerator.HttpUtilities
             int i = 0;
             for (; i < array.Length - 1; i++)
             {
-                result.AppendFormat("{0}{1:x2}", prefix, array[i]);
+                result.AppendFormat(CultureInfo.InvariantCulture, "{0}{1:x2}", prefix, array[i]);
                 result.Append(separator);
             }
 
             if (array.Length > 0)
             {
-                result.AppendFormat("{0}{1:x2}", prefix, array[i]);
+                result.AppendFormat(CultureInfo.InvariantCulture, "{0}{1:x2}", prefix, array[i]);
             }
 
             return result.ToString();
@@ -191,7 +192,7 @@ namespace CodeGenerator.HttpUtilities
         {
             var maskSizeInBIts = Math.Log(mask, 2);
             var hexMaskSize = Math.Ceiling(maskSizeInBIts / 4.0);
-            return string.Format("0x{0:X" + hexMaskSize + "}", mask);
+            return string.Format(CultureInfo.InvariantCulture, "0x{0:X" + hexMaskSize + "}", mask);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,7 +212,7 @@ namespace CodeGenerator.HttpUtilities
             var maskSizeInBIts = Math.Log(mask, 2);
             var hexMaskSize = (byte)Math.Ceiling(maskSizeInBIts / 4);
 
-            return string.Format("0x{0:X" + (hexMaskSize == 0 ? 1 : hexMaskSize) + "}", mask);
+            return string.Format(CultureInfo.InvariantCulture, "0x{0:X" + (hexMaskSize == 0 ? 1 : hexMaskSize) + "}", mask);
         }
     }
 }

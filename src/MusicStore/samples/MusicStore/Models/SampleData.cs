@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -112,7 +113,7 @@ namespace MusicStore.Models
             {
                 for (int i = 0; i < 100; ++i)
                 {
-                    var email = string.Format("User{0:D3}@example.com", i);
+                    var email = string.Format(CultureInfo.InvariantCulture, "User{0:D3}@example.com", i);
                     var normalUser = await userManager.FindByEmailAsync(email);
                     if (normalUser == null)
                     {

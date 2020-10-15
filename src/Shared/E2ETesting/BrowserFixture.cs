@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             DriverOptions options;
 
-            switch (sauce.BrowserName.ToLower())
+            switch (sauce.BrowserName.ToLowerInvariant())
             {
                 case "chrome":
                     options = new ChromeOptions();

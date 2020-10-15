@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.TestHost
                     request.Host = new HostString(request.Host.Host);
                 }
                 var pathBase = PathString.FromUriComponent(BaseAddress);
-                if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+                if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
                 {
                     pathBase = new PathString(pathBase.Value[..^1]); // All but the last character.
                 }

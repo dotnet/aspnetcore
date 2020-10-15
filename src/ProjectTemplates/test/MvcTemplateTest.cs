@@ -324,7 +324,7 @@ namespace Templates.Test
 
         private async Task<Project> MvcTemplateBuildsAndPublishes(string auth, string[] args)
         {
-            var project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+            var project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
 
             var createResult = await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

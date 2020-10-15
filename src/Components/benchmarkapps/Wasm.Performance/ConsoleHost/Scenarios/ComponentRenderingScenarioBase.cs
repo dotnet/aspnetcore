@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,7 @@ namespace Wasm.Performance.ConsoleHost.Scenarios
 
             OnExecute(() =>
             {
-                var numCycles = cyclesOption.HasValue() ? int.Parse(cyclesOption.Value()) : 1;
+                var numCycles = cyclesOption.HasValue() ? int.Parse(cyclesOption.Value(), CultureInfo.InvariantCulture) : 1;
 
                 var serviceCollection = new ServiceCollection();
                 PopulateServiceCollection(serviceCollection);

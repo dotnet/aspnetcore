@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Html
         public void HtmlFormattableString_UsesCurrentCulture()
         {
             // Arrange
-            var formattableString = new HtmlFormattableString("{0:D}", DateTime.Parse("01/02/2015"));
+            var formattableString = new HtmlFormattableString("{0:D}", new DateTime(2015, 02, 01));
 
             // Act
             var result = HtmlContentToString(formattableString);

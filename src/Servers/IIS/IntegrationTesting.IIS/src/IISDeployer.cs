@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     .GetOrAdd("aspNetCore");
 
                 // Expand path to dotnet because IIS process would not inherit PATH variable
-                if (aspNetCore.Attribute("processPath")?.Value.StartsWith("dotnet") == true)
+                if (aspNetCore.Attribute("processPath")?.Value.StartsWith("dotnet", StringComparison.Ordinal) == true)
                 {
                     aspNetCore.SetAttributeValue("processPath", DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture));
                 }
