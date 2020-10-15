@@ -210,9 +210,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
 
             byte[] value = null;
-            TimeSpan? slidingExpiration = null;
-            DateTimeOffset? absoluteExpiration = null;
-            DateTimeOffset expirationTime;
             using (var connection = new SqlConnection(ConnectionString))
             using (var command = new SqlCommand(query, connection))
             {
@@ -227,22 +224,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 {
                     if (reader.Read())
                     {
-                        var id = reader.GetFieldValue<string>(Columns.Indexes.CacheItemIdIndex);
-
-                        expirationTime = reader.GetFieldValue<DateTimeOffset>(Columns.Indexes.ExpiresAtTimeIndex);
-
-                        if (!reader.IsDBNull(Columns.Indexes.SlidingExpirationInSecondsIndex))
-                        {
-                            slidingExpiration = TimeSpan.FromSeconds(
-                                reader.GetFieldValue<long>(Columns.Indexes.SlidingExpirationInSecondsIndex));
-                        }
-
-                        if (!reader.IsDBNull(Columns.Indexes.AbsoluteExpirationIndex))
-                        {
-                            absoluteExpiration = reader.GetFieldValue<DateTimeOffset>(
-                                Columns.Indexes.AbsoluteExpirationIndex);
-                        }
-
                         if (includeValue)
                         {
                             value = reader.GetFieldValue<byte[]>(Columns.Indexes.CacheItemValueIndex);
@@ -275,9 +256,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
 
             byte[] value = null;
-            TimeSpan? slidingExpiration = null;
-            DateTimeOffset? absoluteExpiration = null;
-            DateTimeOffset expirationTime;
             using (var connection = new SqlConnection(ConnectionString))
             using (var command = new SqlCommand(query, connection))
             {
@@ -293,24 +271,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 {
                     if (await reader.ReadAsync(token).ConfigureAwait(false))
                     {
-                        var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token).ConfigureAwait(false);
-
-                        expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
-                            Columns.Indexes.ExpiresAtTimeIndex, token).ConfigureAwait(false);
-
-                        if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false))
-                        {
-                            slidingExpiration = TimeSpan.FromSeconds(
-                                await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false));
-                        }
-
-                        if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token).ConfigureAwait(false))
-                        {
-                            absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
-                                Columns.Indexes.AbsoluteExpirationIndex,
-                                token).ConfigureAwait(false);
-                        }
-
                         if (includeValue)
                         {
                             value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token).ConfigureAwait(false);

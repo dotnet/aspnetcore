@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         "AND (AbsoluteExpiration IS NULL OR AbsoluteExpiration <> ExpiresAtTime) ;";
 
         private const string GetCacheItemFormat =
-            "SELECT Id, ExpiresAtTime, SlidingExpirationInSeconds, AbsoluteExpiration, Value " +
+            "SELECT Value " +
             "FROM {0} WHERE Id = @Id AND @UtcNow <= ExpiresAtTime;";
 
         private const string SetCacheItemFormat =
