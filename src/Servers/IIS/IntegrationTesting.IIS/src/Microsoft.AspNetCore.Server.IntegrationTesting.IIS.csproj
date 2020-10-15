@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
     <Description>Provides support for integration testing using IIS based servers.</Description>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>

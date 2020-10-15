@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             Navigate("/multiple-components");
 
+            Browser.Exists(By.CssSelector(".greet-wrapper .greet"));
             var greets = Browser.FindElements(By.CssSelector(".greet-wrapper .greet")).Select(e => e.Text).ToArray();
 
             Assert.Equal(7, greets.Length); // 1 statically rendered + 5 prerendered + 1 server prerendered
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Single(greets, "Hello Abraham");
             Assert.Equal(2, greets.Where(g => g == "Hello Blue fish").Count());
             Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 server prerendered without parameters
-            var content = Browser.FindElement(By.Id("test-container")).GetAttribute("innerHTML");
+            var content = Browser.Exists(By.Id("test-container")).GetAttribute("innerHTML");
             var markers = ReadMarkers(content);
             var componentSequence = markers.Select(m => m.Item1.PrerenderId != null).ToArray();
             var expectedComponentSequence = new bool[]
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private void BeginInteractivity()
         {
-            Browser.FindElement(By.Id("load-boot-script")).Click();
+            Browser.Exists(By.Id("load-boot-script")).Click();
         }
     }
 }

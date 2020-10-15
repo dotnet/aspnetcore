@@ -44,6 +44,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public RequestDelegate RequestDelegate { get; }
 
+        /// <summary>
+        /// Returns a string representation of the endpoint.
+        /// </summary>
         public override string? ToString() => DisplayName ?? base.ToString();
     }
 }

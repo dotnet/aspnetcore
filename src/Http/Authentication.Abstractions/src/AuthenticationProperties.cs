@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -122,10 +121,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Set a string value in the <see cref="Items"/> collection.
+        /// Set or remove a string value from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
         public void SetString(string key, string? value)
         {
             if (value != null)
@@ -157,10 +156,10 @@ namespace Microsoft.AspNetCore.Authentication
             => Parameters[key] = value;
 
         /// <summary>
-        /// Get a bool value from the <see cref="Items"/> collection.
+        /// Get a nullable <see cref="bool"/> from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
+        /// <returns>Retrieved value or <see langword="null" /> if the property is not set.</returns>
         protected bool? GetBool(string key)
         {
             if (Items.TryGetValue(key, out var value) && bool.TryParse(value, out var boolValue))
@@ -171,10 +170,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Set a bool value in the <see cref="Items"/> collection.
+        /// Set or remove a <see cref="bool"/> value in the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
         protected void SetBool(string key, bool? value)
         {
             if (value.HasValue)
@@ -188,10 +187,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Get a DateTimeOffset value from the <see cref="Items"/> collection.
+        /// Get a nullable <see cref="DateTimeOffset"/> value from the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
+        /// <returns>Retrieved value or <see langword="null" /> if the property is not set.</returns>
         protected DateTimeOffset? GetDateTimeOffset(string key)
         {
             if (Items.TryGetValue(key, out var value)
@@ -203,10 +202,10 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Set a DateTimeOffset value in the <see cref="Items"/> collection.
+        /// Sets or removes a <see cref="DateTimeOffset" /> value in the <see cref="Items"/> collection.
         /// </summary>
         /// <param name="key">Property key.</param>
-        /// <param name="value">Value to set or <c>null</c> to remove the property.</param>
+        /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
         protected void SetDateTimeOffset(string key, DateTimeOffset? value)
         {
             if (value.HasValue)

@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void WebAssemblyConfiguration_Works()
         {
             // Verify values from the default 'appsettings.json' are read.

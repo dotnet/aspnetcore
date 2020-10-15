@@ -7,12 +7,19 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// A <see cref="IDataSerializer{TModel}"/> for <see cref="AuthenticationProperties"/>.
+    /// </summary>
     public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     {
         private const int FormatVersion = 1;
 
+        /// <summary>
+        /// Gets the default instance of <see cref="PropertiesSerializer"/>.
+        /// </summary>
         public static PropertiesSerializer Default { get; } = new PropertiesSerializer();
 
+        /// <inheritdoc />
         public virtual byte[] Serialize(AuthenticationProperties model)
         {
             using (var memory = new MemoryStream())
@@ -26,6 +33,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <inheritdoc />
         public virtual AuthenticationProperties? Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
@@ -37,6 +45,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <inheritdoc />
         public virtual void Write(BinaryWriter writer, AuthenticationProperties properties)
         {
             if (writer == null)
@@ -59,6 +68,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <inheritdoc />
         public virtual AuthenticationProperties? Read(BinaryReader reader)
         {
             if (reader == null)

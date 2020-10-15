@@ -12,12 +12,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
+    /// <summary>
+    /// Middleware that exposes a health checks response with a URL endpoint.
+    /// </summary>
     public class HealthCheckMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly HealthCheckOptions _healthCheckOptions;
         private readonly HealthCheckService _healthCheckService;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="HealthCheckMiddleware"/>.
+        /// </summary>
         public HealthCheckMiddleware(
             RequestDelegate next,
             IOptions<HealthCheckOptions> healthCheckOptions,

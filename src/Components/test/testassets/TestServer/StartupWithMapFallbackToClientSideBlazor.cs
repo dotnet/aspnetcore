@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,10 @@ namespace TestServer
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var enUs = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = enUs;
+            CultureInfo.DefaultThreadCurrentUICulture = enUs;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

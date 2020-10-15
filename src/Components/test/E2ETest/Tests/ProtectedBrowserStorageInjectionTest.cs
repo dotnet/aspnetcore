@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void ThrowsWhenInjectingProtectedLocalStorageIfAndOnlyIfWebAssembly()
         {
-            var messageElement = Browser.FindElement(By.Id("message"));
-            var injectLocalButton = Browser.FindElement(By.Id("inject-local"));
+            var messageElement = Browser.Exists(By.Id("message"));
+            var injectLocalButton = Browser.Exists(By.Id("inject-local"));
 
             Browser.Equal("Waiting for injection...", () => messageElement.Text);
 
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void ThrowsWhenInjectingProtectedSessionStorageIfAndOnlyIfWebAssembly()
         {
-            var messageElement = Browser.FindElement(By.Id("message"));
-            var injectSessionButton = Browser.FindElement(By.Id("inject-session"));
+            var messageElement = Browser.Exists(By.Id("message"));
+            var injectSessionButton = Browser.Exists(By.Id("inject-session"));
 
             Browser.Equal("Waiting for injection...", () => messageElement.Text);
 

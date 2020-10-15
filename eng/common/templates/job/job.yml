@@ -204,12 +204,22 @@ jobs:
 
   - ${{ if eq(parameters.enablePublishTestResults, 'true') }}:
     - task: PublishTestResults@2
-      displayName: Publish Test Results
+      displayName: Publish XUnit Test Results
       inputs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
+        mergeTestResults: ${{ parameters.mergeTestResults }}
+      continueOnError: true
+      condition: always()
+    - task: PublishTestResults@2
+      displayName: Publish TRX Test Results
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '*.trx' 
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()

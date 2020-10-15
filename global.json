@@ -30,7 +30,7 @@
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.15.2",
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20474.4",
-    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20474.4"
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20506.7",
+    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20506.7"
   }
 }

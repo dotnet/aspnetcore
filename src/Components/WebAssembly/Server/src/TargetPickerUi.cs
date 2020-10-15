@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server
 {
+    /// <summary>
+    /// Class for the target picker ui.
+    /// </summary>
     public class TargetPickerUi
     {
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
@@ -27,12 +30,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         private string _browserHost;
         private string _debugProxyUrl;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="TargetPickerUi"/>.
+        /// </summary>
+        /// <param name="debugProxyUrl">The debug proxy url.</param>
+        /// <param name="devToolsHost">The dev tools host.</param>
         public TargetPickerUi(string debugProxyUrl, string devToolsHost)
         {
             _debugProxyUrl = debugProxyUrl;
             _browserHost = devToolsHost;
         }
 
+        /// <summary>
+        /// Display the ui.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <returns>The <see cref="Task"/>.</returns>
         public async Task Display(HttpContext context)
         {
             context.Response.ContentType = "text/html";

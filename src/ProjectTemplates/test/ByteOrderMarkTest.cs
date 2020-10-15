@@ -5,18 +5,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class ByteOrderMarkTest
+    public class ByteOrderMarkTest : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public ByteOrderMarkTest(ITestOutputHelper output)
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
         {
-            _output = output;
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
+
+        public ByteOrderMarkTest()
+        {
         }
 
         [Theory]
@@ -43,13 +55,13 @@ namespace Templates.Test
                 // Check for UTF8 BOM 0xEF,0xBB,0xBF
                 if (bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
                 {
-                    _output.WriteLine($"File {filePath} has UTF-8 BOM characters.");
+                    Output.WriteLine($"File {filePath} has UTF-8 BOM characters.");
                     filesWithBOMCharactersPresent = true;
                 }
                 // Check for UTF16 BOM 0xFF, 0xFE
                 if (bytes[0] == 0xFF && bytes[1] == 0xFE)
                 {
-                    _output.WriteLine($"File {filePath} has UTF-16 BOM characters.");
+                    Output.WriteLine($"File {filePath} has UTF-16 BOM characters.");
                     filesWithBOMCharactersPresent = true;
                 }
             }
@@ -83,7 +95,7 @@ namespace Templates.Test
                 var expectedBytes = Encoding.UTF8.GetPreamble();
                 if (bytes[0] != expectedBytes[0] || bytes[1] != expectedBytes[1] || bytes[2] != expectedBytes[2])
                 {
-                    _output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
+                    Output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
                     nonBOMFilesPresent = true;
                 }
             }

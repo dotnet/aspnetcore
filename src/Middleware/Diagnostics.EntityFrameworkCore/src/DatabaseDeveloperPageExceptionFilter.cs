@@ -16,17 +16,33 @@ using Microsoft.Extensions.Options;
 #nullable enable
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
+    /// <summary>
+    /// An <see cref="IDeveloperPageExceptionFilter"/> that captures database-related exceptions that can be resolved by using Entity Framework migrations.
+    /// When these exceptions occur, an HTML response with details about possible actions to resolve the issue is generated.
+    /// </summary>
+    /// <remarks>
+    /// This should only be enabled in the Development environment. 
+    /// </remarks>
     public sealed class DatabaseDeveloperPageExceptionFilter : IDeveloperPageExceptionFilter
     {
         private readonly ILogger _logger;
         private readonly DatabaseErrorPageOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DatabaseDeveloperPageExceptionFilter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="options">The <see cref="IOptions{DatabaseErrorPageOptions}"/>.</param>
         public DatabaseDeveloperPageExceptionFilter(ILogger<DatabaseDeveloperPageExceptionFilter> logger, IOptions<DatabaseErrorPageOptions> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
+        /// <summary>
+        /// Handle <see cref="DbException"/> errors and output an HTML response with additional details.
+        /// </summary>
+        /// <inheritdoc />
         public async Task HandleExceptionAsync(ErrorContext errorContext, Func<ErrorContext, Task> next)
         {
             if (!(errorContext.Exception is DbException))

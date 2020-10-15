@@ -426,6 +426,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 ModelAttributes.GetAttributesForType(key.ModelType));
         }
 
+        /// <summary>
+        /// Creates the <see cref="DefaultMetadataDetails"/> entry for a parameter <see cref="Type"/>.
+        /// </summary>
+        /// <param name="key">
+        /// The <see cref="ModelMetadataIdentity"/> identifying the parameter <see cref="Type"/>.
+        /// </param>
+        /// <returns>A details object for the parameter.</returns>
         protected virtual DefaultMetadataDetails CreateParameterDetails(ModelMetadataIdentity key)
         {
             return new DefaultMetadataDetails(

@@ -15,6 +15,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
+    /// <summary>
+    /// Implementation for the cookie-based authentication handler.
+    /// </summary>
     public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
     {
         private const string HeaderValueNoCache = "no-cache";
@@ -32,6 +35,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         private Task<AuthenticateResult>? _readCookieTask;
         private AuthenticationTicket? _refreshTicket;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookieAuthenticationHandler"/>.
+        /// </summary>
+        /// <param name="options">Accessor to <see cref="CookieAuthenticationOptions"/>.</param>
+        /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -46,6 +56,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             set { base.Events = value; }
         }
 
+        /// <inheritdoc />
         protected override Task InitializeHandlerAsync()
         {
             // Cookies needs to finish the response
@@ -169,6 +180,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return AuthenticateResult.Success(ticket);
         }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var result = await EnsureCookieTicket();
@@ -203,6 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return cookieOptions;
         }
 
+        /// <inheritdoc />
         protected virtual async Task FinishResponseAsync()
         {
             // Only renew if requested, and neither sign in or sign out was called
@@ -254,6 +267,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
+        /// <inheritdoc />
         protected async override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             if (user == null)
@@ -346,6 +360,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Logger.AuthenticationSchemeSignedIn(Scheme.Name);
         }
 
+        /// <inheritdoc />
         protected async override Task HandleSignOutAsync(AuthenticationProperties? properties)
         {
             properties = properties ?? new AuthenticationProperties();
@@ -426,6 +441,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return path[0] == '/' && path[1] != '/' && path[1] != '\\';
         }
 
+        /// <inheritdoc />
         protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             var returnUrl = properties.RedirectUri;
@@ -438,6 +454,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             await Events.RedirectToAccessDenied(redirectContext);
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             var redirectUri = properties.RedirectUri;

@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 // We're calling this here for the side-effect of converting from properties
                 // to array. We need to create the array even if we just set an existing value since
-                // property storage is immutable. 
+                // property storage is immutable.
                 EnsureCapacity(_count);
 
                 var index = FindIndex(key);
@@ -661,11 +661,16 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
+        /// <inheritdoc />
         public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
         {
             private readonly RouteValueDictionary _dictionary;
             private int _index;
 
+            /// <summary>
+            /// Instantiates a new enumerator with the values provided in <paramref name="dictionary"/>.
+            /// </summary>
+            /// <param name="dictionary">A <see cref="RouteValueDictionary"/>.</param>
             public Enumerator(RouteValueDictionary dictionary)
             {
                 if (dictionary == null)
@@ -679,15 +684,20 @@ namespace Microsoft.AspNetCore.Routing
                 _index = 0;
             }
 
+            /// <inheritdoc />
             public KeyValuePair<string, object?> Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
+            /// <summary>
+            /// Releases resources used by the <see cref="Enumerator"/>.
+            /// </summary>
             public void Dispose()
             {
             }
 
             // Similar to the design of List<T>.Enumerator - Split into fast path and slow path for inlining friendliness
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -721,6 +731,7 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 Current = default;

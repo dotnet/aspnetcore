@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = TestData.GetDefaultNetCoreTargetFramework();
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
@@ -106,7 +108,7 @@ namespace Microsoft.AspNetCore
         {
             var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
 
-            var target = $".NETCoreApp,Version=v{TestData.GetSharedFxVersion().Substring(0, 3)}/{_expectedRid}";
+            var target = $".NETCoreApp,Version=v{_expectedTfm.Substring(3)}/{_expectedRid}";
             var ridPackageId = $"Microsoft.AspNetCore.App.Runtime.{_expectedRid}";
             var libraryId = $"{ridPackageId}/{TestData.GetTestDataValue("RuntimePackageVersion")}";
 
@@ -208,6 +210,106 @@ namespace Microsoft.AspNetCore
             Assert.Equal(2, lines.Length);
             Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
             Assert.Equal(TestData.GetTestDataValue("RuntimePackageVersion"), lines[1]);
+        }
+
+        [Fact]
+        public void RuntimeListListsContainsCorrectEntries()
+        {
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+            var expectedAssemblies = TestData.GetSharedFxDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            AssertEx.FileExists(runtimeListPath);
+
+            var runtimeListDoc = XDocument.Load(runtimeListPath);
+            var runtimeListEntries = runtimeListDoc.Root.Descendants();
+
+            _output.WriteLine("==== file contents ====");
+            _output.WriteLine(string.Join('\n', runtimeListEntries.Select(i => i.Attribute("Path").Value).OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
+
+             var actualAssemblies = runtimeListEntries
+                .Select(i =>
+                {
+                    var filePath = i.Attribute("Path").Value;
+                    var fileParts = filePath.Split('/');
+                    var fileName = fileParts[fileParts.Length - 1];
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                        ? fileName.Substring(0, fileName.Length - 4)
+                        : fileName;
+                })
+                .ToHashSet();
+
+            var missing = expectedAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(expectedAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the runtime list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the runtime list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
+
+            Assert.All(runtimeListEntries, i =>
+            {
+                var assemblyType = i.Attribute("Type").Value;
+                var assemblyPath = i.Attribute("Path").Value;
+                var fileVersion = i.Attribute("FileVersion").Value;
+
+                if (assemblyType.Equals("Managed"))
+                {
+                    var assemblyVersion = i.Attribute("AssemblyVersion").Value;
+                    Assert.True(Version.TryParse(assemblyVersion, out _), $"{assemblyPath} has assembly version {assemblyVersion}. Assembly version must be convertable to System.Version");
+                }
+
+                Assert.True(Version.TryParse(fileVersion, out _), $"{assemblyPath} has file version {fileVersion}. File version must be convertable to System.Version");
+            });
+        }
+
+        [Fact]
+        public void RuntimeListListsContainsCorrectPaths()
+        {
+            var runtimePath = Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
+            if (string.IsNullOrEmpty(runtimePath))
+            {
+                return;
+            }
+
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+
+            AssertEx.FileExists(runtimeListPath);
+
+            var runtimeListDoc = XDocument.Load(runtimeListPath);
+            var runtimeListEntries = runtimeListDoc.Root.Descendants();
+
+            var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg"));
+
+            ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
+
+            var actualPaths = archive.Entries
+                .Where(i => i.FullName.EndsWith(".dll"))
+                .Select(i => i.FullName).ToHashSet();
+
+            var expectedPaths = runtimeListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();
+
+            _output.WriteLine("==== package contents ====");
+            _output.WriteLine(string.Join('\n', actualPaths.OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedPaths.OrderBy(i => i)));
+
+            var missing = expectedPaths.Except(actualPaths);
+            var unexpected = actualPaths.Except(expectedPaths);
+
+            _output.WriteLine("==== missing assemblies from the runtime list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the runtime list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
         }
     }
 }

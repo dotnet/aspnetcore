@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// Extension method to get the underlying <see cref="HttpContext"/> of the connection if there is one.
+    /// </summary>
     public static class HttpConnectionContextExtensions
     {
         /// <summary>

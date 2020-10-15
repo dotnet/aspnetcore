@@ -13,6 +13,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private TimeSpan _delay;
         private TimeSpan _period;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="HealthCheckPublisherOptions"/>.
+        /// </summary>
         public HealthCheckPublisherOptions()
         {
             _delay = TimeSpan.FromSeconds(5);

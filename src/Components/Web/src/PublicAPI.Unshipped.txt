@@ -1,4 +1,5 @@
-﻿Microsoft.AspNetCore.Components.BindInputElementAttribute
+﻿#nullable enable
+Microsoft.AspNetCore.Components.BindInputElementAttribute
 Microsoft.AspNetCore.Components.BindInputElementAttribute.BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format) -> void
 Microsoft.AspNetCore.Components.BindInputElementAttribute.ChangeAttribute.get -> string?
 Microsoft.AspNetCore.Components.BindInputElementAttribute.Format.get -> string?
@@ -37,7 +38,7 @@ Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CssClass.get -> string!
-Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValue.get -> TValue
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValue.get -> TValue?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValue.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.get -> string?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.set -> void
@@ -48,7 +49,7 @@ Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.EditContext.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.InputBase() -> void
-Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.Value.get -> TValue
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.Value.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.ValueChanged.set -> void
@@ -81,7 +82,7 @@ Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.AdditionalAttributes.se
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.InputRadio() -> void
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Name.get -> string?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Name.set -> void
-Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Value.get -> TValue
+Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Value.set -> void
 Microsoft.AspNetCore.Components.Forms.InputRadioGroup<TValue>
 Microsoft.AspNetCore.Components.Forms.InputRadioGroup<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -331,6 +332,7 @@ Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OverscanCou
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OverscanCount.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Placeholder.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Placeholder.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Virtualize() -> void
 Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions
 Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions
@@ -353,13 +355,13 @@ override Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.SetParametersAs
 override Microsoft.AspNetCore.Components.Forms.InputCheckbox.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputCheckbox.TryParseValueFromString(string? value, out bool result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.FormatValueAsString(TValue value) -> string!
+override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.FormatValueAsString(TValue? value) -> string!
 override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputFile.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputFile.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.FormatValueAsString(TValue value) -> string?
+override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.FormatValueAsString(TValue? value) -> string?
 override Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.OnParametersSet() -> void
@@ -408,6 +410,6 @@ static Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEve
 static Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(this Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, int sequence, string! eventName, bool value) -> void
 virtual Microsoft.AspNetCore.Components.Forms.FieldCssClassProvider.GetFieldCssClass(Microsoft.AspNetCore.Components.Forms.EditContext! editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> string!
 virtual Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.Dispose(bool disposing) -> void
-virtual Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FormatValueAsString(TValue value) -> string?
+virtual Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FormatValueAsString(TValue? value) -> string?
 virtual Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.Forms.ValidationSummary.Dispose(bool disposing) -> void

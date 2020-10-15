@@ -10,6 +10,10 @@ namespace Microsoft.AspNetCore.Cors
     /// </summary>
     public class CorsPolicyMetadata : ICorsPolicyMetadata
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="CorsPolicyMetadata"/> using the specified policy.
+        /// </summary>
+        /// <param name="policy">The policy which needs to be applied.</param>
         public CorsPolicyMetadata(CorsPolicy policy)
         {
             Policy = policy;
