@@ -29,7 +29,7 @@
   },
 
   "debian_dependencies": {
-    "dotnet-runtime-${AspNetCoreMajorVersion}.${AspNetCoreMinorVersion}": {
+    "dotnet-runtime-${DotnetRuntimeDependencyMajorMinorVersion}": {
       "package_version": "${DotnetRuntimeDependencyVersion}"
     }
   }

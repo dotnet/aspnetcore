@@ -14,6 +14,7 @@
       "src\\Components\\Ignitor\\src\\Ignitor.csproj",
       "src\\Components\\Ignitor\\test\\Ignitor.Test.csproj",
       "src\\Components\\Samples\\BlazorServerApp\\BlazorServerApp.csproj",
+      "src\\Components\\Samples\\IgnitorSample\\IgnitorSample.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",

@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [CollectDump]
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/9985", Queues = "Fedora.28.Amd64;Fedora.28.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25046")]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -100,7 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21521")] // Test still quarantined due to Sockets.Functional tests.
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -145,24 +142,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 var stopServerTask = server.StopAsync(cts.Token).DefaultTimeout();
 
                 await closingMessageTask;
-                cts.Cancel();
-                try
-                {
-                    await stopServerTask;
-                }
-                // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
-                catch (OperationCanceledException)
-                {
 
-                }
+                var closedMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closed. The last processed stream ID was 1.")).DefaultTimeout();
+                cts.Cancel();
+
+                // Wait for "is closed" message as this is logged from a different thread and aborting
+                // can timeout and return from server.StopAsync before this is logged.
+                await closedMessageTask;
+                requestUnblocked.SetResult();
+                await stopServerTask;
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
-
-            requestUnblocked.SetResult();
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }

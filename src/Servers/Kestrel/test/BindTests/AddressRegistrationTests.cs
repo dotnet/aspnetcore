@@ -126,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25403")]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
@@ -317,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             options.Listen(endPoint, listenOptions =>
                             {
-                                if (testUrl.StartsWith("https"))
+                                if (testUrl.StartsWith("https", StringComparison.Ordinal))
                                 {
                                     listenOptions.UseHttps(TestResources.GetTestCertificate());
                                 }

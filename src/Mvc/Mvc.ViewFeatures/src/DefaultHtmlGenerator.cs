@@ -1433,7 +1433,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (maxLengthValue.HasValue)
             {
-                tagBuilder.MergeAttribute("maxlength", maxLengthValue.Value.ToString());
+                tagBuilder.MergeAttribute("maxlength", maxLengthValue.Value.ToString(CultureInfo.InvariantCulture));
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,14 +74,14 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 {
                     await deployer.DeployAsync();
 
-                    var started = new ManualResetEventSlim();
-                    var completed = new ManualResetEventSlim();
+                    var startedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var completedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var output = string.Empty;
                     deployer.HostProcess.OutputDataReceived += (sender, args) =>
                     {
-                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
+                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage, StringComparison.Ordinal))
                         {
-                            started.Set();
+                            startedTcs.TrySetResult();
                             output += args.Data.Substring(StartedMessage.Length) + '\n';
                         }
                         else
@@ -90,26 +91,30 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                         if (output.Contains(CompletionMessage))
                         {
-                            completed.Set();
+                            completedTcs.TrySetResult();
                         }
                     };
 
-                    started.Wait(50000);
-
-                    if (!started.IsSet)
+                    try
                     {
-                        throw new InvalidOperationException("Application did not start successfully");
+                        await startedTcs.Task.TimeoutAfter(TimeSpan.FromMinutes(1));
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        throw new InvalidOperationException("Timeout while waiting for host process to output started message.", ex);
                     }
 
                     SendSIGINT(deployer.HostProcess.Id);
 
                     WaitForExitOrKill(deployer.HostProcess);
 
-                    completed.Wait(50000);
-
-                    if (!started.IsSet)
+                    try
                     {
-                        throw new InvalidOperationException($"Application did not write the expected output. The received output is: {output}");
+                        await completedTcs.Task.TimeoutAfter(TimeSpan.FromMinutes(1));
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        throw new InvalidOperationException($"Timeout while waiting for host process to output completion message. The received output is: {output}", ex);
                     }
 
                     output = output.Trim('\n');
@@ -124,7 +129,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             var startInfo = new ProcessStartInfo
             {
                 FileName = "kill",
-                Arguments = processId.ToString(),
+                Arguments = processId.ToString(CultureInfo.InvariantCulture),
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             };

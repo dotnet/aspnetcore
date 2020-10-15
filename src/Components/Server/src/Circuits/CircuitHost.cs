@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     for (var i = 0; i < count; i++)
                     {
                         var (componentType, parameters, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString());
+                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
                     }
 
                     Log.InitializationSucceeded(_logger);
@@ -423,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // A failure in dispatching an event means that it was an attempt to use an invalid event id.
                 // A well-behaved client won't do this.
-                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
+                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(CultureInfo.InvariantCulture), ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }

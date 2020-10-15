@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
                 {
-                    ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                    PropertyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
                     PropertyInfo = (IntPtr)uriPointer,
                     PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
                 };

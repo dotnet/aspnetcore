@@ -94,6 +94,7 @@ Microsoft.Net.Http.Headers.MediaTypeHeaderValue.IsSubsetOf(Microsoft.Net.Http.He
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypes.get -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypesWithoutSuffix.get -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllTypes.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.get -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.set -> void
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaTypeHeaderValue(Microsoft.Extensions.Primitives.StringSegment mediaType) -> void
