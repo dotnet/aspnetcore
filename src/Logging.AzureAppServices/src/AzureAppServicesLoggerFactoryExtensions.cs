@@ -17,35 +17,21 @@ namespace Microsoft.Extensions.Logging
     /// </summary>
     public static class AzureAppServicesLoggerFactoryExtensions
     {
-        internal static string CustomPrefix;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="customPrefix"></param>
-        /// <returns></returns>
-        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix)
-        {
-            CustomPrefix = customPrefix;
-            var context = WebAppContext.Default;
-
-            // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-            return AddAzureWebAppDiagnostics(builder, context);
-        }
-
         /// <summary>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="builder">The extension method argument</param>
-        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder)
+        /// <param name="customPrefix"></param>
+        /// <returns></returns>
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix = null)
         {
             var context = WebAppContext.Default;
 
             // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-            return AddAzureWebAppDiagnostics(builder, context);
+            return AddAzureWebAppDiagnostics(builder, context, customPrefix);
         }
 
-        internal static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, IWebAppContext context)
+        internal static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, IWebAppContext context, string customPrefix)
         {
             if (!context.IsRunningInAzureWebApp)
             {
@@ -79,7 +65,7 @@ namespace Microsoft.Extensions.Logging
             if (addedBlobLogger)
             {
                 services.AddSingleton<IConfigureOptions<LoggerFilterOptions>>(CreateBlobFilterConfigureOptions(config));
-                services.AddSingleton<IConfigureOptions<AzureBlobLoggerOptions>>(new BlobLoggerConfigureOptions(config, context));
+                services.AddSingleton<IConfigureOptions<AzureBlobLoggerOptions>>(new BlobLoggerConfigureOptions(config, context, customPrefix));
                 services.AddSingleton<IOptionsChangeTokenSource<AzureBlobLoggerOptions>>(
                     new ConfigurationChangeTokenSource<AzureBlobLoggerOptions>(config));
                 LoggerProviderOptions.RegisterProviderOptions<AzureBlobLoggerOptions, BlobLoggerProvider>(builder.Services);
