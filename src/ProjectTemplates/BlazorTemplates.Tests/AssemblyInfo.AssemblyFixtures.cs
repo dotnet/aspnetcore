@@ -4,8 +4,8 @@
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
+using Xunit;
 
 [assembly: AssemblyFixture(typeof(ProjectFactoryFixture))]
 [assembly: AssemblyFixture(typeof(SeleniumStandaloneServer))]
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
-
