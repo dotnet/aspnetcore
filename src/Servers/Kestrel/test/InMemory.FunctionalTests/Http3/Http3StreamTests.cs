@@ -654,6 +654,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
 
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            // Need to figure out how to trigger goaway from server?
+            // Trigger ConnectionClose
+
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
