@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public abstract partial class Renderer : IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly object _componentStateByIdLock = new object();
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
@@ -222,7 +223,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var parentComponentState = GetOptionalComponentState(parentComponentId);
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             Log.InitializingComponent(_logger, componentState, parentComponentState);
-            _componentStateById.Add(componentId, componentState);
+            lock (_componentStateByIdLock)
+                _componentStateById.Add(componentId, componentState);
             component.Attach(new RenderHandle(this, componentId));
             return componentState;
         }
@@ -414,14 +416,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         private ComponentState GetRequiredComponentState(int componentId)
-            => _componentStateById.TryGetValue(componentId, out var componentState)
-                ? componentState
-                : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
+        {
+            ComponentState result = GetOptionalComponentState(componentId);
+            if (result == null)
+                throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
+            else
+                return reslut;
+        }
 
         private ComponentState GetOptionalComponentState(int componentId)
-            => _componentStateById.TryGetValue(componentId, out var componentState)
-                ? componentState
-                : null;
+        {
+            ComponentState result;
+            lock (_componentStateByIdLock)
+                _componentStateById.TryGetValue(componentId, out result);
+            return result
+        }
 
         /// <summary>
         /// Processes pending renders requests from components if there are any.
@@ -662,7 +671,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                 }
 
-                _componentStateById.Remove(disposeComponentId);
+                lock (_componentStateByIdLock)
+                    _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
 
@@ -768,7 +778,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             while (_componentStateById.Count != 0)
             {
                 // We avoid to have an 'InvalidOperationException: Collection was modified;'
-                Dictionary<int, ComponentState> componentStateById = new Dictionary<int, ComponentState>(_componentStateById);
+                Dictionary<int, ComponentState> componentStateById;
+                lock (_componentStateByIdLock)
+                    componentStateById = new Dictionary<int, ComponentState>(_componentStateById);
 
                 foreach (KeyValuePair<int, ComponentState> kvp in componentStateById)
                 {
@@ -788,7 +800,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                             exceptions.Add(exception);
                         }
                     }
-                    _componentStateById.Remove(kvp.Key);
+                    lock (_componentStateByIdLock)
+                        _componentStateById.Remove(kvp.Key);
                 }
             }
 
