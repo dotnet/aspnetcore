@@ -21,9 +21,22 @@ namespace Microsoft.Extensions.Logging
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="builder">The extension method argument</param>
+        /// <returns></returns>
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder)
+        {
+            var context = WebAppContext.Default;
+
+            // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
+            return AddAzureWebAppDiagnostics(builder, context, null);
+        }
+
+        /// <summary>
+        /// Adds an Azure Web Apps diagnostics logger.
+        /// </summary>
+        /// <param name="builder">The extension method argument</param>
         /// <param name="customPrefix"></param>
         /// <returns></returns>
-        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix = null)
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix)
         {
             var context = WebAppContext.Default;
 
