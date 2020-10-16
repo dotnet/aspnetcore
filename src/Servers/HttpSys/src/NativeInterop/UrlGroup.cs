@@ -16,8 +16,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int RequestPropertyInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
+        private readonly ILogger _logger;
+
         private ServerSession _serverSession;
-        private ILogger _logger;
         private bool _disposed;
 
         internal unsafe UrlGroup(ServerSession serverSession, ILogger logger)
