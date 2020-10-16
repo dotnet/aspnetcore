@@ -539,17 +539,27 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                     }
 
-                    try
-                    {
-                        // On supported platforms, we need to pass the cookie container to the http client
-                        // so that we can capture any cookies from the negotiate response and give them to WebSockets.
-                        httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
-                    }
-                    catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
-                    {
-                        // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
-                        Log.CookiesNotSupported(_logger);
-                    }
+                try
+                {
+                    // On supported platforms, we need to pass the cookie container to the http client
+                    // so that we can capture any cookies from the negotiate response and give them to WebSockets.
+                    httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
+                }
+                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
+                // Also WASM doesn't support some settings in the browser
+                catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
+                {
+                    Log.CookiesNotSupported(_logger);
+                }
+
+                // Only access HttpClientHandler.ClientCertificates
+                // if the user has configured those options
+                // https://github.com/aspnet/SignalR/issues/2232
+                var clientCertificates = _httpConnectionOptions.ClientCertificates;
+                if (clientCertificates?.Count > 0)
+                {
+                    httpClientHandler.ClientCertificates.AddRange(clientCertificates);
+                }
 
                     // Only access HttpClientHandler.ClientCertificates
                     // if the user has configured those options
