@@ -36,12 +36,12 @@ namespace Microsoft.Extensions.Logging
         /// <param name="builder">The extension method argument</param>
         /// <param name="customPrefix"></param>
         /// <returns></returns>
-        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix)
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string custPrefix)
         {
             var context = WebAppContext.Default;
 
             // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-            return AddAzureWebAppDiagnostics(builder, context, customPrefix);
+            return AddAzureWebAppDiagnostics(builder, context, custPrefix);
         }
 
         internal static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, IWebAppContext context, string customPrefix)
