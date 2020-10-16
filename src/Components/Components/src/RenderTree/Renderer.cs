@@ -763,25 +763,35 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
             List<Exception> exceptions = null;
-            foreach (var componentState in _componentStateById.Values)
-            {
-                Log.DisposingComponent(_logger, componentState);
 
-                if (componentState.Component is IDisposable disposable)
+            //As collection may be modified during computing, we make sure every component is well disposed
+            while (_componentStateById.Count != 0)
+            {
+                // We avoid to have an 'InvalidOperationException: Collection was modified;'
+                Dictionary<int, ComponentState> componentStateById = new Dictionary<int, ComponentState>(_componentStateById);
+
+                foreach (KeyValuePair<int, ComponentState> kvp in componentStateById)
                 {
-                    try
+                    ComponentState componentState = kvp.Value;
+
+                    Log.DisposingComponent(_logger, componentState);
+
+                    if (componentState.Component is IDisposable disposable)
                     {
-                        componentState.Dispose();
+                        try
+                        {
+                            componentState.Dispose();
+                        }
+                        catch (Exception exception)
+                        {
+                            exceptions ??= new List<Exception>();
+                            exceptions.Add(exception);
+                        }
                     }
-                    catch (Exception exception)
-                    {
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(exception);
-                    }
+                    _componentStateById.Remove(kvp.Key);
                 }
             }
 
-            _componentStateById.Clear(); // So we know they were all disposed
             _batchBuilder.Dispose();
 
             if (exceptions?.Count > 1)
