@@ -37,7 +37,7 @@
     <!--
       Update the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
     -->
-    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
