@@ -38,8 +38,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Id = urlGroupId;
         }
 
-        internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url)
+        internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url, ILogger logger)
         {
+            _logger = logger;
+
             ulong urlGroupId = 0;
             var statusCode = HttpApi.HttpFindUrlGroupId(
                 url.FullPrefix, requestQueue.Handle, &urlGroupId);
