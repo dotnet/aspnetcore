@@ -5,13 +5,6 @@
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
-
-    <!--
-      This project compiles against Microsoft.AspNetCore.App from the SDK.
-      This ensures that it's packaging output is correct and does not include local artifacts.
-    -->
-    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
-    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-watch.csproj" />
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="Microsoft.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
