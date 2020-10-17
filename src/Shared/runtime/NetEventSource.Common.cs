@@ -11,7 +11,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #if NET46
@@ -351,7 +350,7 @@ namespace System.Net
         }
 
         [Event(DumpArrayEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
-        private unsafe void DumpBuffer(string thisOrContextObject, string? memberName, byte[] buffer) =>
+        private void DumpBuffer(string thisOrContextObject, string? memberName, byte[] buffer) =>
             WriteEvent(DumpArrayEventId, thisOrContextObject, memberName ?? MissingMember, buffer);
         #endregion
 
@@ -473,9 +472,9 @@ namespace System.Net
             switch (s.ArgumentCount)
             {
                 case 0: return s.Format;
-                case 1: return string.Format(CultureInfo.InvariantCulture,s.Format, Format(s.GetArgument(0)));
-                case 2: return string.Format(CultureInfo.InvariantCulture,s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)));
-                case 3: return string.Format(CultureInfo.InvariantCulture, s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)), Format(s.GetArgument(2)));
+                case 1: return string.Format(s.Format, Format(s.GetArgument(0)));
+                case 2: return string.Format(s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)));
+                case 3: return string.Format(s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)), Format(s.GetArgument(2)));
                 default:
                     object?[] args = s.GetArguments();
                     object[] formattedArgs = new object[args.Length];
@@ -483,7 +482,7 @@ namespace System.Net
                     {
                         formattedArgs[i] = Format(args[i]);
                     }
-                    return string.Format(CultureInfo.InvariantCulture, s.Format, formattedArgs);
+                    return string.Format(s.Format, formattedArgs);
             }
         }
 
