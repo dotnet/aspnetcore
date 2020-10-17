@@ -77,7 +77,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Http;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.23' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.24' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
