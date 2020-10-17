@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApiExplorerWebSite
 {
     [Produces("application/json", Type = typeof(Product))]
-    [ProducesResponseType(typeof(ErrorInfo), 500)]
     [Route("ApiExplorerResponseTypeOverrideOnAction")]
     public class ApiExplorerResponseTypeOverrideOnActionController : Controller
     {
