@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private readonly Stream _innerStream;
 
         private ICompressionProvider? _compressionProvider;
-        private bool _compressionChecked = false;
+        private bool _compressionChecked;
         private Stream? _compressionStream;
-        private PipeWriter? _pipeAdapter = null;
-        private bool _providerCreated = false;
-        private bool _autoFlush = false;
-        private bool _complete = false;
+        private PipeWriter? _pipeAdapter;
+        private bool _providerCreated;
+        private bool _autoFlush;
+        private bool _complete;
 
         internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
             IHttpResponseBodyFeature innerBodyFeature)

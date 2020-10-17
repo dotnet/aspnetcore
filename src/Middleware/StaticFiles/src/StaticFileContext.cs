@@ -388,8 +388,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         // Note: This assumes ranges have been normalized to absolute byte offsets.
         private ContentRangeHeaderValue ComputeContentRange(RangeItemHeaderValue range, out long start, out long length)
         {
-            start = range.From ?? 0;
-            long end = range.To ?? 0;
+            start = range.From!.Value;
+            var end = range.To!.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
         }

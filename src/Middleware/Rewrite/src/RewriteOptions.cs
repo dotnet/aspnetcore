@@ -20,8 +20,11 @@ namespace Microsoft.AspNetCore.Rewrite
         public IList<IRule> Rules { get; } = new List<IRule>();
 
         /// <summary>
-        /// Gets and sets the File Provider for file and directory checks. Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>
+        /// Gets and sets the File Provider for file and directory checks.
         /// </summary>
+        /// <value>
+        /// Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>.
+        /// </value>
         public IFileProvider StaticFileProvider { get; set; } = default!;
     }
 }

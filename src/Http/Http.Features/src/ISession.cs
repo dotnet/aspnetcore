@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
-        bool TryGetValue(string key, [MaybeNullWhen(false)] out byte[] value);
+        /// <returns>The retrieved value.</returns>
+        bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value);
 
         /// <summary>
         /// Set the given key and value in the current session. This will throw if the session

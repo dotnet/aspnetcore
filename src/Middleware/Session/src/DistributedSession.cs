@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Session
         private readonly TimeSpan _ioTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly ILogger _logger;
-        private IDictionary<EncodedKey, byte[]> _store;
+        private IDistributedSessionStore _store;
         private bool _isModified;
         private bool _loaded;
         private bool _isAvailable;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Session
             _idleTimeout = idleTimeout;
             _ioTimeout = ioTimeout;
             _tryEstablishSession = tryEstablishSession;
-            _store = new Dictionary<EncodedKey, byte[]>();
+            _store = new DefaultDistributedSessionStore();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
         }
@@ -123,12 +123,13 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                if (IsAvailable && _sessionIdBytes == null)
+                Load();
+                if (_sessionIdBytes == null)
                 {
                     _sessionIdBytes = new byte[IdByteCount];
                     RandomNumberGenerator.Fill(_sessionIdBytes);
                 }
-                return _sessionIdBytes!;
+                return _sessionIdBytes;
             }
         }
 
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Session
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, [MaybeNullWhen(false)] out byte[] value)
+        public bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value)
         {
             Load();
             return _store.TryGetValue(new EncodedKey(key), out value);
@@ -173,7 +174,7 @@ namespace Microsoft.AspNetCore.Session
                 _isModified = true;
                 byte[] copy = new byte[value.Length];
                 Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
-                _store[encodedKey] = copy;
+                _store.SetValue(encodedKey, copy);
             }
         }
 
@@ -347,6 +348,11 @@ namespace Microsoft.AspNetCore.Session
         {
             output.WriteByte(SerializationRevision);
             SerializeNumAs3Bytes(output, _store.Count);
+            if (!IsAvailable)
+            {
+                throw new InvalidOperationException("Cannot commit session data since initial load failed.");
+            }
+
             output.Write(IdBytes, 0, IdByteCount);
 
             foreach (var entry in _store)
@@ -376,7 +382,7 @@ namespace Microsoft.AspNetCore.Session
                 int keyLength = DeserializeNumFrom2Bytes(content);
                 var key = new EncodedKey(ReadBytes(content, keyLength));
                 int dataLength = DeserializeNumFrom4Bytes(content);
-                _store[key] = ReadBytes(content, dataLength);
+                _store.SetValue(key, ReadBytes(content, dataLength));
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
