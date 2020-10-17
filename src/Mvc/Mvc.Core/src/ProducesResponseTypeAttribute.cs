@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// A filter that specifies the type of the value and status code returned by the action.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
     {
         /// <summary>
