@@ -3,7 +3,10 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -374,6 +377,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
             }
+        }
+
+        [Fact]
+        public async Task DoesNotThrowGivenCanceledReadResult()
+        {
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async context =>
+            {
+                try
+                {
+                    var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                    var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                    // https://github.com/dotnet/aspnetcore/issues/26482
+                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                    connectionTransportFeature.Transport.Input.CancelPendingRead();
+
+                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync() 
+                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                    appCompletedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    appCompletedTcs.SetException(ex);
+                    throw;
+                }
+            },
+            new TestServiceContext(LoggerFactory));
+
+            using (var connection = server.CreateConnection())
+            {
+                await connection.SendEmptyGetWithUpgrade();
+                await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                    "Connection: Upgrade",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            await appCompletedTcs.Task.DefaultTimeout();
         }
     }
 }
