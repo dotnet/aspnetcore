@@ -190,7 +190,6 @@ namespace Templates.Test
         }
 
         [Theory]
-        [QuarantinedTest]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
