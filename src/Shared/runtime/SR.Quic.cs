@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Globalization;
-
 namespace System.Net.Quic
 {
     internal static partial class SR
@@ -13,7 +11,7 @@ namespace System.Net.Quic
         {
             if (args != null)
             {
-                return string.Format(CultureInfo.InvariantCulture, resourceFormat, args);
+                return string.Format(resourceFormat, args);
             }
 
             return resourceFormat;
