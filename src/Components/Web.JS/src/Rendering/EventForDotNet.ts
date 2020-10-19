@@ -216,7 +216,8 @@ function parseMouseEvent(event: MouseEvent) {
 }
 
 function isCheckbox(element: Element | null): boolean {
-  return !!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
+  return (!!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox') 
+      || (!!element && element.getAttribute('role') === 'checkbox'); 
 }
 
 const timeBasedInputs = [
