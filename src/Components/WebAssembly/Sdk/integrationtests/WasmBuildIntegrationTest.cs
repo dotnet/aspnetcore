@@ -287,6 +287,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest]        
         public async Task Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
