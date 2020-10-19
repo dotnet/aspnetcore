@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
-                var comma = projectName.IndexOf(",");
+                var comma = projectName.IndexOf(",", StringComparison.Ordinal);
                 if (comma != -1)
                 {
                      projectName = projectName.Substring(0, comma);
