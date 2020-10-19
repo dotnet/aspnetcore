@@ -41,11 +41,10 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
             if (string.IsNullOrEmpty(pattern))
             {
-                response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
-                return;
+                pattern = "/";
             }
 
-            if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
+            else if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
             {
                 pattern = '/' + pattern;
             }
