@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var resolver = new DefaultContractResolver();
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, intKey.ToString(), resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, intKey.ToString(CultureInfo.InvariantCulture), resolver, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<int, object>();
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, key.ToString(), resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, key.ToString(CultureInfo.InvariantCulture), resolver, "James", out var message);
 
             // Assert
             Assert.True(addStatus);

@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Stores user data while the user browses a web application. Session state uses a store maintained by the application
+    /// to persist data across requests from a client. The session data is backed by a cache and considered ephemeral data.
+    /// </summary>
     public interface ISession
     {
         /// <summary>

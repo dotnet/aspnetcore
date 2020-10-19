@@ -208,6 +208,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
+            // Validate that the scroll event completed successfully
+            var lastElement = Browser.Exists(By.Id("999"));
+            Browser.True(() => lastElement.Displayed);
+
             // Validate that the top spacer has expanded.
             Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
         }

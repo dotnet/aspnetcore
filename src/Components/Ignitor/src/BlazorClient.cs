@@ -478,7 +478,7 @@ namespace Ignitor
             else
             {
                 var builder = new UriBuilder(uri);
-                builder.Path += builder.Path.EndsWith("/") ? "_blazor" : "/_blazor";
+                builder.Path += builder.Path.EndsWith("/", StringComparison.Ordinal) ? "_blazor" : "/_blazor";
                 return builder.Uri;
             }
         }

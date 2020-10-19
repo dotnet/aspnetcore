@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -412,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Have to retry here to allow ANCM to receive notification and react to it
             // Verify that inprocess application was created and started, checking the server
             // header to see that it is running inprocess
-            await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.Headers.Server.ToString().StartsWith("Microsoft"));
+            await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.Headers.Server.ToString().StartsWith("Microsoft", StringComparison.Ordinal));
         }
 
         [ConditionalFact]

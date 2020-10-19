@@ -118,7 +118,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/26776")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -306,7 +306,6 @@ namespace Templates.Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });

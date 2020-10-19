@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
 
             Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
-                m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext))));
+                m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)), StringComparison.Ordinal));
         }
 
         class ContextNotRegisteredInServicesMiddleware
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 }
 
                 Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
-                    m.StartsWith(StringsHelpers.GetResourceString("DatabaseErrorPageMiddleware_Exception")));
+                    m.StartsWith(StringsHelpers.GetResourceString("DatabaseErrorPageMiddleware_Exception"), StringComparison.Ordinal));
             }
         }
 

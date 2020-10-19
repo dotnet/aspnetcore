@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -77,7 +78,7 @@ namespace E2ETests
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
-            Assert.Contains(string.Format("Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             // Verify cookie sent
             Assert.Contains(IdentityCookieName, GetCookieNames());
@@ -86,7 +87,7 @@ namespace E2ETests
 
             _logger.LogInformation("Verifying if the middleware events were fired");
             //Check for a non existing item
-            response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
+            response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
             //This action requires admin permissions. If events are fired this permission is granted
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.LogInformation("Middleware events were fired successfully");

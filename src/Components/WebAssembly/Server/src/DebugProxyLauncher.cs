@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Builder
             // shouldn't be trying to use the same port numbers, etc. In particular we need to break
             // the association with IISExpress and the MS-ASPNETCORE-TOKEN check.
             // For more context on this, see https://github.com/dotnet/aspnetcore/issues/20308.
-            var keysToRemove = environment.Keys.Where(key => key.StartsWith("ASPNETCORE_")).ToList();
+            var keysToRemove = environment.Keys.Where(key => key.StartsWith("ASPNETCORE_", StringComparison.Ordinal)).ToList();
             foreach (var key in keysToRemove)
             {
                 environment.Remove(key);

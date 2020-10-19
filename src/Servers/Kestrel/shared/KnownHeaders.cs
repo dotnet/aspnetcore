@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http.HPack;
 using System.Text;
@@ -357,13 +358,13 @@ namespace CodeGenerator
             public bool FastCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
-            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x")}L";
-            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
-            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
+            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
+            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
+            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
+            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
+            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
 
             private string ResolveIdentifier(string name)
             {
@@ -963,7 +964,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return;
                 }}
-                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
             }}
             ")}
         }}
@@ -979,7 +980,7 @@ $@"        private void Clear(long bitsToClear)
                 {{
                     return;
                 }}
-                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;
             }}
             ")}
         }}
@@ -1016,7 +1017,7 @@ $@"        private void Clear(long bitsToClear)
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x")}L : 0);
+            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
             var next = 0;
             var keyStart = 0;
             var keyLength = 0;
@@ -1029,7 +1030,7 @@ $@"        private void Clear(long bitsToClear)
                     case {hi.Index}: // Header: ""{hi.Header.Name}""
                         if ({hi.Header.TestTempBit()})
                         {{
-                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
+                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
                             values = ref _headers._{hi.Header.Identifier};
                             keyStart = {hi.Header.BytesOffset};
                             keyLength = {hi.Header.BytesCount};

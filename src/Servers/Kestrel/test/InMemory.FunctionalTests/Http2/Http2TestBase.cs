@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _readRateApplication = async context =>
             {
-                var expectedBytes = int.Parse(context.Request.Path.Value.Substring(1));
+                var expectedBytes = int.Parse(context.Request.Path.Value.Substring(1), CultureInfo.InvariantCulture);
 
                 var buffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
                 var received = 0;

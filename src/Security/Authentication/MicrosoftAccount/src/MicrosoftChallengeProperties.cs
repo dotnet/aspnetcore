@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// <summary>
         /// The parameter key for the "response_mode" argument being used for a challenge request.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public static readonly string ResponseModeKey = "response_mode";
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// <summary>
         /// The "response_mode" parameter value being used for a challenge request.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public string ResponseMode
         {
             get => GetParameter<string>(ResponseModeKey);

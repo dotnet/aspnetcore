@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -58,8 +59,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the file was uploaded correctly and all fields are present
             Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-            Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+            Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             for (int i = 0; i < fileContentSizeInBytes; i++)
             {
-                contentBuilder.Append((i % 10).ToString());
+                contentBuilder.Append((i % 10).ToString(CultureInfo.InvariantCulture));
             }
 
             var file = TempFile.Create(_tempDirectory, "txt", contentBuilder.ToString());
@@ -92,8 +93,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the file was uploaded correctly and all fields are present
             Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-            Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+            Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+            Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);
             Browser.Equal(file.Text, () => fileContentElement.Text);
         }
@@ -122,8 +123,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
                 // Validate that the file was uploaded correctly and all fields are present
                 Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
-                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text));
-                Browser.Equal(file.Contents.Length.ToString(), () => fileSizeElement.Text);
+                Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
+                Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
                 Browser.Equal("text/plain", () => fileContentTypeElement.Text);
                 Browser.Equal(file.Text, () => fileContentElement.Text);
             });

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
-                httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
+                httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString(CultureInfo.InvariantCulture);
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal(FileLength.ToString(), contentLength.First());
+                Assert.Equal(FileLength.ToString(CultureInfo.InvariantCulture), contentLength.First());
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
             }

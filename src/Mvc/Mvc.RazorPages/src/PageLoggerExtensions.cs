@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
                     }
 
                     _handlerMethodExecutingWithArguments(logger, handlerName, convertedArguments, null);
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var handlerName = handler.MethodInfo.Name;
-                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result), null);
+                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result, CultureInfo.InvariantCulture), null);
             }
         }
 
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _implicitHandlerMethodExecuted(logger, Convert.ToString(result), null);
+                _implicitHandlerMethodExecuted(logger, Convert.ToString(result, CultureInfo.InvariantCulture), null);
             }
         }
 

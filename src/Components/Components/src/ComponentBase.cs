@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Components
     // about IComponent). This gives us flexibility to change the lifecycle concepts easily,
     // or for developers to design their own lifecycles as different base classes.
 
-    // TODO: When the component lifecycle design stabilizes, add proper unit tests for ComponentBase.
-
     /// <summary>
     /// Optional base class for components. Alternatively, components may
     /// implement <see cref="IComponent"/> directly.
