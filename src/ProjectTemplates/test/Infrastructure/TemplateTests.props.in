@@ -4,6 +4,8 @@
     <RestoreAdditionalProjectSources>${RestoreAdditionalProjectSources}</RestoreAdditionalProjectSources>
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
+    <!-- Workaround while there is no 6.0 SDK available, suppress unsupported version error -->
+    <NETCoreAppMaximumVersion>6.0</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
