@@ -6,6 +6,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn.Replace('1591', ''));BL0006</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

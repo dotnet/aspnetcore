@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
-        private RootComponentTypeCache _rootComponentCache;
+        private RootComponentTypeCache? _rootComponentCache;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
-        public static WebAssemblyHostBuilder CreateDefault(string[] args = default)
+        public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
         private void InitializeRegisteredRootComponents(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
         {
-            var componentsCount = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, int>(RegisteredComponentsInterop.GetRegisteredComponentsCount, null, null, null);
+            var componentsCount = jsRuntimeInvoker.InvokeUnmarshalled<object?, object?, object?, int>(RegisteredComponentsInterop.GetRegisteredComponentsCount, null, null, null);
             if (componentsCount == 0)
             {
                 return;
@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
             for (var i = 0; i < componentsCount; i++)
             {
-                var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, int>(RegisteredComponentsInterop.GetId, i, null, null);
-                var assembly = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetAssembly, id, null, null);
-                var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
-                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
-                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
+                var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object?, object?, int>(RegisteredComponentsInterop.GetId, i, null, null);
+                var assembly = jsRuntimeInvoker.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetAssembly, id, null, null);
+                var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
+                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
                 registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
             }
 
@@ -94,26 +94,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             foreach (var registeredComponent in registeredComponents)
             {
                 _rootComponentCache = new RootComponentTypeCache();
-                var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
-                var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions);
-                var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues);
+                var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
+                if (componentType is null)
+                {
+                    continue;
+                }
+
+                var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
+                var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues!);
                 var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
-                RootComponents.Add(componentType, registeredComponent.PrerenderId, parameters);
+                RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters);
             }
         }
 
         private void InitializeNavigationManager(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
         {
-            var baseUri = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(BrowserNavigationManagerInterop.GetBaseUri, null, null, null);
-            var uri = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(BrowserNavigationManagerInterop.GetLocationHref, null, null, null);
+            var baseUri = jsRuntimeInvoker.InvokeUnmarshalled<object?, object?, object?, string>(BrowserNavigationManagerInterop.GetBaseUri, null, null, null);
+            var uri = jsRuntimeInvoker.InvokeUnmarshalled<object?, object?, object?, string>(BrowserNavigationManagerInterop.GetLocationHref, null, null, null);
 
             WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
         }
 
         private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
         {
-            var applicationEnvironment = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(
+            var applicationEnvironment = jsRuntimeInvoker.InvokeUnmarshalled<object?, object?, object?, string>(
                 "Blazor._internal.getApplicationEnvironment", null, null, null);
             var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
@@ -127,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             foreach (var configFile in configFiles)
             {
-                var appSettingsJson = jsRuntimeInvoker.InvokeUnmarshalled<string, object, object, byte[]>(
+                var appSettingsJson = jsRuntimeInvoker.InvokeUnmarshalled<string, object?, object?, byte[]>(
                     "Blazor._internal.getConfig", configFile, null, null);
 
                 if (appSettingsJson != null)
@@ -186,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// the previously stored <paramref name="factory"/> and <paramref name="configure"/> delegate.
         /// </para>
         /// </remarks>
-        public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder> configure = null)
+        public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder>? configure = null) where TBuilder : notnull
         {
             if (factory == null)
             {

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.AspNetCore.Components
@@ -9,20 +11,20 @@ namespace Microsoft.AspNetCore.Components
     {
         public const string ClientMarkerType = "webassembly";
 
-        public WebAssemblyComponentMarker(string type, string assembly, string typeName, string parameterDefinitions, string parameterValues, string prereenderId) =>
-            (Type, Assembly, TypeName, ParameterDefinitions, ParameterValues, PrerenderId) = (type, assembly, typeName, parameterDefinitions, parameterValues, prereenderId);
+        public WebAssemblyComponentMarker(string? type, string? assembly, string? typeName, string? parameterDefinitions, string? parameterValues, string? prerenderId) =>
+            (Type, Assembly, TypeName, ParameterDefinitions, ParameterValues, PrerenderId) = (type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId);
 
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
-        public string Assembly { get; set; }
+        public string? Assembly { get; set; }
 
-        public string TypeName { get; set; }
+        public string? TypeName { get; set; }
 
-        public string ParameterDefinitions { get; set; }
+        public string? ParameterDefinitions { get; set; }
 
-        public string ParameterValues { get; set; }
+        public string? ParameterValues { get; set; }
 
-        public string PrerenderId { get; set; }
+        public string? PrerenderId { get; set; }
 
         internal static WebAssemblyComponentMarker NonPrerendered(string assembly, string typeName, string parameterDefinitions, string parameterValues) =>
             new WebAssemblyComponentMarker(ClientMarkerType, assembly, typeName, parameterDefinitions, parameterValues, null);
