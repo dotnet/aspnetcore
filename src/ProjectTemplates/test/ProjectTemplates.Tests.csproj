@@ -22,6 +22,9 @@
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+
+    <!-- Workaround while there is no 6.0 SDK available, suppress unsupported version error -->
+    <NETCoreAppMaximumVersion>6.0</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
