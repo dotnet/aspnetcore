@@ -25,9 +25,9 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
     exit
 }
 
-if (Test-Path "$InstallDir\node.exe")
+if (Test-Path ".\nodejs\node.exe")
 {
-    Write-Host "Node.exe found at $InstallDir"
+    Write-Host "Node.exe found at .\nodejs\node.exe"
     exit
 }
 
@@ -53,10 +53,8 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
-Write-Host "Expanded NodeJs"
-New-Item -Path "$InstallDir" -ItemType "directory" -Force
-Write-Host "Copying $tempDir\$nodeFile\* to $InstallDir"
-Copy-Item "$tempDir\$nodeFile\*" "$InstallDir" -Recurse
+Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to .\nodejs subdir"
+move $tempDir\$nodeFile nodejs
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"
@@ -67,7 +65,7 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin;" + $Env:CD
+    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin;" + $Env:CD + "\nodejs"
     Write-Host "Found package-lock.json, running $InstallDir\npm install"
     Invoke-Expression "$InstallDir\npm.cmd install"
 }
