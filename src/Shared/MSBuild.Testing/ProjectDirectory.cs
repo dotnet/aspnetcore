@@ -161,8 +161,11 @@ $@"<Project>
 
                 foreach (var file in files)
                 {
-                    var srcFile = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ? RepoRoot : Directory.GetCurrentDirectory();
+                    var path = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ? repositoryRoot : Directory.GetCurrentDirectory();
+                    var srcFile = Path.Combine(path, file);
                     var destinationFile = Path.Combine(projectRoot, file);
+                    Console.WriteLine($"srcFile: {srcFile}");
+                    Console.WriteLine($"destinationFile: {destinationFile}");
                     File.Copy(srcFile, destinationFile);
                 }
             }
