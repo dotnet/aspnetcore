@@ -382,10 +382,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }),
             };
 
-            taskInstance.Execute();
-
             var modified = false;
             using (FileSystemWatcher watcher = new FileSystemWatcher()) {
+                taskInstance.Execute();
                 watcher.Path = expectedFile;
                 watcher.Changed += (object source, FileSystemEventArgs e) => modified = true;
             }
