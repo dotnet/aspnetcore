@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(BuildNumber)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform)</GuidInputs>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
