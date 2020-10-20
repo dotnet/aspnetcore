@@ -24,7 +24,8 @@
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)eng\Versions.props" />
+  <Import Condition="'$(IsHelixJob)' != 'true'" Project="$(RepoRoot)eng\Versions.props" />
+  <Import Condition="'$(IsHelixJob)' == 'true'" Project="$(MSBuildThisFileDirectory)Versions.props" />
 
   <PropertyGroup>
     <!-- Reset version prefix to 1.0.0 for test projects -->
