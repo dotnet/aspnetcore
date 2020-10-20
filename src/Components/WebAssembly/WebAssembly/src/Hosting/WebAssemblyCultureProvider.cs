@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -16,10 +17,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";
         internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
-        private readonly WebAssemblyJSRuntimeInvoker _invoker;
+        private readonly IJSUnmarshalledRuntime _invoker;
 
         // For unit testing.
-        internal WebAssemblyCultureProvider(WebAssemblyJSRuntimeInvoker invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
+        internal WebAssemblyCultureProvider(IJSUnmarshalledRuntime invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
         {
             _invoker = invoker;
             InitialCulture = initialCulture;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         internal static void Initialize()
         {
             Instance = new WebAssemblyCultureProvider(
-                WebAssemblyJSRuntimeInvoker.Instance,
+                DefaultWebAssemblyJSRuntime.Instance,
                 initialCulture: CultureInfo.CurrentCulture,
                 initialUICulture: CultureInfo.CurrentUICulture);
         }

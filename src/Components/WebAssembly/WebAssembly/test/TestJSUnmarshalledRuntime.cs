@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
-    internal class TestWebAssemblyJSRuntimeInvoker : WebAssemblyJSRuntimeInvoker
+    internal class TestJSUnmarshalledRuntime : IJSUnmarshalledRuntime
     {
         private readonly string _environment;
 
-        public TestWebAssemblyJSRuntimeInvoker(string environment = "Production")
+        public TestJSUnmarshalledRuntime(string environment = "Production")
         {
             _environment = environment;
         }
 
-        public override TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
             switch (identifier)
             {
@@ -32,8 +32,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 case "Blazor._internal.registeredComponents.getRegisteredComponentsCount":
                     return (TResult)(object)0;
                 default:
-                    throw new NotImplementedException($"{nameof(TestWebAssemblyJSRuntimeInvoker)} has no implementation for '{identifier}'.");
+                    throw new NotImplementedException($"{nameof(TestJSUnmarshalledRuntime)} has no implementation for '{identifier}'.");
             }
         }
+
+        public TResult InvokeUnmarshalled<TResult>(string identifier)
+            => InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null);
+        
+        public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
+            => InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null);
+
+        public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
+            => InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null);
     }
 }
