@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         {
             var cookieHeader = Container.GetCookieHeader(request.RequestUri);
 
-            if (cookieHeader != string.Empty)
+            if (!string.IsNullOrEmpty(cookieHeader))
             {
                 request.Headers.Add(HeaderNames.Cookie, cookieHeader);
             }
