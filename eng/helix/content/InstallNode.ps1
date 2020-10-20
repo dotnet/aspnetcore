@@ -65,6 +65,7 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    Write-Host "Found package-lock.json, running $InstallDir\npm.cmd install"
-    Invoke-Expression "$InstallDir\npm.cmd install"
+    $Env:Path = $Env:Path + ";$InstallDir"
+    Write-Host "Found package-lock.json, set path to " + $Env:Path + " running npm install"
+    Invoke-Expression "npm install"
 }
