@@ -15,7 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-$InstallDir = '.\nodejs' # Always install to workitem root
+$InstallDir = Get-Location + '\nodejs' # Always install to workitem root / nodejs
 
 Set-StrictMode -Version 1
 
@@ -53,7 +53,7 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
-Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to .\nodejs subdir"
+Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
 move $tempDir\$nodeFile $InstallDir
 if (Test-Path "$InstallDir\node.exe")
 {
@@ -65,7 +65,7 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    $Env:Path = $Env:Path + ";$InstallDir"
-    Write-Host "Found package-lock.json, set path to " + $Env:Path + " running npm install"
+    $Env:Path = $Env:Path + "$InstallDir"
+    Write-Host "Found package-lock.json, set path to $Env:Path " -- and running npm install..."
     Invoke-Expression "npm install"
 }
