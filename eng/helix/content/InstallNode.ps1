@@ -15,7 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-$InstallDir = '.' # Always install to workitem root
+$InstallDir = '.\nodejs' # Always install to workitem root
 
 Set-StrictMode -Version 1
 
@@ -25,9 +25,9 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
     exit
 }
 
-if (Test-Path ".\nodejs\node.exe")
+if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe found at .\nodejs\node.exe"
+    Write-Host "Node.exe found at $InstallDir\node.exe"
     exit
 }
 
@@ -54,7 +54,7 @@ else {
 }
 
 Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to .\nodejs subdir"
-move $tempDir\$nodeFile nodejs
+move $tempDir\$nodeFile $InstallDir
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"
@@ -65,7 +65,6 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin;" + $Env:CD + "\nodejs"
-    Write-Host "Found package-lock.json, running $InstallDir\npm install"
+    Write-Host "Found package-lock.json, running $InstallDir\npm.cmd install"
     Invoke-Expression "$InstallDir\npm.cmd install"
 }
