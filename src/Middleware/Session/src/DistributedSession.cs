@@ -90,6 +90,8 @@ namespace Microsoft.AspNetCore.Session
             _idleTimeout = idleTimeout;
             _ioTimeout = ioTimeout;
             _tryEstablishSession = tryEstablishSession;
+            // When using a NoOpSessionStore, using a dictionary as a backing store results in problematic API choices particularly with nullability.
+            // We instead use a more limited contract - `IDistributedSessionStore` as the backing store that plays better.
             _store = new DefaultDistributedSessionStore();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
