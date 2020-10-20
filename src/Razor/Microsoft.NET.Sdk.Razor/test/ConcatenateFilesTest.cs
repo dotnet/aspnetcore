@@ -384,13 +384,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             taskInstance.Execute();
 
+            var modified = false;
+            using (FileSystemWatcher watcher = new FileSystemWatcher()) {
+                watcher.Path = expectedFile;
+                watcher.Changed += (object source, FileSystemEventArgs e) => modified = true;
+            }
+
             // Assert
+            Assert.True(modified);
             Assert.True(result);
             Assert.True(File.Exists(expectedFile));
             var actualContents = File.ReadAllText(expectedFile);
             Assert.Equal(UpdatedBundleContent, actualContents, ignoreLineEndingDifferences: true);
-
-            Assert.NotEqual(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
     }
 }
