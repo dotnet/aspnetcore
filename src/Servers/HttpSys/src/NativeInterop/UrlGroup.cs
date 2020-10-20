@@ -77,6 +77,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize);
         }
 
+        internal unsafe void UnSetDelegationProperty(RequestQueue destination, bool throwOnError = true)
+        {
+            var propertyInfo = new HttpApiTypes.HTTP_BINDING_INFO();
+            propertyInfo.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
+            propertyInfo.RequestQueueHandle = destination.Handle.DangerousGetHandle();
+
+            SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize, throwOnError);
+        }
+
         internal void SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
         {
             Debug.Assert(info != IntPtr.Zero, "SetUrlGroupProperty called with invalid pointer");

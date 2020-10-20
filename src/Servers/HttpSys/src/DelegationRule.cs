@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class DelegationRule : IDisposable
     {
         private readonly ILogger _logger;
+        private readonly UrlGroup _sourceQueueUrlGroup;
         /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
@@ -23,8 +24,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string UrlPrefix { get; }
         internal RequestQueue Queue { get; }
 
-        internal DelegationRule(string queueName, string urlPrefix, ILogger logger)
+        internal DelegationRule(UrlGroup sourceQueueUrlGroup, string queueName, string urlPrefix, ILogger logger)
         {
+            _sourceQueueUrlGroup = sourceQueueUrlGroup;
             _logger = logger;
             QueueName = queueName;
             UrlPrefix = urlPrefix;
@@ -34,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <inheritdoc />
         public void Dispose()
         {
+            _sourceQueueUrlGroup.UnSetDelegationProperty(Queue, throwOnError: false);
             Queue.UrlGroup?.Dispose();
             Queue?.Dispose();
         }
