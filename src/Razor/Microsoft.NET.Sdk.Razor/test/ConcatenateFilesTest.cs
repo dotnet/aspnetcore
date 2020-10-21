@@ -351,6 +351,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
             };
+            
+            var modified = false;
+            using FileSystemWatcher watcher = new FileSystemWatcher();
+            
+            watcher.Path = expectedFile;
+            watcher.Changed += (object source, FileSystemEventArgs e) => modified = true;
 
             // Act
             var result = taskInstance.Execute();
@@ -381,13 +387,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         ["RelativePath"] = "TestFiles/Generated/FetchData.razor.rz.scp.css",
                     }),
             };
-
-            var modified = false;
-            using (FileSystemWatcher watcher = new FileSystemWatcher()) {
-                taskInstance.Execute();
-                watcher.Path = expectedFile;
-                watcher.Changed += (object source, FileSystemEventArgs e) => modified = true;
-            }
+     
+            taskInstance.Execute();
 
             // Assert
             Assert.True(modified);
