@@ -68,6 +68,8 @@ Microsoft.JSInterop.JSObjectReferenceExtensions
 Microsoft.JSInterop.JSRuntime
 Microsoft.JSInterop.JSRuntime.DefaultAsyncTimeout.get -> System.TimeSpan?
 Microsoft.JSInterop.JSRuntime.DefaultAsyncTimeout.set -> void
+Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.JSRuntime.JSRuntime() -> void
