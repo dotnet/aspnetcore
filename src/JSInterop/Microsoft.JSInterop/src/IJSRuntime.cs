@@ -42,7 +42,7 @@ namespace Microsoft.JSInterop
         /// Invokes the specified JavaScript function asynchronously.
         /// <para>
         /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="JSRuntime.DefaultAsyncTimeout"/>. To dispatch a call with a different timeout, or no timeout,
-        /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+        /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, JsonSerializerOptions, object[])" />.
         /// </para>
         /// </summary>
         /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
