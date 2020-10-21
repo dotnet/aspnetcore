@@ -3,7 +3,7 @@ using System;
 namespace Microsoft.AspNetCore.Connections
 {
     /// <summary>
-    /// An exception that is thrown when a connection is aborted by the client.
+    /// An exception that is thrown when a connection is aborted by the server.
     /// </summary>
     public class ConnectionAbortedException : OperationCanceledException
     {

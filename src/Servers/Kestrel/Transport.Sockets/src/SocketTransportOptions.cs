@@ -44,12 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public int Backlog { get; set; } = 512;
 
         /// <summary>
-        /// Gets or sets the maximum read buffer size.
+        /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
         /// </summary>
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
-        /// Gets or sets the maximum write buffer size.
+        /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 

@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Connections
         /// Creates the <see cref="DefaultConnectionContext"/> without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        /// <param name="id">The connection id.</param>
+        /// <param name="id">The <see cref="ConnectionId"/>.</param>
         public DefaultConnectionContext(string id)
         {
             ConnectionId = id;
@@ -59,9 +59,9 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Creates the DefaultConnectionContext with the given <paramref name="transport"/> and <paramref name="application"/> pipes.
         /// </summary>
-        /// <param name="id">The connection id.</param>
-        /// <param name="transport">The transport pipe.</param>
-        /// <param name="application">The application pipe.</param>
+        /// <param name="id">The <see cref="ConnectionId"/>.</param>
+        /// <param name="transport">The <see cref="Transport"/>.</param>
+        /// <param name="transport">The <see cref="Application"/>.</param>
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
             : this(id)
         {
