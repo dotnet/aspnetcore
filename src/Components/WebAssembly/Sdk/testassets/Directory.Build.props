@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <Import Condition="'$(IsHelixJob)' != 'true'" Project="$(RepoRoot)eng\Versions.props" />
-  <Import Condition="'$(IsHelixJob)' == 'true' AND Exists('$(MSBuildThisFileDirectory)Versions.props')" Project="$(MSBuildThisFileDirectory)Versions.props" />
+  <Import Condition="'$(IsHelixJob)' == 'true' AND Exists('$(MSBuildThisFileDirectory)Versions.props')" Project="Versions.props" />
 
   <PropertyGroup>
     <!-- Reset version prefix to 1.0.0 for test projects -->
