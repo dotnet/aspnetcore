@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Microsoft.JSInterop.Implementation
 {
@@ -28,6 +28,14 @@ namespace Microsoft.JSInterop.Implementation
             ThrowIfDisposed();
 
             return _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        }
+
+        /// <inheritdoc />
+        public TValue Invoke<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, params object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.Invoke<TValue>(identifier, Id, jsonSerializerOptions, args);
         }
 
         /// <inheritdoc />

@@ -3,8 +3,10 @@ Microsoft.JSInterop.DotNetObjectReference
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Dispose() -> void
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Value.get -> TValue!
 Microsoft.JSInterop.IJSInProcessObjectReference
+Microsoft.JSInterop.IJSInProcessObjectReference.Invoke<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, params object?[]? args) -> TValue
 Microsoft.JSInterop.IJSInProcessObjectReference.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
 Microsoft.JSInterop.IJSInProcessRuntime
+Microsoft.JSInterop.IJSInProcessRuntime.Invoke<TResult>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, params object?[]? args) -> TResult
 Microsoft.JSInterop.IJSInProcessRuntime.Invoke<TResult>(string! identifier, params object?[]? args) -> TResult
 Microsoft.JSInterop.IJSObjectReference
 Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
@@ -28,6 +30,7 @@ Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(strin
 Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Dispose() -> void
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Invoke<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, params object?[]? args) -> TValue
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.JSInProcessObjectReference(Microsoft.JSInterop.JSInProcessRuntime! jsRuntime, long id) -> void
 Microsoft.JSInterop.Implementation.JSObjectReference
@@ -61,6 +64,7 @@ Microsoft.JSInterop.JSException.JSException(string! message) -> void
 Microsoft.JSInterop.JSException.JSException(string! message, System.Exception! innerException) -> void
 Microsoft.JSInterop.JSInProcessObjectReferenceExtensions
 Microsoft.JSInterop.JSInProcessRuntime
+Microsoft.JSInterop.JSInProcessRuntime.Invoke<TResult>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, params object?[]? args) -> TResult
 Microsoft.JSInterop.JSInProcessRuntime.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
 Microsoft.JSInterop.JSInProcessRuntime.JSInProcessRuntime() -> void
 Microsoft.JSInterop.JSInProcessRuntimeExtensions

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
@@ -23,11 +22,11 @@ namespace Microsoft.JSInterop
                     id => new JSInProcessObjectReference(this, id)));
         }
 
-        internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object?[]? args)
+        internal TValue Invoke<TValue>(string identifier, long targetInstanceId, JsonSerializerOptions jsonSerializerOptions, params object?[]? args)
         {
             var resultJson = InvokeJS(
                 identifier,
-                JsonSerializer.Serialize(args, JsonSerializerOptions),
+                JsonSerializer.Serialize(args, jsonSerializerOptions),
                 JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 
@@ -39,7 +38,7 @@ namespace Microsoft.JSInterop
                 return default!;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions)!;
+            return JsonSerializer.Deserialize<TValue>(resultJson, jsonSerializerOptions)!;
         }
 
         /// <summary>
@@ -50,7 +49,18 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public TValue Invoke<TValue>(string identifier, params object?[]? args)
-            => Invoke<TValue>(identifier, 0, args);
+            => Invoke<TValue>(identifier, 0, JsonSerializerOptions, args);
+
+        /// <summary>
+        /// Invokes the specified JavaScript function synchronously.
+        /// </summary>
+        /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
+        /// <param name="jsonSerializerOptions">JSON serialization options to use during serialization/deserialization of the args and return value.</param> 
+        /// <param name="args">JSON-serializable arguments.</param>
+        /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
+        public TResult Invoke<TResult>(string identifier, JsonSerializerOptions jsonSerializerOptions, params object?[]? args)
+            => Invoke<TResult>(identifier, 0, jsonSerializerOptions, args);
 
         /// <summary>
         /// Performs a synchronous function invocation.
