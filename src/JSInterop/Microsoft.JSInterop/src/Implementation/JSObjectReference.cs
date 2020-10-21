@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,6 +48,22 @@ namespace Microsoft.JSInterop.Implementation
             ThrowIfDisposed();
 
             return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
+        }
+
+        /// <inheritdoc />
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.InvokeAsync<TValue>(Id, identifier, jsonSerializerOptions, args);
+        }
+
+        /// <inheritdoc />
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, JsonSerializerOptions jsonSerializerOptions, object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, jsonSerializerOptions, args);
         }
 
         /// <inheritdoc />

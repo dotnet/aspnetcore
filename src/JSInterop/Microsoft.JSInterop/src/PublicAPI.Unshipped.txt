@@ -33,6 +33,8 @@ Microsoft.JSInterop.Implementation.JSInProcessObjectReference.JSInProcessObjectR
 Microsoft.JSInterop.Implementation.JSObjectReference
 Microsoft.JSInterop.Implementation.JSObjectReference.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.Implementation.JSObjectReference.Id.get -> long
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.Implementation.JSObjectReference.JSObjectReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id) -> void
