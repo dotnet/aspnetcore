@@ -47,10 +47,6 @@ namespace Microsoft.AspNetCore.E2ETesting
                 var instance = new E2ETestOptions();
                 Configuration.Bind(instance);
                 Instance = instance;
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"))) 
-                {
-                    instance.ScreenShotsPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "..");
-                }
             }
             catch
             {
@@ -59,7 +55,22 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public int DefaultWaitTimeoutInSeconds { get; set; } = 15;
 
-        public string ScreenShotsPath { get; set; }
+        public string ScreenShotsPath
+        {
+            get
+            {
+                var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                if (!string.IsNullOrEmpty(uploadRoot)) 
+                {
+                    return uploadRoot;
+                }
+                return ScreenShotsPath;
+            }
+            set
+            {
+                ScreenShotsPath = value;
+            }
+        }
 
         public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 10;
 
