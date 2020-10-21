@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -702,6 +703,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+            {
+                LastInvocation = (identifier, args);
+                return default;
+            }
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, object[] args)
+            {
+                LastInvocation = (identifier, args);
+                return default;
+            }
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, JsonSerializerOptions jsonSerializerOptions, object[] args)
             {
                 LastInvocation = (identifier, args);
                 return default;

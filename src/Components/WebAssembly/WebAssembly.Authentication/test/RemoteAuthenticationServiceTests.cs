@@ -535,6 +535,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
             }
 
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, object[] args)
+            {
+                PastInvocations.Add((identifier, args));
+                return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
+            }
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, JsonSerializerOptions jsonSerializerOptions, object[] args)
+            {
+                PastInvocations.Add((identifier, args));
+                return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
+            }
+
             private object GetInvocationResult(string identifier)
             {
                 switch (identifier)
