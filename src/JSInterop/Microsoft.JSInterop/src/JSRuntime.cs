@@ -155,7 +155,7 @@ namespace Microsoft.JSInterop
                     CleanupTasksAndRegistrations(taskId);
                 });
             }
-            _pendingTasks[taskId] = new PendingTask { JsonSerializerOptions = jsonSerializerOptions, TaskCompletionSource = tcs };
+            _pendingTasks[taskId] = new PendingTask(jsonSerializerOptions, tcs);
 
             try
             {
@@ -301,9 +301,15 @@ namespace Microsoft.JSInterop
         /// </summary>
         private readonly struct PendingTask
         {
-            public JsonSerializerOptions JsonSerializerOptions { get; init; }
+            public PendingTask(JsonSerializerOptions jsonSerializerOptions, object taskCompletionSource)
+            {
+                JsonSerializerOptions = jsonSerializerOptions;
+                TaskCompletionSource = taskCompletionSource;
+            }
 
-            public Object TaskCompletionSource { get; init; }
+            public JsonSerializerOptions JsonSerializerOptions { get; }
+
+            public Object TaskCompletionSource { get; }
         }
     }
 }
