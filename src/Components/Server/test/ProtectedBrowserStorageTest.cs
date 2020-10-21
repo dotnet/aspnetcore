@@ -373,6 +373,15 @@ namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
             public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
                 => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, args: args);
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, JsonSerializerOptions jsonSerializerOptions, object[] args)
+            {
+                Invocations.Add((identifier, args));
+                return (ValueTask<TValue>)NextInvocationResult;
+            }
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, object[] args)
+                => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, jsonSerializerOptions: jsonSerializerOptions, args: args);
         }
 
         class TestProtectedBrowserStorage : ProtectedBrowserStorage
