@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23635")]
         public virtual async Task BuildingProject_CopyToOutputDirectoryFiles()
         {
             using (CreateTestProject())
@@ -73,7 +72,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25931")]
         public virtual async Task Publish_Project()
         {
             using (CreateTestProject())
@@ -125,7 +123,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public virtual async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             using (CreateTestProject())
