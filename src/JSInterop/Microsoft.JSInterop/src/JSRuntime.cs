@@ -66,7 +66,7 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-            => InvokeAsync<TValue>(JsonSerializerOptions, 0, identifier, args);
+            => InvokeAsync<TValue>(0, identifier, JsonSerializerOptions, args);
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -80,7 +80,7 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
-            => InvokeAsync<TValue>(JsonSerializerOptions, 0, identifier, cancellationToken, args);
+            => InvokeAsync<TValue>(0, identifier, cancellationToken, JsonSerializerOptions, args);
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -95,7 +95,7 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, JsonSerializerOptions jsonSerializerOptions, object?[]? args)
-            => InvokeAsync<TValue>(jsonSerializerOptions, 0, identifier, args);
+            => InvokeAsync<TValue>(0, identifier, jsonSerializerOptions, args);
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -110,23 +110,23 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, JsonSerializerOptions jsonSerializerOptions, object?[]? args)
-            => InvokeAsync<TValue>(jsonSerializerOptions, 0, identifier, cancellationToken, args);
+            => InvokeAsync<TValue>(0, identifier, cancellationToken, jsonSerializerOptions, args);
 
         internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, object?[]? args)
         {
-            return await InvokeAsync<TValue>(JsonSerializerOptions, targetInstanceId, identifier, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, JsonSerializerOptions, args);
         }
 
-        internal async ValueTask<TValue> InvokeAsync<TValue>(JsonSerializerOptions jsonSerializerOptions, long targetInstanceId, string identifier, object?[]? args)
+        internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, JsonSerializerOptions jsonSerializerOptions, object?[]? args)
         {
             if (DefaultAsyncTimeout.HasValue)
             {
                 using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
                 // We need to await here due to the using
-                return await InvokeAsync<TValue>(jsonSerializerOptions, targetInstanceId, identifier, cts.Token, args);
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, jsonSerializerOptions, args);
             }
 
-            return await InvokeAsync<TValue>(jsonSerializerOptions, targetInstanceId, identifier, CancellationToken.None, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, jsonSerializerOptions, args);
         }
 
         internal async ValueTask<TValue> InvokeAsync<TValue>(
@@ -135,14 +135,14 @@ namespace Microsoft.JSInterop
             CancellationToken cancellationToken,
             object?[]? args)
         {
-            return await InvokeAsync<TValue>(JsonSerializerOptions, targetInstanceId, identifier, cancellationToken, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, cancellationToken, JsonSerializerOptions, args);
         }
 
         internal ValueTask<TValue> InvokeAsync<TValue>(
-            JsonSerializerOptions jsonSerializerOptions,
             long targetInstanceId,
             string identifier,
             CancellationToken cancellationToken,
+            JsonSerializerOptions jsonSerializerOptions,
             object?[]? args)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
