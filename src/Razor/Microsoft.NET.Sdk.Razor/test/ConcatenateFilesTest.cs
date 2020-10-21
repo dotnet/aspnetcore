@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         ["RelativePath"] = "TestFiles/Generated/FetchData.razor.rz.scp.css",
                     }),
             };
-     
+
             taskInstance.Execute();
 
             // Assert
