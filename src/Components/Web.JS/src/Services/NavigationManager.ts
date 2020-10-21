@@ -54,7 +54,8 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
     const hrefAttributeName = 'href';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
+    const downloadAttributeName = 'download';
+    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName) && !anchorTarget.hasAttribute(downloadAttributeName)) {
       const targetAttributeValue = anchorTarget.getAttribute('target');
       const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
       if (!opensInSameFrame) {
