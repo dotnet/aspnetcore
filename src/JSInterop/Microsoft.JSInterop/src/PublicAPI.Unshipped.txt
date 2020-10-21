@@ -10,6 +10,8 @@ Microsoft.JSInterop.IJSObjectReference
 Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime
+Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, System.Text.Json.JsonSerializerOptions! jsonSerializerOptions, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSUnmarshalledObjectReference
