@@ -116,6 +116,44 @@
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
 
+    <!-- Isolate Helix tests from whatever happens to be in a parent directory. Directory.Build.targets.in is empty. -->
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.targets.in"
+        DestinationFiles="$(PublishDir)Directory.Build.targets"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.targets')"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.targets.in"
+        DestinationFiles="$(PublishDir)Directory.Build.props"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+
+    <!--
+      Use the shared framework and ref/ assemblies copied to the Helix agents and expanded by RunTests. Unfortunately,
+      tests of Microsoft.NET.Sdk.Web templates will not reference the just-built Microsoft.NET.Sdk.Razor. Adding a
+      package reference for that would confuse tests of Microsoft.NET.Sdk templates.
+    -->
+    <PropertyGroup>
+      <_PropsProperties>
+        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
+        MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
+        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
+      </_PropsProperties>
+    </PropertyGroup>
+    <GenerateFileFromTemplate TemplateFile="$(RepoRoot)eng\helix\content\Directory.Build.props.in"
+      Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+      Properties="$(_PropsProperties)"
+      OutputPath="$(PublishDir)Directory.Build.props" />
+
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
