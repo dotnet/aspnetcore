@@ -267,6 +267,12 @@ namespace Microsoft.AspNetCore.Session
         /// <inheritdoc />
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
+            if (!IsAvailable)
+            {
+                _logger.SessionNotAvailable();
+                return;
+            }
+
             using (var timeout = new CancellationTokenSource(_ioTimeout))
             {
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -350,11 +356,6 @@ namespace Microsoft.AspNetCore.Session
         {
             output.WriteByte(SerializationRevision);
             SerializeNumAs3Bytes(output, _store.Count);
-            if (!IsAvailable)
-            {
-                throw new InvalidOperationException("Cannot commit session data since initial load failed.");
-            }
-
             output.Write(IdBytes, 0, IdByteCount);
 
             foreach (var entry in _store)

@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception?> _sessionCommitCanceled;
         private static Action<ILogger, Exception?> _sessionRefreshTimeout;
         private static Action<ILogger, Exception?> _sessionRefreshCanceled;
+        private static Action<ILogger, Exception?> _sessionNotAvailable;
 
         static LoggingExtensions()
         {
@@ -70,6 +71,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(12, "SessionRefreshCanceled"),
                 logLevel: LogLevel.Information,
                 formatString: "Refreshing the session was canceled.");
+            _sessionNotAvailable = LoggerMessage.Define(
+                eventId: new EventId(13, "SessionCommitNotAvailable"),
+                logLevel: LogLevel.Information,
+                formatString: "Session cannot be committed since it is unavailable.");
         }
 
         public static void ErrorClosingTheSession(this ILogger logger, Exception exception)
@@ -131,5 +136,7 @@ namespace Microsoft.Extensions.Logging
         {
             _sessionRefreshCanceled(logger, null);
         }
+
+        public static void SessionNotAvailable(this ILogger logger) => _sessionNotAvailable(logger, null);
     }
 }
