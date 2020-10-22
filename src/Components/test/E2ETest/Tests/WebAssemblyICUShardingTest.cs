@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Browser.Equal("block", () => errorUi.GetCssValue("display"));
 
-            var expected = "This application's globalization settings requires using the combined globalization data file.";
+            var expected = "Blazor detected a change in the application's culture that is not supported with the current project configuration.";
             var logs = Browser.GetBrowserLogs(LogLevel.Severe).Select(l => l.Message);
             Assert.True(logs.Any(l => l.Contains(expected)),
                 $"Expected to see globalization error message in the browser logs: {string.Join(Environment.NewLine, logs)}.");
