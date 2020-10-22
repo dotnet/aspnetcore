@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.E2ETesting
     {
         private const string TestingOptionsPrefix = "Microsoft.AspNetCore.E2ETesting";
         public static readonly IConfiguration Configuration;
+        private string _screenshotsPath;
 
         public static E2ETestOptions Instance;
 
@@ -64,11 +65,11 @@ namespace Microsoft.AspNetCore.E2ETesting
                 {
                     return uploadRoot;
                 }
-                return ScreenShotsPath;
+                return _screenshotsPath;
             }
             set
             {
-                ScreenShotsPath = value;
+                _screenshotsPath = value;
             }
         }
 
