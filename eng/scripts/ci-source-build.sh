@@ -105,4 +105,4 @@ fi
 export DotNetBuildFromSource='true'
 
 # Build projects
-"$reporoot/eng/common/build.sh" --restore --build --pack ${other_args[@]+"${other_args[@]}"} ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}
+"$reporoot/eng/common/build.sh" --restore --build --ci --pack ${other_args[@]+"${other_args[@]}"} ${runtime_feed_args[@]+"${runtime_feed_args[@]}"}

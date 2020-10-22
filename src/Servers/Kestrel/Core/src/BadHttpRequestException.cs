@@ -8,6 +8,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    /// <summary>
+    /// An exception thrown when a malformed http request has been received.
+    /// </summary>
     [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
