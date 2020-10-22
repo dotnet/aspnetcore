@@ -377,38 +377,42 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
         {
-            // Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them
-            // by default), log a warning to let users know of the change in behavior to any cache headers they might
-            // have set explicitly.
-            LogCacheHeaderOverrideWarning(httpContext.Response);
+						// Because Pragma is non-standard, deprecated, and only has one possible value ("no-cache"), set it unconditionally:
+						httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
 
-            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-            httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
-        }
+						CacheControlHeaderValue.TryParse(httpContext.Response.Headers[HeaderNames.CacheControl].ToString(), out var cacheControlHeaderValue);
+						if (cacheControlHeaderValue == null)
+						{
+							httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
+							return;
+						}
 
-        private void LogCacheHeaderOverrideWarning(HttpResponse response)
-        {
-            var logWarning = false;
-            if (CacheControlHeaderValue.TryParse(response.Headers[HeaderNames.CacheControl].ToString(), out var cacheControlHeaderValue))
-            {
-                if (!cacheControlHeaderValue.NoCache)
-                {
-                    logWarning = true;
-                }
-            }
+						var headerOverridden = false;
+						if (cacheControlHeaderValue.NoCache != true)
+						{
+							cacheControlHeaderValue.NoCache = true;
+							headerOverridden = true;
+						}
+						if (cacheControlHeaderValue.NoStore != true)
+						{
+							cacheControlHeaderValue.NoStore = true;
+							headerOverridden = true;
+						}
+						if (cacheControlHeaderValue.Public == true)
+						{
+							cacheControlHeaderValue.Public = false;
+							headerOverridden = true;
+						}
 
-            var pragmaHeader = response.Headers[HeaderNames.Pragma];
-            if (!logWarning
-                && !string.IsNullOrEmpty(pragmaHeader)
-                && !string.Equals(pragmaHeader, "no-cache", StringComparison.OrdinalIgnoreCase))
-            {
-                logWarning = true;
-            }
+						if (headerOverridden == true)
+						{
+							httpContext.Response.Headers[HeaderNames.CacheControl] = cacheControlHeaderValue.ToString();
 
-            if (logWarning)
-            {
-                _logger.ResponseCacheHeadersOverridenToNoCache();
-            }
+							// Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them
+							// by default), log a warning to let users know of the change in behavior to any cache headers they might
+							// have set explicitly.
+            	_logger.ResponseCacheHeadersOverridenToNoCache();
+						}
         }
 
         private AntiforgeryTokenSet Serialize(IAntiforgeryFeature antiforgeryFeature)
