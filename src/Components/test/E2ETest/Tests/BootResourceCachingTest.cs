@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded()
         {
-            var element = Browser.Exists(By.TagName("h1"));
+            var element = Browser.Exists(By.TagName("h1"), TimeSpan.FromSeconds(30));
             Browser.Equal("Hello, world!", () => element.Text);
         }
     }
