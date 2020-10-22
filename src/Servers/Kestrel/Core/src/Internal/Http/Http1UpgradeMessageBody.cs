@@ -27,13 +27,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            ThrowIfCompleted();
+            ThrowIfReaderCompleted();
             return ReadAsyncInternal(cancellationToken);
         }
 
         public override bool TryRead(out ReadResult result)
         {
-            ThrowIfCompleted();
+            ThrowIfReaderCompleted();
             return TryReadInternal(out result);
         }
 
