@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -1137,6 +1138,142 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        private record AddressRecord(string Street, string City)
+        {
+            public string ZipCode { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeModel_Throws()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new AddressRecord("DefaultStreet", "Toronto")
+            {
+                ZipCode = "98001",
+            };
+            var oldModel = model;
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<NotSupportedException>(() => TryUpdateModelAsync(model, string.Empty, testContext));
+            Assert.Equal($"TryUpdateModelAsync cannot update a record type model. If a '{model.GetType()}' must be updated, include it in an object type." , ex.Message);
+
+        }
+
+        private class ModelWithRecordTypeProperty
+        {
+            public AddressRecord Address { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeProperty()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address.ZipCode", "98007").Add("Address.Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new ModelWithRecordTypeProperty();
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.NotNull(model.Address);
+            var address = model.Address;
+            Assert.Equal("SomeStreet", address.Street);
+            Assert.Null(address.City);
+            Assert.Equal("98007", address.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Equal(2, modelState.Count);
+            var entry = Assert.Single(modelState, k => k.Key == "Address.ZipCode");
+            var state = entry.Value;
+            Assert.Equal("98007", state.AttemptedValue);
+            Assert.Equal("98007", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+
+            entry = Assert.Single(modelState, k => k.Key == "Address.Street");
+            state = entry.Value;
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypePropertyIsOverwritten()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address.ZipCode", "98007").Add("Address.Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new ModelWithRecordTypeProperty
+            {
+                Address = new AddressRecord("DefaultStreet", "DefaultCity")
+                {
+                    ZipCode = "98056",
+                },
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.NotNull(model.Address);
+            var address = model.Address;
+            Assert.Equal("SomeStreet", address.Street);
+            Assert.Null(address.City);
+            Assert.Equal("98007", address.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Address.Street", kvp.Key);
+                    var state = kvp.Value;
+                    Assert.Equal("SomeStreet", state.AttemptedValue);
+                    Assert.Equal("SomeStreet", state.RawValue);
+                    Assert.Empty(state.Errors);
+                    Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("Address.ZipCode", kvp.Key);
+                    var state = kvp.Value;
+                    Assert.Equal("98007", state.AttemptedValue);
+                    Assert.Equal("98007", state.RawValue);
+                    Assert.Empty(state.Errors);
+                    Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+                });
         }
 
         private void UpdateRequest(HttpRequest request, string data, string name)

@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             Browser.Exists(By.CssSelector(".interactive"));
 
-            var parameter1 = Browser.FindElement(By.CssSelector(".Param1"));
+            var parameter1 = Browser.Exists(By.CssSelector(".Param1"));
             Assert.Equal(100, parameter1.FindElements(By.CssSelector("li")).Count);
             Assert.Equal("99 99", parameter1.FindElement(By.CssSelector("li:last-child")).Text);
 
             // The assigned value is of a more derived type than the declared model type. This check
             // verifies we use the actual model type during round tripping.
-            var parameter2 = Browser.FindElement(By.CssSelector(".Param2"));
+            var parameter2 = Browser.Exists(By.CssSelector(".Param2"));
             Assert.Equal("Value Derived-Value", parameter2.Text);
 
             // This check verifies CaptureUnmatchedValues works
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private void BeginInteractivity()
         {
-            Browser.FindElement(By.Id("load-boot-script")).Click();
+            Browser.Exists(By.Id("load-boot-script")).Click();
         }
     }
 }

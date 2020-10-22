@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
-        private const int DefaultMemoryThreshold = 1024 * 30;
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
@@ -124,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            var request = context.HttpContext.Request;
+            var httpContext = context.HttpContext;
+            var request = httpContext.Request;
 
             var suppressInputFormatterBuffering = _options.SuppressInputFormatterBuffering;
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
-                var memoryThreshold = DefaultMemoryThreshold;
+                var memoryThreshold = _jsonOptions.InputFormatterMemoryBufferThreshold;
                 var contentLength = request.ContentLength.GetValueOrDefault();
                 if (contentLength > 0 && contentLength < memoryThreshold)
                 {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
                 // Ensure the file buffer stream is always disposed at the end of a request.
-                request.HttpContext.Response.RegisterForDispose(readStream);
+                httpContext.Response.RegisterForDispose(readStream);
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);

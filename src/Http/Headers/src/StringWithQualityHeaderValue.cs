@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -64,7 +65,7 @@ namespace Microsoft.Net.Http.Headers
             return _value.ToString();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as StringWithQualityHeaderValue;
 
@@ -106,36 +107,36 @@ namespace Microsoft.Net.Http.Headers
         public static StringWithQualityHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out StringWithQualityHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out StringWithQualityHeaderValue parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<StringWithQualityHeaderValue> ParseList(IList<string> input)
+        public static IList<StringWithQualityHeaderValue> ParseList(IList<string>? input)
         {
             return MultipleValueParser.ParseValues(input);
         }
 
-        public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string> input)
+        public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string>? input)
         {
             return MultipleValueParser.ParseStrictValues(input);
         }
 
-        public static bool TryParseList(IList<string> input, out IList<StringWithQualityHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> input, out IList<StringWithQualityHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
 
-        private static int GetStringWithQualityLength(StringSegment input, int startIndex, out StringWithQualityHeaderValue parsedValue)
+        private static int GetStringWithQualityLength(StringSegment input, int startIndex, out StringWithQualityHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 

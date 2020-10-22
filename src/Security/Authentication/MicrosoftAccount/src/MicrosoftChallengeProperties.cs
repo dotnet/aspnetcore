@@ -1,16 +1,18 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {    
     /// <summary>
-    /// See https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code for reference
+    /// See https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code for reference
     /// </summary>
     public class MicrosoftChallengeProperties : OAuthChallengeProperties
     {
         /// <summary>
         /// The parameter key for the "response_mode" argument being used for a challenge request.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public static readonly string ResponseModeKey = "response_mode";
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// <summary>
         /// The "response_mode" parameter value being used for a challenge request.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public string ResponseMode
         {
             get => GetParameter<string>(ResponseModeKey);

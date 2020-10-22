@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal static long EstimateCachedVaryByRulesySize(CachedVaryByRules cachedVaryByRules)
+        internal static long EstimateCachedVaryByRulesySize(CachedVaryByRules? cachedVaryByRules)
         {
             if (cachedVaryByRules == null)
             {

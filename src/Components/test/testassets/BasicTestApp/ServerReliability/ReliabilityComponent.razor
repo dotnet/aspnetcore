@@ -1,4 +1,4 @@
-@using Microsoft.JSInterop
+﻿@using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 @namespace BasicTestApp
 @using BasicTestApp.ServerReliability
@@ -18,7 +18,7 @@
 <p id="errormessage-failure">Error = @errorFailure</p>
 
 <button id="triggerjsinterop-malformed" @onclick="@TriggerJSInterop">Trigger malformed JS interop callback</button>
-<button id="triggerjsinterop-success" @onclick="@TriggerJSInteropSuccess">Trigger successfull JS interop callback</button>
+<button id="triggerjsinterop-success" @onclick="@TriggerJSInteropSuccess">Trigger successful JS interop callback</button>
 <button id="triggerjsinterop-failure" @onclick="@TriggerJSInteropFailure">Trigger error JS interop callback</button>
 
 <button id="event-handler-throw-sync" @onclick="@TriggerSyncException">Trigger sync exception</button>

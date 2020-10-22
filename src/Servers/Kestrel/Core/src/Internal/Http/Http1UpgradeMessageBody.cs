@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private int _userCanceled;
 
-        public Http1UpgradeMessageBody(Http1Connection context)
-            : base(context)
+        public Http1UpgradeMessageBody(Http1Connection context, bool keepAlive)
+            : base(context, keepAlive)
         {
             RequestUpgrade = true;
         }
@@ -47,13 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context.Input.AdvanceTo(consumed, examined);
         }
 
-        public override void Complete(Exception exception)
-        {
-            // Don't call Connection.Complete.
-            _context.ReportApplicationError(exception);
-            _completed = true;
-        }
-
         public override void CancelPendingRead()
         {
             Interlocked.Exchange(ref _userCanceled, 1);
@@ -65,9 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        public override Task StopAsync()
+        public override ValueTask StopAsync()
         {
-            return Task.CompletedTask;
+            return default;
         }
 
         public override bool TryReadInternal(out ReadResult readResult)

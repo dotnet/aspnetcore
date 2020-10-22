@@ -79,6 +79,18 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
+        public async Task ReadFormAsync_ValueContainsInvalidCharacters_Throw()
+        {
+            var bodyPipe = await MakePipeReader("%00");
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(
+                () => ReadFormAsync(new FormPipeReader(bodyPipe)));
+
+            Assert.Equal("The form value contains invalid characters.", exception.Message);
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
+        }
+
+        [Fact]
         public async Task ReadFormAsync_ValueCountLimitMet_Success()
         {
             var bodyPipe = await MakePipeReader("foo=1&bar=2&baz=3");
@@ -202,7 +214,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var readOnlySequence = new ReadOnlySequence<byte>(encoding.GetBytes("foo=bar&baz=boo"));
 
             KeyValueAccumulator accumulator = default;
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
 
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
@@ -221,7 +233,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -240,7 +252,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.KeyLengthLimit = int.MaxValue;
             formReader.ValueLengthLimit = int.MaxValue;
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
@@ -262,7 +274,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -281,7 +293,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.KeyLengthLimit = int.MaxValue;
             formReader.ValueLengthLimit = int.MaxValue;
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
@@ -303,7 +315,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -321,7 +333,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -340,7 +352,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -359,7 +371,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null, encoding);
+            var formReader = new FormPipeReader(null!, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -376,7 +388,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 
@@ -393,7 +405,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.KeyLengthLimit = 2;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -407,7 +419,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.KeyLengthLimit = 2;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -421,7 +433,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.ValueLengthLimit = 2;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -435,7 +447,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.ValueLengthLimit = 2;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -449,7 +461,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.KeyLengthLimit = 10;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -463,7 +475,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null);
+            var formReader = new FormPipeReader(null!);
             formReader.ValueLengthLimit = 10;
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
@@ -494,7 +506,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null)
+            var formReader = new FormPipeReader(null!)
             {
                 KeyLengthLimit = 3
             };
@@ -515,7 +527,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             KeyValueAccumulator accumulator = default;
 
-            var formReader = new FormPipeReader(null)
+            var formReader = new FormPipeReader(null!)
             {
                 ValueLengthLimit = 3
             };

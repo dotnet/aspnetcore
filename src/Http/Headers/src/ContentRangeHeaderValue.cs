@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -113,7 +114,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _from != null; }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ContentRangeHeaderValue;
 
@@ -176,16 +177,16 @@ namespace Microsoft.Net.Http.Headers
         public static ContentRangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out ContentRangeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentRangeHeaderValue parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue parsedValue)
+        private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -351,7 +352,7 @@ namespace Microsoft.Net.Http.Headers
             int toLength,
             int lengthStartIndex,
             int lengthLength,
-            out ContentRangeHeaderValue parsedValue)
+            [NotNullWhen(true)]out ContentRangeHeaderValue? parsedValue)
         {
             parsedValue = null;
 

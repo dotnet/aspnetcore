@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await sse.ProcessRequestAsync(context, context.RequestAborted);
 
                 Assert.Equal("text/event-stream", context.Response.ContentType);
-                Assert.Equal("no-cache", context.Response.Headers["Cache-Control"]);
+                Assert.Equal("no-cache,no-store", context.Response.Headers["Cache-Control"]);
+                Assert.Equal("no-cache", context.Response.Headers["Pragma"]);
             }
         }
 

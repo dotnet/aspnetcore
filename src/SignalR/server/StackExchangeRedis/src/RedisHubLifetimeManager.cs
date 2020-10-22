@@ -17,6 +17,10 @@ using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 {
+    /// <summary>
+    /// The Redis scaleout provider for multi-server support.
+    /// </summary>
+    /// <typeparam name="THub">The type of <see cref="Hub"/> to manage connections for.</typeparam>
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable where THub : Hub
     {
         private readonly HubConnectionStore _connections = new HubConnectionStore();
@@ -34,6 +38,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private readonly AckHandler _ackHandler;
         private int _internalId;
 
+        /// <summary>
+        /// Constructs the <see cref="RedisHubLifetimeManager{THub}"/> with types from Dependency Injection.
+        /// </summary>
+        /// <param name="logger">The logger to write information about what the class is doing.</param>
+        /// <param name="options">The <see cref="RedisOptions"/> that influence behavior of the Redis connection.</param>
+        /// <param name="hubProtocolResolver">The <see cref="IHubProtocolResolver"/> to get an <see cref="IHubProtocol"/> instance when writing to connections.</param>
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver)
@@ -41,6 +51,14 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         {
         }
 
+        /// <summary>
+        /// Constructs the <see cref="RedisHubLifetimeManager{THub}"/> with types from Dependency Injection.
+        /// </summary>
+        /// <param name="logger">The logger to write information about what the class is doing.</param>
+        /// <param name="options">The <see cref="RedisOptions"/> that influence behavior of the Redis connection.</param>
+        /// <param name="hubProtocolResolver">The <see cref="IHubProtocolResolver"/> to get an <see cref="IHubProtocol"/> instance when writing to connections.</param>
+        /// <param name="globalHubOptions">The global <see cref="HubOptions"/>.</param>
+        /// <param name="hubOptions">The <typeparamref name="THub"/> specific options.</param>
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver,
@@ -65,6 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             _ = EnsureRedisServerConnection();
         }
 
+        /// <inheritdoc />
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
             await EnsureRedisServerConnection();
@@ -86,6 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             await Task.WhenAll(connectionTask, userTask);
         }
 
+        /// <inheritdoc />
         public override Task OnDisconnectedAsync(HubConnectionContext connection)
         {
             _connections.Remove(connection);
@@ -119,18 +139,21 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return Task.WhenAll(tasks);
         }
 
+        /// <inheritdoc />
         public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.All, message);
         }
 
+        /// <inheritdoc />
         public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
             return PublishAsync(_channels.All, message);
         }
 
+        /// <inheritdoc />
         public override Task SendConnectionAsync(string connectionId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -150,6 +173,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return PublishAsync(_channels.Connection(connectionId), message);
         }
 
+        /// <inheritdoc />
         public override Task SendGroupAsync(string groupName, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
@@ -161,6 +185,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return PublishAsync(_channels.Group(groupName), message);
         }
 
+        /// <inheritdoc />
         public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
@@ -172,12 +197,14 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return PublishAsync(_channels.Group(groupName), message);
         }
 
+        /// <inheritdoc />
         public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.User(userId), message);
         }
 
+        /// <inheritdoc />
         public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -200,6 +227,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Add);
         }
 
+        /// <inheritdoc />
         public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -222,6 +250,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Remove);
         }
 
+        /// <inheritdoc />
         public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (connectionIds == null)
@@ -240,6 +269,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return Task.WhenAll(publishTasks);
         }
 
+        /// <inheritdoc />
         public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (groupNames == null)
@@ -260,6 +290,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return Task.WhenAll(publishTasks);
         }
 
+        /// <inheritdoc />
         public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (userIds.Count > 0)
@@ -352,6 +383,9 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             });
         }
 
+        /// <summary>
+        /// Cleans up the Redis connection.
+        /// </summary>
         public void Dispose()
         {
             _bus?.UnsubscribeAll();
@@ -465,7 +499,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                     {
                         var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
 
-                        var tasks = new List<Task>();
+                        var tasks = new List<Task>(subscriptions.Count);
                         foreach (var userConnection in subscriptions)
                         {
                             tasks.Add(userConnection.WriteAsync(invocation.Message).AsTask());
@@ -491,7 +525,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                 {
                     var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
 
-                    var tasks = new List<Task>();
+                    var tasks = new List<Task>(groupConnections.Count);
                     foreach (var groupConnection in groupConnections)
                     {
                         if (invocation.ExcludedConnectionIds?.Contains(groupConnection.ConnectionId) == true)

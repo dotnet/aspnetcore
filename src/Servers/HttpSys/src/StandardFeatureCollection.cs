@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly Dictionary<Type, Func<FeatureContext, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext, object>>()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
+            { typeof(IHttpRequestBodyDetectionFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpResponseBodyFeature), _identityFunc },
@@ -27,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
             { typeof(IHttpSysRequestInfoFeature), _identityFunc },
+            { typeof(IHttpResponseTrailersFeature), ctx => ctx.GetResponseTrailersFeature() },
+            { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         };
 
         private readonly FeatureContext _featureContext;
@@ -41,6 +45,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _featureFuncLookup[typeof(IHttpUpgradeFeature)] = _identityFunc;
                 // Win8+
                 _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
+            }
+
+            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            {
+                _featureFuncLookup[typeof(IHttpSysRequestDelegationFeature)] = _identityFunc;
             }
         }
 

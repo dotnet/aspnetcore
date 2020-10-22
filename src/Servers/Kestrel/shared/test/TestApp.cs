@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers["Content-Length"] = bytes.Length.ToString();
+            response.Headers["Content-Length"] = bytes.Length.ToString(CultureInfo.InvariantCulture);
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Testing
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers["Content-Length"] = bytes.Length.ToString();
+            response.Headers["Content-Length"] = bytes.Length.ToString(CultureInfo.InvariantCulture);
             await response.StartAsync();
 
             var memory = response.BodyWriter.GetMemory(bytes.Length);

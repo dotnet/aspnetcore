@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Contains extensions for managing the lifecycle of an <see cref="IWebHost"/>.
+    /// </summary>
     public static class WebHostExtensions
     {
         /// <summary>
@@ -19,9 +24,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="timeout">The timeout for stopping gracefully. Once expired the
         /// server may terminate any remaining active connections.</param>
         /// <returns>A <see cref="Task"/> that completes when the <see cref="IWebHost"/> stops.</returns>
-        public static Task StopAsync(this IWebHost host, TimeSpan timeout)
+        public static async Task StopAsync(this IWebHost host, TimeSpan timeout)
         {
-            return host.StopAsync(new CancellationTokenSource(timeout).Token);
+            using var cts = new CancellationTokenSource(timeout);
+            await host.StopAsync(cts.Token);
         }
 
         /// <summary>
@@ -102,7 +108,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static async Task RunAsync(this IWebHost host, CancellationToken token, string startupMessage)
+        private static async Task RunAsync(this IWebHost host, CancellationToken token, string? startupMessage)
         {
             try
             {
@@ -113,8 +119,8 @@ namespace Microsoft.AspNetCore.Hosting
 
                 if (!options.SuppressStatusMessages)
                 {
-                    Console.WriteLine($"Hosting environment: {hostingEnvironment.EnvironmentName}");
-                    Console.WriteLine($"Content root path: {hostingEnvironment.ContentRootPath}");
+                    Console.WriteLine($"Hosting environment: {hostingEnvironment?.EnvironmentName}");
+                    Console.WriteLine($"Content root path: {hostingEnvironment?.ContentRootPath}");
 
 
                     var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
@@ -149,19 +155,19 @@ namespace Microsoft.AspNetCore.Hosting
 
         private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
         {
-            var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
+            var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             token.Register(state =>
             {
-                ((IHostApplicationLifetime)state).StopApplication();
+                ((IHostApplicationLifetime)state!).StopApplication();
             },
             applicationLifetime);
 
-            var waitForStop = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var waitForStop = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             applicationLifetime.ApplicationStopping.Register(obj =>
             {
-                var tcs = (TaskCompletionSource<object>)obj;
-                tcs.TrySetResult(null);
+                var tcs = (TaskCompletionSource)obj!;
+                tcs.TrySetResult();
             }, waitForStop);
 
             await waitForStop.Task;

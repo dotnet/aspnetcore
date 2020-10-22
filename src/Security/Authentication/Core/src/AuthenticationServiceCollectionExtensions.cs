@@ -13,6 +13,11 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class AuthenticationServiceCollectionExtensions
     {
+        /// <summary>
+        /// Registers services required by authentication services.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
         public static AuthenticationBuilder AddAuthentication(this IServiceCollection services)
         {
             if (services == null)
@@ -27,10 +32,24 @@ namespace Microsoft.Extensions.DependencyInjection
             return new AuthenticationBuilder(services);
         }
 
+        /// <summary>
+        /// Registers services required by authentication services. <paramref name="defaultScheme"/> specifies the name of the
+        /// scheme to use by default when a specific scheme isn't requested.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="defaultScheme">The default scheme used as a fallback for all other schemes.</param>
+        /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
         public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, string defaultScheme)
             => services.AddAuthentication(o => o.DefaultScheme = defaultScheme);
 
-        public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
+        /// <summary>
+        /// Registers services required by authentication services and configures <see cref="AuthenticationOptions"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureOptions">A delegate to configure <see cref="AuthenticationOptions"/>.</param>
+        /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
+        public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
+        {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
@@ -58,9 +77,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public void PostConfigure(string name, TOptions options)
             {
-                options.SignInScheme = options.SignInScheme ?? _authOptions.DefaultSignInScheme;
+                options.SignInScheme ??= _authOptions.DefaultSignInScheme;
             }
         }
-
     }
 }

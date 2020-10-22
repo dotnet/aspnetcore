@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         private HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -192,7 +190,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var parameterBuilder = new StringBuilder();
             foreach (var signaturePart in signatureParts)
             {
-                parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
+                parameterBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
             }
             parameterBuilder.Length--;
             var parameterString = parameterBuilder.ToString();
@@ -213,7 +211,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 var queryStringBuilder = new StringBuilder("?");
                 foreach (var queryParam in queryParameters)
                 {
-                    queryStringBuilder.AppendFormat("{0}={1}&", queryParam.Key, queryParam.Value);
+                    queryStringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
                 }
                 queryStringBuilder.Length--;
                 queryString = queryStringBuilder.ToString();
@@ -223,7 +221,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             authorizationHeaderBuilder.Append("OAuth ");
             foreach (var authorizationPart in authorizationParts)
             {
-                authorizationHeaderBuilder.AppendFormat("{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+                authorizationHeaderBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
             }
             authorizationHeaderBuilder.Length--;
 
@@ -301,9 +299,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return result;
         }
 
-        private static string GenerateTimeStamp()
+        private string GenerateTimeStamp()
         {
-            var secondsSinceUnixEpocStart = DateTime.UtcNow - Epoch;
+            var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 

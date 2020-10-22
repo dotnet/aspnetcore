@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.SignalR
@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="connection">The connection to get the user ID for.</param>
         /// <returns>The user ID for the specified connection.</returns>
-        string GetUserId(HubConnectionContext connection);
+        string? GetUserId(HubConnectionContext connection);
     }
 }

@@ -91,6 +91,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _options = options;
         }
 
+        internal bool AllowEmptyBody { get; set; }
+
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -116,15 +118,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var httpContext = bindingContext.HttpContext;
 
-            var allowEmptyInputInModelBinding = _options?.AllowEmptyInputInBodyModelBinding == true;
-
             var formatterContext = new InputFormatterContext(
                 httpContext,
                 modelBindingKey,
                 bindingContext.ModelState,
                 bindingContext.ModelMetadata,
                 _readerFactory,
-                allowEmptyInputInModelBinding);
+                AllowEmptyBody);
 
             var formatter = (IInputFormatter)null;
             for (var i = 0; i < _formatters.Count; i++)

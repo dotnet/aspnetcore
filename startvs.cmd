@@ -13,7 +13,7 @@ SET DOTNET_MULTILEVEL_LOOKUP=0
 :: Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
 SET PATH=%DOTNET_ROOT%;%PATH%
 
-SET sln=%1
+SET sln=%~1
 
 IF "%sln%"=="" (
     echo Error^: Expected argument ^<SLN_FILE^>
@@ -27,4 +27,8 @@ IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     exit /b 1
 )
 
-start %sln%
+IF "%VSINSTALLDIR%" == "" (
+    start "" "%sln%"
+) else (
+    "%VSINSTALLDIR%\Common7\IDE\devenv.com" "%sln%"
+)

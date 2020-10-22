@@ -29,16 +29,16 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
     exit
 }
 
-if (Test-Path "$output_dir\node.exe")
+if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe found at $output_dir"
+    Write-Host "Node.exe found at $InstallDir"
     exit
 }
 
 $nodeFile="node-v$Version-win-x64"
 $url="http://nodejs.org/dist/v$Version/$nodeFile.zip"
 Write-Host "Starting download of NodeJs ${Version} from $url"
-Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
+& $PSScriptRoot\Download.ps1 $url nodejs.zip
 Write-Host "Done downloading NodeJS ${Version}"
 
 $tempPath = [System.IO.Path]::GetTempPath()
@@ -48,9 +48,10 @@ Write-Host "Extracting to $tempDir"
 
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
     # Use built-in commands where possible as they are cross-plat compatible
-    Microsoft.PowerShell.Archive\Expand-Archive -Path "nodejs.zip" -DestinationPath $tempDir
+    Microsoft.PowerShell.Archive\Expand-Archive -Path "nodejs.zip" -DestinationPath $tempDir -Force
 }
 else {
+    Remove-Item $tempDir -Recurse -ErrorAction Ignore
     # Fallback to old approach for old installations of PowerShell
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)

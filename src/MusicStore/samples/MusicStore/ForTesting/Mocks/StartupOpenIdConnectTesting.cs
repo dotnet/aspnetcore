@@ -46,7 +46,7 @@ namespace MusicStore
             // Add EF services to the services container
             // Add EF services to the services container
             services.AddDbContext<MusicStoreContext>(options =>
-                options.UseSqlite("Data Source=MusicStore.db"));
+                options.UseSqlite("Data Source=MusicStore.db;Cache=Shared"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -103,6 +103,8 @@ namespace MusicStore
             {
                 options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -123,7 +125,7 @@ namespace MusicStore
             // During development use the ErrorPage middleware to display error information in the browser
             app.UseDeveloperExceptionPage();
 
-            app.UseDatabaseErrorPage();
+            app.UseMigrationsEndPoint();
 
             // Configure Session.
             app.UseSession();

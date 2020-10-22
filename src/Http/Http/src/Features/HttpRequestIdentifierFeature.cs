@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Features
         // for a roughly increasing _requestId over restarts
         private static long _requestId = DateTime.UtcNow.Ticks;
 
-        private string _id = null;
+        private string? _id = null;
 
         public string TraceIdentifier
         {

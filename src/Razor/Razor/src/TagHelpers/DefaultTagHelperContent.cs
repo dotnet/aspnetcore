@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return Encoding.UTF8;
                 }
             }
 

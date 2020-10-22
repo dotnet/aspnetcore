@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _unexpectedError(logger, className, methodName, ex);
             }
 
-            public static void ConnectionBadRequest(ILogger logger, string connectionId, BadHttpRequestException ex)
+            public static void ConnectionBadRequest(ILogger logger, string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
             {
                 _connectionBadRequest(logger, connectionId, ex.Message, ex);
             }

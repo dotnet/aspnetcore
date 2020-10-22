@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task StopTransportWhenConnectionAlreadyStoppedOnServer()
         {
-            var pollRequestTcs = new TaskCompletionSource<object>();
+            var pollRequestTcs = new TaskCompletionSource();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             var firstPoll = true;
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var stopTask = longPollingTransport.StopAsync();
 
-                    pollRequestTcs.SetResult(null);
+                    pollRequestTcs.SetResult();
 
                     await stopTask.OrTimeout();
                 }
@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var sentRequests = new List<byte[]>();
             var pollTcs = new TaskCompletionSource<HttpResponseMessage>();
-            var deleteTcs = new TaskCompletionSource<object>();
+            var deleteTcs = new TaskCompletionSource();
             var firstPoll = true;
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         // The poll task should have been completed
                         Assert.True(pollTcs.Task.IsCompleted);
 
-                        deleteTcs.TrySetResult(null);
+                        deleteTcs.TrySetResult();
 
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     }
@@ -632,7 +632,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task LongPollingTransportRePollsIfRequestCanceled()
         {
             var numPolls = 0;
-            var completionTcs = new TaskCompletionSource<object>();
+            var completionTcs = new TaskCompletionSource();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         throw new OperationCanceledException();
                     }
 
-                    completionTcs.SetResult(null);
+                    completionTcs.SetResult();
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    /// <summary>
+    /// Limits for <see cref="KestrelServer"/>.
+    /// </summary>
     public class KestrelServerLimits
     {
         // Matches the non-configurable default response buffer size for Kestrel in 1.0.0
@@ -257,6 +260,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Limits only applicable to HTTP/2 connections.
         /// </summary>
         public Http2Limits Http2 { get; } = new Http2Limits();
+
+        /// <summary>
+        /// Limits only applicable to HTTP/3 connections.
+        /// </summary>
+        public Http3Limits Http3 { get; } = new Http3Limits();
 
         /// <summary>
         /// Gets or sets the request body minimum data rate in bytes/second.

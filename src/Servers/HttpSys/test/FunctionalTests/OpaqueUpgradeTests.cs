@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class OpaqueUpgradeTests
     {
         [ConditionalFact]
-        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         public async Task OpaqueUpgrade_DownLevel_FeatureIsAbsent()
         {
             using (Utilities.CreateHttpServer(out var address, httpContext =>
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
             string address;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
             var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_GetUpgrade_NotAffectedByMaxRequestBodyLimit()
         {
             var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
         {
             var callbackCalled = false;
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         // See HTTP_VERB for known verbs
         [InlineData("UNKNOWN", null)]
         [InlineData("INVALID", null)]
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         // Http.Sys returns a 411 Length Required if PUT or POST does not specify content-length or chunked.
         [InlineData("POST", "Content-Length: 10")]
         [InlineData("POST", "Transfer-Encoding: chunked")]
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             StreamReader reader = new StreamReader(stream);
             string statusLine = await reader.ReadLineAsync();
             string[] parts = statusLine.Split(' ');
-            if (int.Parse(parts[1]) != 101)
+            if (int.Parse(parts[1], CultureInfo.InvariantCulture) != 101)
             {
                 throw new InvalidOperationException("The response status code was incorrect: " + statusLine);
             }

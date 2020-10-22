@@ -1129,7 +1129,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [Fact]
         public async Task CollectionModelBinder_CollectionOfSimpleTypes_DoesNotResultInValidationError()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/13512
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13512
             // Arrange
             var parameter = new ParameterDescriptor()
             {

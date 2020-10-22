@@ -62,7 +62,7 @@ namespace Microsoft.Net.Http.Headers
 
             // NameValueHeaderValue collection property
             Assert.NotNull(cacheControl.Extensions);
-            Assert.Throws<ArgumentNullException>(() => cacheControl.Extensions.Add(null));
+            Assert.Throws<ArgumentNullException>(() => cacheControl.Extensions.Add(null!));
             cacheControl.Extensions.Add(new NameValueHeaderValue("name", "value"));
             Assert.Equal(1, cacheControl.Extensions.Count);
             Assert.Equal(new NameValueHeaderValue("name", "value"), cacheControl.Extensions.First());
@@ -351,9 +351,9 @@ namespace Microsoft.Net.Http.Headers
             cacheControl2.NoCacheHeaders.Add("token1");
             cacheControl2.NoCacheHeaders.Add("token2");
 
-            CompareValues(cacheControl1, cacheControl2, false);
+            CompareValues(cacheControl1!, cacheControl2, false);
 
-            cacheControl1.NoCacheHeaders.Add("token1");
+            cacheControl1!.NoCacheHeaders.Add("token1");
             CompareValues(cacheControl1, cacheControl2, true);
 
             // Since NoCache and Private generate different hash codes, even if NoCacheHeaders and PrivateHeaders
@@ -569,28 +569,26 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(areEqual, y.Equals(x));
         }
 
-        private void CheckValidParse(string input, CacheControlHeaderValue expectedResult)
+        private void CheckValidParse(string? input, CacheControlHeaderValue expectedResult)
         {
             var result = CacheControlHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => CacheControlHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, CacheControlHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, CacheControlHeaderValue expectedResult)
         {
-            CacheControlHeaderValue result = null;
-            Assert.True(CacheControlHeaderValue.TryParse(input, out result));
+            Assert.True(CacheControlHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            CacheControlHeaderValue result = null;
-            Assert.False(CacheControlHeaderValue.TryParse(input, out result));
+            Assert.False(CacheControlHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

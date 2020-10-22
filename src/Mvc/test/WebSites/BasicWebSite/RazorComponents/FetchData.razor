@@ -1,6 +1,6 @@
 ﻿@using BasicWebSite.Services
 @inject WeatherForecastService ForecastService
-
+@preservewhitespace true
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
@@ -34,7 +34,6 @@ else
         </tbody>
     </table>
 }
-
 @code {
     [Parameter] public DateTime StartDate { get; set; }
 

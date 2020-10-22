@@ -1,0 +1,117 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.DesignTime.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <!--
+      Defines the list of file extensions that VS will monitor to reload the application.
+      We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
+    -->
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' != ''">$(UpToDateReloadFileTypes);$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Defines the generic .NET Core 'Razor' capability.
+
+      Note that we don't define any capabilities here that depend on the version of the runtime/toolset
+      in use by the project. Those capabilities are defined by the relevant runtime packages so that
+      we use the lack of the capability to detect downlevel scenarios.
+    -->
+    <ProjectCapability Include="DotNetCoreRazor"/>
+
+    <!--
+      Defines the ability to understand the configuration for the Razor language service provided by
+      the runtime/toolset packages. Introduced in 2.1
+    -->
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'"/>
+
+    <!--
+      Activates the set of nesting behaviors we want from solution explorer.
+    -->
+    <ProjectCapability Include="WebNestingDefaults" />
+
+    <!--
+      Tooling support for TypeScript files.
+    -->
+    <ProjectCapability Include="SupportsTypeScriptNuGet" />
+  </ItemGroup>
+
+  <!--
+    In order to properly support Blazor partial classes we need to ensure that older SDKs don't
+    add declaration files to the compile list. We do all the compilation work in-memory in latest
+    VS.
+  -->
+  <Target Name="_RemoveRazorDeclartionsFromCompile" AfterTargets="RazorGenerateComponentDeclaration">
+    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
+      <Compile Remove="@(_RazorComponentDeclaration)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.
+    Conditinally import these capabilities if the project isn't targeting the WebSdk.
+   -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)'==''">
+    <ProjectCapability Include="SupportHierarchyContextSvc" />
+    <ProjectCapability Include="DynamicDependentFile" />
+    <ProjectCapability Include="DynamicFileNesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorConfiguration.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorExtension.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorGeneral.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorGenerateWithTargetPath.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorComponentWithTargetPath.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <Target
+    Name="RazorGenerateDesignTime"
+    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths"
+    Returns="@(RazorGenerateWithTargetPath)">
+  </Target>
+
+  <!--
+    Using DependsOnTargets here because real dependencies of this target aren't defined in
+    a downlevel (pre-3.0) SDK.
+  -->
+  <Target
+    Name="RazorGenerateComponentDesignTime"
+    DependsOnTargets="$(_RazorGenerateComponentDesignTimeDependsOn)"
+    Returns="@(RazorComponentWithTargetPath)">
+  </Target>
+
+
+  <!--
+    Using DependsOnTargets here because real dependencies of this target aren't defined in
+    a downlevel (pre-3.0) SDK.
+
+    Called by the project system to update generated declaration files
+  -->
+  <Target
+    Name="RazorGenerateComponentDeclarationDesignTime"
+    DependsOnTargets="$(_RazorGenerateComponentDeclarationDesignTimeDependsOn)">
+  </Target>
+
+</Project>

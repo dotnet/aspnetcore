@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
+        private HeaderCollection _trailers;
 
         internal Response(RequestContext requestContext)
         {
@@ -71,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Http.Sys automatically sends 100 Continue responses when you read from the request body.
                 if (value <= 100 || 999 < value)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(Resources.Exception_InvalidStatusCode, value));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(CultureInfo.CurrentCulture, Resources.Exception_InvalidStatusCode, value));
                 }
                 CheckResponseStarted();
                 _nativeResponse.Response_V1.StatusCode = (ushort)value;
@@ -142,6 +145,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public HeaderCollection Headers { get; }
 
+        public HeaderCollection Trailers => _trailers ??= new HeaderCollection(checkTrailers: true) { IsReadOnly = BodyIsFinished };
+
+        internal bool HasTrailers => _trailers?.Count > 0;
+
+        // Trailers are supported on this OS, it's HTTP/2, and the app added a Trailer response header to announce trailers were intended.
+        // Needed to delay the completion of Content-Length responses.
+        internal bool TrailersExpected => HasTrailers
+            || (HttpApi.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
+                    && Headers.ContainsKey(HttpKnownHeaderNames.Trailer));
+
         internal long ExpectedBodyLength
         {
             get { return _expectedBodyLength; }
@@ -165,6 +178,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 CheckResponseStarted();
                 _cacheTtl = value;
+            }
+        }
+
+        // The response is being finished with or without trailers. Mark them as readonly to inform
+        // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
+        internal void MakeTrailersReadOnly()
+        {
+            if (_trailers != null)
+            {
+                _trailers.IsReadOnly = true;
             }
         }
 
@@ -400,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _boundaryType = BoundaryType.ContentLength;
                 // ComputeLeftToWrite checks for HEAD requests when setting _leftToWrite
                 _expectedBodyLength = responseContentLength.Value;
-                if (_expectedBodyLength == writeCount && !isHeadRequest)
+                if (_expectedBodyLength == writeCount && !isHeadRequest && !TrailersExpected)
                 {
                     // A single write with the whole content-length. Http.Sys will set the content-length for us in this scenario.
                     // If we don't remove it then range requests served from cache will have two.
@@ -430,6 +453,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else
             {
                 // v1.0 and the length cannot be determined, so we must close the connection after writing data
+                // Or v2.0 and chunking isn't required.
                 keepConnectionAlive = false;
                 _boundaryType = BoundaryType.Close;
             }
@@ -622,6 +646,73 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal unsafe void SerializeTrailers(HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks, int currentChunk, List<GCHandle> pins)
+        {
+            Debug.Assert(currentChunk == dataChunks.Length - 1);
+            Debug.Assert(HasTrailers);
+            MakeTrailersReadOnly();
+            var trailerCount = 0;
+
+            foreach (var trailerPair in Trailers)
+            {
+                trailerCount += trailerPair.Value.Count;
+            }
+
+            var pinnedHeaders = new List<GCHandle>();
+
+            var unknownHeaders = new HttpApiTypes.HTTP_UNKNOWN_HEADER[trailerCount];
+            var gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
+            pinnedHeaders.Add(gcHandle);
+            dataChunks[currentChunk].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
+            dataChunks[currentChunk].trailers.trailerCount = (ushort)trailerCount;
+            dataChunks[currentChunk].trailers.pTrailers = gcHandle.AddrOfPinnedObject();
+
+            try
+            {
+                var unknownHeadersOffset = 0;
+
+                foreach (var headerPair in Trailers)
+                {
+                    if (headerPair.Value.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    var headerName = headerPair.Key;
+                    var headerValues = headerPair.Value;
+
+                    for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
+                    {
+                        // Add Name
+                        var bytes = HeaderEncoding.GetBytes(headerName);
+                        unknownHeaders[unknownHeadersOffset].NameLength = (ushort)bytes.Length;
+                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        pinnedHeaders.Add(gcHandle);
+                        unknownHeaders[unknownHeadersOffset].pName = (byte*)gcHandle.AddrOfPinnedObject();
+
+                        // Add Value
+                        var headerValue = headerValues[headerValueIndex] ?? string.Empty;
+                        bytes = HeaderEncoding.GetBytes(headerValue);
+                        unknownHeaders[unknownHeadersOffset].RawValueLength = (ushort)bytes.Length;
+                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        pinnedHeaders.Add(gcHandle);
+                        unknownHeaders[unknownHeadersOffset].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
+                        unknownHeadersOffset++;
+                    }
+                }
+
+                Debug.Assert(unknownHeadersOffset == trailerCount);
+            }
+            catch
+            {
+                FreePinnedHeaders(pinnedHeaders);
+                throw;
+            }
+
+            // Success, keep the pins.
+            pins.AddRange(pinnedHeaders);
+        }
+
         // Subset of ComputeHeaders
         internal void SendOpaqueUpgrade()
         {
@@ -638,6 +729,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new HttpSysException((int)errorCode);
             }
+        }
+
+        internal void MarkDelegated()
+        {
+            Abort();
+            _nativeStream?.MarkDelegated();
         }
 
         internal void CancelLastWrite()

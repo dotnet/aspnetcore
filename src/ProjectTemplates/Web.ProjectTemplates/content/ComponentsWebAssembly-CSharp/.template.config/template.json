@@ -1,0 +1,519 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly"
+  ],
+  "name": "Blazor WebAssembly App",
+  "defaultName": "WebApplication",
+  "description": "A project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "groupIdentity": "Microsoft.Web.Blazor.Wasm",
+  "precedence": "6002",
+  "guids": [
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
+    "0AFFA7FD-4E37-4636-AB91-3753E746DB98",
+    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
+  ],
+  "identity": "Microsoft.Web.Blazor.Wasm.CSharp.5.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "condition": "(Hosted && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "ComponentsWebAssembly-CSharp.sln"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Server/ComponentsWebAssembly-CSharp.Server.csproj"
+    },
+    {
+      "condition": "(!Hosted)",
+      "path": "ComponentsWebAssembly-CSharp.Client.csproj"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Client/ComponentsWebAssembly-CSharp.Client.csproj"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Shared/ComponentsWebAssembly-CSharp.Shared.csproj"
+    }
+  ],
+  "shortName": "blazorwasm",
+  "sourceName": "ComponentsWebAssembly-CSharp",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(!Hosted)",
+          "exclude": [
+            "Server/**",
+            "Shared/**",
+            "*.sln"
+          ],
+          "rename": {
+            ".Client.csproj": ".csproj",
+            "Client": "."
+          }
+        },
+        {
+          "condition": "(Hosted)",
+          "exclude": [
+            "Client/wwwroot/sample-data/**"
+          ]
+        },
+        {
+          "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        },
+        {
+          "condition": "(!PWA)",
+          "exclude": [
+            "Client/wwwroot/service-worker*.js",
+            "Client/wwwroot/manifest.json",
+            "Client/wwwroot/icon-512.png"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth || UseLocalDB)",
+          "exclude": [
+            "Server/app.db"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth)",
+          "exclude": [
+            "Server/Data/SqlLite/**",
+            "Server/Data/SqlServer/**",
+            "Server/Data/ApplicationDbContext.cs",
+            "Server/Areas/**",
+            "Client/wwwroot/appsettings.Development.json"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB)",
+          "rename": {
+            "Server/Data/SqlServer/": "Server/Data/Migrations/"
+          },
+          "exclude": [
+            "Server/Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB)",
+          "rename": {
+            "Server/Data/SqlLite/": "Server/Data/Migrations/"
+          },
+          "exclude": [
+            "Server/Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(Hosted && NoAuth)",
+          "rename": {
+            "Client/Shared/MainLayout.NoAuth.razor": "Client/Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Client/Pages/Authentication.razor",
+            "Client/Shared/LoginDisplay.*.razor",
+            "Client/Shared/MainLayout.Auth.razor",
+            "Client/Shared/RedirectToLogin.razor",
+            "Client/wwwroot/appsettings.Development.json",
+            "Client/wwwroot/appsettings.json"
+          ]
+        },
+        {
+          "condition": "(Hosted && !NoAuth)",
+          "rename": {
+            "Client/Shared/MainLayout.Auth.razor": "Client/Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Client/Shared/MainLayout.NoAuth.razor"
+          ]
+        },
+        {
+          "condition": "(Hosted && IndividualLocalAuth)",
+          "rename": {
+            "Client/Shared/LoginDisplay.IndividualLocalAuth.razor": "Client/Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor",
+            "Client/wwwroot/appsettings.json",
+            "Client/wwwroot/appsettings.Development.json"
+          ]
+        },
+        {
+          "condition": "(Hosted && (IndividualB2CAuth || OrganizationalAuth))",
+          "rename": {
+            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor": "Client/Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Client/Shared/LoginDisplay.IndividualLocalAuth.razor"
+          ]
+        },
+        {
+          "condition": "(!Hosted && NoAuth)",
+          "rename": {
+            "Client/Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Client/Pages/Authentication.razor",
+            "Client/Shared/LoginDisplay.*.razor",
+            "Client/Shared/MainLayout.Auth.razor",
+            "Client/Shared/RedirectToLogin.razor",
+            "Client/wwwroot/appsettings.Development.json",
+            "Client/wwwroot/appsettings.json"
+          ]
+        },
+        {
+          "condition": "(!Hosted && !NoAuth)",
+          "rename": {
+            "Client/Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Client/Shared/MainLayout.NoAuth.razor"
+          ]
+        },
+        {
+          "condition": "(!Hosted && IndividualLocalAuth)",
+          "rename": {
+            "Client/Shared/LoginDisplay.IndividualLocalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor"
+          ]
+        },
+        {
+          "condition": "(!Hosted && (IndividualB2CAuth || OrganizationalAuth))",
+          "rename": {
+            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Client/Shared/LoginDisplay.IndividualLocalAuth.razor"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth || !Hosted)",
+          "exclude": [
+            "Server/Areas/Identity/Pages/Shared/_LoginPartial.cshtml",
+            "Server/Controllers/OidcConfigurationController.cs",
+            "Server/Models/ApplicationUser.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net5.0",
+          "description": "Target net5.0"
+        }
+      ],
+      "replaces": "net5.0",
+      "defaultValue": "net5.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "Hosted": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app."
+    },
+    "auth": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No authentication"
+        },
+        {
+          "choice": "Individual",
+          "description": "Individual authentication"
+        },
+        {
+          "choice": "IndividualB2C",
+          "description": "Individual authentication with Azure AD B2C"
+        },
+        {
+          "choice": "SingleOrg",
+          "description": "Organizational authentication for a single tenant"
+        }
+      ],
+      "defaultValue": "None",
+      "description": "The type of authentication to use"
+    },
+    "Authority": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "https://login.microsoftonline.com/",
+      "description": "The authority of the OIDC provider (use with standalone Individual auth)."
+    },
+    "MissingAuthority": {
+      "type": "computed",
+      "value": "(IndividualAuth && !Hosted && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
+    },
+    "AAdB2CInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "https:////aadB2CInstance.b2clogin.com/",
+      "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
+    },
+    "SignUpSignInPolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "b2c_1_susi",
+      "replaces": "MySignUpSignInPolicyId",
+      "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
+    },
+    "AADInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/",
+      "replaces": "https:////login.microsoftonline.com/",
+      "description": "The Azure Active Directory instance to connect to (use with SingleOrg auth)."
+    },
+    "ClientId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "33333333-3333-3333-33333333333333333",
+      "description": "The Client ID for this project (use with IndividualB2C, SingleOrg or Individual auth in standalone scenarios)."
+    },
+    "Domain": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "qualified.domain.name",
+      "description": "The domain for the directory tenant (use with SingleOrg or IndividualB2C auth)."
+    },
+    "AppIDUri": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "api.id.uri",
+      "description": "The App ID Uri for the server API we want to call (use with SingleOrg or IndividualB2C auth)."
+    },
+    "APIClientId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "11111111-1111-1111-11111111111111111",
+      "description": "The Client ID for the API that the server hosts (use with IndividualB2C, SingleOrg)."
+    },
+    "DefaultScope": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "api-scope",
+      "defaultValue": "access_as_user",
+      "description": "The API scope the client needs to request to provision an access token. (use with IndividualB2C, SingleOrg)."
+    },
+    "TenantId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "22222222-2222-2222-2222-222222222222",
+      "description": "The TenantId ID of the directory to connect to (use with SingleOrg auth)."
+    },
+    "OrgReadAccess": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to allow this application read access to the directory (only applies to SingleOrg)."
+    },
+    "UserSecretsId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "HttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      },
+      "replaces": "8080"
+    },
+    "HttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
+    },
+    "HttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
+      },
+      "replaces": "44300"
+    },
+    "PWA": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
+    },
+    "OrganizationalAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\" || auth == \"MultiOrg\")"
+    },
+    "MultiOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"MultiOrg\")"
+    },
+    "SingleOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\")"
+    },
+    "IndividualLocalAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\")"
+    },
+    "IndividualAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\" || auth == \"IndividualB2C\")"
+    },
+    "IndividualB2CAuth": {
+      "type": "computed",
+      "value": "(auth == \"IndividualB2C\")"
+    },
+    "NoAuth": {
+      "type": "computed",
+      "value": "(!(IndividualAuth || OrganizationalAuth))"
+    },
+    "RequiresHttps": {
+      "type": "computed",
+      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+    },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
+    },
+    "UseLocalDB": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "copyrightYear",
+      "parameters": {
+        "format": "yyyy"
+      }
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue": "https://graph.microsoft.com/v1.0",
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "(( (IndividualB2CAuth && !Hosted) || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || GenerateGraph)"
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "condition": "(!skipRestore && Hosted)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "condition": "(!skipRestore && !Hosted)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "args": {
+        "files": ["ComponentsWebAssembly-CSharp.Client.csproj"]
+      },
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

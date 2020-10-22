@@ -9,6 +9,7 @@
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
     <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:inner --no-color --configuration $(Configuration)</NpmTestArgs>
     <NpmBuildArgs>run build:inner</NpmBuildArgs>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,8 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running tests for $(MSBuildProjectName)" />
     <Yarn Condition="'$(DailyTests)' != 'true'" Command="$(NpmTestArgs)" />
     <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />

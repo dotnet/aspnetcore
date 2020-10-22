@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.IO;
 using System.Text.Json;
 
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Internal
             };
         }
 
-        public static string ReadAsString(this ref Utf8JsonReader reader, string propertyName)
+        public static string? ReadAsString(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();
 

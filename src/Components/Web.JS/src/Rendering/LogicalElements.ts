@@ -54,13 +54,14 @@ export function toLogicalRootCommentElement(start: Comment, end: Comment): Logic
   const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
   const children = getLogicalChildrenArray(parentLogicalElement);
   Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
+
   start[logicalParentPropname] = parentLogicalElement;
   // We might not have an end comment in the case of non-prerendered components.
   if (end) {
     start[logicalEndSiblingPropname] = end;
-    toLogicalElement(end, /* allowExistingcontents */ true);
+    toLogicalElement(end);
   }
-  return toLogicalElement(start, /* allowExistingContents */ true);
+  return toLogicalElement(start);
 }
 
 export function toLogicalElement(element: Node, allowExistingContents?: boolean): LogicalElement {
@@ -71,7 +72,10 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
     throw new Error('New logical elements must start empty, or allowExistingContents must be true');
   }
 
-  element[logicalChildrenPropname] = [];
+  if (!(logicalChildrenPropname in element)) { // If it's already a logical element, leave it alone
+    element[logicalChildrenPropname] = [];
+  }
+
   return element as unknown as LogicalElement;
 }
 
@@ -128,8 +132,10 @@ export function removeLogicalChild(parent: LogicalElement, childIndex: number) {
   // If it's a logical container, also remove its descendants
   if (childToRemove instanceof Comment) {
     const grandchildrenArray = getLogicalChildrenArray(childToRemove);
-    while (grandchildrenArray.length > 0) {
-      removeLogicalChild(childToRemove, 0);
+    if (grandchildrenArray) {
+      while (grandchildrenArray.length > 0) {
+        removeLogicalChild(childToRemove, 0);
+      }
     }
   }
 

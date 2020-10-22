@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Http
 
         private static IFormFileCollection EmptyFiles = new FormFileCollection();
 
-        private IFormFileCollection _files;
+        private IFormFileCollection? _files;
 
         private FormCollection()
         {
             // For static Empty
         }
 
-        public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files = null)
+        public FormCollection(Dictionary<string, StringValues>? fields, IFormFileCollection? files = null)
         {
             // can be null
             Store = fields;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
             private set { _files = value; }
         }
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.

@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// </remarks>
     public class RazorViewEngine : IRazorViewEngine
     {
+        /// <summary>
+        /// The view extension
+        /// </summary>
         public static readonly string ViewExtension = ".cshtml";
 
         private const string AreaKey = "area";

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     .Replace("[user]", userName)
                     .Replace("[errorlog]", errorLog)
                     .Replace("[accesslog]", accessLog)
-                    .Replace("[listenPort]", originalUri.Port.ToString() + (_portSelector != null ? " reuseport" : ""))
+                    .Replace("[listenPort]", originalUri.Port.ToString(CultureInfo.InvariantCulture) + (_portSelector != null ? " reuseport" : ""))
                     .Replace("[redirectUri]", redirectUri)
                     .Replace("[pidFile]", pidFile);
                 Logger.LogDebug("Using PID file: {pidFile}", pidFile);

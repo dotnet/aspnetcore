@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     public class ResultExecutedContext : FilterContext
     {
-        private Exception _exception;
-        private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private Exception? _exception;
+        private ExceptionDispatchInfo? _exceptionDispatchInfo;
 
         /// <summary>
         /// Instantiates a new <see cref="ResultExecutedContext"/> instance.
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the <see cref="System.Exception"/> caught while executing the result or result filters, if
         /// any.
         /// </summary>
-        public virtual Exception Exception
+        public virtual Exception? Exception
         {
             get
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the <see cref="System.Runtime.ExceptionServices.ExceptionDispatchInfo"/> for the
         /// <see cref="Exception"/>, if an <see cref="System.Exception"/> was caught and this information captured.
         /// </summary>
-        public virtual ExceptionDispatchInfo ExceptionDispatchInfo
+        public virtual ExceptionDispatchInfo? ExceptionDispatchInfo
         {
             get
             {

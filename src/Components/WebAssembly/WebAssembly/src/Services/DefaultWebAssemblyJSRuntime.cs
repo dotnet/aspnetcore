@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -10,15 +11,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     {
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new DefaultWebAssemblyJSRuntime();
 
+        public ElementReferenceContext ElementReferenceContext { get; }
+
         private DefaultWebAssemblyJSRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
+            ElementReferenceContext = new WebElementReferenceContext(this);
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
         #pragma warning disable IDE0051 // Remove unused private members. Invoked via Mono's JS interop mechanism (invoke_method)
         private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
         {
-            var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), callId: null);
+            var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId, CultureInfo.InvariantCulture), callId: null);
             return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
         }
 
@@ -36,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             long dotNetObjectId;
             if (char.IsDigit(assemblyNameOrDotNetObjectId[0]))
             {
-                dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId);
+                dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId, CultureInfo.InvariantCulture);
                 assemblyName = null;
             }
             else

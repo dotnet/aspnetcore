@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -366,7 +367,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             var calls = 0;
 
-            builder.Services.AddOidcAuthentication<TestAuthenticationState>(options => options.ProviderOptions.Authority = (++calls).ToString());
+            builder.Services.AddOidcAuthentication<TestAuthenticationState>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
             builder.Services.Replace(ServiceDescriptor.Singleton(typeof(NavigationManager), new TestNavigationManager()));
 
             var host = builder.Build();
@@ -388,7 +389,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             var calls = 0;
 
-            builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => options.ProviderOptions.Authority = (++calls).ToString());
+            builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
             builder.Services.Replace(ServiceDescriptor.Singleton(typeof(NavigationManager), new TestNavigationManager()));
 
             var host = builder.Build();

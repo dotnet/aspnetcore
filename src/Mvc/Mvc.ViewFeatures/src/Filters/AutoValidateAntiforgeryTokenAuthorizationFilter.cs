@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
@@ -23,10 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             }
 
             var method = context.HttpContext.Request.Method;
-            if (string.Equals("GET", method, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals("HEAD", method, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals("TRACE", method, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals("OPTIONS", method, StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(method) ||
+                HttpMethods.IsHead(method) ||
+                HttpMethods.IsTrace(method) ||
+                HttpMethods.IsOptions(method))
             {
                 return false;
             }

@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Routing
+﻿@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager NavigationManager
 <style type="text/css">
     a.active {
@@ -20,6 +20,8 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
     <li><NavLink href="/subdir/LongPage1">Long page 1</NavLink></li>
     <li><NavLink href="/subdir/LongPage2">Long page 2</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyAssembly" id="with-lazy-assembly">With lazy assembly</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyLoadedRoutes" id="with-lazy-routes">With lazy loaded routes</NavLink></li>
     <li><NavLink href="PreventDefaultCases">preventDefault cases</NavLink></li>
     <li><NavLink>Null href never matches</NavLink></li>
 </ul>

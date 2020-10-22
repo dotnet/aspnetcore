@@ -120,6 +120,9 @@
   <data name="InsecureConfiguration" xml:space="preserve">
     <value>The CORS protocol does not allow specifying a wildcard (any) origin and credentials at the same time. Configure the CORS policy by listing individual origins if credentials needs to be supported.</value>
   </data>
+  <data name="PolicyNotFound" xml:space="preserve">
+    <value>Unable to find CORS policy with name '{0}'.</value>
+  </data>
   <data name="PreflightMaxAgeOutOfRange" xml:space="preserve">
     <value>PreflightMaxAge must be greater than or equal to 0.</value>
   </data>

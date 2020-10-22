@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Routing
@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="value">The route value to transform.</param>
         /// <returns>The transformed value.</returns>
-        string TransformOutbound(object value);
+        string? TransformOutbound(object? value);
     }
 }

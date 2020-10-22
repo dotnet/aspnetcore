@@ -70,17 +70,17 @@ namespace Microsoft.AspNetCore.Authentication
         /// This cannot be set at the same time as BackchannelCertificateValidator unless the value 
         /// can be downcast to a WebRequestHandler.
         /// </summary>
-        public HttpMessageHandler BackchannelHttpHandler { get; set; }
+        public HttpMessageHandler? BackchannelHttpHandler { get; set; }
 
         /// <summary>
         /// Used to communicate with the remote identity provider.
         /// </summary>
-        public HttpClient Backchannel { get; set; }
+        public HttpClient Backchannel { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the type used to secure data.
         /// </summary>
-        public IDataProtectionProvider DataProtectionProvider { get; set; }
+        public IDataProtectionProvider? DataProtectionProvider { get; set; }
 
         /// <summary>
         /// The request path within the application's base path where the user-agent will be returned.
@@ -110,16 +110,19 @@ namespace Microsoft.AspNetCore.Authentication
         /// This value typically corresponds to a cookie middleware registered in the Startup class.
         /// When omitted, <see cref="AuthenticationOptions.DefaultSignInScheme"/> is used as a fallback value.
         /// </summary>
-        public string SignInScheme { get; set; }
+        public string? SignInScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the time limit for completing the authentication flow (15 minutes by default).
         /// </summary>
         public TimeSpan RemoteAuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(15);
 
+        /// <summary>
+        /// Gets or sets a value that allows subscribing to remote authentication events.
+        /// </summary>
         public new RemoteAuthenticationEvents Events
         {
-            get => (RemoteAuthenticationEvents)base.Events;
+            get => (RemoteAuthenticationEvents)base.Events!;
             set => base.Events = value;
         }
 

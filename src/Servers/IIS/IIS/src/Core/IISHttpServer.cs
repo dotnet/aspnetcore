@@ -40,11 +40,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
         private CancellationTokenRegistration _cancellationTokenRegistration;
+        private bool _disposed;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         // TODO: Remove pInProcessHandler argument
-        public bool IsWebSocketAvailable(IntPtr pInProcessHandler)
+        public bool IsWebSocketAvailable(NativeSafeHandle pInProcessHandler)
         {
             // Check if the Http upgrade feature is available in IIS.
             // To check this, we can look at the server variable WEBSOCKET_VERSION
@@ -114,6 +115,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+
             // Block any more calls into managed from native as we are unloading.
             _nativeApplication.StopCallsIntoManaged();
             _shutdownSignal.TrySetResult(null);
@@ -135,7 +142,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Unwrap the server so we can create an http context and process the request
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
 
-                var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
+                // server can be null if ungraceful shutdown.
+                if (server == null)
+                {
+                    return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+                }
+
+                var safehandle = new NativeSafeHandle(pInProcessHandler);
+                var context = server._iisContextFactory.CreateHttpContext(safehandle);
 
                 ThreadPool.UnsafeQueueUserWorkItem(context, preferLocal: false);
 
@@ -155,6 +169,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+
+                // server can be null if ungraceful shutdown.
+                if (server ==  null)
+                {
+                    // return value isn't checked.
+                    return true;
+                }
+
                 server._applicationLifetime.StopApplication();
             }
             catch (Exception ex)
@@ -170,7 +192,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context?.AbortIO(clientDisconnect: true);
+
+                // Context can be null if ungraceful shutdown.
+                if (context == null)
+                {
+                    return;
+                }
+
+                context.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
@@ -184,7 +213,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context?.OnAsyncCompletion(hr, bytes);
+
+                // Context can be null if ungraceful shutdown.
+                if (context == null)
+                {
+                    return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+                }
+
+                context.OnAsyncCompletion(hr, bytes);
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
             }
             catch (Exception ex)
@@ -201,6 +237,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
+
+                // server can be null if ungraceful shutdown.
+                if (server == null)
+                {
+                    return;
+                }
 
                 server._nativeApplication.StopCallsIntoManaged();
                 server._shutdownSignal.TrySetResult(null);
@@ -233,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 AppContext.TryGetSwitch(Latin1Suppport, out _useLatin1);
             }
 
-            public IISHttpContext CreateHttpContext(IntPtr pInProcessHandler)
+            public IISHttpContext CreateHttpContext(NativeSafeHandle pInProcessHandler)
             {
                 return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger, _useLatin1);
             }
@@ -243,6 +285,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     // Over engineering to avoid allocations...
     internal interface IISContextFactory
     {
-        IISHttpContext CreateHttpContext(IntPtr pInProcessHandler);
+        IISHttpContext CreateHttpContext(NativeSafeHandle pInProcessHandler);
     }
 }

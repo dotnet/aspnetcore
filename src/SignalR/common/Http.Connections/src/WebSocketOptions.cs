@@ -6,8 +6,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// Options used by the WebSockets transport to modify the transports behavior.
+    /// </summary>
     public class WebSocketOptions
     {
+        /// <summary>
+        /// Gets or sets the amount of time the WebSocket transport will wait for a graceful close before starting an ungraceful close.
+        /// </summary>
+        /// <value>Defaults to 5 seconds</value>
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
@@ -21,6 +28,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         // WebSocketManager's list of sub protocols is an IList:
         // https://github.com/aspnet/HttpAbstractions/blob/a6bdb9b1ec6ed99978a508e71a7f131be7e4d9fb/src/Microsoft.AspNetCore.Http.Abstractions/WebSocketManager.cs#L23
         // Unfortunately, IList<T> does not implement IReadOnlyList<T> :(
-        public Func<IList<string>, string> SubProtocolSelector { get; set; }
+        public Func<IList<string>, string>? SubProtocolSelector { get; set; }
     }
 }

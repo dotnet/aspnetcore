@@ -3,11 +3,13 @@
 
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -63,6 +65,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             services.AddAuthorization();
 
             services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
+
+            // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
+            // Use a unique directory per server to avoid this collision
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(Directory.CreateDirectory(Path.GetRandomFileName()));
         }
 
         public void Configure(IApplicationBuilder app)
@@ -71,18 +78,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Legacy routing, runs different code path for mapping hubs
-#pragma warning disable CS0618 // Type or member is obsolete
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<AuthHub>("/authHub");
-            });
-#pragma warning restore CS0618 // Type or member is obsolete
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<UncreatableHub>("/uncreatable");
-                endpoints.MapHub<AuthHub>("/authHubEndpoints");
+                endpoints.MapHub<AuthHub>("/authHub");
 
                 endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
                 endpoints.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");

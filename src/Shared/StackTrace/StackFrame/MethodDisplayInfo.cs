@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             builder.Append(GenericArguments);
 
             builder.Append("(");
-            builder.Append(string.Join(", ", Parameters.Select(p => p.ToString())));
+            builder.AppendJoin(", ", Parameters.Select(p => p.ToString()));
             builder.Append(")");
 
             if (!string.IsNullOrEmpty(SubMethod))

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -13,7 +14,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No supported on this platform")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
     public class WebSocketsTests
     {
         private readonly string _webSocketUri;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             for (int i = 0; i < 1000; i++)
             {
-                var mesage = i.ToString();
+                var mesage = i.ToString(CultureInfo.InvariantCulture);
                 await SendMessage(cws, mesage);
                 await ReceiveMessage(cws, mesage);
             }

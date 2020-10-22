@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks" Version="5.3.0" />
+    <PackageReference Include="NuGet.Packaging" Version="5.6.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 
@@ -24,6 +24,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="Wix" Version="3.11.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />

@@ -1,7 +1,7 @@
 DataProtection
 ==============
 
-Data Protection APIs for protecting and unprotecting data. You can find documentation for Data Protection in the [ASP.NET Core Documentation](https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/).
+Data Protection APIs for protecting and unprotecting data. You can find documentation for Data Protection in the [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core/security/data-protection/).
 
 ## Community Maintained Data Protection Providers & Projects
 

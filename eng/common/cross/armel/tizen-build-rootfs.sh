@@ -9,13 +9,6 @@ if [[ -z "$ROOTFS_DIR" ]]; then
     exit 1;
 fi
 
-# Clean-up (TODO-Cleanup: We may already delete  $ROOTFS_DIR at ./cross/build-rootfs.sh.)
-# hk0110
-if [ -d "$ROOTFS_DIR" ]; then
-    umount $ROOTFS_DIR/*
-    rm -rf $ROOTFS_DIR
-fi
-
 TIZEN_TMP_DIR=$ROOTFS_DIR/tizen_tmp
 mkdir -p $TIZEN_TMP_DIR
 
@@ -37,8 +30,6 @@ rm -rf $TIZEN_TMP_DIR
 
 # Configure Tizen rootfs
 echo ">>Start configuring Tizen rootfs"
-rm ./usr/lib/libunwind.so
-ln -s libunwind.so.8 ./usr/lib/libunwind.so
 ln -sfn asm-arm ./usr/include/asm
 patch -p1 < $__TIZEN_CROSSDIR/tizen.patch
 echo "<<Finish configuring Tizen rootfs"

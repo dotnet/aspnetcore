@@ -10,6 +10,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             textboxFinder().Clear();
 
             // On each keystroke, the boxes will be shuffled. The text will only
-            // be inserted correctly if focus is retained. 
+            // be inserted correctly if focus is retained.
             textboxFinder().Click();
             while (textToType.Length > 0)
             {

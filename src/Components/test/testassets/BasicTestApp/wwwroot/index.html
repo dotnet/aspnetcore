@@ -6,9 +6,13 @@
     <title>Basic test app</title>
     <base href="/subdir/" />
     <link href="style.css" rel="stylesheet" />
+    <link rel="icon" href="data:,">
 
     <!-- Used by ExternalContentPackage -->
     <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
+
+    <!-- App bundle that contains a reference to the scoped css bundle created by TestContentPackage -->
+    <link href="BasicTestApp.styles.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -21,8 +25,11 @@
         <a class='dismiss' style="cursor: pointer;">🗙</a>
     </div>
 
-    <!-- Used for testing interop scenarios between JS and .NET -->
+    <!-- Used for specific test cases -->
+    <script src="js/seleniumworkaround.js"></script>
     <script src="js/jsinteroptests.js"></script>
+    <script src="js/renderattributestest.js"></script>
+    <script src="js/webComponentPerformingJsInterop.js"></script>
 
     <script>
         // Used by ElementRefComponent
@@ -40,6 +47,8 @@
         }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <script src="_content/Microsoft.AspNetCore.Components.Web.Extensions/headManager.js"></script>
 
     <!-- Used by ExternalContentPackage -->
     <script src="_content/TestContentPackage/prompt.js"></script>

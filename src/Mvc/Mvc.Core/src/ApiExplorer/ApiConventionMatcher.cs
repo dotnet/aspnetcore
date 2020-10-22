@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 }
 
                 index++;
-                if (name[index] != char.ToUpper(conventionName[0]))
+                if (name[index] != char.ToUpperInvariant(conventionName[0]))
                 {
                     // Verify the first letter from convention is upper case. In this case 'n' from "name"
                     return false;

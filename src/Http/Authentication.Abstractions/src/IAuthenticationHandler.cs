@@ -12,31 +12,28 @@ namespace Microsoft.AspNetCore.Authentication
     public interface IAuthenticationHandler
     {
         /// <summary>
-        /// The handler should initialize anything it needs from the request and scheme here.
+        /// Initialize the authentication handler. The handler should initialize anything it needs from the request and scheme as part of this method.
         /// </summary>
         /// <param name="scheme">The <see cref="AuthenticationScheme"/> scheme.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
-        /// <returns></returns>
         Task InitializeAsync(AuthenticationScheme scheme, HttpContext context);
 
         /// <summary>
-        /// Authentication behavior.
+        /// Authenticate the current request.
         /// </summary>
         /// <returns>The <see cref="AuthenticateResult"/> result.</returns>
         Task<AuthenticateResult> AuthenticateAsync();
 
         /// <summary>
-        /// Challenge behavior.
+        /// Challenge the current request.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
-        /// <returns>A task.</returns>
-        Task ChallengeAsync(AuthenticationProperties properties);
+        Task ChallengeAsync(AuthenticationProperties? properties);
 
         /// <summary>
-        /// Forbid behavior.
+        /// Forbid the current request.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
-        /// <returns>A task.</returns>
-        Task ForbidAsync(AuthenticationProperties properties);
+        Task ForbidAsync(AuthenticationProperties? properties);
     }
 }

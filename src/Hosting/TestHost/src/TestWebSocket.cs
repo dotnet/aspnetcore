@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class TestWebSocket : WebSocket
     {
-        private ReceiverSenderBuffer _receiveBuffer;
-        private ReceiverSenderBuffer _sendBuffer;
+        private readonly ReceiverSenderBuffer _receiveBuffer;
+        private readonly ReceiverSenderBuffer _sendBuffer;
         private readonly string _subProtocol;
         private WebSocketState _state;
         private WebSocketCloseStatus? _closeStatus;
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentOutOfRangeException(nameof(messageType), messageType, string.Empty);
             }
 
-            var message = new Message(buffer, messageType, endOfMessage, cancellationToken);
+            var message = new Message(buffer, messageType, endOfMessage);
             return _sendBuffer.SendAsync(message, cancellationToken);
         }
 
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         private class Message
         {
-            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken token)
+            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
             {
                 Buffer = buffer;
                 CloseStatus = null;
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             public Message(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
             {
-                Buffer = new ArraySegment<byte>(new byte[0]);
+                Buffer = new ArraySegment<byte>(Array.Empty<byte>());
                 CloseStatus = closeStatus;
                 CloseStatusDescription = closeStatusDescription;
                 MessageType = WebSocketMessageType.Close;
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.TestHost
             private bool _receiverClosed;
             private bool _senderClosed;
             private bool _disposed;
-            private SemaphoreSlim _sem;
-            private Queue<Message> _messageQueue;
+            private readonly SemaphoreSlim _sem;
+            private readonly Queue<Message> _messageQueue;
             
             public ReceiverSenderBuffer()
             {

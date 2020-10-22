@@ -12,22 +12,10 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public class CookiePolicyOptions
     {
-        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
-        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
-        internal static bool SuppressSameSiteNone;
-
-        static CookiePolicyOptions()
-        {
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
-            {
-                SuppressSameSiteNone = enabled;
-            }
-        }
-
         /// <summary>
         /// Affects the cookie's same site attribute.
         /// </summary>
-        public SameSiteMode MinimumSameSitePolicy { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : SameSiteMode.Unspecified;
+        public SameSiteMode MinimumSameSitePolicy { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
         /// Affects whether cookies must be HttpOnly.
@@ -39,6 +27,10 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public CookieSecurePolicy Secure { get; set; } = CookieSecurePolicy.None;
 
+        /// <summary>
+        /// Gets or sets the <see cref="CookieBuilder"/> that is used to track if the user consented to the
+        /// cookie use policy.
+        /// </summary>
         public CookieBuilder ConsentCookie { get; set; } = new CookieBuilder()
         {
             Name = ".AspNet.Consent",

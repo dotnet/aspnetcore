@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Components.Server
 
             if (baseUri == null ||
                 uri == null ||
-                !Uri.IsWellFormedUriString(baseUri, UriKind.Absolute) ||
-                !Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+                !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
+                !Uri.TryCreate(uri, UriKind.Absolute, out _))
             {
                 // We do some really minimal validation here to prevent obviously wrong data from getting in
                 // without duplicating too much logic.
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<CircuitId, string, string>(LogLevel.Debug, new EventId(7, "CreatedCircuit"), "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'");
 
             private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidCircuitId"), "ConnectAsync recieved an invalid circuit id '{CircuitIdSecret}'");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidCircuitId"), "ConnectAsync received an invalid circuit id '{CircuitIdSecret}'");
 
             public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
 

@@ -6,6 +6,9 @@ declare interface MONO {
   loaded_files: string[];
   mono_wasm_runtime_ready (): void;
   mono_wasm_setenv (name: string, value: string): void;
+  mono_wasm_load_data_archive(data: Uint8Array, prefix: string): void;
+  mono_wasm_load_bytes_into_heap (data: Uint8Array): Pointer;
+  mono_wasm_load_icu_data(heapAddress: Pointer): boolean;
 }
 
 // Mono uses this global to hold low-level interop APIs

@@ -42,8 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Culture = culture;
         }
 
+        /// <summary>
+        /// The culture to use.
+        /// </summary>
         public CultureInfo Culture { get; }
 
+        /// <summary>
+        /// The prefix container.
+        /// </summary>
         protected PrefixContainer PrefixContainer
         {
             get

@@ -78,7 +78,7 @@ namespace E2ETests
                 var runNanoServerTests = Environment.GetEnvironmentVariable("RUN_TESTS_ON_NANO");
                 if (string.IsNullOrWhiteSpace(runNanoServerTests)
                     || string.IsNullOrEmpty(runNanoServerTests)
-                    || runNanoServerTests.ToLower() == "false")
+                    || runNanoServerTests.ToLowerInvariant() == "false")
                 {
                     return;
                 }
@@ -244,7 +244,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountName,
                     _remoteDeploymentConfig.AccountPassword)
                 {
-                    TargetFramework = Tfm.NetCoreApp31,
+                    TargetFramework = Tfm.Net50,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     ApplicationType = applicationType
                 };

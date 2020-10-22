@@ -77,6 +77,7 @@ namespace Microsoft.AspNetCore.Builder
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
+            AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
 

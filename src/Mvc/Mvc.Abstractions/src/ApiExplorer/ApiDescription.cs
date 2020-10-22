@@ -16,17 +16,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets <see cref="ActionDescriptor"/> for this api.
         /// </summary>
-        public ActionDescriptor ActionDescriptor { get; set; }
+        public ActionDescriptor ActionDescriptor { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets group name for this api.
         /// </summary>
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         /// <summary>
         /// Gets or sets the supported HTTP method for this api, or null if all HTTP methods are supported.
         /// </summary>
-        public string HttpMethod { get; set; }
+        public string? HttpMethod { get; set; }
 
         /// <summary>
         /// Gets a list of <see cref="ApiParameterDescription"/> for this api.
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets relative url path template (relative to application root) for this api.
         /// </summary>
-        public string RelativePath { get; set; }
+        public string RelativePath { get; set; } = default!;
 
         /// <summary>
         /// Gets the list of possible formats for a request.

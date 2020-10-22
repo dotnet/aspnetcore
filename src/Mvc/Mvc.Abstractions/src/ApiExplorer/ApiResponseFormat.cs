@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets the formatter used to output this response.
         /// </summary>
-        public IOutputFormatter Formatter { get; set; }
+        public IOutputFormatter Formatter { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the media type of the response.
         /// </summary>
-        public string MediaType { get; set; }
+        public string MediaType { get; set; } = default!;
     }
 }

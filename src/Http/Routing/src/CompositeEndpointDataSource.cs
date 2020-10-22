@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,8 +22,8 @@ namespace Microsoft.AspNetCore.Routing
     public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
         private readonly object _lock;
-        private readonly ICollection<EndpointDataSource> _dataSources;
-        private IReadOnlyList<Endpoint> _endpoints;
+        private readonly ICollection<EndpointDataSource> _dataSources = default!;
+        private IReadOnlyList<Endpoint> _endpoints = default!;
         private IChangeToken _consumerChangeToken;
         private CancellationTokenSource _cts;
 
@@ -39,6 +40,11 @@ namespace Microsoft.AspNetCore.Routing
             _dataSources = dataSources;
         }
 
+        /// <summary>
+        /// Instantiates a <see cref="CompositeEndpointDataSource"/> object from <paramref name="endpointDataSources"/>.
+        /// </summary>
+        /// <param name="endpointDataSources">An collection of <see cref="EndpointDataSource" /> objects.</param>
+        /// <returns>A <see cref="CompositeEndpointDataSource"/> </returns>
         public CompositeEndpointDataSource(IEnumerable<EndpointDataSource> endpointDataSources) : this()
         {
             _dataSources = new List<EndpointDataSource>();
@@ -49,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private void OnDataSourcesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnDataSourcesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             lock (_lock)
             {
@@ -61,6 +67,9 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Returns the collection of <see cref="EndpointDataSource"/> instances associated with the object.
+        /// </summary>
         public IEnumerable<EndpointDataSource> DataSources => _dataSources;
 
         /// <summary>
@@ -122,12 +131,12 @@ namespace Microsoft.AspNetCore.Routing
                 // Refresh the endpoints from datasource so that callbacks can get the latest endpoints
                 _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
 
-                // Prevent consumers from re-registering callback to inflight events as that can 
+                // Prevent consumers from re-registering callback to inflight events as that can
                 // cause a stackoverflow
                 // Example:
                 // 1. B registers A
                 // 2. A fires event causing B's callback to get called
-                // 3. B executes some code in its callback, but needs to re-register callback 
+                // 3. B executes some code in its callback, but needs to re-register callback
                 //    in the same callback
                 var oldTokenSource = _cts;
                 var oldToken = _consumerChangeToken;
@@ -140,6 +149,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_cts), nameof(_consumerChangeToken))]
         private void CreateChangeToken()
         {
             _cts = new CancellationTokenSource();
@@ -165,7 +175,7 @@ namespace Microsoft.AspNetCore.Routing
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
                         sb.Append(", Defaults: new { ");
-                        sb.Append(string.Join(", ", FormatValues(routeEndpoint.RoutePattern.Defaults)));
+                        sb.AppendJoin(", ", FormatValues(routeEndpoint.RoutePattern.Defaults));
                         sb.Append(" }");
                         var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                         sb.Append(", Route Name: ");
@@ -174,7 +184,7 @@ namespace Microsoft.AspNetCore.Routing
                         if (routeValues.Count > 0)
                         {
                             sb.Append(", Required Values: new { ");
-                            sb.Append(string.Join(", ", FormatValues(routeValues)));
+                            sb.AppendJoin(", ", FormatValues(routeValues));
                             sb.Append(" }");
                         }
                         sb.Append(", Order: ");
@@ -184,7 +194,7 @@ namespace Microsoft.AspNetCore.Routing
                         if (httpMethodMetadata != null)
                         {
                             sb.Append(", Http Methods: ");
-                            sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
+                            sb.AppendJoin(", ", httpMethodMetadata.HttpMethods);
                         }
                         sb.Append(", Display Name: ");
                         sb.Append(routeEndpoint.DisplayName);
@@ -198,7 +208,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 return sb.ToString();
 
-                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
+                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object?>> values)
                 {
                     return values.Select(
                         kvp =>

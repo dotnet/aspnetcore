@@ -8,11 +8,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Session
 {
+    /// <summary>
+    /// An <see cref="ISessionStore"/> backed by an <see cref="IDistributedCache"/>.
+    /// </summary>
     public class DistributedSessionStore : ISessionStore
     {
         private readonly IDistributedCache _cache;
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DistributedSessionStore"/>. 
+        /// </summary>
+        /// <param name="cache">The <see cref="IDistributedCache"/> used to store the session data.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DistributedSessionStore(IDistributedCache cache, ILoggerFactory loggerFactory)
         {
             if (cache == null)
@@ -29,6 +37,7 @@ namespace Microsoft.AspNetCore.Session
             _loggerFactory = loggerFactory;
         }
 
+        /// <inheritdoc />
         public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
             if (string.IsNullOrEmpty(sessionKey))

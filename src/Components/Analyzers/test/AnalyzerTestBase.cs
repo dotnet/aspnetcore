@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
         public TestSource Read(string source)
         {
-            if (!source.EndsWith(".cs"))
+            if (!source.EndsWith(".cs", StringComparison.Ordinal))
             {
                 source = source + ".cs";
             }
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
         public Project CreateProject(string source)
         {
-            if (!source.EndsWith(".cs"))
+            if (!source.EndsWith(".cs", StringComparison.Ordinal))
             {
                 source = source + ".cs";
             }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             }
 
             // This test code needs to be updated to support distributed testing.
-            // See https://github.com/aspnet/AspNetCore/issues/10422
+            // See https://github.com/dotnet/aspnetcore/issues/10422
 #pragma warning disable 0618
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Components");
 #pragma warning restore 0618

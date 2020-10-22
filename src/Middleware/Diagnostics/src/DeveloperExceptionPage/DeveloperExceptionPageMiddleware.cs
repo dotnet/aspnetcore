@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
-            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
+            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
             _exceptionHandler = DisplayException;
 
             foreach (var filter in filters.Reverse())
@@ -235,7 +237,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var endpoint = context.Features.Get<IEndpointFeature>()?.Endpoint;
 
-            EndpointModel endpointModel = null;
+            EndpointModel? endpointModel = null;
             if (endpoint != null)
             {
                 endpointModel = new EndpointModel();
