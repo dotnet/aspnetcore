@@ -1,8 +1,5 @@
 <Project>
   <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
-
     <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>

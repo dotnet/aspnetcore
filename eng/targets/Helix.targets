@@ -116,17 +116,17 @@
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
 
-    <!-- Isolate Helix tests from whatever happens to be in a parent directory. Directory.Build.props.in is empty. -->
-    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.props.in"
-        DestinationFiles="$(PublishDir)Directory.Build.targets"
-        Condition="! EXISTS('$(PublishDir)Directory.Build.targets')"
+    <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
+        DestinationFiles="$(PublishDir)Directory.Build.props"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
         OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
         Retries="$(CopyRetryCount)"
         RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
-    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.props.in"
-        DestinationFiles="$(PublishDir)Directory.Build.props"
-        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
+        DestinationFiles="$(PublishDir)Directory.Build.targets"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
         OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
         Retries="$(CopyRetryCount)"
         RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -138,7 +138,7 @@
       package reference for that would confuse tests of Microsoft.NET.Sdk templates.
     -->
     <PropertyGroup>
-      <_TargetsProperties>
+      <_TemplateProperties>
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
         MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
@@ -147,11 +147,15 @@
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
         MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
-      </_TargetsProperties>
+      </_TemplateProperties>
     </PropertyGroup>
+    <GenerateFileFromTemplate TemplateFile="$(RepoRoot)eng\helix\content\Directory.Build.props.in"
+      Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+      Properties="$(_TemplateProperties)"
+      OutputPath="$(PublishDir)Directory.Build.props" />
     <GenerateFileFromTemplate TemplateFile="$(RepoRoot)eng\helix\content\Directory.Build.targets.in"
       Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
-      Properties="$(_TargetsProperties)"
+      Properties="$(_TemplateProperties)"
       OutputPath="$(PublishDir)Directory.Build.targets" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
