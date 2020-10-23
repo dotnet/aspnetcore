@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             public async Task<int> GetCompiledAppDefinedTypes()
             {
-                var definedTypesMessage = await Process.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
+                var definedTypesMessage = await Process!.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
                 return int.Parse(definedTypesMessage.Split('=').Last(), CultureInfo.InvariantCulture);
             }
         }
