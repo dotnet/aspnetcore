@@ -17,8 +17,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Edge;
+using PlaywrightSharp;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -103,34 +102,14 @@ namespace Templates.Test.Helpers
             }
         }
 
-        public void VisitInBrowser(IWebDriver driver)
+        public async Task<IPage> VisitInBrowserAsync(IBrowserContext context)
         {
             _output.WriteLine($"Opening browser at {ListeningUri}...");
-            driver.Navigate().GoToUrl(ListeningUri);
-
-            if (driver is EdgeDriver)
-            {
-                // Workaround for untrusted ASP.NET Core development certificates.
-                // The edge driver doesn't supported skipping the SSL warning page.
-
-                if (driver.Title.Contains("Certificate error", StringComparison.OrdinalIgnoreCase))
-                {
-                    _output.WriteLine("Page contains certificate error. Attempting to get around this...");
-                    driver.FindElement(By.Id("moreInformationDropdownSpan")).Click();
-                    var continueLink = driver.FindElement(By.Id("invalidcert_continue"));
-                    if (continueLink != null)
-                    {
-                        _output.WriteLine($"Clicking on link '{continueLink.Text}' to skip invalid certificate error page.");
-                        continueLink.Click();
-                        driver.Navigate().GoToUrl(ListeningUri);
-                    }
-                    else
-                    {
-                        _output.WriteLine("Could not find link to skip certificate error page.");
-                    }
-                }
-            }
+            var page = await context.NewPageAsync();
+            await page.GoToAsync(ListeningUri.AbsoluteUri);
+            return page;
         }
+
 
         public async Task AssertPagesOk(IEnumerable<Page> pages)
         {

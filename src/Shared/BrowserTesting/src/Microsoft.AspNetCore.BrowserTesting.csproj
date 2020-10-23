@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageTags>aspnetcore;testing</PackageTags>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="build\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PlaywrightSharp" />
+    <Reference Include="xunit.abstractions" />
+    <Reference Include="xunit.extensibility.core" />
+  </ItemGroup>
+
+</Project>

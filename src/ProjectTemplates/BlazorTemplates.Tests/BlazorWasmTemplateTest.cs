@@ -10,43 +10,43 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.Extensions;
+using PlaywrightSharp;
+using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class BlazorWasmTemplateTest : BrowserTestBase
+    public class BlazorWasmTemplateTest
     {
-        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output)
-            : base(browserFixture, output)
+        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture, ITestOutputHelper output)
         {
             ProjectFactory = projectFactory;
+            Fixture = browserFixture;
+            Output = output;
+            BrowserContextInfo = new ContextInformation(TestHelpers.CreateFactory(output));
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
+        public PlaywrightFixture<BlazorServerTemplateTest> Fixture { get; }
+        public ITestOutputHelper Output { get; }
+        public ContextInformation BrowserContextInfo { get; }
 
-        public override Task InitializeAsync()
-        {
-            return InitializeAsync(isolationContext: Guid.NewGuid().ToString());
-        }
-
-        [Fact]
-        public async Task BlazorWasmStandaloneTemplate_Works()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -61,32 +61,40 @@ namespace Templates.Test
             var buildResult = await project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            await BuildAndRunTest(project.ProjectName, project);
+            await BuildAndRunTest(project.ProjectName, project, browserKind);
 
-            if (BrowserFixture.IsHostAutomationSupported())
+            var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+            using (serveProcess)
             {
-                var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
-                using (serveProcess)
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
-                    Output.WriteLine($"Opening browser at {listeningUri}...");
-                    Browser.Navigate().GoToUrl(listeningUri);
-                    TestBasicNavigation(project.ProjectName);
+                    await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                    var page = await NavigateToPage(browser, listeningUri);
+                    await TestBasicNavigation(project.ProjectName, page);
                 }
-            }
-            else
-            {
-                BrowserFixture.EnforceSupportedConfigurations();
+                else
+                {
+                    Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
+                }
             }
         }
 
-        [Fact]
-        public async Task BlazorWasmHostedTemplate_Works()
+        private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
+        {
+            var page = await browser.NewPageAsync();
+            await page.GoToAsync(listeningUri, LifecycleEvent.Networkidle);
+            return page;
+        }
+
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
-
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);            
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -98,7 +106,7 @@ namespace Templates.Test
             var buildResult = await serverProject.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
 
-            await BuildAndRunTest(project.ProjectName, serverProject);
+            await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
 
             using var aspNetProcess = serverProject.StartPublishedProjectAsync();
 
@@ -108,14 +116,16 @@ namespace Templates.Test
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await AssertCompressionFormat(aspNetProcess, "br");
-            if (BrowserFixture.IsHostAutomationSupported())
+
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
-                aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(project.ProjectName);
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                await TestBasicNavigation(project.ProjectName, page);
             }
             else
             {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
             }
         }
 
@@ -135,8 +145,9 @@ namespace Templates.Test
             Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
         }
 
-        [Fact]
-        public async Task BlazorWasmStandalonePwaTemplate_Works()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
@@ -152,32 +163,38 @@ namespace Templates.Test
             var buildResult = await project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            await BuildAndRunTest(project.ProjectName, project);
+            await BuildAndRunTest(project.ProjectName, project, browserKind);
 
             ValidatePublishedServiceWorker(project);
 
-            if (BrowserFixture.IsHostAutomationSupported())
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
                 var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                var page = await NavigateToPage(browser, listeningUri);
                 using (serveProcess)
                 {
-                    Output.WriteLine($"Opening browser at {listeningUri}...");
-                    Browser.Navigate().GoToUrl(listeningUri);
-                    TestBasicNavigation(project.ProjectName);
+                    await TestBasicNavigation(project.ProjectName, page);
                 }
 
                 // The PWA template supports offline use. By now, the browser should have cached everything it needs,
                 // so we can continue working even without the server.
-                ValidateAppWorksOffline(project, listeningUri, skipFetchData: false);
+                await page.GoToAsync("about:blank");
+                await browser.SetOfflineAsync(true);
+                await page.GoToAsync(listeningUri);
+                await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
+                await page.CloseAsync();
             }
             else
             {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
             }
         }
 
-        [Fact]
-        public async Task BlazorWasmHostedPwaTemplate_Works()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
@@ -195,13 +212,15 @@ namespace Templates.Test
             var buildResult = await serverProject.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
 
-            await BuildAndRunTest(project.ProjectName, serverProject);
+            await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
 
             ValidatePublishedServiceWorker(serverProject);
 
             string listeningUri = null;
-            if (BrowserFixture.IsHostAutomationSupported())
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                IPage page = null;
                 using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
                 {
                     Assert.False(
@@ -209,22 +228,25 @@ namespace Templates.Test
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
 
                     await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                    aspNetProcess.VisitInBrowser(Browser);
-                    TestBasicNavigation(project.ProjectName);
+                    page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    await TestBasicNavigation(project.ProjectName, page);
 
                     // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
-                    var browserUri = new Uri(Browser.Url);
-                    listeningUri = $"{browserUri.Scheme}://{browserUri.Authority}";
+                    listeningUri = new Uri(page.Url).GetLeftPart(UriPartial.Authority);
                 }
 
                 // The PWA template supports offline use. By now, the browser should have cached everything it needs,
                 // so we can continue working even without the server.
                 // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
-                ValidateAppWorksOffline(project, listeningUri, skipFetchData: true);
+                await page.GoToAsync("about:blank");
+                await browser.SetOfflineAsync(true);
+                await page.GoToAsync(listeningUri);
+                await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
+                await page.CloseAsync();
             }
             else
             {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
             }
         }
 
@@ -251,34 +273,28 @@ namespace Templates.Test
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
-        private void ValidateAppWorksOffline(Project project, string listeningUri, bool skipFetchData)
-        {
-            Browser.Navigate().GoToUrl("about:blank"); // Be sure we're really reloading
-            Output.WriteLine($"Opening browser without corresponding server at {listeningUri}...");
-            Browser.Navigate().GoToUrl(listeningUri);
-            TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
-        }
-
-        [ConditionalFact]
+        [ConditionalTheory]
+        [InlineData(BrowserKind.Chromium)]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(true);
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
         }
 
-        [Fact]
-        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
         {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(false);
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
         }
 
-        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
+        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -318,11 +334,11 @@ namespace Templates.Test
                 Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", serverProject, dbUpdateResult));
             }
 
-            await BuildAndRunTest(project.ProjectName, serverProject, usesAuth: true);
+            await BuildAndRunTest(project.ProjectName, serverProject, browserKind, usesAuth: true);
 
             UpdatePublishedSettings(serverProject);
 
-            if (BrowserFixture.IsHostAutomationSupported())
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
                 using var aspNetProcess = serverProject.StartPublishedProjectAsync();
 
@@ -332,22 +348,25 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(project.ProjectName, usesAuth: true);
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                await TestBasicNavigation(project.ProjectName, page, usesAuth: true);
+                await page.CloseAsync();
             }
             else
             {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
-        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
+        [Theory]
+        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
+        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] {
                 "-au",
@@ -374,21 +393,16 @@ namespace Templates.Test
             // but we want to make sure that we are able to run the app without errors.
             // That will at least test that we are able to initialize and retrieve the configuration from the IdP
             // for that, we use the common microsoft tenant.
-            await BuildAndRunTest(project.ProjectName, project, usesAuth: false);
+            await BuildAndRunTest(project.ProjectName, project, browserKind, usesAuth: false);
 
-            if (BrowserFixture.IsHostAutomationSupported())
+            var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+            using (serveProcess)
             {
-                var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
-                using (serveProcess)
-                {
-                    Output.WriteLine($"Opening browser at {listeningUri}...");
-                    Browser.Navigate().GoToUrl(listeningUri);
-                    TestBasicNavigation(project.ProjectName);
-                }
-            }
-            else
-            {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                var page = await NavigateToPage(browser, listeningUri);
+                await TestBasicNavigation(project.ProjectName, page);
+                await page.CloseAsync();
             }
         }
 
@@ -483,7 +497,7 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
         }
 
-        protected async Task BuildAndRunTest(string appName, Project project, bool usesAuth = false)
+        protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
         {
             using var aspNetProcess = project.StartBuiltProjectAsync();
 
@@ -492,93 +506,94 @@ namespace Templates.Test
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            if (BrowserFixture.IsHostAutomationSupported())
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
             {
-                aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(appName, usesAuth);
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                await TestBasicNavigation(appName, page, usesAuth);
+                await page.CloseAsync();
             }
             else
             {
-                BrowserFixture.EnforceSupportedConfigurations();
+                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
             }
         }
 
-        private void TestBasicNavigation(string appName, bool usesAuth = false, bool skipFetchData = false)
+        private async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
         {
-            // Start fresh always
-            if (usesAuth)
-            {
-                Browser.ExecuteJavaScript("sessionStorage.clear()");
-                Browser.ExecuteJavaScript("localStorage.clear()");
-                Browser.Manage().Cookies.DeleteAllCookies();
-                Browser.Navigate().Refresh();
-            }
-
-            // Give components.server enough time to load so that it can replace
-            // the prerendered content before we start making assertions.
-            Thread.Sleep(5000);
-            Browser.Exists(By.TagName("ul"));
+            await page.WaitForSelectorAsync("ul");
 
             // <title> element gets project ID injected into it during template execution
-            Browser.Equal(appName.Trim(), () => Browser.Title.Trim());
+            Assert.Equal(appName.Trim(), (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
-            Browser.Equal("Hello, world!", () => Browser.FindElement(By.TagName("h1")).Text);
+            await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
 
             // Can navigate to the counter page
-            Browser.FindElement(By.PartialLinkText("Counter")).Click();
-            Browser.Contains("counter", () => Browser.Url);
-            Browser.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
+            await Task.WhenAll(
+                page.WaitForNavigationAsync("**/counter"),
+                page.WaitForSelectorAsync("h1 >> text=Counter"),
+                page.WaitForSelectorAsync("p >> text=Current count: 0"),
+                page.ClickAsync("a[href=counter]"));
 
             // Clicking the counter button works
-            Browser.Equal("Current count: 0", () => Browser.FindElement(By.CssSelector("h1 + p")).Text);
-            Browser.FindElement(By.CssSelector("p+button")).Click();
-            Browser.Equal("Current count: 1", () => Browser.FindElement(By.CssSelector("h1 + p")).Text);
+            await Task.WhenAll(
+                page.WaitForSelectorAsync("p >> text=Current count: 1"),
+                page.ClickAsync("p+button"));
 
             if (usesAuth)
             {
-                Browser.FindElement(By.PartialLinkText("Log in")).Click();
-                Browser.Contains("/Identity/Account/Login", () => Browser.Url);
+                await Task.WhenAll(
+                    page.WaitForNavigationAsync("**/Identity/Account/Login**", LifecycleEvent.Networkidle),
+                    page.ClickAsync("text=Log in"));
 
-                Browser.FindElement(By.PartialLinkText("Register as a new user")).Click();
+                await Task.WhenAll(
+                    page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
+                    page.WaitForNavigationAsync("**/Identity/Account/Register**", LifecycleEvent.Networkidle),
+                    page.ClickAsync("text=Register as a new user"));
 
                 var userName = $"{Guid.NewGuid()}@example.com";
                 var password = $"!Test.Password1$";
-                Browser.Exists(By.Name("Input.Email"));
-                Browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
-                Browser.FindElement(By.Name("Input.Password")).SendKeys(password);
-                Browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
-                Browser.FindElement(By.Id("registerSubmit")).Click();
+
+                await page.TypeAsync("[name=\"Input.Email\"]", userName);
+                await page.TypeAsync("[name=\"Input.Password\"]", password);
+                await page.TypeAsync("[name=\"Input.ConfirmPassword\"]", password);
 
                 // We will be redirected to the RegisterConfirmation
-                Browser.Contains("/Identity/Account/RegisterConfirmation", () => Browser.Url);
-                Browser.FindElement(By.PartialLinkText("Click here to confirm your account")).Click();
+                await Task.WhenAll(
+                    page.WaitForNavigationAsync("**/Identity/Account/RegisterConfirmation**", LifecycleEvent.Networkidle),
+                    page.ClickAsync("#registerSubmit"));
 
                 // We will be redirected to the ConfirmEmail
-                Browser.Contains("/Identity/Account/ConfirmEmail", () => Browser.Url);
+                await Task.WhenAll(
+                    page.WaitForNavigationAsync("**/Identity/Account/ConfirmEmail**", LifecycleEvent.Networkidle),
+                    page.ClickAsync("text=Click here to confirm your account"));
 
                 // Now we can login
-                Browser.FindElement(By.PartialLinkText("Login")).Click();
-                Browser.Exists(By.Name("Input.Email"));
-                Browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
-                Browser.FindElement(By.Name("Input.Password")).SendKeys(password);
-                Browser.FindElement(By.Id("login-submit")).Click();
+                await page.ClickAsync("text=Login");
+                await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
+                await page.TypeAsync("[name=\"Input.Email\"]", userName);
+                await page.TypeAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("#login-submit");
 
                 // Need to navigate to fetch page
-                Browser.Navigate().GoToUrl(new Uri(Browser.Url).GetLeftPart(UriPartial.Authority));
-                Browser.Equal(appName.Trim(), () => Browser.Title.Trim());
+                await page.GoToAsync(new Uri(page.Url).GetLeftPart(UriPartial.Authority));
+                Assert.Equal(appName.Trim(), (await page.GetTitleAsync()).Trim());
             }
 
             if (!skipFetchData)
             {
                 // Can navigate to the 'fetch data' page
-                Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
-                Browser.Contains("fetchdata", () => Browser.Url);
-                Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+                await Task.WhenAll(
+                    page.WaitForNavigationAsync("**/fetchdata"),
+                    page.WaitForSelectorAsync("text=Weather forecast"),
+                    page.ClickAsync("text=Fetch data"));
+
+                Assert.Equal("Weather forecast", await page.GetInnerTextAsync("h1"));
 
                 // Asynchronously loads and displays the table of weather forecasts
-                Browser.Exists(By.CssSelector("table>tbody>tr"));
-                Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+                await page.WaitForSelectorAsync("table>tbody>tr");
+                Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
             }
         }
 
