@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateLoggedIn(userName);
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void CanNotRedirect_To_External_ReturnUrl()
         {
             Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/login?returnUrl=https%3A%2F%2Fwww.bing.com").AbsoluteUri);
