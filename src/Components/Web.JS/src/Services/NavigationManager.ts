@@ -5,6 +5,9 @@ import { EventDelegator } from '../Rendering/EventDelegator';
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
+const hrefAttributeName = 'href';
+const downloadAttributeName = 'download';
+
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
 
@@ -53,9 +56,8 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
-    const hrefAttributeName = 'href';
-    const downloadAttributeName = 'download';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName) && !anchorTarget.hasAttribute(downloadAttributeName)) {
+
+    if (anchorTarget && canProcessAnchor(anchorTarget)) {
       const targetAttributeValue = anchorTarget.getAttribute('target');
       const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
       if (!opensInSameFrame) {
@@ -72,6 +74,8 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
     }
   });
 }
+
+
 
 export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
   const absoluteUri = toAbsoluteUri(uri);
@@ -142,4 +146,9 @@ function toBaseUriWithTrailingSlash(baseUri: string) {
 
 function eventHasSpecialKey(event: MouseEvent) {
   return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
+}
+
+function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
+  console.log(anchorTarget.hasAttribute(hrefAttributeName));
+  return anchorTarget.hasAttribute(hrefAttributeName) && !anchorTarget.hasAttribute(downloadAttributeName);
 }
