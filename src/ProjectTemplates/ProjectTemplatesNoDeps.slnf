@@ -2,13 +2,13 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
-      "src\\ProjectTemplates\\ComponentsWebAssembly.ProjectTemplates\\Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj",
+      "src\\ProjectTemplates\\BlazorTemplates.Tests\\BlazorTemplates.Tests.csproj",
       "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\Web.Spa.ProjectTemplates\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\test\\ProjectTemplates.Tests.csproj",
-      "src\\ProjectTemplates\\BlazorTemplates.Tests\\BlazorTemplates.Tests.csproj"
+      "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj"
     ]
   }
 }
