@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(BuildNumber)</GuidInputs>
+    <PackageGuidInputs>$(Version);$(Platform)</PackageGuidInputs>
+    <BundleGuidInputs>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion);$(Platform)</BundleGuidInputs>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
@@ -14,10 +15,10 @@
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 
@@ -27,10 +28,10 @@
   </Target>
 
   <Target Name="_GenerateBundleGuids" Condition="'$(OutputType)' == 'bundle'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(GuidInputs)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(GuidInputs);$(OutputType)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(BundleGuidInputs);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="BundleUpgradeCode" />
     </GenerateGuid>
 

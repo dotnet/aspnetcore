@@ -11,6 +11,50 @@
                                                     LocalizationFile="thm.wxl"/>
         </BootstrapperApplicationRef>
 
+        <!-- Ensure upgrades from 2.1.0 thru 2.1.23 for x64. -->
+        <?if $(var.MajorVersion)=2 and $(var.MinorVersion)=1?>
+        <!--'Microsoft .NET Core 2.1.23 - Windows Server Hosting'-->
+        <RelatedBundle Id="{51DC181C-C29B-31D7-96CA-08B2B9322269}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.22 - Windows Server Hosting'-->
+        <RelatedBundle Id="{0629F7DA-FD3D-3C43-9C74-7CAB326D8408}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.21 - Windows Server Hosting'-->
+        <RelatedBundle Id="{20C43973-8701-31FF-B9F4-ED31D88182AC}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.20 - Windows Server Hosting'-->
+        <RelatedBundle Id="{AB66B18F-8B14-3FF3-A5F1-97435938BA40}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.19 - Windows Server Hosting'-->
+        <RelatedBundle Id="{9A7F3800-1BCF-3C0A-B1B2-948D6AE80CCB}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.18 - Windows Server Hosting'-->
+        <RelatedBundle Id="{B137EB6B-4CBA-32A0-A4E7-D2B8F3FE334A}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.17 - Windows Server Hosting'-->
+        <RelatedBundle Id="{F0A8977D-AA93-3745-9727-1DBAD0EC9BA4}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.16 - Windows Server Hosting'-->
+        <RelatedBundle Id="{C9D00CC1-53C8-38DD-85C5-F07298DCE93C}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.15 - Windows Server Hosting'-->
+        <RelatedBundle Id="{7CBFCC91-2F4E-3C4F-9F02-269BF67D0EF3}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.14 - Windows Server Hosting'-->
+        <RelatedBundle Id="{790FD6ED-06E1-3CA0-B4FA-8CC0690001F5}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.12 - Windows Server Hosting'-->
+        <RelatedBundle Id="{127E0E5D-65E8-339B-9E56-710CD7CAE521}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.11 - Windows Server Hosting'-->
+        <RelatedBundle Id="{3B4D8EC5-02AC-3F77-9ECE-83B92C6232D9}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.10 - Windows Server Hosting'-->
+        <RelatedBundle Id="{A265BA58-64C8-31B5-92DC-7C071095667E}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.9 - Windows Server Hosting'-->
+        <RelatedBundle Id="{91B539CE-A269-32B4-8EB9-66A3285DED97}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.8 - Windows Server Hosting'-->
+        <RelatedBundle Id="{9F1D5735-B2F6-3C74-8F6B-2390BB739697}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.7 - Windows Server Hosting'-->
+        <RelatedBundle Id="{E5555A4A-7AF5-3733-BB60-EC74A4874842}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.6 - Windows Server Hosting'-->
+        <RelatedBundle Id="{EC44441A-0A96-39C4-A4A3-C6D65FEA6E3C}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.5 - Windows Server Hosting'-->
+        <RelatedBundle Id="{E22164E9-31C6-3C19-8FB9-F9EA2711EEAC}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.4 - Windows Server Hosting'-->
+        <RelatedBundle Id="{38010573-29EA-472C-91FA-779DC0A6CDED}" Action="Upgrade" />
+        <!--'Microsoft .NET Core 2.1.3 - Windows Server Hosting'-->
+        <RelatedBundle Id="{0ECB5C6B-3FD7-36C2-8138-61AE2E999E76}" Action="Upgrade" />
+        <?endif?>
+
         <!-- Customizations of the default BA -->
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
         <OptionalUpdateRegistration Manufacturer="$(var.BundleRegManufacturer)" ProductFamily="$(var.BundleRegFamily)" Name="$(var.BundleRegName)" />
