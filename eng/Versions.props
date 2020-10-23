@@ -231,9 +231,9 @@
     <IdentityServer4StoragePackageVersion>4.1.0</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>4.1.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
-    <MicrosoftIdentityWebPackageVersion>0.4.0-preview</MicrosoftIdentityWebPackageVersion>
-    <MicrosoftIdentityWebMicrosoftGraphPackageVersion>0.4.0-preview</MicrosoftIdentityWebMicrosoftGraphPackageVersion>
-    <MicrosoftIdentityWebUIPackageVersion>0.4.0-preview</MicrosoftIdentityWebUIPackageVersion>
+    <MicrosoftIdentityWebPackageVersion>1.1.0</MicrosoftIdentityWebPackageVersion>
+    <MicrosoftIdentityWebMicrosoftGraphPackageVersion>1.1.0</MicrosoftIdentityWebMicrosoftGraphPackageVersion>
+    <MicrosoftIdentityWebUIPackageVersion>1.1.0</MicrosoftIdentityWebUIPackageVersion>
     <MessagePackAnalyzerPackageVersion>$(MessagePackPackageVersion)</MessagePackAnalyzerPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.11.2</MonoCecilPackageVersion>

@@ -211,6 +211,7 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Micro
 Microsoft.AspNetCore.Components.RenderTree.Renderer
 Microsoft.AspNetCore.Components.RenderTree.Renderer.AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent! component) -> int
 Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose() -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
 Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.set -> void
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(int componentId) -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>

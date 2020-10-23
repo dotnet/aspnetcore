@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Localization;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new ArgumentNullException(nameof(app));
             }
-            
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds the <see cref="RequestLocalizationMiddleware"/> to automatically set culture information for
-        /// requests based on information provided by the client. 
+        /// requests based on information provided by the client.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="optionsAction"></param>
+        /// <param name="optionsAction">A callback that configures the <see cref="RequestLocalizationOptions"/>.</param>
         /// <remarks>
         /// This will going to instantiate a new <see cref="RequestLocalizationOptions"/> that doesn't come from the services.
         /// </remarks>
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds the <see cref="RequestLocalizationMiddleware"/> to automatically set culture information for
-        /// requests based on information provided by the client. 
+        /// requests based on information provided by the client.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="cultures">The culture names to be added by the application, which is represents both supported cultures and UI cultures.</param>

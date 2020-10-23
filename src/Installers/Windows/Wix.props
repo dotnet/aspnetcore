@@ -32,8 +32,8 @@
   <PropertyGroup>
     <!-- Directory for the unzipped directory -->
     <WixCommandObjDir>$(ArtifactsObjDir)/WixCommandPackages</WixCommandObjDir>
-    <!-- Directory for the zipped up light/lit command package -->
-    <WixCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</WixCommandPackagesDir>
+    <!-- Directory for the zipped up wixpack command package -->
+    <WixCommandPackagesDir>$(InstallersOutputPath)</WixCommandPackagesDir>
   </PropertyGroup>
 
 </Project>
