@@ -8,6 +8,7 @@ using BasicTestApp;
 using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
@@ -25,29 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
-            : this(browserFixture, serverFixture, output, ExecutionMode.Client)
-        {
-            
-        }
-
-        protected DownloadAnchorTest(
-           BrowserFixture browserFixture,
-           ToggleExecutionModeServerFixture<Program> serverFixture,
-           ITestOutputHelper output,
-           ExecutionMode executionMode)
-           : base(browserFixture, serverFixture, output)
-        {
-            // Normally, the E2E tests use the Blazor dev server if they are testing
-            // client-side execution. But for the download tests, we always have to run
-            // in "hosted on ASP.NET Core" mode, in order to intercept file requests.
-            switch (executionMode)
-            {
-                case ExecutionMode.Client:
-                    serverFixture.UseAspNetHost(TestServer.Program.BuildWebHost<TestServer.HostedInAspNetStartup>);
-                    break;
-                default:
-                    break;
-            }
+            : base(browserFixture, serverFixture.WithServerExecution<Program, TestServer.HostedInAspNetStartup>(), output)
+        {            
         }
 
         [Fact]

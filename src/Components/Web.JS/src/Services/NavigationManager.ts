@@ -149,6 +149,5 @@ function eventHasSpecialKey(event: MouseEvent) {
 }
 
 function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
-  console.log(anchorTarget.hasAttribute(hrefAttributeName));
   return anchorTarget.hasAttribute(hrefAttributeName) && !anchorTarget.hasAttribute(downloadAttributeName);
 }
