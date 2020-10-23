@@ -75,8 +75,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
   });
 }
 
-
-
 export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
   const absoluteUri = toAbsoluteUri(uri);
 

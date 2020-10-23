@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     public class DownloadAnchorTest
         : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-      
-
         public DownloadAnchorTest(
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -56,7 +54,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return appElement;
         }
 
-
         private IReadOnlyCollection<string> GetAndClearRequestedPaths()
         {
             var requestLog = _serverFixture.Host.Services.GetRequiredService<TestServer.ResourceRequestLog>();
@@ -64,7 +61,5 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             requestLog.Clear();
             return result;
         }
-
-
     }
 }
