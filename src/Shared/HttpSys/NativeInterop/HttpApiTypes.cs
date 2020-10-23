@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
         {
-            internal HTTP_DELEGATE_REQUEST_PROPERTY_ID ProperyId;
+            internal HTTP_DELEGATE_REQUEST_PROPERTY_ID PropertyId;
             internal uint PropertyInfoLength;
             internal IntPtr PropertyInfo;
         }

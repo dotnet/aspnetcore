@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using BasicWebSite.Filters;
 using Microsoft.AspNetCore.Http;
@@ -73,11 +74,11 @@ namespace BasicWebSite.Controllers
         public string GetTempDataMultiple()
         {
             var value1 = TempData["key1"].ToString();
-            var value2 = Convert.ToInt32(TempData["key2"]);
+            var value2 = Convert.ToInt32(TempData["key2"], CultureInfo.InvariantCulture);
             var value3 = (IList<string>)TempData["key3"];
             var value4 = (DateTime)TempData["key4"];
             var value5 = (Guid)TempData["key5"];
-            return $"{value1} {value2.ToString()} {value3.Count.ToString()} {value4.ToString()} {value5.ToString()}";
+            return $"{value1} {value2} {value3.Count} {value4} {value5}";
         }
 
         [HttpGet]

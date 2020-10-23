@@ -8,14 +8,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
 {
     internal static class ResponseCompressionLoggingExtensions
     {
-        private static readonly Action<ILogger, Exception> _noAcceptEncoding;
-        private static readonly Action<ILogger, Exception> _noCompressionForHttps;
-        private static readonly Action<ILogger, Exception> _requestAcceptsCompression;
-        private static readonly Action<ILogger, string, Exception> _noCompressionDueToHeader;
-        private static readonly Action<ILogger, string, Exception> _noCompressionForContentType;
-        private static readonly Action<ILogger, Exception> _shouldCompressResponse;
-        private static readonly Action<ILogger, Exception> _noCompressionProvider;
-        private static readonly Action<ILogger, string, Exception> _compressWith;
+        private static readonly Action<ILogger, Exception?> _noAcceptEncoding;
+        private static readonly Action<ILogger, Exception?> _noCompressionForHttps;
+        private static readonly Action<ILogger, Exception?> _requestAcceptsCompression;
+        private static readonly Action<ILogger, string, Exception?> _noCompressionDueToHeader;
+        private static readonly Action<ILogger, string, Exception?> _noCompressionForContentType;
+        private static readonly Action<ILogger, Exception?> _shouldCompressResponse;
+        private static readonly Action<ILogger, Exception?> _noCompressionProvider;
+        private static readonly Action<ILogger, string, Exception?> _compressWith;
 
         static ResponseCompressionLoggingExtensions()
         {

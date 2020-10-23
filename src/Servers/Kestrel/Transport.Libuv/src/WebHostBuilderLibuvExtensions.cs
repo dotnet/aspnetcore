@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Libuv <see cref="IWebHostBuilder"/> extensions.
+    /// </summary>
     [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
     public static class WebHostBuilderLibuvExtensions
     {

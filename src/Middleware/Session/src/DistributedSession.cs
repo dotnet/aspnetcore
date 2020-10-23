@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -30,13 +31,13 @@ namespace Microsoft.AspNetCore.Session
         private readonly TimeSpan _ioTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly ILogger _logger;
-        private IDictionary<EncodedKey, byte[]> _store;
+        private IDistributedSessionStore _store;
         private bool _isModified;
         private bool _loaded;
         private bool _isAvailable;
         private bool _isNewSessionKey;
-        private string _sessionId;
-        private byte[] _sessionIdBytes;
+        private string? _sessionId;
+        private byte[]? _sessionIdBytes;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DistributedSession"/>.
@@ -89,7 +90,9 @@ namespace Microsoft.AspNetCore.Session
             _idleTimeout = idleTimeout;
             _ioTimeout = ioTimeout;
             _tryEstablishSession = tryEstablishSession;
-            _store = new Dictionary<EncodedKey, byte[]>();
+            // When using a NoOpSessionStore, using a dictionary as a backing store results in problematic API choices particularly with nullability.
+            // We instead use a more limited contract - `IDistributedSessionStore` as the backing store that plays better.
+            _store = new DefaultDistributedSessionStore();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
         }
@@ -122,7 +125,8 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                if (IsAvailable && _sessionIdBytes == null)
+                Load();
+                if (_sessionIdBytes == null)
                 {
                     _sessionIdBytes = new byte[IdByteCount];
                     RandomNumberGenerator.Fill(_sessionIdBytes);
@@ -142,7 +146,7 @@ namespace Microsoft.AspNetCore.Session
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out byte[] value)
+        public bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value)
         {
             Load();
             return _store.TryGetValue(new EncodedKey(key), out value);
@@ -172,7 +176,7 @@ namespace Microsoft.AspNetCore.Session
                 _isModified = true;
                 byte[] copy = new byte[value.Length];
                 Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
-                _store[encodedKey] = copy;
+                _store.SetValue(encodedKey, copy);
             }
         }
 
@@ -263,6 +267,12 @@ namespace Microsoft.AspNetCore.Session
         /// <inheritdoc />
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
+            if (!IsAvailable)
+            {
+                _logger.SessionNotAvailable();
+                return;
+            }
+
             using (var timeout = new CancellationTokenSource(_ioTimeout))
             {
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -375,7 +385,7 @@ namespace Microsoft.AspNetCore.Session
                 int keyLength = DeserializeNumFrom2Bytes(content);
                 var key = new EncodedKey(ReadBytes(content, keyLength));
                 int dataLength = DeserializeNumFrom4Bytes(content);
-                _store[key] = ReadBytes(content, dataLength);
+                _store.SetValue(key, ReadBytes(content, dataLength));
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))

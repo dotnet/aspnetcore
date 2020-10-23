@@ -8,6 +8,7 @@
     <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <PackageTags>aspnetcore;cache;caching</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

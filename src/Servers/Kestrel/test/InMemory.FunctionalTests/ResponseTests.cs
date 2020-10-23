@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -878,7 +879,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
         }
 
         [Fact]
@@ -936,7 +937,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
 
             Assert.NotNull(completeEx);
         }
@@ -1025,7 +1026,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var error = TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
             Assert.Equal(2, error.Count());
-            Assert.All(error, message => message.Message.Equals("Response Content-Length mismatch: too few bytes written (0 of 5)."));
+            Assert.All(error, message => message.Message.Equals(CoreStrings.FormatTooFewBytesWritten(0, 5)));
         }
 
         [Theory]
@@ -2062,7 +2063,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var reader = new StreamReader(request.Body, Encoding.ASCII))
                 {
                     var statusString = await reader.ReadLineAsync();
-                    response.StatusCode = int.Parse(statusString);
+                    response.StatusCode = int.Parse(statusString, CultureInfo.InvariantCulture);
                 }
             }, testContext))
             {
@@ -3550,7 +3551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoesThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionNextWriteDoesThrow()
         {
             InvalidOperationException writeEx = null;
 
@@ -3578,6 +3579,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             Assert.NotNull(writeEx);
+        }
+
+        [Fact]
+        public async Task ResponseBodyWriterCompleteFlushesChunkTerminator()
+        {
+            var middlewareCompletionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("hello, world");
+                await httpContext.Response.BodyWriter.CompleteAsync();
+                await middlewareCompletionTcs.Task;
+            }, new TestServiceContext(LoggerFactory));
+
+            using var connection = server.CreateConnection();
+
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "",
+                "c",
+                "hello, world",
+                "0",
+                "",
+                "");
+
+            middlewareCompletionTcs.SetResult();
         }
 
         [Fact]
@@ -3912,7 +3947,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-
         [Fact]
         public async Task ResponseGetMemoryAndStartAsyncAdvanceThrows()
         {
@@ -4153,7 +4187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 throw new InvalidDataException($"No StatusCode found in '{response}'");
             }
 
-            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
+            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
         }
     }
 }

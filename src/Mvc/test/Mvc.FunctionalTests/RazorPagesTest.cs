@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Replace(forgeryToken, "{0}");
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            expectedContent = string.Format(expectedContent, forgeryToken);
+            expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
             Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
@@ -790,7 +790,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "Name", name },
-                    { "Age", age.ToString() },
+                    { "Age", age.ToString(CultureInfo.InvariantCulture) },
                 }),
             };
             await AddAntiforgeryHeaders(request);
@@ -815,7 +815,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "Name", name },
-                    { "Age", age.ToString() },
+                    { "Age", age.ToString(CultureInfo.InvariantCulture) },
                 }),
             };
             await AddAntiforgeryHeaders(request);

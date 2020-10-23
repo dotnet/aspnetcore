@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -115,27 +116,27 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitTagHelper(TagHelperIntermediateNode node)
         {
-            WriteContentNode(node, node.TagName, string.Format("{0}.{1}", nameof(TagMode), node.TagMode));
+            WriteContentNode(node, node.TagName, string.Format(CultureInfo.InvariantCulture, "{0}.{1}", nameof(TagMode), node.TagMode));
         }
 
         public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, node.BoundAttribute.DisplayName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, node.BoundAttribute.DisplayName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitTagHelperDirectiveAttribute(TagHelperDirectiveAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, node.BoundAttribute.DisplayName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, node.BoundAttribute.DisplayName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitTagHelperDirectiveAttributeParameter(TagHelperDirectiveAttributeParameterIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitComponent(ComponentIntermediateNode node)
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitComponentAttribute(ComponentAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("AttributeStructure.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format(CultureInfo.InvariantCulture, "AttributeStructure.{0}", node.AttributeStructure));
         }
 
         public override void VisitComponentChildContent(ComponentChildContentIntermediateNode node)
@@ -196,13 +197,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     WriteContentNode(n, n.VariableName);
                     break;
                 case PreallocatedTagHelperHtmlAttributeValueIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case PreallocatedTagHelperPropertyIntermediateNode n:
                     WriteContentNode(n, n.VariableName, n.AttributeName, n.PropertyName);
                     break;
                 case PreallocatedTagHelperPropertyValueIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case DefaultTagHelperCreateIntermediateNode n:
                     WriteContentNode(n, n.TypeName);
@@ -211,10 +212,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     WriteBasicNode(n);
                     break;
                 case DefaultTagHelperHtmlAttributeIntermediateNode n:
-                    WriteContentNode(n, n.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    WriteContentNode(n, n.AttributeName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case DefaultTagHelperPropertyIntermediateNode n:
-                    WriteContentNode(n, n.AttributeName, n.BoundAttribute.DisplayName, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    WriteContentNode(n, n.AttributeName, n.BoundAttribute.DisplayName, string.Format(CultureInfo.InvariantCulture, "HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case DefaultTagHelperRuntimeIntermediateNode n:
                     WriteBasicNode(n);
@@ -335,14 +336,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     // can span multiple lines. Not using string.GetHashCode because we can't have any collisions.
                     using (var md5 = MD5.Create())
                     {
-                        var diagnosticMessage = diagnostic.GetMessage();
+                        var diagnosticMessage = diagnostic.GetMessage(CultureInfo.InvariantCulture);
                         var messageBytes = Encoding.UTF8.GetBytes(diagnosticMessage);
                         var messageHash = md5.ComputeHash(messageBytes);
                         var stringHashBuilder = new StringBuilder();
 
                         for (var j = 0; j < messageHash.Length; j++)
                         {
-                            stringHashBuilder.Append(messageHash[j].ToString("x2"));
+                            stringHashBuilder.Append(messageHash[j].ToString("x2", CultureInfo.InvariantCulture));
                         }
 
                         var stringHash = stringHashBuilder.ToString();

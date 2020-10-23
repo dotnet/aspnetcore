@@ -374,7 +374,9 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                                         Prompt = "select_account",
                                         LoginHint = "username",
                                         DomainHint = "consumers",
+#pragma warning disable CS0618 // Type or member is obsolete
                                         ResponseMode = "query",
+#pragma warning restore CS0618 // Type or member is obsolete
                                         RedirectUri = "/me"
                                     });
                                 }

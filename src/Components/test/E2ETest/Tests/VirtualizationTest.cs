@@ -168,6 +168,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CancelsOutdatedRefreshes_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
@@ -207,6 +208,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
 
             Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+
+            // Validate that the scroll event completed successfully
+            var lastElement = Browser.Exists(By.Id("999"));
+            Browser.True(() => lastElement.Displayed);
 
             // Validate that the top spacer has expanded.
             Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));

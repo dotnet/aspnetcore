@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileNameIndex = path.LastIndexOf('/');
             var length = path.Length;
             Debug.Assert(fileNameIndex != -1);
-            if (string.Compare(path, fileNameIndex + 1, fileName, 0, fileName.Length) == 0)
+            if (string.Compare(path, fileNameIndex + 1, fileName, 0, fileName.Length, StringComparison.Ordinal) == 0)
             {
                 // If the specified path is for the file hierarchy being constructed, then the first file that applies
                 // to it is in a parent directory.

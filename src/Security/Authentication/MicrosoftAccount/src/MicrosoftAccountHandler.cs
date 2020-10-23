@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             };
 
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.ScopeKey, FormatScope, Options.Scope);
+#pragma warning disable CS0618 // Type or member is obsolete
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.ResponseModeKey);
+#pragma warning restore CS0618 // Type or member is obsolete
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.DomainHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.LoginHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.PromptKey);

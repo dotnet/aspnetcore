@@ -127,9 +127,8 @@ namespace Microsoft.AspNetCore.Mvc
                        () => new ProducesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                string.Format("The argument '{0}' is invalid. " +
-                              "Media types which match all types or match all subtypes are not supported.",
-                              invalidContentType),
+                $"The argument '{invalidContentType}' is invalid. " +
+                "Media types which match all types or match all subtypes are not supported.",
                 ex.Message);
         }
 

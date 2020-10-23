@@ -138,12 +138,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         internal bool IsProjectFile(string file)
         {
-            return File.Exists(Path.GetFullPath(file)) && file.EndsWith(".csproj");
+            return File.Exists(Path.GetFullPath(file)) && file.EndsWith(".csproj", StringComparison.Ordinal);
         }
 
         internal bool IsUrl(string file)
         {
-            return Uri.TryCreate(file, UriKind.Absolute, out var _) && file.StartsWith("http");
+            return Uri.TryCreate(file, UriKind.Absolute, out var _) && file.StartsWith("http", StringComparison.Ordinal);
         }
 
         internal async Task AddOpenAPIReference(

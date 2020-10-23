@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
+using System.Linq;
 using GlobalizationWasmApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -107,11 +109,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
             Browser.Equal("block", () => errorUi.GetCssValue("display"));
 
-            // Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803"
-            // var expected = "This application's globalization settings requires using the combined globalization data file.";
-            // var logs = Browser.GetBrowserLogs(LogLevel.Severe).Select(l => l.Message);
-            // Assert.True(logs.Any(l => l.Contains(expected)),
-            //     $"Expected to see globalization error message in the browser logs: {string.Join(Environment.NewLine, logs)}.");
+            var expected = "Blazor detected a change in the application's culture that is not supported with the current project configuration.";
+            var logs = Browser.GetBrowserLogs(LogLevel.Severe).Select(l => l.Message);
+            Assert.True(logs.Any(l => l.Contains(expected)),
+                $"Expected to see globalization error message in the browser logs: {string.Join(Environment.NewLine, logs)}.");
         }
 
         private void Initialize(CultureInfo culture)

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             Task<Uri> baseUriTask,
             IHostApplicationLifetime applicationLifetime)
         {
-            if (!pathPrefix.StartsWith("/"))
+            if (!pathPrefix.StartsWith('/'))
             {
                 pathPrefix = "/" + pathPrefix;
             }

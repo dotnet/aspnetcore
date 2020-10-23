@@ -11,6 +11,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #if NET46
@@ -34,9 +35,6 @@ namespace System.Net
     //       NetEventSource.Info(this, "literal string");  // arbitrary message with a literal string
     //   Debug.Asserts inside the logging methods will help to flag some misuse if the DEBUG_NETEVENTSOURCE_MISUSE compilation constant is defined.
     //   However, because it can be difficult by observation to understand all of the costs involved, guarding can be done everywhere.
-    // - NetEventSource.Fail calls typically do not need to be prefixed with an IsEnabled check, even if they allocate, as FailMessage
-    //   should only be used in cases similar to Debug.Fail, where they are not expected to happen in retail builds, and thus extra costs
-    //   don't matter.
     // - Messages can be strings, formattable strings, or any other object.  Objects (including those used in formattable strings) have special
     //   formatting applied, controlled by the Format method.  Partial specializations can also override this formatting by implementing a partial
     //   method that takes an object and optionally provides a string representation of it, in case a particular library wants to customize further.
@@ -69,7 +67,6 @@ namespace System.Net
         private const int AssociateEventId = 3;
         private const int InfoEventId = 4;
         private const int ErrorEventId = 5;
-        private const int CriticalFailureEventId = 6;
         private const int DumpArrayEventId = 7;
 
         // These events are implemented in NetEventSource.Security.cs.
@@ -252,40 +249,6 @@ namespace System.Net
             WriteEvent(ErrorEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
-        #region Fail
-        /// <summary>Logs a fatal error and raises an assert.</summary>
-        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
-        /// <param name="formattableString">The message to be logged.</param>
-        /// <param name="memberName">The calling member.</param>
-        [NonEvent]
-        public static void Fail(object? thisOrContextObject, FormattableString formattableString, [CallerMemberName] string? memberName = null)
-        {
-            // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
-            // that should never happen in production, and thus we don't care about extra costs.
-
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
-            Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
-        }
-
-        /// <summary>Logs a fatal error and raises an assert.</summary>
-        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
-        /// <param name="message">The message to be logged.</param>
-        /// <param name="memberName">The calling member.</param>
-        [NonEvent]
-        public static void Fail(object? thisOrContextObject, object message, [CallerMemberName] string? memberName = null)
-        {
-            // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
-            // that should never happen in production, and thus we don't care about extra costs.
-
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
-            Debug.Fail(Format(message).ToString(), $"{IdOf(thisOrContextObject)}.{memberName}");
-        }
-
-        [Event(CriticalFailureEventId, Level = EventLevel.Critical, Keywords = Keywords.Debug)]
-        private void CriticalFailure(string thisOrContextObject, string? memberName, string? message) =>
-            WriteEvent(CriticalFailureEventId, thisOrContextObject, memberName ?? MissingMember, message);
-        #endregion
-
         #region DumpBuffer
         /// <summary>Logs the contents of a buffer.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
@@ -306,14 +269,8 @@ namespace System.Net
         [NonEvent]
         public static void DumpBuffer(object? thisOrContextObject, byte[] buffer, int offset, int count, [CallerMemberName] string? memberName = null)
         {
-            if (IsEnabled)
+            if (IsEnabled && offset >= 0 && offset <= buffer.Length - count)
             {
-                if (offset < 0 || offset > buffer.Length - count)
-                {
-                    Fail(thisOrContextObject, $"Invalid {nameof(DumpBuffer)} Args. Length={buffer.Length}, Offset={offset}, Count={count}", memberName);
-                    return;
-                }
-
                 count = Math.Min(count, MaxDumpSize);
 
                 byte[] slice = buffer;
@@ -350,7 +307,7 @@ namespace System.Net
         }
 
         [Event(DumpArrayEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
-        private unsafe void DumpBuffer(string thisOrContextObject, string? memberName, byte[] buffer) =>
+        private void DumpBuffer(string thisOrContextObject, string? memberName, byte[] buffer) =>
             WriteEvent(DumpArrayEventId, thisOrContextObject, memberName ?? MissingMember, buffer);
         #endregion
 
@@ -472,9 +429,9 @@ namespace System.Net
             switch (s.ArgumentCount)
             {
                 case 0: return s.Format;
-                case 1: return string.Format(s.Format, Format(s.GetArgument(0)));
-                case 2: return string.Format(s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)));
-                case 3: return string.Format(s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)), Format(s.GetArgument(2)));
+                case 1: return string.Format(CultureInfo.CurrentCulture, s.Format, Format(s.GetArgument(0)));
+                case 2: return string.Format(CultureInfo.CurrentCulture, s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)));
+                case 3: return string.Format(CultureInfo.CurrentCulture, s.Format, Format(s.GetArgument(0)), Format(s.GetArgument(1)), Format(s.GetArgument(2)));
                 default:
                     object?[] args = s.GetArguments();
                     object[] formattedArgs = new object[args.Length];
@@ -482,7 +439,7 @@ namespace System.Net
                     {
                         formattedArgs[i] = Format(args[i]);
                     }
-                    return string.Format(s.Format, formattedArgs);
+                    return string.Format(CultureInfo.CurrentCulture, s.Format, formattedArgs);
             }
         }
 

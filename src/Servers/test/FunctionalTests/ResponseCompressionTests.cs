@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -169,7 +170,7 @@ namespace ServerComparison.FunctionalTests
             try
             {
                 Assert.Equal(HelloWorldBody, responseText);
-                Assert.Equal(HelloWorldBody.Length.ToString(), GetContentLength(response));
+                Assert.Equal(HelloWorldBody.Length.ToString(CultureInfo.InvariantCulture), GetContentLength(response));
                 Assert.Equal(0, response.Content.Headers.ContentEncoding.Count);
             }
             catch (XunitException)

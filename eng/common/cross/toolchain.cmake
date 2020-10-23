@@ -139,6 +139,10 @@ function(add_toolchain_linker_flag Flag)
   set("CMAKE_SHARED_LINKER_FLAGS${CONFIG_SUFFIX}" "${CMAKE_SHARED_LINKER_FLAGS${CONFIG_SUFFIX}} ${Flag}" PARENT_SCOPE)
 endfunction()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_toolchain_linker_flag("-Wl,--rpath-link=${CROSS_ROOTFS}/lib/${TOOLCHAIN}")
+  add_toolchain_linker_flag("-Wl,--rpath-link=${CROSS_ROOTFS}/usr/lib/${TOOLCHAIN}")
+endif()
 
 if(TARGET_ARCH_NAME STREQUAL "armel")
   if(DEFINED TIZEN_TOOLCHAIN) # For Tizen only

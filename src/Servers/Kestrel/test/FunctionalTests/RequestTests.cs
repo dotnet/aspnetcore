@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                     total += received;
                                 }
 
-                                await context.Response.WriteAsync($"bytesRead: {total.ToString()}");
+                                await context.Response.WriteAsync($"bytesRead: {total}");
                             });
                         });
                 })

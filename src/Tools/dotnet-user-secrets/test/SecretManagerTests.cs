@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Testing;
@@ -79,7 +80,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.FormatMessage_Project_File_Path(Path.Combine(cwd, "..", "TestProject.csproj")), _console.GetOutput());
         }
 
-        [Theory]
+        [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
         [InlineData(true)]
         [InlineData(false)]
         public void SetSecrets(bool fromCurrentDirectory)
@@ -111,7 +112,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             foreach (var keyValue in secrets)
             {
                 Assert.Contains(
-                    string.Format("Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                    string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
                     _console.GetOutput());
             }
 
@@ -123,7 +124,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             foreach (var keyValue in secrets)
             {
                 Assert.Contains(
-                    string.Format("{0} = {1}", keyValue.Key, keyValue.Value),
+                    string.Format(CultureInfo.InvariantCulture, "{0} = {1}", keyValue.Key, keyValue.Value),
                     _console.GetOutput());
             }
 
@@ -171,15 +172,15 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var secretManager = CreateProgram();
 
             secretManager.RunInternal("-v", "set", "secret1", "value1", "-p", projectPath);
-            Assert.Contains(string.Format("Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
-            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
             Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
             _console.ClearOutput();
 
             secretManager.RunInternal("-v", "list", "-p", projectPath);
 
-            Assert.Contains(string.Format("Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
-            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
             Assert.Contains("secret1 = value1", _console.GetOutput());
         }
 
@@ -192,7 +193,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains("Cannot find 'secret1' in the secret store.", _console.GetOutput());
         }
 
-        [Fact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
         public void Remove_Is_Case_Insensitive()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -266,7 +267,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
-        [Theory]
+        [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
         [InlineData(true)]
         [InlineData(false)]
         public void Clear_Secrets(bool fromCurrentDirectory)
@@ -298,7 +299,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             foreach (var keyValue in secrets)
             {
                 Assert.Contains(
-                    string.Format("Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                    string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
                     _console.GetOutput());
             }
 
@@ -311,7 +312,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             foreach (var keyValue in secrets)
             {
                 Assert.Contains(
-                    string.Format("{0} = {1}", keyValue.Key, keyValue.Value),
+                    string.Format(CultureInfo.InvariantCulture, "{0} = {1}", keyValue.Key, keyValue.Value),
                     _console.GetOutput());
             }
 

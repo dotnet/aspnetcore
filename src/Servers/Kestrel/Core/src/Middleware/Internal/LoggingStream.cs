@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // Write the hex
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append(buffer[i].ToString("X2"));
+                builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
                 builder.Append(" ");
 
                 var bufferChar = (char)buffer[i];
