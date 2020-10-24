@@ -35,7 +35,7 @@
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
       Version="${MicrosoftNetCompilersToolsetPackageVersion}"
       PrivateAssets="all"

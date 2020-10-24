@@ -137,26 +137,20 @@
       tests of Microsoft.NET.Sdk.Web templates will not reference the just-built Microsoft.NET.Sdk.Razor. Adding a
       package reference for that would confuse tests of Microsoft.NET.Sdk templates.
     -->
-    <PropertyGroup>
-      <_TemplateProperties>
-        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
-        MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
-        MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
-        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
-        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
-        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
-      </_TemplateProperties>
-    </PropertyGroup>
-    <GenerateFileFromTemplate TemplateFile="$(RepoRoot)eng\helix\content\Directory.Build.props.in"
-      Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
-      Properties="$(_TemplateProperties)"
-      OutputPath="$(PublishDir)Directory.Build.props" />
-    <GenerateFileFromTemplate TemplateFile="$(RepoRoot)eng\helix\content\Directory.Build.targets.in"
-      Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
-      Properties="$(_TemplateProperties)"
-      OutputPath="$(PublishDir)Directory.Build.targets" />
+    <Copy SourceFiles="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props"
+        DestinationFiles="$(PublishDir)Directory.Build.props"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+    <Copy SourceFiles="$(ArtifactsBinDir)GenerateFiles\Directory.Build.targets"
+        DestinationFiles="$(PublishDir)Directory.Build.targets"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
