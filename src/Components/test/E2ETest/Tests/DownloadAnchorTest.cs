@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution<Program, TestServer.HostedInAspNetStartup>(), output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
         {            
         }
 
@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Arrange
             MountAndNavigateToRouterTest();
+            GetAndClearRequestedPaths();
             var initialUrl = Browser.Url;
 
             // Act
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // File should be requested
             var requestedPaths = GetAndClearRequestedPaths();
-            Assert.NotEmpty(requestedPaths.Where(path => path.EndsWith("Download.txt", StringComparison.InvariantCultureIgnoreCase)));
+            Assert.NotEmpty(requestedPaths.Where(path => path.EndsWith("blazor_logo_1000x.png", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         protected IWebElement MountAndNavigateToRouterTest()
