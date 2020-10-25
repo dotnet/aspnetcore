@@ -24,12 +24,10 @@
         Condition=" $(IsTargetingPackBuilding) "
         ReferenceOutputAssembly="false"
         SkipGetTargetFrameworkProperties="true" />
-    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Condition=" !$(IsTargetingPackBuilding) "
         ReferenceOutputAssembly="false"
         SkipGetTargetFrameworkProperties="true" />
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
