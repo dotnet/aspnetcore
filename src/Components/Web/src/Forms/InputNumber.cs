@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out result))
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected override string? FormatValueAsString([AllowNull] TValue value)
+        protected override string? FormatValueAsString(TValue? value)
         {
             // Avoiding a cast to IFormattable to avoid boxing.
             switch (value)

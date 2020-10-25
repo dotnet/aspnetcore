@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -187,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         int httpStatusStart = httpResponse.IndexOf(' ') + 1;
                         int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
 
-                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart));
+                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart), CultureInfo.InvariantCulture);
                         Assert.Equal(httpStatus, StatusCodes.Status200OK);
 
                     }

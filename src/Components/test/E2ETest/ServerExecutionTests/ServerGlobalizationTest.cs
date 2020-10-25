@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Exists(By.Id("culture-selector"));
         }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24692")]
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         protected override void SetCulture(string culture)
         {
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
+            var selector = new SelectElement(Browser.Exists(By.Id("culture-selector")));
             selector.SelectByValue(culture);
 
             // Click the link to return back to the test page

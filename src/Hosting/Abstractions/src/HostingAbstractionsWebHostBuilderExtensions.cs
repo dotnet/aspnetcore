@@ -12,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Contains extension methods for configuring the <see cref="IWebHostBuilder" />.
+    /// </summary>
     public static class HostingAbstractionsWebHostBuilderExtensions
     {
         /// <summary>

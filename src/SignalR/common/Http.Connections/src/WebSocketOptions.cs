@@ -6,8 +6,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// Options used by the WebSockets transport to modify the transports behavior.
+    /// </summary>
     public class WebSocketOptions
     {
+        /// <summary>
+        /// Gets or sets the amount of time the WebSocket transport will wait for a graceful close before starting an ungraceful close.
+        /// </summary>
+        /// <value>Defaults to 5 seconds</value>
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>

@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanUseJsInteropForRefElementsDuringOnAfterRender()
         {
             var appElement = Browser.MountTestComponent<AfterRenderInteropComponent>();
-            Browser.Equal("Value set after render", () => Browser.FindElement(By.TagName("input")).GetAttribute("value"));
+            Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetAttribute("value"));
         }
 
         [Fact]

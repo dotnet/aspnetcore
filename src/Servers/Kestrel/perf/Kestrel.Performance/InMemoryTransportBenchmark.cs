@@ -71,8 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var response = Encoding.ASCII.GetString(await _connection.GetResponseAsync(expectedResponse.Length));
 
             // Exclude date header since the value changes on every request
-            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:"));
-            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:"));
+            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
+            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
 
             if (!Enumerable.SequenceEqual(expectedResponseLines, responseLines))
             {

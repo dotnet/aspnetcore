@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol over MsgPack.</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,10 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="MessagePack" />
     <Reference Include="MessagePackAnalyzer" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

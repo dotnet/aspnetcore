@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     var output = string.Empty;
                     deployer.HostProcess.OutputDataReceived += (sender, args) =>
                     {
-                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
+                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage, StringComparison.Ordinal))
                         {
                             startedTcs.TrySetResult();
                             output += args.Data.Substring(StartedMessage.Length) + '\n';
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             var startInfo = new ProcessStartInfo
             {
                 FileName = "kill",
-                Arguments = processId.ToString(),
+                Arguments = processId.ToString(CultureInfo.InvariantCulture),
                 RedirectStandardOutput = true,
                 UseShellExecute = false
             };

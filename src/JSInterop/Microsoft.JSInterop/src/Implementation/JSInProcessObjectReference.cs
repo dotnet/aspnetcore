@@ -23,7 +23,6 @@ namespace Microsoft.JSInterop.Implementation
         }
 
         /// <inheritdoc />
-        [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object?[]? args)
         {
             ThrowIfDisposed();

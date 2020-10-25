@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,6 +99,20 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         [Parameter]
         public int OverscanCount { get; set; } = 3;
 
+        /// <summary>
+        /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
+        /// This is useful if external data may have changed. There is no need to call this
+        /// when using <see cref="Items"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+        public async Task RefreshDataAsync()
+        {
+            // We don't auto-render after this operation because in the typical use case, the
+            // host component calls this from one of its lifecycle methods, and will naturally
+            // re-render afterwards anyway. It's not desirable to re-render twice.
+            await RefreshDataCoreAsync(renderOnSuccess: false);
+        }
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -125,6 +141,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             else if (Items != null)
             {
                 _itemsProvider = DefaultItemsProvider;
+
+                // When we have a fixed set of in-memory data, it doesn't cost anything to
+                // re-query it on each cycle, so do that. This means the developer can add/remove
+                // items in the collection and see the UI update without having to call RefreshDataAsync.
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: false);
+
+                // We know it's synchronous and has its own error handling
+                Debug.Assert(refreshTask.IsCompletedSuccessfully);
             }
             else
             {
@@ -223,7 +247,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-            => $"height: {itemsInSpacer * _itemSize}px;";
+            => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;";
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
@@ -270,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
-                var refreshTask = RefreshDataAsync();
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
                 if (!refreshTask.IsCompleted)
                 {
@@ -279,12 +303,25 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             }
         }
 
-        private async Task RefreshDataAsync()
+        private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
         {
             _refreshCts?.Cancel();
-            _refreshCts = new CancellationTokenSource();
+            CancellationToken cancellationToken;
 
-            var cancellationToken = _refreshCts.Token;
+            if (_itemsProvider == DefaultItemsProvider)
+            {
+                // If we're using the DefaultItemsProvider (because the developer supplied a fixed
+                // Items collection) we know it will complete synchronously, and there's no point
+                // instantiating a new CancellationTokenSource
+                _refreshCts = null;
+                cancellationToken = CancellationToken.None;
+            }
+            else
+            {
+                _refreshCts = new CancellationTokenSource();
+                cancellationToken = _refreshCts.Token;
+            }
+
             var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
 
             try
@@ -298,7 +335,10 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                     _loadedItems = result.Items;
                     _loadedItemsStartIndex = request.StartIndex;
 
-                    StateHasChanged();
+                    if (renderOnSuccess)
+                    {
+                        StateHasChanged();
+                    }
                 }
             }
             catch (Exception e)
@@ -328,7 +368,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", $"height: {_itemSize}px;");
+            builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px;");
             builder.CloseElement();
         };
 

@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Creates a <see cref="AuthenticationFailedContext"/>.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="scheme"></param>
-        /// <param name="options"></param>
+        /// <inheritdoc />
         public AuthenticationFailedContext(
             HttpContext context,
             AuthenticationScheme scheme,

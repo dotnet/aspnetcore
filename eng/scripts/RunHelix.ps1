@@ -6,7 +6,7 @@
 .PARAMETER Project
     The test project to publish and send to Helix.
 .PARAMETER HelixQueues
-    Set the Helix queues to use, the list is ';' separated.
+    Set the Helix queues to use. The list is '+' or ';'-separated.
     Some supported queues:
     Ubuntu.1604.Amd64.Open
     Ubuntu.1804.Amd64.Open

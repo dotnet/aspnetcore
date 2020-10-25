@@ -13,22 +13,25 @@
 
     <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
     <NoWarn>$(NoWarn);RS0041</NoWarn>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' AND
-      '$(DotNetBuildFromSource)' != 'true' AND
-      ! $(RepoRelativeProjectDir.Contains('Tools')) ">
-    <!-- Package does nothing in projects lacking PublicAPI.Shipped.txt or PublicAPI.Unshipped.txt files. -->
-    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
 
-    <AdditionalFiles Include="PublicAPI.Shipped.txt"
-        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') " />
-    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
-        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt') " />
-    <AdditionalFiles Include="PublicAPI.Shipped.txt"
-        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Shipped.txt') " />
-    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
-        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Unshipped.txt') " />
+    <!-- Turn off platform compatiblity analyzer warnings in test, test assets, and samples -->
+    <NoWarn Condition="'$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(ISBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
+      '$(DotNetBuildFromSource)' != 'true' AND
+      '$(IsImplementationProject)' == 'true' AND
+      ! $(RepoRelativeProjectDir.Contains('Tools')) ">
+    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
   </ItemGroup>
+  <Target Name="_CheckIgnoredPublicApiFiles"
+      BeforeTargets="Build;Restore"
+      Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND
+        '$(DotNetBuildFromSource)' != 'true' AND
+        !('$(IsImplementationProject)' == 'true' AND
+          ! $(RepoRelativeProjectDir.Contains('Tools'))) ">
+    <Warning Text="Public API baseline files ignored." />
+  </Target>
 
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"

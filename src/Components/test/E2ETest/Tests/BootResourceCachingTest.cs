@@ -46,10 +46,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/");
             WaitUntilLoaded();
             var initialResourcesRequested = GetAndClearRequestedPaths();
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll", StringComparison.Ordinal)));
 
             // On subsequent loads, we skip the items referenced from blazor.boot.json
             // which includes .dll files and dotnet.wasm
@@ -57,10 +57,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
+            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm", StringComparison.Ordinal)));
+            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js", StringComparison.Ordinal)));
+            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll", StringComparison.Ordinal)));
         }
 
         [Fact]
@@ -71,16 +71,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/");
             WaitUntilLoaded();
             var cacheEntryUrls1 = GetCacheEntryUrls();
-            var cacheEntryForMsCorLib = cacheEntryUrls1.Single(url => url.Contains("/mscorlib.dll"));
+            var cacheEntryForComponentsDll = cacheEntryUrls1.Single(url => url.Contains("/Microsoft.AspNetCore.Components.dll"));
             var cacheEntryForDotNetWasm = cacheEntryUrls1.Single(url => url.Contains("/dotnet.wasm"));
             var cacheEntryForDotNetWasmWithChangedHash = cacheEntryForDotNetWasm.Replace(".sha256-", ".sha256-different");
 
             // Remove some items we do need, and add an item we don't need
-            RemoveCacheEntry(cacheEntryForMsCorLib);
+            RemoveCacheEntry(cacheEntryForComponentsDll);
             RemoveCacheEntry(cacheEntryForDotNetWasm);
             AddCacheEntry(cacheEntryForDotNetWasmWithChangedHash, "ignored content");
             var cacheEntryUrls2 = GetCacheEntryUrls();
-            Assert.DoesNotContain(cacheEntryForMsCorLib, cacheEntryUrls2);
+            Assert.DoesNotContain(cacheEntryForComponentsDll, cacheEntryUrls2);
             Assert.DoesNotContain(cacheEntryForDotNetWasm, cacheEntryUrls2);
             Assert.Contains(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls2);
 
@@ -91,13 +91,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".dll")),
-                requestedDll => Assert.Contains("/mscorlib.dll", requestedDll));
+                requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.dll", requestedDll));
             Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".wasm")),
                 requestedDll => Assert.Contains("/dotnet.wasm", requestedDll));
 
             // We also update the cache (add new items, remove unnecessary items)
             var cacheEntryUrls3 = GetCacheEntryUrls();
-            Assert.Contains(cacheEntryForMsCorLib, cacheEntryUrls3);
+            Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
             Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
             Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);
         }
@@ -148,8 +148,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("h1")).Text == "Hello, world!");
+            var element = Browser.Exists(By.TagName("h1"), TimeSpan.FromSeconds(30));
+            Browser.Equal("Hello, world!", () => element.Text);
         }
     }
 }

@@ -34,7 +34,6 @@ namespace RunTests
                 }
 
                 EnvironmentVariables.Add("PATH", Options.Path);
-                EnvironmentVariables.Add("DOTNET_ROOT", Options.DotnetRoot);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
                 Console.WriteLine($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
@@ -99,7 +98,7 @@ namespace RunTests
                     Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
+                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll,xml to {appRuntimePath}");
                     using (var archive = ZipFile.OpenRead(Options.AspNetRuntime))
                     {
                         foreach (var entry in archive.Entries)
@@ -107,7 +106,8 @@ namespace RunTests
                             // These are the only extensions that end up in the shared fx directory
                             if (entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
                                 entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
-                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                                entry.Name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                             {
                                 entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name), overwrite: true);
                             }
@@ -125,17 +125,6 @@ namespace RunTests
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                    foreach (var restoreSource in Options.Source)
-                    {
-                        await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            $"nuget add source {restoreSource} --configfile NuGet.config",
-                            environmentVariables: EnvironmentVariables,
-                            outputDataReceived: Console.WriteLine,
-                            errorDataReceived: Console.Error.WriteLine,
-                            throwOnError: false,
-                            cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                    }
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -178,9 +167,9 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRef))
                 {
-                    var refPath = $"Microsoft.AspNetCore.App.Ref";
+                    var refPath = $"{Options.DotnetRoot}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
                     Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
-                    ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
+                    ZipFile.ExtractToDirectory(Options.AspNetRef, refPath);
 
                     DisplayContents(refPath);
                 }
@@ -202,8 +191,7 @@ namespace RunTests
             try
             {
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} " +
-                              "--version 5.0.0-* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json",
+                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
                             environmentVariables: EnvironmentVariables,
                             outputDataReceived: Console.WriteLine,
                             errorDataReceived: Console.Error.WriteLine,

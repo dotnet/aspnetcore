@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
@@ -10,10 +10,6 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-
-    <!-- Tests are disabled due to https://github.com/dotnet/aspnetcore/issues/25322 -->
-    <SkipTests>true</SkipTests>
-
     <!--Do not run this test project on Helix.-->
     <BuildHelixPayload>false</BuildHelixPayload>
     <SkipHelixArm>true</SkipHelixArm>
@@ -26,7 +22,6 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
-    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
@@ -47,11 +42,6 @@
     <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</PreserveExistingLogsInOutput>
-    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == ''">false</PreserveExistingLogsInOutput>
-  </PropertyGroup>
-
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
@@ -68,11 +58,6 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
       <_Parameter2>true</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
-      <_Parameter1>$(PreserveExistingLogsInOutput)</_Parameter1>
-      <_Parameter2>$(TargetFramework)</_Parameter2>
-      <_Parameter3></_Parameter3>
     </AssemblyAttribute>
   </ItemGroup>
 

@@ -60,6 +60,7 @@ namespace IdentitySample.DefaultUI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {

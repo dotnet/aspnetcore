@@ -18,14 +18,14 @@ namespace MusicStore.Mocks.Facebook
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.6/oauth/access_token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.6/oauth/access_token", StringComparison.Ordinal))
             {
                 var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["grant_type"] == "authorization_code")
                 {
                     if (formData["code"] == "ValidCode")
                     {
-                        Helpers.ThrowIfConditionFailed(() => ((string)formData["redirect_uri"]).EndsWith("signin-facebook"), "Redirect URI is not ending with /signin-facebook");
+                        Helpers.ThrowIfConditionFailed(() => ((string)formData["redirect_uri"]).EndsWith("signin-facebook", StringComparison.Ordinal), "Redirect URI is not ending with /signin-facebook");
                         Helpers.ThrowIfConditionFailed(() => formData["client_id"] == "[AppId]", "Invalid client Id received");
                         Helpers.ThrowIfConditionFailed(() => formData["client_secret"] == "[AppSecret]", "Invalid client secret received");
                         response.Content = new StringContent("{ \"access_token\": \"ValidAccessToken\", \"expires_in\": \"100\" }");
@@ -35,7 +35,7 @@ namespace MusicStore.Mocks.Facebook
                     return response;
                 }
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.6/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.6/me", StringComparison.Ordinal))
             {
                 var queryParameters = new QueryCollection(QueryHelpers.ParseQuery(request.RequestUri.Query));
                 Helpers.ThrowIfConditionFailed(() => queryParameters["appsecret_proof"].Count > 0, "appsecret_proof is empty");

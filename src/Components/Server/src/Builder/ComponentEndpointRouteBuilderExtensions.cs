@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Builder
             var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);
 
             var disconnectEndpoint = endpoints.Map(
-                (path.EndsWith("/") ? path : path + "/") + "disconnect/",
+                (path.EndsWith('/') ? path : path + "/") + "disconnect/",
                 endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
                 .WithDisplayName("Blazor disconnect");
 

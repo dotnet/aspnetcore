@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "Servicio de trabajo",
-    "description": "Una plantilla de proyecto vacío para crear un servicio de trabajo."
+    "name": "Worker Service",
+    "description": "Una plantilla de proyecto vacía para crear un servicio Worker."
   }
 }

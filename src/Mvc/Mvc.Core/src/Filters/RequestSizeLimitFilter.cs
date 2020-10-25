@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             else
             {
                 maxRequestBodySizeFeature.MaxRequestBodySize = Bytes;
-                _logger.MaxRequestBodySizeSet(Bytes.ToString());
+                _logger.MaxRequestBodySizeSet(Bytes.ToString(CultureInfo.InvariantCulture));
             }
         }
     }

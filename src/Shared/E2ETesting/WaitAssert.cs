@@ -5,8 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
+using OpenQA.Selenium.DevTools.Page;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
 
@@ -117,7 +120,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
-                var errors = driver.GetBrowserLogs(LogLevel.All);
+                var errors = driver.GetBrowserLogs(LogLevel.All).Select(c => c.ToString()).ToList();
 
                 TakeScreenShot(driver, screenShotPath);
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :

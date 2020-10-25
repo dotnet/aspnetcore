@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -19,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
@@ -381,12 +379,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private static bool IsConnectionResetError(SocketError errorCode)
         {
-            // A connection reset can be reported as SocketError.ConnectionAborted on Windows.
-            // ProtocolType can be removed once https://github.com/dotnet/corefx/issues/31927 is fixed.
             return errorCode == SocketError.ConnectionReset ||
                    errorCode == SocketError.Shutdown ||
-                   (errorCode == SocketError.ConnectionAborted && IsWindows) ||
-                   (errorCode == SocketError.ProtocolType && IsMacOS);
+                   (errorCode == SocketError.ConnectionAborted && IsWindows);
         }
 
         private static bool IsConnectionAbortError(SocketError errorCode)

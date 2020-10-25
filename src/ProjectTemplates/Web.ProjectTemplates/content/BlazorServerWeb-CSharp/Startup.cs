@@ -136,6 +136,9 @@ namespace BlazorServerWeb_CSharp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+#if (IndividualLocalAuth)
+                app.UseMigrationsEndPoint();
+#endif
             }
             else
             {

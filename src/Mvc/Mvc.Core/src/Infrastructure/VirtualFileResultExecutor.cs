@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,10 +15,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{VirtualFileResult}"/> for <see cref="VirtualFileResult"/>.
+    /// </summary>
     public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="VirtualFileResultExecutor"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
+        /// <param name="hostingEnvironment">The hosting enviornment</param>
         public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
             : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
         {
@@ -69,6 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue range, long rangeLength)
         {
             if (context == null)
@@ -134,6 +143,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return result.FileProvider;
         }
 
+        /// <summary>
+        /// Obsolete, this API is no longer called.
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
         [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(IFileInfo fileInfo)
         {

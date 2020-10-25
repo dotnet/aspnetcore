@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
@@ -143,7 +144,7 @@ Some Content
             Assert.Equal(
                 "Unrecognized child content inside component 'RenderChildContent'. The component 'RenderChildContent' accepts " +
                 "child content through the following top-level items: 'ChildContent'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -226,7 +227,7 @@ Some Content
             Assert.Equal(
                 "The child content element 'ChildContent' of component 'RenderChildContentString' uses the same parameter name ('context') as enclosing child content " +
                 "element 'ChildContent' of component 'RenderChildContentString'. Specify the parameter name like: '<ChildContent Context=\"another_name\"> to resolve the ambiguity",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -245,7 +246,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidParameterOnComponent.Id, diagnostic.Id);
             Assert.Equal(
                 "Invalid parameter name. The parameter name attribute 'Context' on component 'RenderChildContentString' can only include literal text.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -266,7 +267,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidAttribute.Id, diagnostic.Id);
             Assert.Equal(
                 "Unrecognized attribute '@key' on child content element 'ChildContent'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
     }
 }

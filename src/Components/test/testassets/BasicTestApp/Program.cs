@@ -4,22 +4,18 @@
 using System;
 using System.Globalization;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Web;
 using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.ProtectedBrowserStorage;
 
 namespace BasicTestApp
 {
@@ -37,13 +33,8 @@ namespace BasicTestApp
             builder.Services.AddAuthorizationCore(options =>
             {
                 options.AddPolicy("NameMustStartWithB", policy =>
-                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith('B') ?? false));
             });
-
-            builder.Services.AddDataProtection();
-
-            builder.Services.AddTransient<ProtectedLocalStorage>();
-            builder.Services.AddTransient<ProtectedSessionStorage>();
 
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 

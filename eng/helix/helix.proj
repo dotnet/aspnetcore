@@ -11,7 +11,8 @@
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
 
-  <ItemGroup>
+  <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
+  <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
     <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
     <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />
   </ItemGroup>

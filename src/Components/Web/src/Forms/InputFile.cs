@@ -41,11 +41,13 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter(CaptureUnmatchedValues = true)]
         public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
+        /// <inheritdoc/>
         protected override void OnInitialized()
         {
             _jsUnmarshalledRuntime = JSRuntime as IJSUnmarshalledRuntime;
         }
 
+        /// <inheritdoc/>
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -55,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
+        /// <inheritdoc/>
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
@@ -72,6 +75,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {
             var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
+
+            if (imageFile is null)
+            {
+                throw new InvalidOperationException("ToImageFile returned an unexpected null result.");
+            }
 
             imageFile.Owner = this;
 

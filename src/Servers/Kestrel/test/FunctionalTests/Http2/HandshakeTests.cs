@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-        // Mac SslStream is missing ALPN support: https://github.com/dotnet/corefx/issues/30492
+        // Mac SslStream is missing ALPN support: https://github.com/dotnet/runtime/issues/27727
         public void TlsAndHttp2NotSupportedOnMac()
         {
             var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2()
         {

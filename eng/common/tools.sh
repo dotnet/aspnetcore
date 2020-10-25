@@ -312,12 +312,14 @@ function InitializeBuildTool {
   _InitializeBuildToolFramework="netcoreapp2.1"
 }
 
+# Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages"
     else
       export NUGET_PACKAGES="$repo_root/.packages"
+      export RESTORENOCACHE=true
     fi
   fi
 

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
             {
-                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn");
+                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal);
             }), (s, o, arg3) =>
             {
                 if (s == "Microsoft.AspNetCore.Hosting.HttpRequestIn")
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
             {
-                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn");
+                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal);
             }), (s, o, arg3) =>
             {
                 if (s == "Microsoft.AspNetCore.Hosting.HttpRequestIn")
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -302,6 +302,43 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        public void ActivityBaggagePreservesItemsOrder()
+        {
+            var diagnosticListener = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
+
+            diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
+                s =>
+                {
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"Request-Id", "ParentId1"},
+                    {"Correlation-Context", "Key1=value1, Key2=value2, Key1=value3"} // duplicated keys allowed by the contract
+                }
+            });
+            hostingApplication.CreateContext(features);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
+
+            var expectedBaggage = new []
+            {
+                KeyValuePair.Create("Key1","value1"),
+                KeyValuePair.Create("Key2","value2"),
+                KeyValuePair.Create("Key1","value3")
+            };
+
+            Assert.Equal(expectedBaggage, Activity.Current.Baggage);
+        }
+
+        [Fact]
         public void ActivityBaggageValuesAreUrlDecodedFromHeaders()
         {
             var diagnosticListener = new DiagnosticListener("DummySource");
@@ -310,7 +347,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -339,7 +376,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }

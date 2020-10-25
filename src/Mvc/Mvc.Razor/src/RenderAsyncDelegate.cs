@@ -5,5 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
+    /// <summary>
+    /// A delegate for RenderAsync.
+    /// </summary>
+    /// <returns></returns>
     public delegate Task RenderAsyncDelegate();
 }

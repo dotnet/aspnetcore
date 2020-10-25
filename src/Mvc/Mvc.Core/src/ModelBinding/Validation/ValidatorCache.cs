@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,10 +8,19 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// A cache for <see cref="IModelValidator"/>
+    /// </summary>
     public class ValidatorCache
     {
         private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
 
+        /// <summary>
+        /// Get the validators for a model.
+        /// </summary>
+        /// <param name="metadata">The model metadata.</param>
+        /// <param name="validatorProvider">The validator provider.</param>
+        /// <returns>A list of model validators.</returns>
         public IReadOnlyList<IModelValidator> GetValidators(ModelMetadata metadata, IModelValidatorProvider validatorProvider)
         {
             if (_cacheEntries.TryGetValue(metadata, out var entry))

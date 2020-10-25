@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<FocusEventComponent>();
 
-            var input = Browser.FindElement(By.Id("input"));
+            var input = Browser.Exists(By.Id("input"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
             // Focus the target, verify onfocusin is fired
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("onfocus,onfocusin,", () => output.Text);
 
             // Focus something else, verify onfocusout is also fired
-            var other = Browser.FindElement(By.Id("other"));
+            var other = Browser.Exists(By.Id("other"));
             other.Click();
 
             Browser.Equal("onfocus,onfocusin,onblur,onfocusout,", () => output.Text);
@@ -56,12 +56,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<MouseEventComponent>();
 
-            var input = Browser.FindElement(By.Id("mouseover_input"));
+            var input = Browser.Exists(By.Id("mouseover_input"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
-            var other = Browser.FindElement(By.Id("other"));
+            var other = Browser.Exists(By.Id("other"));
 
             // Mouse over the button and then back off
             var actions = new Actions(Browser)
@@ -77,9 +77,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<MouseEventComponent>();
 
-            var input = Browser.FindElement(By.Id("mousemove_input"));
+            var input = Browser.Exists(By.Id("mousemove_input"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
             // Move a little bit
@@ -96,12 +96,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<MouseEventComponent>();
 
-            var input = Browser.FindElement(By.Id("mousedown_input"));
+            var input = Browser.Exists(By.Id("mousedown_input"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
-            var other = Browser.FindElement(By.Id("other"));
+            var other = Browser.Exists(By.Id("other"));
 
             // Mousedown
             var actions = new Actions(Browser).ClickAndHold(input);
@@ -121,9 +121,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<ToggleEventComponent>();
 
-            var detailsToggle = Browser.FindElement(By.Id("details-toggle"));
+            var detailsToggle = Browser.Exists(By.Id("details-toggle"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
             // Click
@@ -138,9 +138,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<MouseEventComponent>();
 
-            var input = Browser.FindElement(By.Id("pointerdown_input"));
+            var input = Browser.Exists(By.Id("pointerdown_input"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
             var actions = new Actions(Browser).ClickAndHold(input);
@@ -154,10 +154,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<MouseEventComponent>();
 
-            var input = Browser.FindElement(By.Id("drag_input"));
-            var target = Browser.FindElement(By.Id("drop"));
+            var input = Browser.Exists(By.Id("drag_input"));
+            var target = Browser.Exists(By.Id("drop"));
 
-            var output = Browser.FindElement(By.Id("output"));
+            var output = Browser.Exists(By.Id("output"));
             Assert.Equal(string.Empty, output.Text);
 
             var actions = new Actions(Browser).DragAndDrop(input, target);
@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void PreventDefault_DotNotApplyByDefault()
         {
             var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
@@ -190,8 +191,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<InputEventComponent>();
 
-            var input = Browser.FindElement(By.TagName("input"));
-            var output = Browser.FindElement(By.Id("test-result"));
+            var input = Browser.Exists(By.TagName("input"));
+            var output = Browser.Exists(By.Id("test-result"));
 
             Browser.Equal(string.Empty, () => output.Text);
 
@@ -214,8 +215,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Browser.MountTestComponent<LaggyTypingComponent>();
 
-            var input = Browser.FindElement(By.TagName("input"));
-            var output = Browser.FindElement(By.Id("test-result"));
+            var input = Browser.Exists(By.TagName("input"));
+            var output = Browser.Exists(By.Id("test-result"));
 
             Browser.Equal(string.Empty, () => output.Text);
 
@@ -230,8 +231,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void NonInteractiveElementWithDisabledAttributeDoesRespondToMouseEvents()
         {
             Browser.MountTestComponent<EventDisablingComponent>();
-            var element = Browser.FindElement(By.Id("disabled-div"));
-            var eventLog = Browser.FindElement(By.Id("event-log"));
+            var element = Browser.Exists(By.Id("disabled-div"));
+            var eventLog = Browser.Exists(By.Id("event-log"));
 
             Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
             element.Click();
@@ -245,15 +246,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void InteractiveElementWithDisabledAttributeDoesNotRespondToMouseEvents(string elementSelector)
         {
             Browser.MountTestComponent<EventDisablingComponent>();
-            var element = Browser.FindElement(By.CssSelector(elementSelector));
-            var eventLog = Browser.FindElement(By.Id("event-log"));
+            var element = Browser.Exists(By.CssSelector(elementSelector));
+            var eventLog = Browser.Exists(By.Id("event-log"));
 
             Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
             element.Click();
 
             // It's no use observing that the log is still empty, since maybe the UI just hasn't updated yet
             // To be sure that the preceding action has no effect, we need to trigger a different action that does have an effect
-            Browser.FindElement(By.Id("enabled-button")).Click();
+            Browser.Exists(By.Id("enabled-button")).Click();
             Browser.Equal("Got event on enabled button", () => eventLog.GetAttribute("value"));
         }
 
@@ -262,8 +263,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.MountTestComponent<EventDuringBatchRendering>();
 
-            var input = Browser.FindElements(By.CssSelector("#reversible-list input"))[0];
-            var eventLog = Browser.FindElement(By.Id("event-log"));
+            var input = Browser.Exists(By.CssSelector("#reversible-list input"));
+            var eventLog = Browser.Exists(By.Id("event-log"));
 
             SendKeysSequentially(input, "abc");
             Browser.Equal("abc", () => input.GetAttribute("value"));
@@ -278,9 +279,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void EventDuringBatchRendering_CannotTriggerJSInterop()
         {
             Browser.MountTestComponent<EventDuringBatchRendering>();
-            var errorLog = Browser.FindElement(By.Id("web-component-error-log"));
+            var errorLog = Browser.Exists(By.Id("web-component-error-log"));
 
-            Browser.FindElement(By.Id("add-web-component")).Click();
+            Browser.Exists(By.Id("add-web-component")).Click();
             var expectedMessage = _serverFixture.ExecutionMode == ExecutionMode.Client
                 ? "Assertion failed - heap is currently locked"
                 : "There was an exception invoking 'SomeMethodThatDoesntNeedToExistForThisTest' on assembly 'SomeAssembly'";
@@ -292,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void RenderAttributesBeforeConnectedCallBack()
         {
             Browser.MountTestComponent<RenderAttributesBeforeConnectedCallback>();
-            var element = Browser.FindElement(By.TagName("custom-web-component-data-from-attribute"));
+            var element = Browser.Exists(By.TagName("custom-web-component-data-from-attribute"));
 
             var expectedContent = "success";
 

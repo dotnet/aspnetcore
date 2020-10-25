@@ -34,10 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        /// <param name="encoder"></param>
-        /// <param name="clock"></param>
+        /// <inheritdoc />
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -63,7 +60,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Intercepts incomplete Negotiate authentication handshakes and continues or completes them.
         /// </summary>
-        /// <returns>True if a response was generated, false otherwise.</returns>
+        /// <returns><see langword="true" /> if a response was generated, otherwise <see langword="false"/>.</returns>
         public async Task<bool> HandleRequestAsync()
         {
             AuthPersistence persistence = null;
@@ -315,7 +312,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             // things like ClaimsTransformation run per request.
             var identity = _negotiateState.GetIdentity();
             ClaimsPrincipal user;
-            if (identity is WindowsIdentity winIdentity)
+            if (OperatingSystem.IsWindows() && identity is WindowsIdentity winIdentity)
             {
                 user = new WindowsPrincipal(winIdentity);
                 Response.RegisterForDispose(winIdentity);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             // Assert
             // We want to ignore C# diagnostics because they'll include diagnostics for not awaiting bits correctly. The purpose of this analyzer is to
             // improve on those error messages but not remove them.
-            var filteredDiagnostics = result.Where(diagnostic => diagnostic.Id.StartsWith("MVC"));
+            var filteredDiagnostics = result.Where(diagnostic => diagnostic.Id.StartsWith("MVC", StringComparison.Ordinal));
             Assert.Collection(
                 filteredDiagnostics,
                 diagnostic =>

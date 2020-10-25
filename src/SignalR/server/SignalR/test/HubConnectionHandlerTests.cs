@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -154,6 +155,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                     await client.SendInvocationAsync(nameof(AbortHub.Kill)).OrTimeout();
+
+                    var close = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+                    Assert.False(close.AllowReconnect);
 
                     await connectionHandlerTask.OrTimeout();
 
@@ -955,15 +959,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    var invokeTask = client.InvokeAsync(nameof(MethodHub.BlockingMethod));
+                    await client.SendInvocationAsync(nameof(MethodHub.BlockingMethod)).OrTimeout();
 
                     client.Connection.Abort();
+
+                    var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+                    Assert.False(closeMessage.AllowReconnect);
 
                     // If this completes then the server has completed the connection
                     await connectionHandlerTask.OrTimeout();
 
                     // Nothing written to connection because it was closed
-                    Assert.False(invokeTask.IsCompleted);
+                    Assert.Null(client.TryRead());
                 }
             }
         }
@@ -1019,16 +1026,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // kill the connection
                     client.Dispose();
 
+                    var message = Assert.IsType<CloseMessage>(client.TryRead());
+                    Assert.True(message.AllowReconnect);
+
                     // Ensure the client channel is empty
-                    var message = client.TryRead();
-                    switch (message)
-                    {
-                        case CloseMessage close:
-                            break;
-                        default:
-                            Assert.Null(message);
-                            break;
-                    }
+                    Assert.Null(client.TryRead());
 
                     await connectionHandlerTask.OrTimeout();
                 }
@@ -3591,7 +3593,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 foreach (var spot in order)
                 {
-                    await client.SendHubMessageAsync(new StreamItemMessage(spot.ToString(), words[spot][pos[spot]])).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage(spot.ToString(CultureInfo.InvariantCulture), words[spot][pos[spot]])).OrTimeout();
                     pos[spot] += 1;
                 }
 
@@ -3600,7 +3602,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.SendHubMessageAsync(CompletionMessage.Empty(id)).OrTimeout();
                     var response = await client.ReadAsync().OrTimeout();
                     Debug.Write(response);
-                    Assert.Equal(words[int.Parse(id)], ((CompletionMessage)response).Result);
+                    Assert.Equal(words[int.Parse(id, CultureInfo.InvariantCulture)], ((CompletionMessage)response).Result);
                 }
             }
         }

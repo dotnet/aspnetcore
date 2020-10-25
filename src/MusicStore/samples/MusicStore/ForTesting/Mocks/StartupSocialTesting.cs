@@ -161,6 +161,8 @@ namespace MusicStore
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
 
+            app.UseMigrationsEndPoint();
+
             // Configure Session.
             app.UseSession();
 

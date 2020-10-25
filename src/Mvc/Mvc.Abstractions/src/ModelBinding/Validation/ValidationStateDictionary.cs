@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             _inner = new Dictionary<object, ValidationStateEntry>(ReferenceEqualityComparer.Instance);
         }
 
+        /// <inheritdoc />
         public ValidationStateEntry? this[object key]
         {
             get

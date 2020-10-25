@@ -27,6 +27,10 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public CookieSecurePolicy Secure { get; set; } = CookieSecurePolicy.None;
 
+        /// <summary>
+        /// Gets or sets the <see cref="CookieBuilder"/> that is used to track if the user consented to the
+        /// cookie use policy.
+        /// </summary>
         public CookieBuilder ConsentCookie { get; set; } = new CookieBuilder()
         {
             Name = ".AspNet.Consent",

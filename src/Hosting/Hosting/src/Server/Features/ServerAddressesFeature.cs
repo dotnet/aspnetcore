@@ -7,10 +7,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Hosting.Server.Features
 {
+    /// <summary>
+    /// Specifies the address used by the server.
+    /// </summary>
     public class ServerAddressesFeature : IServerAddressesFeature
     {
+        /// <inheritdoc />
         public ICollection<string> Addresses { get; } = new List<string>();
 
+        /// <inheritdoc />
         public bool PreferHostingUrls { get; set; }
     }
 }

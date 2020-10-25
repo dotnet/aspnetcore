@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Internal
             return Convert.ToInt32(reader.Value, CultureInfo.InvariantCulture);
         }
 
-        public static string ReadAsString(JsonTextReader reader, string propertyName)
+        public static string? ReadAsString(JsonTextReader reader, string propertyName)
         {
             reader.Read();
 

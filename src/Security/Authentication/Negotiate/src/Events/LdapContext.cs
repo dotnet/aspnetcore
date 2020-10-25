@@ -13,10 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Creates a new <see cref="LdapContext"/>.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="scheme"></param>
-        /// <param name="options"></param>
-        /// <param name="settings"></param>
+        /// <inheritdoc />
         public LdapContext(
             HttpContext context,
             AuthenticationScheme scheme,

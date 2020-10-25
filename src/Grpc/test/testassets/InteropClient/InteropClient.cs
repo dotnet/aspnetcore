@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -168,7 +169,7 @@ namespace InteropTestsClient
                 httpClientHandler.ClientCertificates.Add(cert);
             }
 
-            var httpClient = new HttpClient(new VersionPolicyHandler(httpClientHandler));
+            var httpClient = new HttpClient(httpClientHandler);
 
             var channel = GrpcChannel.ForAddress($"{scheme}://{options.ServerHost}:{options.ServerPort}", new GrpcChannelOptions
             {
@@ -178,21 +179,6 @@ namespace InteropTestsClient
             });
 
             return new GrpcChannelWrapper(channel);
-        }
-
-        // TODO(JamesNK): This type can be removed in the future when Grpc.Net.Client sets VersionPolicy automatically.
-        // https://github.com/grpc/grpc-dotnet/pull/987
-        private class VersionPolicyHandler : DelegatingHandler
-        {
-            public VersionPolicyHandler(HttpMessageHandler innerHandler) : base(innerHandler)
-            {
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-                return base.SendAsync(request, cancellationToken);
-            }
         }
 
         private async Task<ChannelCredentials> CreateCredentialsAsync(bool? useTestCaOverride = null)
@@ -875,7 +861,7 @@ namespace InteropTestsClient
             string keyFile = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS")!;
             Assert.IsNotNull(keyFile);
             var jobject = JObject.Parse(File.ReadAllText(keyFile));
-            string email = jobject.GetValue("client_email").Value<string>();
+            string email = jobject.GetValue("client_email")!.Value<string>()!;
             Assert.IsTrue(email.Length > 0);  // spec requires nonempty client email.
             return email;
         }
@@ -894,8 +880,8 @@ namespace InteropTestsClient
         // Consider providing ca file in a different format and removing method
         private byte[]? GetBytesFromPem(string pemString, string section)
         {
-            var header = string.Format("-----BEGIN {0}-----", section);
-            var footer = string.Format("-----END {0}-----", section);
+            var header = string.Format(CultureInfo.InvariantCulture, "-----BEGIN {0}-----", section);
+            var footer = string.Format(CultureInfo.InvariantCulture, "-----END {0}-----", section);
 
             var start = pemString.IndexOf(header, StringComparison.Ordinal);
             if (start == -1)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
         {
             return new PocoUser
             {
-                UserName = useNamePrefixAsUserName ? namePrefix : string.Format("{0}{1}", namePrefix, Guid.NewGuid()),
+                UserName = useNamePrefixAsUserName ? namePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", namePrefix, Guid.NewGuid()),
                 Email = email,
                 PhoneNumber = phoneNumber,
                 LockoutEnabled = lockoutEnabled,
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
 
         protected override PocoRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
         {
-            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
+            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", roleNamePrefix, Guid.NewGuid());
             return new PocoRole(roleName);
         }
 
@@ -53,8 +54,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
 
         protected override Expression<Func<PocoRole, bool>> RoleNameEqualsPredicate(string roleName) => r => r.Name == roleName;
 
-        protected override Expression<Func<PocoUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+        protected override Expression<Func<PocoUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName, StringComparison.Ordinal);
 
-        protected override Expression<Func<PocoRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
+        protected override Expression<Func<PocoRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName, StringComparison.Ordinal);
     }
 }

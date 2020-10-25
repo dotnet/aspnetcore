@@ -5,25 +5,24 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BasicTestApp;
+using Components.TestServer;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ProtectedBrowserStorageUsageTest : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
+    public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionModeServerFixture<BasicTestApp.Program>>
     {
         public ProtectedBrowserStorageUsageTest(
             BrowserFixture browserFixture,
-            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
 
@@ -44,8 +43,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void LocalStoragePersistsOnRefresh()
         {
             // Local storage initially cleared
-            var incrementLocalButton = Browser.FindElement(By.Id("increment-local"));
-            var localCount = Browser.FindElement(By.Id("local-count"));
+            var incrementLocalButton = Browser.Exists(By.Id("increment-local"));
+            var localCount = Browser.Exists(By.Id("local-count"));
             Browser.Equal("0", () => localCount.Text);
 
             // Local storage updates
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Navigate().Refresh();
             Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
 
-            localCount = Browser.FindElement(By.Id("local-count"));
+            localCount = Browser.Exists(By.Id("local-count"));
             Browser.Equal("1", () => localCount.Text);
         }
 
@@ -64,8 +63,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void LocalStoragePersistsAcrossTabs()
         {
             // Local storage initially cleared
-            var incrementLocalButton = Browser.FindElement(By.Id("increment-local"));
-            var localCount = Browser.FindElement(By.Id("local-count"));
+            var incrementLocalButton = Browser.Exists(By.Id("increment-local"));
+            var localCount = Browser.Exists(By.Id("local-count"));
             Browser.Equal("0", () => localCount.Text);
 
             // Local storage updates in current tab
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Local storage persists across tabs
             OpenNewSession();
-            localCount = Browser.FindElement(By.Id("local-count"));
+            localCount = Browser.Exists(By.Id("local-count"));
             Browser.Equal("1", () => localCount.Text);
         }
 
@@ -82,8 +81,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void SessionStoragePersistsOnRefresh()
         {
             // Session storage initially cleared
-            var incrementSessionButton = Browser.FindElement(By.Id("increment-session"));
-            var sessionCount = Browser.FindElement(By.Id("session-count"));
+            var incrementSessionButton = Browser.Exists(By.Id("increment-session"));
+            var sessionCount = Browser.Exists(By.Id("session-count"));
             Browser.Equal("0", () => sessionCount.Text);
 
             // Session storage updates
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Navigate().Refresh();
             Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
 
-            sessionCount = Browser.FindElement(By.Id("session-count"));
+            sessionCount = Browser.Exists(By.Id("session-count"));
             Browser.Equal("1", () => sessionCount.Text);
         }
 
@@ -102,8 +101,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void SessionStorageDoesNotPersistAcrossTabs()
         {
             // Session storage initially cleared
-            var incrementSessionButton = Browser.FindElement(By.Id("increment-session"));
-            var sessionCount = Browser.FindElement(By.Id("session-count"));
+            var incrementSessionButton = Browser.Exists(By.Id("increment-session"));
+            var sessionCount = Browser.Exists(By.Id("session-count"));
             Browser.Equal("0", () => sessionCount.Text);
 
             // Session storage updates in current tab
@@ -112,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Session storage does not persist across tabs
             OpenNewSession();
-            sessionCount = Browser.FindElement(By.Id("session-count"));
+            sessionCount = Browser.Exists(By.Id("session-count"));
             Browser.Equal("0", () => sessionCount.Text);
         }
 
@@ -131,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 Keys.Command :
                 Keys.Control;
 
-            var newTabLink = Browser.FindElement(By.Id("new-tab"));
+            var newTabLink = Browser.Exists(By.Id("new-tab"));
             var action = new Actions(Browser);
             action.KeyDown(modifierKey).MoveToElement(newTabLink).Click().KeyUp(modifierKey).Perform();
 

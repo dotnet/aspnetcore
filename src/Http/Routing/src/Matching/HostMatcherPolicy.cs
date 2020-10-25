@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,8 +20,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private const string WildcardPrefix = "*.";
 
         // Run after HTTP methods, but before 'default'.
+        /// <inheritdoc />
         public override int Order { get; } = -100;
 
+        /// <inheritdoc />
         public IComparer<Endpoint> Comparer { get; } = new HostMetadataEndpointComparer();
 
         bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
@@ -70,6 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             });
         }
 
+        /// <inheritdoc />
         public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
@@ -189,6 +193,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             throw new InvalidOperationException($"Could not parse host: {host}");
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
@@ -273,6 +278,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .ToArray();
         }
 
+        /// <inheritdoc />
         public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
         {
             if (edges == null)
@@ -466,7 +472,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public override string ToString()
             {
-                return $"{Host}:{Port?.ToString() ?? WildcardHost}";
+                return $"{Host}:{Port?.ToString(CultureInfo.InvariantCulture) ?? WildcardHost}";
             }
         }
     }

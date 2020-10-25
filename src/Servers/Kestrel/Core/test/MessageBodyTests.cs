@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Max is 10 bytes
                 for (int i = 0; i < 11; i++)
                 {
-                    input.Add(i.ToString());
+                    input.Add(i.ToString(CultureInfo.InvariantCulture));
                 }
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -1223,6 +1224,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var reader = new HttpRequestPipeReader();
                 reader.StartAcceptingReads(body);
+
+                input.Application.Output.Complete();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex2.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex3.Reason);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task UnexpectedEndOfRequestContentIsRepeatedlyThrownForContentLengthBodyAfterExaminingButNotConsumingBytes()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                await input.Application.Output.WriteAsync(new byte[] { 0 });
+
+                var readResult = await reader.ReadAsync();
+
+                reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
                 input.Application.Output.Complete();
 

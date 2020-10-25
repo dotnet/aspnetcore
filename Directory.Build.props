@@ -13,7 +13,7 @@
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf')) OR $(RepoRelativeProjectDir.Contains('benchmarkapps'))">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
     <IsUnitTestProject Condition="'$(IsSpecificationTestProject)' != 'true' and ( $(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('.Test')) or $(MSBuildProjectName.EndsWith('.FunctionalTest')) )">true</IsUnitTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
@@ -87,12 +87,6 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-
-    <!--
-      Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props and
-      the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
-    -->
-    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
     <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
@@ -153,6 +147,7 @@
       win-arm64;
       osx-x64;
       linux-musl-x64;
+      linux-musl-arm;
       linux-musl-arm64;
       linux-x64;
       linux-arm;
@@ -217,6 +212,7 @@
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.props" Condition="'$(IsTestProject)' == 'true'" />
 
 </Project>

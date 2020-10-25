@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
@@ -60,7 +61,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
 
             File.WriteAllText(
                 Path.Combine(projectPath.FullName, "TestProject.csproj"),
-                string.Format(ProjectTemplate, prop));
+                string.Format(CultureInfo.InvariantCulture, ProjectTemplate, prop));
 
             var id = userSecretsId;
             _disposables.Push(() =>

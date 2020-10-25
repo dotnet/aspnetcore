@@ -28,7 +28,7 @@
       Targets="Publish"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir;SelfContained" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
       ReferenceOutputAssembly="false"
@@ -49,7 +49,7 @@
     <Compile Include="..\..\Microsoft.AspNetCore.Razor.Tools\src\Client.cs">
       <Link>Shared\Client.cs</Link>
     </Compile>
-    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\Utilities\ArgumentEscaper.cs" />
 
     <Content Include="_._" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

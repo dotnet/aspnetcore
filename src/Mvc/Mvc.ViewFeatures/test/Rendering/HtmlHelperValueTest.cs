@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Testing;
@@ -241,6 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             public override string ToString()
             {
                 return string.Format(
+                    CultureInfo.InvariantCulture,
                     "{{ StringProperty = {0}, ObjectProperty = {1} }}",
                     StringProperty ?? "(null)",
                     ObjectProperty ?? "(null)");

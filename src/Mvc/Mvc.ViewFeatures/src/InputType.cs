@@ -3,12 +3,34 @@
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Specifies constants which define an input type.
+    /// </summary>
     public enum InputType
     {
+        /// <summary>
+        /// A check box input.
+        /// </summary>
         CheckBox,
+
+        /// <summary>
+        /// A hidden input.
+        /// </summary>
         Hidden,
+
+        /// <summary>
+        /// A password input.
+        /// </summary>
         Password,
+
+        /// <summary>
+        /// A radio input.
+        /// </summary>
         Radio,
+
+        /// <summary>
+        /// A text input.
+        /// </summary>
         Text
     }
 }

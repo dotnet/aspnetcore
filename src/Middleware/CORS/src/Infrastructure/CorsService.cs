@@ -57,6 +57,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             var policy = _options.GetPolicy(policyName);
+            if (policy is null)
+            {
+                throw new InvalidOperationException(Resources.FormatPolicyNotFound(policyName));
+            }
+
             return EvaluatePolicy(context, policy);
         }
 
@@ -139,11 +144,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             AddHeaderValues(result.AllowedHeaders, allowedHeaders);
         }
 
+        /// <summary>
+        /// Evaluate a request using the specified policy. The result is set on the specified <see cref="CorsResult"/> instance.
+        /// </summary>
+        /// <param name="context">The current HTTP context.</param>
+        /// <param name="policy">The <see cref="CorsPolicy"/> to evaluate.</param>
+        /// <param name="result">The <see cref="CorsResult"/> to set the result on.</param>
         public virtual void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             PopulateResult(context, policy, result);
         }
 
+        /// <summary>
+        /// Evaluate a preflight request using the specified policy. The result is set on the specified <see cref="CorsResult"/> instance.
+        /// </summary>
+        /// <param name="context">The current HTTP context.</param>
+        /// <param name="policy">The <see cref="CorsPolicy"/> to evaluate.</param>
+        /// <param name="result">The <see cref="CorsResult"/> to set the result on.</param>
         public virtual void EvaluatePreflightRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             PopulateResult(context, policy, result);

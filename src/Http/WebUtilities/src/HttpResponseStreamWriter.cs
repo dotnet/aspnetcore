@@ -4,8 +4,8 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var written = CopyToCharBuffer(value);
-                
+
                 remaining -= written;
                 value = value.Slice(written);
             };
@@ -302,6 +302,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
             if (_disposed)
@@ -346,7 +347,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var written = CopyToCharBuffer(value.Span);
-                
+
                 remaining -= written;
                 value = value.Slice(written);
             };

@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         private ControllerActionEndpointDataSource CreateDataSource(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
             var dataSource = new ControllerActionEndpointDataSource(
+                new ControllerActionEndpointDataSourceIdProvider(),
                 actionDescriptorCollectionProvider,
                 new ActionEndpointFactory(new MockRoutePatternTransformer()),
                 new OrderedEndpointsSequenceProvider());

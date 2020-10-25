@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
@@ -22,10 +23,9 @@ namespace Microsoft.AspNetCore.Components
         private static readonly object BoxedFalse = false;
 
         private delegate object? BindFormatter<T>(T value, CultureInfo? culture);
-        private delegate object BindFormatterWithFormat<T>(T value, CultureInfo? culture, string format);
 
-        internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, out T value);
-        internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, out T value);
+        internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value);
+        internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, [MaybeNullWhen(false)] out T value);
 
         /// <summary>
         /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(string? value, CultureInfo? culture = null) => FormatStringValueCore(value, culture);
 
         private static string? FormatStringValueCore(string? value, CultureInfo? culture)
@@ -50,6 +51,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static bool FormatValue(bool value, CultureInfo? culture = null)
         {
             // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
@@ -73,6 +75,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static bool? FormatValue(bool? value, CultureInfo? culture = null)
         {
             // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
@@ -96,6 +99,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(int value, CultureInfo? culture = null) => FormatIntValueCore(value, culture);
 
         private static string? FormatIntValueCore(int value, CultureInfo? culture)
@@ -111,6 +115,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(int? value, CultureInfo? culture = null) => FormatNullableIntValueCore(value, culture);
 
         private static string? FormatNullableIntValueCore(int? value, CultureInfo? culture)
@@ -131,6 +136,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(long value, CultureInfo? culture = null) => FormatLongValueCore(value, culture);
 
         private static string FormatLongValueCore(long value, CultureInfo? culture)
@@ -146,6 +152,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(long? value, CultureInfo? culture = null) => FormatNullableLongValueCore(value, culture);
 
         private static string? FormatNullableLongValueCore(long? value, CultureInfo? culture)
@@ -166,6 +173,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(short value, CultureInfo? culture = null) => FormatShortValueCore(value, culture);
 
         private static string FormatShortValueCore(short value, CultureInfo? culture)
@@ -181,6 +189,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(short? value, CultureInfo? culture = null) => FormatNullableShortValueCore(value, culture);
 
         private static string? FormatNullableShortValueCore(short? value, CultureInfo? culture)
@@ -201,6 +210,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(float value, CultureInfo? culture = null) => FormatFloatValueCore(value, culture);
 
         private static string FormatFloatValueCore(float value, CultureInfo? culture)
@@ -216,6 +226,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(float? value, CultureInfo? culture = null) => FormatNullableFloatValueCore(value, culture);
 
         private static string? FormatNullableFloatValueCore(float? value, CultureInfo? culture)
@@ -236,6 +247,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(double value, CultureInfo? culture = null) => FormatDoubleValueCore(value, culture);
 
         private static string FormatDoubleValueCore(double value, CultureInfo? culture)
@@ -251,6 +263,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(double? value, CultureInfo? culture = null) => FormatNullableDoubleValueCore(value, culture);
 
         private static string? FormatNullableDoubleValueCore(double? value, CultureInfo? culture)
@@ -271,6 +284,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(decimal value, CultureInfo? culture = null) => FormatDecimalValueCore(value, culture);
 
         private static string FormatDecimalValueCore(decimal value, CultureInfo? culture)
@@ -286,6 +300,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(decimal? value, CultureInfo? culture = null) => FormatNullableDecimalValueCore(value, culture);
 
         private static string? FormatNullableDecimalValueCore(decimal? value, CultureInfo? culture)
@@ -306,6 +321,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(DateTime value, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format: null, culture);
 
         /// <summary>
@@ -317,6 +333,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(DateTime value, string format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
 
         private static string FormatDateTimeValueCore(DateTime value, string? format, CultureInfo? culture)
@@ -342,6 +359,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(DateTime? value, CultureInfo? culture = null) => FormatNullableDateTimeValueCore(value, format: null, culture);
 
         /// <summary>
@@ -353,6 +371,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(DateTime? value, string? format, CultureInfo? culture = null) => FormatNullableDateTimeValueCore(value, format, culture);
 
         private static string? FormatNullableDateTimeValueCore(DateTime? value, string? format, CultureInfo? culture)
@@ -388,6 +407,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(DateTimeOffset value, CultureInfo? culture = null) => FormatDateTimeOffsetValueCore(value, format: null, culture);
 
 
@@ -400,6 +420,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string FormatValue(DateTimeOffset value, string format, CultureInfo? culture = null) => FormatDateTimeOffsetValueCore(value, format, culture);
 
         private static string FormatDateTimeOffsetValueCore(DateTimeOffset value, string? format, CultureInfo? culture)
@@ -425,6 +446,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(DateTimeOffset? value, CultureInfo? culture = null) => FormatNullableDateTimeOffsetValueCore(value, format: null, culture);
 
         /// <summary>
@@ -436,6 +458,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static string? FormatValue(DateTimeOffset? value, string format, CultureInfo? culture = null) => FormatNullableDateTimeOffsetValueCore(value, format, culture);
 
         private static string? FormatNullableDateTimeOffsetValueCore(DateTimeOffset? value, string? format, CultureInfo? culture)
@@ -486,6 +509,7 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static object? FormatValue<T>(T value, CultureInfo? culture = null)
         {
             var formatter = FormatterDelegateCache.Get<T>();
@@ -1251,7 +1275,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
         /// <param name="value">The converted value.</param>
         /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-        public static bool TryConvertTo<T>(object? obj, CultureInfo? culture, out T value)
+        public static bool TryConvertTo<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
         {
             var converter = ParserDelegateCache.Get<T>();
             return converter(obj, culture, out value);

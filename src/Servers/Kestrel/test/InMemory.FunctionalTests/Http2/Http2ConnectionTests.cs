@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -1503,6 +1504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26291")]
         public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
         {
             // Kestrel tracks max streams per connection * 2
@@ -2539,7 +2541,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
             for (var i = 0; i < 100; i++)
             {
-                headers.Add(new KeyValuePair<string, string>(i.ToString(), i.ToString()));
+                headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
             }
 
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_TooManyHeaders);
@@ -5175,7 +5177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     new KeyValuePair<string, string>("content-length", "0")
                 };
 
-                foreach (var headerField in requestHeaders.Where(h => h.Key.StartsWith(":")))
+                foreach (var headerField in requestHeaders.Where(h => h.Key.StartsWith(':')))
                 {
                     var headers = requestHeaders.Except(new[] { headerField }).Concat(new[] { headerField });
                     data.Add(headers);

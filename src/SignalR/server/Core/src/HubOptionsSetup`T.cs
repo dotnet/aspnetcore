@@ -7,14 +7,27 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Class to configure the <see cref="HubOptions"/> for a specific <typeparamref name="THub"/>.
+    /// </summary>
+    /// <typeparam name="THub">The <see cref="Hub"/> type to configure.</typeparam>
     public class HubOptionsSetup<THub> : IConfigureOptions<HubOptions<THub>> where THub : Hub
     {
         private readonly HubOptions _hubOptions;
+
+        /// <summary>
+        /// Constructs the options configuration class.
+        /// </summary>
+        /// <param name="options">The global <see cref="HubOptions"/> from Dependency Injection.</param>
         public HubOptionsSetup(IOptions<HubOptions> options)
         {
             _hubOptions = options.Value;
         }
 
+        /// <summary>
+        /// Configures the default values of the <see cref="HubOptions"/>.
+        /// </summary>
+        /// <param name="options">The options to configure.</param>
         public void Configure(HubOptions<THub> options)
         {
             // Do a deep copy, otherwise users modifying the HubOptions<THub> list would be changing the global options list

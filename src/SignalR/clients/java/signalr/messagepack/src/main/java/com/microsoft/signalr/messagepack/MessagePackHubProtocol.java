@@ -5,6 +5,7 @@ package com.microsoft.signalr.messagepack;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,13 +122,17 @@ public class MessagePackHubProtocol implements HubProtocol {
                     // Check what the last message was
                     // If it was an invocation binding failure, we have to correct the position of the buffer
                     if (hubMessages.get(hubMessages.size() - 1).getMessageType() == HubMessageType.INVOCATION_BINDING_FAILURE) {
-                        payload.position(payload.position() + (length - readBytes));
+                        // Cast to a Buffer to avoid the Java 9+ behavior where ByteBuffer.position(int) overrides Buffer.position(int),
+                        // Returning a ByteBuffer rather than a Buffer. This causes issues on Android - see https://github.com/dotnet/aspnetcore/pull/26614
+                        ((Buffer) payload).position(payload.position() + (length - readBytes));
                     } else {
                         throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
                     }
                 }
                 unpacker.close();
-                payload.position(payload.position() + readBytes);
+                // Cast to a Buffer to avoid the Java 9+ behavior where ByteBuffer.position(int) overrides Buffer.position(int),
+                // Returning a ByteBuffer rather than a Buffer. This causes issues on Android - see https://github.com/dotnet/aspnetcore/pull/26614
+                ((Buffer) payload).position(payload.position() + readBytes);
             } catch (MessagePackException | IOException ex) {
                 throw new RuntimeException("Error reading MessagePack data.", ex);
             }

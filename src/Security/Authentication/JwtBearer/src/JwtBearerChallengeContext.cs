@@ -6,8 +6,15 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
+    /// <summary>
+    /// A <see cref="PropertiesContext{TOptions}"/> when access to a resource authenticated using JWT bearer is challenged.
+    /// </summary>
     public class JwtBearerChallengeContext : PropertiesContext<JwtBearerOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtBearerChallengeContext"/>.
+        /// </summary>
+        /// <inheritdoc />
         public JwtBearerChallengeContext(
             HttpContext context,
             AuthenticationScheme scheme,

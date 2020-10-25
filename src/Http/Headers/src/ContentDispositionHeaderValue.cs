@@ -27,7 +27,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly char[] SingleQuote = new char[] { '\'' };
 
         private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
-            = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength!);
+            = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
         // Use list instead of dictionary since we may have multiple parameters with the same name.
         private ObjectCollection<NameValueHeaderValue>? _parameters;

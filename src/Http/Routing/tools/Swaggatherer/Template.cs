@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Swaggatherer
 {
@@ -61,7 +62,9 @@ namespace Swaggatherer
                 setupMatcherLines.Add($"            builder.AddEndpoint(Endpoints[{i}]);");
             }
 
-            return string.Format(@"
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                @"
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -118,10 +121,10 @@ namespace Microsoft.AspNetCore.Routing
             }}
 
             return CreateEndpoint(
-                template, 
-                defaults: defaults, 
-                requiredValues: requiredValues, 
-                metadata: metadata, 
+                template,
+                defaults: defaults,
+                requiredValues: requiredValues,
+                metadata: metadata,
                 routeName: controllerName);
         }}
     }}

@@ -245,8 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
             dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
             dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
-            
-            
+
             dataSource.DefaultBuilder.Add(b =>
             {
                 if (b.Metadata.OfType<ActionDescriptor>().FirstOrDefault()?.AttributeRouteInfo != null)
@@ -385,7 +384,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private protected override ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory)
         {
-            return new ControllerActionEndpointDataSource(actions, endpointFactory, new OrderedEndpointsSequenceProvider());
+            return new ControllerActionEndpointDataSource(
+                new ControllerActionEndpointDataSourceIdProvider(),
+                actions,
+                endpointFactory,
+                new OrderedEndpointsSequenceProvider());
         }
 
         protected override ActionDescriptor CreateActionDescriptor(

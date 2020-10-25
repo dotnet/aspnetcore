@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -32,6 +33,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var builder = new DefaultServerSideBlazorBuilder(services);
 
             services.AddDataProtection();
+
+            services.TryAddScoped<ProtectedLocalStorage>();
+            services.TryAddScoped<ProtectedSessionStorage>();
 
             // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
             // the global HubOptions before running the configure callback. We want to ensure that happens
