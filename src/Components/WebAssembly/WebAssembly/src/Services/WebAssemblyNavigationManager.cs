@@ -27,13 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             Uri = uri;
             NotifyLocationChanged(isInterceptedLink);
         }
-
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
-        }
-
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             if (uri == null)
