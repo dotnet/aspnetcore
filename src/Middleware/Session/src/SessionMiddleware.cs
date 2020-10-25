@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Session
         {
             var isNewSessionKey = false;
             Func<bool> tryEstablishSession = ReturnTrue;
-            var cookieValue = context.Request.Cookies[_options.Cookie.Name];
+            var cookieValue = context.Request.Cookies[_options.Cookie.Name!];
             var sessionKey = CookieProtection.Unprotect(_dataProtector, cookieValue, _logger);
             if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
             {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Session
             }
             finally
             {
-                context.Features.Set<ISessionFeature>(null);
+                context.Features.Set<ISessionFeature?>(null);
 
                 if (feature.Session != null)
                 {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Session
                 var cookieOptions = _options.Cookie.Build(_context);
 
                 var response = _context.Response;
-                response.Cookies.Append(_options.Cookie.Name, _cookieValue, cookieOptions);
+                response.Cookies.Append(_options.Cookie.Name!, _cookieValue, cookieOptions);
 
                 var responseHeaders = response.Headers;
                 responseHeaders[HeaderNames.CacheControl] = "no-cache,no-store";

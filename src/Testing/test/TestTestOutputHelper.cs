@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Text;
 using Xunit.Abstractions;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             {
                 throw new Exception("Boom!");
             }
-            _output.AppendLine(string.Format(format, args));
+            _output.AppendLine(string.Format(CultureInfo.InvariantCulture, format, args));
         }
     }
 }

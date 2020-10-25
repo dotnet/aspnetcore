@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -520,7 +521,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                             var claims = new[]
                             {
                                 new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                                new Claim("ValidationCount", validationCount.ToString(), ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                                new Claim("ValidationCount", validationCount.ToString(CultureInfo.InvariantCulture), ClaimValueTypes.String, context.Options.ClaimsIssuer)
                             };
 
                             context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));

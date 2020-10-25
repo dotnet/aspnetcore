@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 if (AdditionalAttributes != null &&
                     AdditionalAttributes.TryGetValue("class", out var @class) &&
-                    !string.IsNullOrEmpty(Convert.ToString(@class)))
+                    !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
                 {
                     return $"{@class} {FieldClass}";
                 }

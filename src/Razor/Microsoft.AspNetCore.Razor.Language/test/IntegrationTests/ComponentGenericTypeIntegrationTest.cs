@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -95,7 +96,7 @@ namespace Test
             Assert.Equal(
                 "The type of component 'GenericContext' cannot be inferred based on the values provided. Consider " +
                 "specifying the type arguments directly using the following attributes: 'TItem'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -114,7 +115,7 @@ namespace Test
             Assert.Equal(
                 "The component 'MultipleGenericParameter' is missing required type arguments. " +
                 "Specify the missing types using the attributes: 'TItem2', 'TItem3'.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
     }
 }

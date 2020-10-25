@@ -33,7 +33,7 @@ namespace BasicTestApp
             builder.Services.AddAuthorizationCore(options =>
             {
                 options.AddPolicy("NameMustStartWithB", policy =>
-                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith('B') ?? false));
             });
 
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));

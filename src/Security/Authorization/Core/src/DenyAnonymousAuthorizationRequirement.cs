@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"{nameof(DenyAnonymousAuthorizationRequirement)}: Requires an authenticated user.";

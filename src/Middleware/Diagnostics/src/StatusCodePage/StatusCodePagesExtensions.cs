@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (locationFormat.StartsWith("~"))
+            if (locationFormat.StartsWith('~'))
             {
                 locationFormat = locationFormat.Substring(1);
                 return app.UseStatusCodePages(context =>

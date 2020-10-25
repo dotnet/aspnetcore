@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 responseContent = responseContent.Replace(forgeryToken, "{0}");
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                expectedContent = string.Format(expectedContent, forgeryToken);
+                expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
@@ -230,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 responseContent = responseContent.Replace(forgeryToken, "{0}");
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                expectedContent = string.Format(expectedContent, forgeryToken);
+                expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
@@ -300,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Replace(forgeryToken, "{0}");
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            expectedContent = string.Format(expectedContent, forgeryToken);
+            expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
             Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
         }

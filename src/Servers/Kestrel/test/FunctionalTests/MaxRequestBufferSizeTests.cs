@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                 return;
                             }
 
-                            await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");
+                            await context.Response.WriteAsync($"bytesRead: {bytesRead}");
                         }));
                 })
                 .ConfigureServices(AddTestLogging)

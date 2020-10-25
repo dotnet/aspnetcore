@@ -43,7 +43,7 @@ namespace BasicViews
                 throw new ArgumentException("Connection string must be specified for {databaseType}.");
             }
 
-            switch (databaseType.ToUpper())
+            switch (databaseType.ToUpperInvariant())
             {
 #if !NET461
                 case "MYSQL":

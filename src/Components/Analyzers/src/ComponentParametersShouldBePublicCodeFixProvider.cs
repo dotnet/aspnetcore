@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
             // Register a code action that will invoke the fix.
-            var title = Title.ToString();
+            var title = Title.ToString(CultureInfo.InvariantCulture);
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,

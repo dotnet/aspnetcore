@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore
                 using var fileStream = File.OpenRead(path);
                 using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
-                
+
                 Assert.All(reader.AssemblyReferences, handle =>
                 {
                     var reference = reader.GetAssemblyReference(handle);
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore
             ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 
             var actualPaths = archive.Entries
-                .Where(i => i.FullName.EndsWith(".dll"))
+                .Where(i => i.FullName.EndsWith(".dll", StringComparison.Ordinal))
                 .Select(i => i.FullName).ToHashSet();
 
             var expectedPaths = runtimeListEntries.Select(i => i.Attribute("Path").Value).ToHashSet();

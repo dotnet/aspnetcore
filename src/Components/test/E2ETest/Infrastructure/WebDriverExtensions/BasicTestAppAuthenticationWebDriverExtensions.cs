@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest
     {
         public static void SignInAs(this IWebDriver browser, Uri baseUri, string usernameOrNull, string rolesOrNull, bool useSeparateTab = false)
         {
-            var basePath = baseUri.LocalPath.EndsWith("/") ? baseUri.LocalPath : baseUri.LocalPath + "/";
+            var basePath = baseUri.LocalPath.EndsWith("/", StringComparison.Ordinal) ? baseUri.LocalPath : baseUri.LocalPath + "/";
             var authenticationPageUrl = $"{basePath}Authentication";
             var baseRelativeUri = usernameOrNull == null
                 ? $"{authenticationPageUrl}?signout=true"

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -116,7 +117,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(30));
             var lines = await _app.Process.GetAllOutputLinesAsync(cts.Token).TimeoutAfter(DefaultTimeout);
-            var files = lines.Where(l => !l.StartsWith("watch :"));
+            var files = lines.Where(l => !l.StartsWith("watch :", StringComparison.Ordinal));
 
             AssertEx.EqualFileList(
                 _app.Scenario.WorkFolder,
@@ -144,7 +145,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             public async Task<int> GetCompiledAppDefinedTypes()
             {
                 var definedTypesMessage = await Process.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
-                return int.Parse(definedTypesMessage.Split('=').Last());
+                return int.Parse(definedTypesMessage.Split('=').Last(), CultureInfo.InvariantCulture);
             }
         }
     }

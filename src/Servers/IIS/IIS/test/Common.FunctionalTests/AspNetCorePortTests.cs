@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static IEnumerable<object[]> InvalidTestVariants
             => from v in TestVariants.Select(v => v.Single())
-               from s in new string[] { (_minPort - 1).ToString(), (_maxPort + 1).ToString(), "noninteger" }
+               from s in new string[] { (_minPort - 1).ToString(CultureInfo.InvariantCulture), (_maxPort + 1).ToString(CultureInfo.InvariantCulture), "noninteger" }
                select new object[] { v, s };
 
         [ConditionalTheory]
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Must publish to set env vars in web.config
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             var port = GetUnusedRandomPort();
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString();
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString(CultureInfo.InvariantCulture);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
@@ -89,14 +89,19 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
-  <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+  <Target Name="CreateWixPackageDrop" AfterTargets="CopyToArtifactsDirectory">
     <MakeDir Directories="$(WixCommandPackagesDir)" />
+    <ItemGroup>
+      <WixInstallerFilesToProcess Include="$(TargetPath)" />
+      <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(PackageFileName)"
+        Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' " />
+    </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(WixCommandObjDir)"
       OutputFolder="$(WixCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      InstallerFile="$(InstallersOutputPath)$(PackageFileName)"
+      InstallerFile="%(WixInstallerFilesToProcess.Identity)"
       AdditionalBasePaths="$(MSBuildProjectDirectory)"
       WixExtensions="@(WixExtension)"
       Loc="@(EmbeddedResource)"

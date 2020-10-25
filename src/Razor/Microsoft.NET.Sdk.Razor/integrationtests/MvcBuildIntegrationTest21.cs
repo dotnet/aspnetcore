@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -19,7 +18,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public override string TargetFramework => "netcoreapp2.1";
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25042")]
         public async Task Building_WorksWhenMultipleRazorConfigurationsArePresent()
         {
             using (var project = CreateTestProject())

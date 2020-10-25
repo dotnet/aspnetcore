@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Moq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
             var listAdapter = new ListAdapter();
-            var position = targetObject.Count.ToString();
+            var position = targetObject.Count.ToString(CultureInfo.InvariantCulture);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "Rob", out var message);

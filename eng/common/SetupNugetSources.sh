@@ -4,7 +4,7 @@
 # This file should be removed as part of this issue: https://github.com/dotnet/arcade/issues/4080
 #
 # What the script does is iterate over all package sources in the pointed NuGet.config and add a credential entry
-# under <packageSourceCredentials> for each Maestro's managed private feed. Two additional credential 
+# under <packageSourceCredentials> for each Maestro's managed private feed. Two additional credential
 # entries are also added for the two private static internal feeds: dotnet3-internal and dotnet3-internal-transport.
 #
 # This script needs to be called in every job that will restore packages and which the base repo has
@@ -68,7 +68,7 @@ if [ "$?" != "0" ]; then
     sed -i.bak "s|$ConfigNodeHeader|$ConfigNodeHeader${NL}$PackageSourcesTemplate|" $ConfigFile
 fi
 
-# Ensure there is a <packageSourceCredentials>...</packageSourceCredentials> section. 
+# Ensure there is a <packageSourceCredentials>...</packageSourceCredentials> section.
 grep -i "<packageSourceCredentials>" $ConfigFile
 if [ "$?" != "0" ]; then
     echo "Adding <packageSourceCredentials>...</packageSourceCredentials> section."
@@ -138,7 +138,7 @@ IFS=$PrevIFS
 
 for FeedName in ${PackageSources[@]} ; do
     # Check if there is no existing credential for this FeedName
-    grep -i "<$FeedName>" $ConfigFile 
+    grep -i "<$FeedName>" $ConfigFile
     if [ "$?" != "0" ]; then
         echo "Adding credentials for $FeedName."
 

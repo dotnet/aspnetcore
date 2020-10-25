@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 
@@ -419,7 +420,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         {
             var builder = new StringBuilder();
             builder.Append(Green.ToString());
-            builder.AppendFormat(" at {0}::{1}", Position, FullWidth);
+            builder.AppendFormat(CultureInfo.InvariantCulture, " at {0}::{1}", Position, FullWidth);
 
             return builder.ToString();
         }
@@ -433,10 +434,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         {
             if (IsToken)
             {
-                return string.Format("{0};[{1}]", Kind, ToFullString());
+                return string.Format(CultureInfo.InvariantCulture, "{0};[{1}]", Kind, ToFullString());
             }
 
-            return string.Format("{0} [{1}..{2})", Kind, Position, EndPosition);
+            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}..{2})", Kind, Position, EndPosition);
         }
     }
 }

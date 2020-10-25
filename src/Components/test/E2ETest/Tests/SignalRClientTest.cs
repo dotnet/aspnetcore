@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using TestServer;
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27156")]
         public void SignalRClientWorksWithLongPolling()
         {
             Browser.Exists(By.Id("hub-url")).SendKeys(

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -28,13 +29,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     throw new ArgumentOutOfRangeException(nameof(serverType), serverType, null);
             }
 
-            if (!enabledCodes.Contains(code.ToString()))
+            if (!enabledCodes.Contains(code.ToString(CultureInfo.InvariantCulture)))
             {
                 return null;
             }
 
             RunProcessAndWaitForExit("appverif.exe", $"-configure {code} -for {processName} -with ErrorReport=0", AppVerifierCommandTimeout);
-            return new AppVerifierToken(processName, code.ToString());
+            return new AppVerifierToken(processName, code.ToString(CultureInfo.InvariantCulture));
         }
 
         private static void RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout)

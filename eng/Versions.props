@@ -208,7 +208,7 @@
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.8-servicing-20421-6</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.9-servicing-20473-9</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50PackageVersion>5.0.0-preview-7-20365-19</MicrosoftAspNetCoreAzureAppServicesSiteExtension50PackageVersion>
@@ -231,9 +231,9 @@
     <IdentityServer4StoragePackageVersion>4.1.0</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>4.1.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
-    <MicrosoftIdentityWebPackageVersion>0.4.0-preview</MicrosoftIdentityWebPackageVersion>
-    <MicrosoftIdentityWebMicrosoftGraphPackageVersion>0.4.0-preview</MicrosoftIdentityWebMicrosoftGraphPackageVersion>
-    <MicrosoftIdentityWebUIPackageVersion>0.4.0-preview</MicrosoftIdentityWebUIPackageVersion>
+    <MicrosoftIdentityWebPackageVersion>1.1.0</MicrosoftIdentityWebPackageVersion>
+    <MicrosoftIdentityWebMicrosoftGraphPackageVersion>1.1.0</MicrosoftIdentityWebMicrosoftGraphPackageVersion>
+    <MicrosoftIdentityWebUIPackageVersion>1.1.0</MicrosoftIdentityWebUIPackageVersion>
     <MessagePackAnalyzerPackageVersion>$(MessagePackPackageVersion)</MessagePackAnalyzerPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.11.2</MonoCecilPackageVersion>

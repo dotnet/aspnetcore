@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
                 RSAOid => AttachPemRSAKey(certificate, keyText, password),
                 ECDsaOid => AttachPemECDSAKey(certificate, keyText, password),
                 DSAOid => AttachPemDSAKey(certificate, keyText, password),
-                _ => throw new InvalidOperationException(string.Format(CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value))
+                _ => throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value))
             };
         }
 
