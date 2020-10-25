@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Additional options for navigating to another URI
     /// </summary>
-    public sealed class NavigationOptions
+    public class NavigationOptions
     {
         /// <summary>
         ///If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.

@@ -181,8 +181,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             public TestNavigationManager() =>
                 Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/jan");
-
-            protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotImplementedException();
+            protected override void NavigateToCore(string uri, NavigationOptions options) => throw new NotImplementedException();
         }
 
         internal sealed class TestNavigationInterception : INavigationInterception

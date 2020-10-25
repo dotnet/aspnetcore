@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Components.BindConverter
 Microsoft.AspNetCore.Components.BindElementAttribute
 Microsoft.AspNetCore.Components.BindElementAttribute.BindElementAttribute(string! element, string? suffix, string! valueAttribute, string! changeAttribute) -> void
@@ -119,13 +119,21 @@ Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get -> string!
 Microsoft.AspNetCore.Components.NavigationManager.BaseUri.set -> void
 Microsoft.AspNetCore.Components.NavigationManager.Initialize(string! baseUri, string! uri) -> void
 Microsoft.AspNetCore.Components.NavigationManager.LocationChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs!>!
-Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions! options) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false, bool replace = false) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigationManager() -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanged(bool isInterceptedLink) -> void
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string! uri) -> string!
 Microsoft.AspNetCore.Components.NavigationManager.Uri.get -> string!
 Microsoft.AspNetCore.Components.NavigationManager.Uri.set -> void
+Microsoft.AspNetCore.Components.NavigationOptions
+Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.set -> void
+Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
+Microsoft.AspNetCore.Components.NavigationOptions.Replace.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.Replace.set -> void
 Microsoft.AspNetCore.Components.OwningComponentBase
 Microsoft.AspNetCore.Components.OwningComponentBase.IsDisposed.get -> bool
 Microsoft.AspNetCore.Components.OwningComponentBase.OwningComponentBase() -> void
@@ -299,7 +307,7 @@ abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Action! w
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>!>! workItem) -> System.Threading.Tasks.Task<TResult>!
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
-abstract Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void
+abstract Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions! options) -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.HandleException(System.Exception! exception) -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
@@ -410,6 +418,7 @@ virtual Microsoft.AspNetCore.Components.ComponentBase.OnParametersSetAsync() -> 
 virtual Microsoft.AspNetCore.Components.ComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.ComponentBase.ShouldRender() -> bool
 virtual Microsoft.AspNetCore.Components.NavigationManager.EnsureInitialized() -> void
+virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
