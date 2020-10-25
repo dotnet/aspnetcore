@@ -65,11 +65,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
-        }
-
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             Log.RequestingNavigation(_logger, uri, options.ForceLoad, options.Replace);
