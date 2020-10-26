@@ -45,7 +45,7 @@
     <HelixContent Include="package.json" />
     <HelixContent Include="package-lock.json" />
     <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
-    <HelixContent Include="..\testassets\**\*" />
+    <HelixContent Include="..\testassets\**\*" LinkBase="testassets"/>
     <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
