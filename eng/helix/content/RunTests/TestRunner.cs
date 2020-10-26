@@ -307,6 +307,7 @@ namespace RunTests
             else
             {
                 Console.WriteLine("No sequence xml file found in TestResults");
-            }        }
+            }
+        }
     }
 }
