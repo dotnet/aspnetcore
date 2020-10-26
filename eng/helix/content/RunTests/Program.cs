@@ -29,6 +29,7 @@ namespace RunTests
                 }
 
                 runner.DisplayContents();
+                runner.DisplayContents("./wwwroot");
 
                 if (keepGoing)
                 {
