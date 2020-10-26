@@ -65,13 +65,13 @@ namespace RunTests
             }
         }
 
-        public void DisplayContents(string path = "./")
+        public void DisplayContents(string path = "./wwwroot")
         {
             try
             {
                 Console.WriteLine();
                 Console.WriteLine($"Displaying directory contents for {path}:");
-                foreach (var file in Directory.EnumerateFiles(path))
+                foreach (var file in Directory.EnumerateFiles(path, SearchOption.AllDirectories))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
