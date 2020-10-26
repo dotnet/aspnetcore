@@ -800,6 +800,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27157")]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
             var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
