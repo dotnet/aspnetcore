@@ -5,8 +5,6 @@ import { EventDelegator } from '../Rendering/EventDelegator';
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
-const hrefAttributeName = 'href';
-
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
 
@@ -57,7 +55,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
     const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const href = anchorTarget.getAttribute(hrefAttributeName)!;
+      const href = anchorTarget.getAttribute('href')!;
       const absoluteHref = toAbsoluteUri(href);
 
       if (isWithinBaseUriSpace(absoluteHref)) {
@@ -142,5 +140,5 @@ function eventHasSpecialKey(event: MouseEvent) {
 function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
   const targetAttributeValue = anchorTarget.getAttribute('target');
   const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
-  return opensInSameFrame && anchorTarget.hasAttribute(hrefAttributeName) && !anchorTarget.hasAttribute('download');
+  return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
 }
