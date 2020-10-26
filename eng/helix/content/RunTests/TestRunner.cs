@@ -71,7 +71,7 @@ namespace RunTests
             {
                 Console.WriteLine();
                 Console.WriteLine($"Displaying directory contents for {path}:");
-                foreach (var file in Directory.EnumerateFiles(path, SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
