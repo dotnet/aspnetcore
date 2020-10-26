@@ -37,11 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return TryReadInternal(out result);
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            _context.Input.AdvanceTo(consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             _context.Input.AdvanceTo(consumed, examined);
