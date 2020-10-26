@@ -17,6 +17,7 @@ set DOTNET_MULTILEVEL_LOOKUP=0
 set InstallPlaywright=%installPlaywright%
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
 set PLAYWRIGHT_DRIVER_PATH=%CD%\.playwright\win-x64\native\playwright.cmd
+set VSTEST_DUMP_PATH=%HELIX_DUMP_FOLDER%
 
 set "PATH=%HELIX_WORKITEM_ROOT%;%PATH%;%HELIX_WORKITEM_ROOT%\node\bin"
 echo Set path to: "%PATH%"
