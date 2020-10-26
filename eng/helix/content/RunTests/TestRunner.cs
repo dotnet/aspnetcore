@@ -65,7 +65,7 @@ namespace RunTests
             }
         }
 
-        public void DisplayContents(string path = "./wwwroot")
+        public void DisplayContents(string path = "./")
         {
             try
             {
