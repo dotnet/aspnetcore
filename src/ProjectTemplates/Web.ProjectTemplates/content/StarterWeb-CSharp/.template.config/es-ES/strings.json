@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplicación web (controlador de vista de modelos)",
+    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con controladores y vistas de ASP.NET Core MVC de ejemplo. Esta plantilla también puede usarse para servicios RESTful HTTP."
+  }
+}

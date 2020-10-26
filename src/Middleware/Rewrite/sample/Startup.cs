@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -13,12 +13,12 @@ namespace RewriteSample
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment environment)
+        public Startup(IWebHostEnvironment environment)
         {
             Environment = environment;
         }
 
-        public IHostingEnvironment Environment { get; private set; }
+        public IWebHostEnvironment Environment { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -32,7 +32,7 @@ namespace RewriteSample
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseRewriter();
 

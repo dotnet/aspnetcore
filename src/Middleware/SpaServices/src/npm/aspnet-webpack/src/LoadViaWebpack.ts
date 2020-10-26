@@ -90,9 +90,12 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
         }));
 
         // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case
-        webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
-            return !(plugin instanceof webpack.optimize.CommonsChunkPlugin);
-        });
+        const ChunkPlugin = webpack.optimize['CommonsChunkPlugin'];
+        if (ChunkPlugin !== undefined) {
+            webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
+                return !(plugin instanceof ChunkPlugin);
+            });
+        }
 
         // The typical use case for DllReferencePlugin is for referencing vendor modules. In a Node
         // environment, it doesn't make sense to load them from a DLL bundle, nor would that even

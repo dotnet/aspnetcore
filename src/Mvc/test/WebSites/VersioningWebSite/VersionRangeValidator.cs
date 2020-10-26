@@ -26,8 +26,13 @@ namespace VersioningWebSite
 
         public bool Accept(ActionConstraintContext context)
         {
+            return ProcessRequest(context.RouteContext.HttpContext.Request);
+        }
+
+        private bool ProcessRequest(HttpRequest request)
+        {
             int version;
-            if (int.TryParse(GetVersion(context.RouteContext.HttpContext.Request), out version))
+            if (int.TryParse(GetVersion(request), out version))
             {
                 return (_minVersion == null || _minVersion <= version) &&
                     (_maxVersion == null || _maxVersion >= version);

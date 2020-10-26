@@ -4,9 +4,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public interface IAntiforgeryTokenStore
+    internal interface IAntiforgeryTokenStore
     {
         string GetCookieToken(HttpContext httpContext);
 

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {
     public class AutobahnTester : IDisposable
     {
-        private readonly List<IApplicationDeployer> _deployers = new List<IApplicationDeployer>();
+        private readonly List<ApplicationDeployer> _deployers = new List<ApplicationDeployer>();
         private readonly List<DeploymentResult> _deployments = new List<DeploymentResult>();
         private readonly List<AutobahnExpectations> _expectations = new List<AutobahnExpectations>();
         private readonly ILoggerFactory _loggerFactory;
@@ -129,19 +129,17 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
         public async Task DeployTestAndAddToSpec(ServerType server, bool ssl, string environment, CancellationToken cancellationToken, Action<AutobahnExpectations> expectationConfig = null)
         {
-            var baseUrl = ssl ? "https://localhost:0" : "http://localhost:0";
             var sslNamePart = ssl ? "SSL" : "NoSSL";
             var name = $"{server}|{sslNamePart}|{environment}";
             var logger = _loggerFactory.CreateLogger($"AutobahnTestApp:{server}:{sslNamePart}:{environment}");
 
             var appPath = Helpers.GetApplicationPath("AutobahnTestApp");
             var configPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Http.config");
-
             var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                ApplicationBaseUriHint = baseUrl,
+                Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "netcoreapp2.1",
+                TargetFramework = "netcoreapp3.1",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
@@ -154,7 +152,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             cancellationToken.ThrowIfCancellationRequested();
 
             var handler = new HttpClientHandler();
-            // Win7 HttpClient on NetCoreApp2.1 defaults to TLS 1.0 and won't connect to Kestrel. https://github.com/dotnet/corefx/issues/28733
+            // Win7 HttpClient on NetCoreApp2.2 defaults to TLS 1.0 and won't connect to Kestrel. https://github.com/dotnet/corefx/issues/28733
             // Mac HttpClient on NetCoreApp2.0 doesn't alow you to set some combinations.
             // https://github.com/dotnet/corefx/blob/586cffcdfdf23ad6c193a4bf37fce88a1bf69508/src/System.Net.Http/src/System/Net/Http/CurlHandler/CurlHandler.SslProvider.OSX.cs#L104-L106
             handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;

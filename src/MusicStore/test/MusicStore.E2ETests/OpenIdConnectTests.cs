@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -13,45 +13,24 @@ namespace E2ETests
     [Trait("E2Etests", "E2Etests")]
     public class OpenIdConnectTests : LoggedTest
     {
-        public OpenIdConnectTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel)
+                .WithTfms(Tfm.NetCoreApp31);
 
-        [Fact]
-        public Task OpenIdConnect_Kestrel_CoreCLR_Portable()
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task OpenIdConnectTestSuite(TestVariant variant)
         {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [Fact]
-        public Task OpenIdConnect_Kestrel_CoreCLR_Standalone()
-        {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public Task OpenIdConnect_Kestrel_CLR()
-        {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-        private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-
-        {
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"OpenIdConnectTestSuite_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"OpenIdConnectTestSuite_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("OpenIdConnectTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    PublishApplicationBeforeDeployment = true,
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     EnvironmentName = "OpenIdConnectTesting",
                     UserAdditionalCleanup = parameters =>
                     {
@@ -66,7 +45,7 @@ namespace E2ETests
                         MusicStoreConfig.ConnectionStringKey,
                         DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClientHandler = new HttpClientHandler();

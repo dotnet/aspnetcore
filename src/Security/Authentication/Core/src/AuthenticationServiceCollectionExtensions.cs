@@ -46,48 +46,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
-        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
-            where TOptions : AuthenticationSchemeOptions, new()
-            where THandler : AuthenticationHandler<TOptions>
-        {
-            services.AddAuthentication(o =>
-            {
-                o.AddScheme(authenticationScheme, scheme => {
-                    scheme.HandlerType = typeof(THandler);
-                    scheme.DisplayName = displayName;
-                    configureScheme?.Invoke(scheme);
-                });
-            });
-            if (configureOptions != null)
-            {
-                services.Configure(authenticationScheme, configureOptions);
-            }
-            services.AddTransient<THandler>();
-            return services;
-        }
-
-        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
-        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
-            where TOptions : AuthenticationSchemeOptions, new()
-            where THandler : AuthenticationHandler<TOptions>
-            => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName: null, configureScheme: null, configureOptions: configureOptions);
-
-        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
-        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
-            where TOptions : AuthenticationSchemeOptions, new()
-            where THandler : AuthenticationHandler<TOptions>
-            => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
-
-        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
-        public static IServiceCollection AddRemoteScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
-            where TOptions : RemoteAuthenticationOptions, new()
-            where THandler : RemoteAuthenticationHandler<TOptions>
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, EnsureSignInScheme<TOptions>>());
-            return services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
-        }
-
         // Used to ensure that there's always a sign in scheme
         private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
         {

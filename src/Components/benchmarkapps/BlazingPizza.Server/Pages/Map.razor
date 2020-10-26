@@ -1,0 +1,33 @@
+@page "/orderstatus"
+@using System.Threading
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+
+<div id="status" data-loc="@locString">Your order is on it's way. Here is it's current location: (@locX, @locY)</div>
+
+@functions {
+    private int locX;
+    private int locY;
+    private Random random = new Random();
+    private Timer timer;
+    private string locString;
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(_ =>
+        {
+            locX = random.Next(1000);
+            locY = random.Next(1000);
+            locString = $"{locX},{locY}";
+
+            InvokeAsync(() => StateHasChanged());
+        }, default, TimeSpan.Zero, TimeSpan.FromSeconds(2));
+    }
+
+    public void Dispose()
+    {
+        timer.Dispose();
+    }
+}

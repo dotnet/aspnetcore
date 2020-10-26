@@ -1,0 +1,158 @@
+@using System
+@using System.Globalization
+@using System.Linq
+@using System.Net
+@using System.Reflection
+@using Microsoft.AspNetCore.Hosting.Views
+
+@functions
+{
+    public ErrorPage(ErrorPageModel model)
+    {
+        Model = model;
+    }
+
+    public ErrorPageModel Model { get; set; }
+}
+@{
+    var location = string.Empty;
+}
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title>Internal Server Error</title>
+        <style>
+            <%$ include: ErrorPage.css %>
+        </style>
+    </head>
+    <body>
+        <h1>An error occurred while starting the application.</h1>
+        @foreach (var errorDetail in Model.ErrorDetails)
+        {
+            <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
+
+            var firstFrame = errorDetail.StackFrames.FirstOrDefault();
+            if (firstFrame != null)
+            {
+                location = firstFrame.Function;
+            }
+            if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
+            {
+                <p class="location">@location in <code title="@firstFrame.File">@System.IO.Path.GetFileName(firstFrame.File)</code>, line @firstFrame.Line</p>
+            }
+            else if (!string.IsNullOrEmpty(location))
+            {
+                <p class="location">@location</p>
+            }
+            else
+            {
+                <p class="location">Unknown location</p>
+            }
+
+            var reflectionTypeLoadException = errorDetail.Error as ReflectionTypeLoadException;
+            if (reflectionTypeLoadException != null)
+            {
+                if (reflectionTypeLoadException.LoaderExceptions.Length > 0)
+                {
+                    <h3>Loader Exceptions:</h3>
+                    <ul>
+                        @foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
+                        {
+                            <li>@ex.Message</li>
+                        }
+                    </ul>
+                }
+            }
+        }
+        <div id="stackpage" class="page">
+            <ul>
+                @{
+                    var exceptionCount = 0;
+                    var stackFrameCount = 0;
+                    var exceptionDetailId = "";
+                    var frameId = "";
+                }
+                @foreach (var errorDetail in Model.ErrorDetails)
+                {
+                    exceptionCount++;
+                    exceptionDetailId = "exceptionDetail" + exceptionCount;
+                    <li>
+                        <h2 class="stackerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
+                        <ul>
+                        @foreach (var frame in errorDetail.StackFrames)
+                        {
+                            stackFrameCount++;
+                            frameId = "frame" + stackFrameCount;
+                            <li class="frame" id="@frameId">
+                                @if (string.IsNullOrEmpty(frame.File))
+                                {
+                                    <h3>@frame.Function</h3>
+                                }
+                                else
+                                {
+                                    <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
+                                }
+
+                                @if (frame.Line != 0 && frame.ContextCode.Any())
+                                {
+                                    <button class="expandCollapseButton" data-frameId="@frameId">+</button>
+                                    <div class="source">
+                                        @if (frame.PreContextCode.Any())
+                                        {
+                                            <ol start="@frame.PreContextLine" class="collapsible">
+                                                @foreach (var line in frame.PreContextCode)
+                                                {
+                                                    <li><span>@line</span></li>
+                                                }
+                                            </ol>
+                                        }
+
+                                        <ol start="@frame.Line" class="highlight">
+                                            @foreach (var line in frame.ContextCode)
+                                            {
+                                                <li><span>@line</span></li>
+                                            }
+                                        </ol>
+
+                                        @if (frame.PostContextCode.Any())
+                                        {
+                                            <ol start='@(frame.Line + 1)' class="collapsible">
+                                                @foreach (var line in frame.PostContextCode)
+                                                {
+                                                    <li><span>@line</span></li>
+                                                }
+                                            </ol>
+                                        }
+                                    </div>
+                                }
+                            </li>
+                        }
+                        </ul>
+                    </li>
+                    <li>
+                        <br/>
+                        <div class="rawExceptionBlock">
+                            <div class="showRawExceptionContainer">
+                                <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show raw exception details</button>
+                            </div>
+                            <div id="@exceptionDetailId" class="rawExceptionDetails">
+                                <pre class="rawExceptionStackTrace">@errorDetail.Error.ToString()</pre>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+        @if (Model.ShowRuntimeDetails) {
+            <footer>
+                @Model.RuntimeDisplayName @Model.RuntimeArchitecture v@(Model.ClrVersion) &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Microsoft.AspNetCore.Hosting version @Model.CurrentAssemblyVesion &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; @Model.OperatingSystemDescription &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="http://go.microsoft.com/fwlink/?LinkId=517394">Need help?</a>
+            </footer>
+        }
+        <script>
+            //<!--
+            <%$ include: ErrorPage.js %>
+            //-->
+        </script>
+</body>
+</html>

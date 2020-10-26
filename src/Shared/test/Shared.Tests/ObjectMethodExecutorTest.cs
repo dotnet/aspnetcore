@@ -155,7 +155,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningCustomAwaitableOfReferenceType_CanInvokeViaExecute()
+        public async Task TargetMethodReturningCustomAwaitableOfReferenceType_CanInvokeViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableOfReferenceTypeAsync");
@@ -171,7 +171,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningCustomAwaitableOfValueType_CanInvokeViaExecute()
+        public async Task TargetMethodReturningCustomAwaitableOfValueType_CanInvokeViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableOfValueTypeAsync");
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningCustomAwaitableOfReferenceType_CanInvokeViaExecuteAsync()
+        public async Task TargetMethodReturningCustomAwaitableOfReferenceType_CanInvokeViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableOfReferenceTypeAsync");
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningCustomAwaitableOfValueType_CanInvokeViaExecuteAsync()
+        public async Task TargetMethodReturningCustomAwaitableOfValueType_CanInvokeViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableOfValueTypeAsync");
@@ -220,7 +220,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningAwaitableOfVoidType_CanInvokeViaExecuteAsync()
+        public async Task TargetMethodReturningAwaitableOfVoidType_CanInvokeViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("VoidValueMethodAsync");
@@ -235,7 +235,7 @@ namespace Microsoft.Extensions.Internal
         }
         
         [Fact]
-        public async void TargetMethodReturningAwaitableWithICriticalNotifyCompletion_UsesUnsafeOnCompleted()
+        public async Task TargetMethodReturningAwaitableWithICriticalNotifyCompletion_UsesUnsafeOnCompleted()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableWithICriticalNotifyCompletion");
@@ -250,7 +250,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningAwaitableWithoutICriticalNotifyCompletion_UsesOnCompleted()
+        public async Task TargetMethodReturningAwaitableWithoutICriticalNotifyCompletion_UsesOnCompleted()
         {
             // Arrange
             var executor = GetExecutorForMethod("CustomAwaitableWithoutICriticalNotifyCompletion");
@@ -265,7 +265,7 @@ namespace Microsoft.Extensions.Internal
         }
         
         [Fact]
-        public async void TargetMethodReturningValueTaskOfValueType_CanBeInvokedViaExecute()
+        public async Task TargetMethodReturningValueTaskOfValueType_CanBeInvokedViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("ValueTaskOfValueType");
@@ -280,7 +280,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningValueTaskOfReferenceType_CanBeInvokedViaExecute()
+        public async Task TargetMethodReturningValueTaskOfReferenceType_CanBeInvokedViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("ValueTaskOfReferenceType");
@@ -295,7 +295,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningValueTaskOfValueType_CanBeInvokedViaExecuteAsync()
+        public async Task TargetMethodReturningValueTaskOfValueType_CanBeInvokedViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("ValueTaskOfValueType");
@@ -311,7 +311,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningValueTaskOfReferenceType_CanBeInvokedViaExecuteAsync()
+        public async Task TargetMethodReturningValueTaskOfReferenceType_CanBeInvokedViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("ValueTaskOfReferenceType");
@@ -326,7 +326,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningFSharpAsync_CanBeInvokedViaExecute()
+        public async Task TargetMethodReturningFSharpAsync_CanBeInvokedViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("FSharpAsyncMethod");
@@ -344,7 +344,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecute()
+        public async Task TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecute()
         {
             // Arrange
             var executor = GetExecutorForMethod("FSharpAsyncFailureMethod");
@@ -365,7 +365,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningFSharpAsync_CanBeInvokedViaExecuteAsync()
+        public async Task TargetMethodReturningFSharpAsync_CanBeInvokedViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("FSharpAsyncMethod");
@@ -380,7 +380,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public async void TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecuteAsync()
+        public async Task TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecuteAsync()
         {
             // Arrange
             var executor = GetExecutorForMethod("FSharpAsyncFailureMethod");

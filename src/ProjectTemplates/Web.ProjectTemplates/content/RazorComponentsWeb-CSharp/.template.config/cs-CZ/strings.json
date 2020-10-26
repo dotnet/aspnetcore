@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Serverová aplikace Blazor",
+    "description": "Šablona projektu pro vytvoření aplikace Blazor, která běží na straně serveru uvnitř aplikace ASP.NET Core. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI)."
+  }
+}

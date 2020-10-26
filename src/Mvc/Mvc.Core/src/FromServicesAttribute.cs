@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Mvc
     ///
     /// <code>
     /// [HttpGet]
-    /// public ProductModel GetProduct([FromServices] IProductModelRequestService productModelReqest)
+    /// public ProductModel GetProduct([FromServices] IProductModelRequestService productModelRequest)
     /// {
-    ///     return productModelReqest.Value;
+    ///     return productModelRequest.Value;
     /// }
     /// </code>
     /// </example>

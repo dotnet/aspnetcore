@@ -1,0 +1,47 @@
+@using System.Timers
+@implements IDisposable
+<h3>Reconnection Component</h3>
+
+<p>This component is used to validate reconnection scenarios in server-side blazor.</p>
+<div>
+    <p><span id="count">@count</span></p>
+    <button id="increment" @onclick="Increment">Increment count</button>
+</div>
+
+<div>
+    <p id="ticker">@tickCount</p>
+</div>
+
+<div>
+    @if (causeError)
+    {
+        throw new InvalidOperationException("Exception while rendering");
+    }
+
+    <button id="cause-error" @onclick="CauseError">Cause error</button>
+</div>
+@code {
+    int count;
+    void Increment() => count++;
+    int tickCount = 0;
+    Timer timer;
+    bool causeError = false;
+
+    protected override  void OnInitialized()
+    {
+        timer = StartTimer();
+    }
+
+    private Timer StartTimer()
+    {
+        var timer = new Timer(1000);
+        timer.AutoReset = true;
+        timer.Elapsed += (s, a) => InvokeAsync(() => { tickCount++; StateHasChanged(); });
+        timer.Start();
+        return timer;
+    }
+
+    void CauseError() => causeError = true;
+
+    public void Dispose() => timer?.Dispose();
+}

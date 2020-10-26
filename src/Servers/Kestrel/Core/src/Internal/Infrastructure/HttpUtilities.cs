@@ -4,17 +4,14 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {
-        private static readonly bool[] HostCharValidity = new bool[127];
-
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
         public const string Http2Version = "HTTP/2";
@@ -31,34 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-        // Only called from the static constructor
-        private static void InitializeHostCharValidity()
-        {
-            // Matches Http.Sys
-            // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
-            HostCharValidity['!'] = true;
-            HostCharValidity['$'] = true;
-            HostCharValidity['&'] = true;
-            HostCharValidity['\''] = true;
-            HostCharValidity['('] = true;
-            HostCharValidity[')'] = true;
-            HostCharValidity['-'] = true;
-            HostCharValidity['.'] = true;
-            HostCharValidity['_'] = true;
-            HostCharValidity['~'] = true;
-            for (var ch = '0'; ch <= '9'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-            for (var ch = 'A'; ch <= 'Z'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-            for (var ch = 'a'; ch <= 'z'; ch++)
-            {
-                HostCharValidity[ch] = true;
-            }
-        }
+        private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -114,6 +84,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+        public static unsafe string GetHeaderName(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                }
+            }
+
+            return asciiString;
+        }
+
         public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
         {
             if (span.IsEmpty)
@@ -124,9 +118,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             var asciiString = new string('\0', span.Length);
 
             fixed (char* output = asciiString)
-            fixed (byte* buffer = &MemoryMarshal.GetReference(span))
+            fixed (byte* buffer = span)
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
                 // in the string
                 if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
                 {
@@ -135,6 +129,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             return asciiString;
         }
+
+        public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
+            useLatin1 ? span.GetLatin1StringNonNullCharacters() : span.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
         {
@@ -169,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
         {
-            fixed (byte* data = &MemoryMarshal.GetReference(span))
+            fixed (byte* data = span)
             {
                 method = GetKnownMethod(data, span.Length, out length);
                 return method != HttpMethod.Custom;
@@ -222,13 +219,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // Called by http/2
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                return HttpMethod.None;
             }
 
             var length = value.Length;
             if (length == 0)
             {
-                throw new ArgumentException(nameof(value));
+                return HttpMethod.None;
             }
 
             // Start with custom and assign if known method is found
@@ -304,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            fixed (byte* data = &MemoryMarshal.GetReference(span))
+            fixed (byte* data = span)
             {
                 knownVersion = GetKnownVersion(data, span.Length);
                 if (knownVersion != HttpVersion.Unknown)
@@ -363,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
         {
-            fixed (byte* data = &MemoryMarshal.GetReference(span))
+            fixed (byte* data = span)
             {
                 return GetKnownHttpScheme(data, span.Length, out knownScheme);
             }
@@ -393,77 +390,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            switch (httpVersion)
+            return httpVersion switch
             {
-                case HttpVersion.Http10:
-                    return Http10Version;
-                case HttpVersion.Http11:
-                    return Http11Version;
-                default:
-                    return null;
-            }
+                HttpVersion.Http10 => Http10Version,
+                HttpVersion.Http11 => Http11Version,
+                _ => null,
+            };
         }
         public static string MethodToString(HttpMethod method)
         {
-            int methodIndex = (int)method;
-            if (methodIndex >= 0 && methodIndex <= 8)
+            var methodIndex = (int)method;
+            var methodNames = _methodNames;
+            if ((uint)methodIndex < (uint)methodNames.Length)
             {
-                return _methodNames[methodIndex];
+                return methodNames[methodIndex];
             }
             return null;
         }
 
         public static string SchemeToString(HttpScheme scheme)
         {
-            switch (scheme)
+            return scheme switch
             {
-                case HttpScheme.Http:
-                    return HttpUriScheme;
-                case HttpScheme.Https:
-                    return HttpsUriScheme;
-                default:
-                    return null;
-            }
+                HttpScheme.Http => HttpUriScheme,
+                HttpScheme.Https => HttpsUriScheme,
+                _ => null,
+            };
         }
 
-        public static void ValidateHostHeader(string hostText)
+        public static bool IsHostHeaderValid(string hostText)
         {
             if (string.IsNullOrEmpty(hostText))
             {
                 // The spec allows empty values
-                return;
+                return true;
             }
 
             var firstChar = hostText[0];
             if (firstChar == '[')
             {
                 // Tail call
-                ValidateIPv6Host(hostText);
+                return IsIPv6HostValid(hostText);
             }
             else
             {
                 if (firstChar == ':')
                 {
                     // Only a port
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
 
-                // Enregister array
-                var hostCharValidity = HostCharValidity;
-                for (var i = 0; i < hostText.Length; i++)
+                var invalid = HttpCharacters.IndexOfInvalidHostChar(hostText);
+                if (invalid >= 0)
                 {
-                    if (!hostCharValidity[hostText[i]])
-                    {
-                        // Tail call
-                        ValidateHostPort(hostText, i); 
-                        return;
-                    }
+                    // Tail call
+                    return IsHostPortValid(hostText, invalid);
                 }
+
+                return true;
             }
         }
 
         // The lead '[' was already checked
-        private static void ValidateIPv6Host(string hostText)
+        private static bool IsIPv6HostValid(string hostText)
         {
             for (var i = 1; i < hostText.Length; i++)
             {
@@ -473,43 +462,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // [::1] is the shortest valid IPv6 host
                     if (i < 4)
                     {
-                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                        return false;
                     }
                     else if (i + 1 < hostText.Length)
                     {
                         // Tail call
-                        ValidateHostPort(hostText, i + 1);
+                        return IsHostPortValid(hostText, i + 1);
                     }
-                    return;
+                    return true;
                 }
 
                 if (!IsHex(ch) && ch != ':' && ch != '.')
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
             }
 
             // Must contain a ']'
-            BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            return false;
         }
 
-        private static void ValidateHostPort(string hostText, int offset)
+        private static bool IsHostPortValid(string hostText, int offset)
         {
             var firstChar = hostText[offset];
             offset++;
             if (firstChar != ':' || offset == hostText.Length)
             {
                 // Must have at least one number after the colon if present.
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                return false;
             }
 
             for (var i = offset; i < hostText.Length; i++)
             {
                 if (!IsNumeric(hostText[i]))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    return false;
                 }
             }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -536,6 +527,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Cast to uint to change negative numbers to large numbers
                 // Check if less than 6 representing chars 'a' - 'f'
                 || (uint)((ch | 32) - 'a') < 6u;
+        }
+
+        // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)
+        private sealed class UTF8EncodingSealed : UTF8Encoding
+        {
+            public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
+
+            public override byte[] GetPreamble() => Array.Empty<byte>();
         }
     }
 }

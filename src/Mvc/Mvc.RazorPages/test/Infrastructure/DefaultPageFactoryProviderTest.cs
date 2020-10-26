@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelMetadataProvider provider = null,
             IUrlHelperFactory urlHelperFactory = null,
             IJsonHelper jsonHelper = null,
-            DiagnosticSource diagnosticSource = null,
+            DiagnosticListener diagnosticListener = null,
             HtmlEncoder htmlEncoder = null,
             IModelExpressionProvider modelExpressionProvider = null)
         {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 provider ?? Mock.Of<IModelMetadataProvider>(),
                 urlHelperFactory ?? Mock.Of<IUrlHelperFactory>(),
                 jsonHelper ?? Mock.Of<IJsonHelper>(),
-                diagnosticSource ?? new DiagnosticListener("Microsoft.AspNetCore.Mvc.RazorPages"),
+                diagnosticListener ?? new DiagnosticListener("Microsoft.AspNetCore.Mvc.RazorPages"),
                 htmlEncoder ?? HtmlEncoder.Default,
                 modelExpressionProvider ?? Mock.Of<IModelExpressionProvider>());
         }

@@ -1,13 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(BuildNumber)</Version>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
     <Cultures>en-US</Cultures>
-    <BaseOutputPath>$(RootOutputPath)bin/$(Configuration)/installers/</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
   </PropertyGroup>
 
   <!-- Additional parameters for Light/Candle-->
@@ -27,12 +24,8 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
-    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
     <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
-    <GenerateNupkgPowershellScript>$(RepositoryRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>

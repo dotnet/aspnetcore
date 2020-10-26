@@ -9,6 +9,6 @@ ARG CONFIGURATION=Debug
 
 WORKDIR /app
 
-COPY ./bin/${CONFIGURATION}/netcoreapp2.1/publish/ /app
+COPY ./bin/${CONFIGURATION}/netcoreapp2.2/publish/ /app
 
 ENTRYPOINT [ "/usr/bin/dotnet", "/app/Http2SampleApp.dll" ]

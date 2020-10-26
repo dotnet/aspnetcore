@@ -20,15 +20,15 @@ namespace Microsoft.Net.Http.Headers
             {
                 throw new ArgumentException("Invalid header range.");
             }
-            if (from.HasValue && (from.Value < 0))
+            if (from.HasValue && (from.GetValueOrDefault() < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(from));
             }
-            if (to.HasValue && (to.Value < 0))
+            if (to.HasValue && (to.GetValueOrDefault() < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(to));
             }
-            if (from.HasValue && to.HasValue && (from.Value > to.Value))
+            if (from.HasValue && to.HasValue && (from.GetValueOrDefault() > to.GetValueOrDefault()))
             {
                 throw new ArgumentOutOfRangeException(nameof(from));
             }
@@ -51,38 +51,37 @@ namespace Microsoft.Net.Http.Headers
         {
             if (!_from.HasValue)
             {
-                return "-" + _to.Value.ToString(NumberFormatInfo.InvariantInfo);
+                return "-" + _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
             }
             else if (!_to.HasValue)
             {
-                return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-";
+                return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-";
             }
-            return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-" +
-                _to.Value.ToString(NumberFormatInfo.InvariantInfo);
+            return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-" +
+                _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
         }
 
         public override bool Equals(object obj)
         {
-            var other = obj as RangeItemHeaderValue;
-
-            if (other == null)
+            if (obj is RangeItemHeaderValue other)
             {
-                return false;
+                return ((_from == other._from) && (_to == other._to));
             }
-            return ((_from == other._from) && (_to == other._to));
+
+            return false;
         }
 
         public override int GetHashCode()
         {
             if (!_from.HasValue)
             {
-                return _to.GetHashCode();
+                return _to.GetValueOrDefault().GetHashCode();
             }
             else if (!_to.HasValue)
             {
-                return _from.GetHashCode();
+                return _from.GetValueOrDefault().GetHashCode();
             }
-            return _from.GetHashCode() ^ _to.GetHashCode();
+            return _from.GetValueOrDefault().GetHashCode() ^ _to.GetValueOrDefault().GetHashCode();
         }
 
         // Returns the length of a range list. E.g. "1-2, 3-4, 5-6" adds 3 ranges to 'rangeCollection'. Note that empty
@@ -169,7 +168,7 @@ namespace Microsoft.Net.Http.Headers
             current = current + fromLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
-            // Afer the first value, the '-' character must follow.
+            // After the first value, the '-' character must follow.
             if ((current == input.Length) || (input[current] != '-'))
             {
                 // We need a '-' character otherwise this can't be a valid range.

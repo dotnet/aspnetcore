@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Webanwendung (Model-View-Controller)",
+    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielen für ASP.NET Core-MVC-Ansichten und -Controller. Diese Vorlage kann auch für RESTful HTTP-Dienste verwendet werden."
+  }
+}

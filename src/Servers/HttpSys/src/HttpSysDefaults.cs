@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// The name of the authentication scheme used.
         /// </summary>
-        public static readonly string AuthenticationScheme = "Windows";
+        public const string AuthenticationScheme = "Windows";
     }
 }

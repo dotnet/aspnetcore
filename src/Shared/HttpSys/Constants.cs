@@ -17,5 +17,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal static Version V1_0 = new Version(1, 0);
         internal static Version V1_1 = new Version(1, 1);
+        internal static Version V2 = new Version(2, 0);
     }
 }

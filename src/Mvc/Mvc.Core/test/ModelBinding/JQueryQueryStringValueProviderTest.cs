@@ -34,5 +34,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             Assert.Null(result);
         }
+
+        [Fact]
+        public override void GetValue_EmptyKey()
+        {
+            // Arrange
+            var store = new Dictionary<string, StringValues>(BackingStore)
+            {
+                { string.Empty, "some-value" },
+            };
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, store, culture: null);
+
+            // Act
+            var result = valueProvider.GetValue(string.Empty);
+
+            // Assert
+            Assert.Equal("some-value", (string)result);
+        }
     }
 }

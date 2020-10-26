@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionManager
+    internal partial class HttpConnectionManager
     {
         private static class Log
         {
@@ -25,14 +25,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             private static readonly Action<ILogger, string, Exception> _connectionTimedOut =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "ConnectionTimedOut"), "Connection {TransportConnectionId} timed out.");
 
-            private static readonly Action<ILogger, Exception> _scanningConnections =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(6, "ScanningConnections"), "Scanning connections.");
+            // 6, ScanningConnections - removed
 
             private static readonly Action<ILogger, Exception> _scanningConnectionsFailed =
                 LoggerMessage.Define(LogLevel.Error, new EventId(7, "ScanningConnectionsFailed"), "Scanning connections failed.");
 
-            private static readonly Action<ILogger, TimeSpan, Exception> _scannedConnections =
-                LoggerMessage.Define<TimeSpan>(LogLevel.Trace, new EventId(8, "ScannedConnections"), "Scanned connections in {Duration}.");
+            // 8, ScannedConnections - removed
 
             private static readonly Action<ILogger, Exception> _heartbeatStarted =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(9, "HeartBeatStarted"), "Starting connection heartbeat.");
@@ -65,19 +63,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 _connectionReset(logger, connectionId, exception);
             }
 
-            public static void ScanningConnections(ILogger logger)
-            {
-                _scanningConnections(logger, null);
-            }
-
             public static void ScanningConnectionsFailed(ILogger logger, Exception exception)
             {
                 _scanningConnectionsFailed(logger, exception);
-            }
-
-            public static void ScannedConnections(ILogger logger, TimeSpan duration)
-            {
-                _scannedConnections(logger, duration, null);
             }
 
             public static void HeartBeatStarted(ILogger logger)

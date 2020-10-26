@@ -26,7 +26,7 @@ namespace ConsoleApplication
             var cert = store.Certificates.Find(X509FindType.FindByThumbprint, config["CertificateThumbprint"], false);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging();
+            serviceCollection.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             serviceCollection.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo("."))
                 .ProtectKeysWithAzureKeyVault(config["KeyId"], config["ClientId"], cert.OfType<X509Certificate2>().Single());
@@ -34,7 +34,6 @@ namespace ConsoleApplication
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole();
 
             var protector = serviceProvider.GetDataProtector("Test");
 

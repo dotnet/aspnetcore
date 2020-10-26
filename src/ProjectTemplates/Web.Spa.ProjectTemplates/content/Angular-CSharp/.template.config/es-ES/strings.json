@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Angular",
+    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con Angular."
+  }
+}

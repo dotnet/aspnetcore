@@ -1,10 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public partial class Http2Frame
+    /* https://tools.ietf.org/html/rfc7540#section-6.10
+        +---------------------------------------------------------------+
+        |                   Header Block Fragment (*)                 ...
+        +---------------------------------------------------------------+
+    */
+    internal partial class Http2Frame
     {
         public Http2ContinuationFrameFlags ContinuationFlags
         {
@@ -12,9 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             set => Flags = (byte)value;
         }
 
+        public bool ContinuationEndHeaders => (ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS;
+
         public void PrepareContinuation(Http2ContinuationFrameFlags flags, int streamId)
         {
-            Length = MinAllowedMaxFrameSize - HeaderLength;
+            PayloadLength = 0;
             Type = Http2FrameType.CONTINUATION;
             ContinuationFlags = flags;
             StreamId = streamId;

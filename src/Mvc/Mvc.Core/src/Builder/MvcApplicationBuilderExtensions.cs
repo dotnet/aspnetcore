@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -75,18 +78,18 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureRoutes));
             }
 
-            // Verify if AddMvc was done before calling UseMvc
-            // We use the MvcMarkerService to make sure if all the services were added.
-            if (app.ApplicationServices.GetService(typeof(MvcMarkerService)) == null)
-            {
-                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
-                    nameof(IServiceCollection),
-                    "AddMvc",
-                    "ConfigureServices(...)"));
-            }
+            VerifyMvcIsRegistered(app);
 
-            var middlewarePipelineBuilder = app.ApplicationServices.GetRequiredService<MiddlewareFilterBuilder>();
-            middlewarePipelineBuilder.ApplicationBuilder = app.New();
+            var options = app.ApplicationServices.GetRequiredService<IOptions<MvcOptions>>();
+
+            if (options.Value.EnableEndpointRouting)
+            {
+                var message =
+                    "Endpoint Routing does not support 'IApplicationBuilder.UseMvc(...)'. To use " +
+                    "'IApplicationBuilder.UseMvc' set 'MvcOptions.EnableEndpointRouting = false' inside " +
+                    "'ConfigureServices(...).";
+                throw new InvalidOperationException(message);
+            }
 
             var routes = new RouteBuilder(app)
             {
@@ -98,6 +101,45 @@ namespace Microsoft.AspNetCore.Builder
             routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
 
             return app.UseRouter(routes.Build());
+        }
+
+        private class EndpointRouteBuilder : IRouteBuilder
+        {
+            public EndpointRouteBuilder(IApplicationBuilder applicationBuilder)
+            {
+                ApplicationBuilder = applicationBuilder;
+                Routes = new List<IRouter>();
+                DefaultHandler = NullRouter.Instance;
+            }
+
+            public IApplicationBuilder ApplicationBuilder { get; }
+
+            public IRouter DefaultHandler { get; set; }
+
+            public IServiceProvider ServiceProvider
+            {
+                get { return ApplicationBuilder.ApplicationServices; }
+            }
+
+            public IList<IRouter> Routes { get; }
+
+            public IRouter Build()
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        private static void VerifyMvcIsRegistered(IApplicationBuilder app)
+        {
+            // Verify if AddMvc was done before calling UseMvc
+            // We use the MvcMarkerService to make sure if all the services were added.
+            if (app.ApplicationServices.GetService(typeof(MvcMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddMvc",
+                    "ConfigureServices(...)"));
+            }
         }
     }
 }

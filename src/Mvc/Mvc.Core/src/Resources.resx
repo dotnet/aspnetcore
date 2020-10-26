@@ -295,7 +295,7 @@
     <value>The binding context cannot have a null ModelMetadata.</value>
   </data>
   <data name="ModelBinding_MissingBindRequiredMember" xml:space="preserve">
-    <value>A value for the '{0}' property was not provided.</value>
+    <value>A value for the '{0}' parameter or property was not provided.</value>
   </data>
   <data name="ModelBinding_MissingRequestBodyRequiredMember" xml:space="preserve">
     <value>A non-empty request body is required.</value>
@@ -410,7 +410,7 @@
     <value>No page named '{0}' matches the supplied values.</value>
   </data>
   <data name="UrlHelper_RelativePagePathIsNotSupported" xml:space="preserve">
-    <value>The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.</value>
+    <value>The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. If you are using {1} then you must provide the current {2} to use relative pages.</value>
   </data>
   <data name="ValidationProblemDescription_Title" xml:space="preserve">
     <value>One or more validation errors occurred.</value>
@@ -441,5 +441,79 @@
   </data>
   <data name="ApiController_MultipleBodyParametersFound" xml:space="preserve">
     <value>Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:</value>
+  </data>
+  <data name="ApiConventionMustBeStatic" xml:space="preserve">
+    <value>API convention type '{0}' must be a static type.</value>
+  </data>
+  <data name="InvalidTypeTForActionResultOfT" xml:space="preserve">
+    <value>Invalid type parameter '{0}' specified for '{1}'.</value>
+  </data>
+  <data name="ApiConvention_UnsupportedAttributesOnConvention" xml:space="preserve">
+    <value>Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.</value>
+  </data>
+  <data name="ApiConventionMethod_AmbiguousMethodName" xml:space="preserve">
+    <value>Method name '{0}' is ambiguous for convention type '{1}'. More than one method found with the name '{0}'.</value>
+  </data>
+  <data name="ApiConventionMethod_NoMethodFound" xml:space="preserve">
+    <value>A method named '{0}' was not found on convention type '{1}'.</value>
+  </data>
+  <data name="ValidationVisitor_ExceededMaxDepth" xml:space="preserve">
+    <value>{0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.</value>
+  </data>
+  <data name="ValidationVisitor_ExceededMaxDepthFix" xml:space="preserve">
+    <value>This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.</value>
+  </data>
+  <data name="ValidationVisitor_ExceededMaxPropertyDepth" xml:space="preserve">
+    <value>{0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.</value>
+  </data>
+  <data name="ApiConventions_Title_400" xml:space="preserve">
+    <value>Bad Request</value>
+  </data>
+  <data name="ApiConventions_Title_401" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
+  <data name="ApiConventions_Title_403" xml:space="preserve">
+    <value>Forbidden</value>
+  </data>
+  <data name="ApiConventions_Title_404" xml:space="preserve">
+    <value>Not Found</value>
+  </data>
+  <data name="ApiConventions_Title_406" xml:space="preserve">
+    <value>Not Acceptable</value>
+  </data>
+  <data name="ApiConventions_Title_409" xml:space="preserve">
+    <value>Conflict</value>
+  </data>
+  <data name="ApiConventions_Title_415" xml:space="preserve">
+    <value>Unsupported Media Type</value>
+  </data>
+  <data name="ApiConventions_Title_422" xml:space="preserve">
+    <value>Unprocessable Entity</value>
+  </data>
+  <data name="ReferenceToNewtonsoftJsonRequired" xml:space="preserve">
+    <value>'{0}' requires a reference to '{1}'. Configure your application by adding a reference to the '{1}' package and calling '{2}.{3}' inside the call to '{4}' in the application startup code.</value>
+  </data>
+  <data name="ModelBinding_ExceededMaxModelBindingCollectionSize" xml:space="preserve">
+    <value>Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {1}.{2} documentation for more information.</value>
+    <comment>{0} is model name, {1} is MvcOptions, {2} is MaxModelBindingCollectionSize, {3} is option value, {4} is affected type.</comment>
+  </data>
+  <data name="ModelBinding_ExceededMaxModelBindingRecursionDepth" xml:space="preserve">
+    <value>Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of '{3}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.</value>
+    <comment>{0} is MvcOptions, {1} is MaxModelBindingRecursionDepth, {2} is option value, {3} is (loopy or deeply nested) top-level model type.</comment>
+  </data>
+  <data name="Property_MustBeInstanceOfType" xml:space="preserve">
+    <value>Property '{0}.{1}' must be an instance of type '{2}'.</value>
+  </data>
+  <data name="ObjectResultExecutor_MaxEnumerationExceeded" xml:space="preserve">
+    <value>'{0}' reached the configured maximum size of the buffer when enumerating a value of type '{1}'. This limit is in place to prevent infinite streams of 'IAsyncEnumerable&lt;&gt;' from continuing indefinitely. If this is not a programming mistake, consider ways to reduce the collection size, or consider manually converting '{1}' into a list rather than increasing the limit.</value>
+  </data>
+  <data name="UnexpectedJsonEnd" xml:space="preserve">
+    <value>Unexcepted end when reading JSON.</value>
+  </data>
+  <data name="ApiConventions_Title_500" xml:space="preserve">
+    <value>An error occured while processing your request.</value>
+  </data>
+  <data name="FailedToReadRequestForm" xml:space="preserve">
+    <value>Failed to read the request form. {0}</value>
   </data>
 </root>

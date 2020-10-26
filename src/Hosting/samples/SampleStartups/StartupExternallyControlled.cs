@@ -30,16 +30,17 @@ namespace SampleStartups
         public void Start()
         {
             _host = new WebHostBuilder()
-                //.UseKestrel()
-                .UseFakeServer()
+                .UseKestrel()
                 .UseStartup<StartupExternallyControlled>()
                 .Start(_urls.ToArray());
         }
 
         public async Task StopAsync()
         {
-            await _host.StopAsync(TimeSpan.FromSeconds(5));
-            _host.Dispose();
+            using (_host)
+            {
+                await _host.StopAsync(TimeSpan.FromSeconds(5));
+            }
         }
 
         public void AddUrl(string url)

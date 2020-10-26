@@ -1,0 +1,33 @@
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
+
+  <PropertyGroup Condition="'$(GenerateChecksums)' == 'true'">
+    <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
+    <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+    <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
+    <InstallersOutputPath>$(ArtifactsDir)\installers\</InstallersOutputPath>
+  </PropertyGroup>
+
+  <Target Name="PopulateGenerateChecksumItems"
+          Condition="'$(GenerateChecksums)' == 'true'"
+          AfterTargets="Build"
+          BeforeTargets="GenerateChecksums" >
+
+    <ItemGroup>
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.msi" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.exe" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.zip" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.tar.gz" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.wixlib" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.rpm" />
+      <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
+        <DestinationPath>%(FullPath).sha512</DestinationPath>
+      </GenerateChecksumItems>
+    </ItemGroup>
+
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
+
+</Project>

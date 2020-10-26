@@ -6,11 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -24,17 +21,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IModelBinder _valueBinder;
 
         /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.</para>
+        /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
         /// </summary>
         /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
         /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
-            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
+            : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
         {
+            if (valueBinder == null)
+            {
+                throw new ArgumentNullException(nameof(valueBinder));
+            }
+
+            _valueBinder = valueBinder;
         }
 
         /// <summary>
@@ -43,8 +43,70 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
         /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
-            : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <remarks>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always
+        /// <see langword="false"/> in <see cref="DictionaryModelBinder{TKey, TValue}"/>. This class ignores that
+        /// property and unconditionally checks for unbound top-level models with
+        /// <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </remarks>
+        public DictionaryModelBinder(
+            IModelBinder keyBinder,
+            IModelBinder valueBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes)
+            : base(
+                new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory),
+                loggerFactory,
+                // CollectionModelBinder should not check IsRequired, done in this model binder.
+                allowValidatingTopLevelNodes: false)
+        {
+            if (valueBinder == null)
+            {
+                throw new ArgumentNullException(nameof(valueBinder));
+            }
+
+            _valueBinder = valueBinder;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <remarks>
+        /// <para>This is the preferred <see cref="DictionaryModelBinder{TKey, TValue}"/> constructor.</para>
+        /// <para>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always
+        /// <see langword="false"/> in <see cref="DictionaryModelBinder{TKey, TValue}"/>. This class ignores that
+        /// property and unconditionally checks for unbound top-level models with
+        /// <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </para>
+        /// </remarks>
+        public DictionaryModelBinder(
+            IModelBinder keyBinder,
+            IModelBinder valueBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes,
+            MvcOptions mvcOptions)
+            : base(
+                  new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory),
+                  loggerFactory,
+                  allowValidatingTopLevelNodes: false,
+                  mvcOptions)
         {
             if (valueBinder == null)
             {
@@ -85,6 +147,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 // No IEnumerableValueProvider available for the fallback approach. For example the user may have
                 // replaced the ValueProvider with something other than a CompositeValueProvider.
+                if (bindingContext.IsTopLevelObject)
+                {
+                    AddErrorIfBindingRequired(bindingContext);
+                }
+
                 return;
             }
 
@@ -94,6 +161,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (keys.Count == 0)
             {
                 // No entries with the expected keys.
+                if (bindingContext.IsTopLevelObject)
+                {
+                    AddErrorIfBindingRequired(bindingContext);
+                }
+
                 return;
             }
 

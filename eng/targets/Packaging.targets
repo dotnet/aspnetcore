@@ -1,31 +1,13 @@
 <Project>
 
   <Target Name="EnsureBaselineIsUpdated"
-          Condition="'$(IsServicingBuild)' == 'true' AND '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)'"
+          Condition=" '$(IsServicingBuild)' == 'true' AND
+              '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
+              '$(MSBuildProjectName)' != 'BaselineGenerator' AND
+              '$(MSBuildProjectName)' != 'RepoTasks' "
           BeforeTargets="BeforeBuild">
     <Error Text="The package baseline ($(AspNetCoreBaselineVersion)) is out of date with the latest release of this repo ($(PreviousAspNetCoreReleaseVersion)).
-                 See $(RepositoryRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
-  </Target>
-
-  <!-- Temporary: this target is used to gather version information to pass to submodule builds. This can be removed after we finish merging submodules. -->
-  <Target Name="GetBaselineArtifactInfo"
-          Condition="'$(IsPackableInNonServicingBuild)' == 'true' AND '$(IsPackable)' != 'true' "
-          Returns="@(ArtifactInfo)"
-          BeforeTargets="GetArtifactInfo">
-
-    <PropertyGroup>
-      <FullPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</FullPackageOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <ArtifactInfo Include="$(FullPackageOutputPath)">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-        <IsShipped>true</IsShipped>
-      </ArtifactInfo>
-    </ItemGroup>
+                 See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
   </Target>
 
   <!-- This target is used to get the package versions of projects -->
@@ -33,10 +15,25 @@
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
-        <PackageId>$(MSBuildProjectName)</PackageId>
-        <PackageVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</PackageVersion>
+        <PackageId>$(PackageId)</PackageId>
+        <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
+        <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
       </_ProjectPathWithVersion>
     </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepostoryUrlToPackageDescription</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AppendRepostoryUrlToPackageDescription"
+    DependsOnTargets="InitializeSourceControlInformation">
+    <PropertyGroup Condition="'$(RepositoryUrl)' != '' AND '$(SourceRevisionId)' != ''">
+      <PackageDescription>$(PackageDescription)
+
+This package was built from the source code at $(RepositoryUrl)/tree/$(SourceRevisionId)</PackageDescription>
+    </PropertyGroup>
   </Target>
 
 </Project>

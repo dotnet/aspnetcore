@@ -14,7 +14,7 @@ namespace BasicWebSite.Areas.Area1.Controllers
         [AcceptVerbs("Get", "Post")]
         public IActionResult IsIdAvailable(string userId1, string userId3)
         {
-            return Json(data: false);
+            return new JsonResult(value: false);
         }
     }
 }

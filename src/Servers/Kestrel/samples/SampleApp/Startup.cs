@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace SampleApp
@@ -25,8 +26,24 @@ namespace SampleApp
         {
             var logger = loggerFactory.CreateLogger("Default");
 
+            // Add an exception handler that prevents throwing due to large request body size
+            app.Use(async (context, next) =>
+            {
+                // Limit the request body to 1kb
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 1024;
+
+                try
+                {
+                    await next.Invoke();
+                }
+                catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
+            });
+
             app.Run(async context =>
             {
+                // Drain the request body
+                await context.Request.Body.CopyToAsync(Stream.Null);
+
                 var connectionFeature = context.Connection;
                 logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
                     + $"{Environment.NewLine}"
@@ -49,6 +66,7 @@ namespace SampleApp
             var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging((_, factory) =>
                 {
+                    factory.SetMinimumLevel(LogLevel.Debug);
                     factory.AddConsole();
                 })
                 .ConfigureAppConfiguration((hostingContext, config) =>
@@ -66,18 +84,10 @@ namespace SampleApp
 
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    options.ConfigureEndpointDefaults(opt =>
-                    {
-                        opt.NoDelay = true;
-                    });
-
                     options.ConfigureHttpsDefaults(httpsOptions =>
                     {
                         httpsOptions.SslProtocols = SslProtocols.Tls12;
                     });
-
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
                     options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                     {
@@ -89,7 +99,7 @@ namespace SampleApp
 
                     options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps();
                         listenOptions.UseConnectionLogging();
                     });
 
@@ -129,7 +139,7 @@ namespace SampleApp
                         .Configure(context.Configuration.GetSection("Kestrel"))
                         .Endpoint("NamedEndpoint", opt =>
                         {
-                            opt.ListenOptions.NoDelay = true;
+
                         })
                         .Endpoint("NamedHttpsEndpoint", opt =>
                         {
@@ -153,7 +163,7 @@ namespace SampleApp
                      // options.ThreadCount = 4;
                  });
             }
-                
+
             return hostBuilder.Build().RunAsync();
         }
 

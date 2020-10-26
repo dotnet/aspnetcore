@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,23 +14,27 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelConfigurationLoader
     {
+        private bool _loaded = false;
+
         internal KestrelConfigurationLoader(KestrelServerOptions options, IConfiguration configuration)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ConfigurationReader = new ConfigurationReader(Configuration);
         }
 
         public KestrelServerOptions Options { get; }
         public IConfiguration Configuration { get; }
+        internal ConfigurationReader ConfigurationReader { get; }
         private IDictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
             = new Dictionary<string, Action<EndpointConfiguration>>(0, StringComparer.OrdinalIgnoreCase);
         // Actions that will be delayed until Load so that they aren't applied if the configuration loader is replaced.
@@ -197,23 +201,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return this;
         }
 
+        // Called from ApplyEndpointDefaults so it applies to even explicit Listen endpoints.
+        // Does not require a call to Load.
+        internal void ApplyConfigurationDefaults(ListenOptions listenOptions)
+        {
+            var defaults = ConfigurationReader.EndpointDefaults;
+
+            if (defaults.Protocols.HasValue)
+            {
+                listenOptions.Protocols = defaults.Protocols.Value;
+            }
+        }
+
         public void Load()
         {
-            if (Options.ConfigurationLoader == null)
+            if (_loaded)
             {
                 // The loader has already been run.
                 return;
             }
-            Options.ConfigurationLoader = null;
+            _loaded = true;
 
-            var configReader = new ConfigurationReader(Configuration);
+            Options.Latin1RequestHeaders = ConfigurationReader.Latin1RequestHeaders;
 
-            LoadDefaultCert(configReader);
+            LoadDefaultCert(ConfigurationReader);
 
-            foreach (var endpoint in configReader.Endpoints)
+            foreach (var endpoint in ConfigurationReader.Endpoints)
             {
                 var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
                 Options.ApplyEndpointDefaults(listenOptions);
+
+                if (endpoint.Protocols.HasValue)
+                {
+                    listenOptions.Protocols = endpoint.Protocols.Value;
+                }
 
                 // Compare to UseHttps(httpsOptions => { })
                 var httpsOptions = new HttpsConnectionAdapterOptions();
@@ -237,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
 
                 // EndpointDefaults or configureEndpoint may have added an https adapter.
-                if (https && !listenOptions.ConnectionAdapters.Any(f => f.IsHttps))
+                if (https && !listenOptions.IsTls)
                 {
                     if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                     {
@@ -325,7 +346,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private bool TryGetCertificatePath(out string path)
         {
-            var hostingEnvironment = Options.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var hostingEnvironment = Options.ApplicationServices.GetRequiredService<IHostEnvironment>();
             var appName = hostingEnvironment.ApplicationName;
 
             // This will go away when we implement
@@ -346,7 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             else if (certInfo.IsFileCert)
             {
-                var env = Options.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                var env = Options.ApplicationServices.GetRequiredService<IHostEnvironment>();
                 return new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path), certInfo.Password);
             }
             else if (certInfo.IsStoreCert)
@@ -359,7 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
         {
             var subject = certInfo.Subject;
-            var storeName = certInfo.Store;
+            var storeName = string.IsNullOrEmpty(certInfo.Store) ? StoreName.My.ToString() : certInfo.Store;
             var location = certInfo.Location;
             var storeLocation = StoreLocation.CurrentUser;
             if (!string.IsNullOrEmpty(location))

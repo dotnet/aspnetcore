@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <Description>Components feature for ASP.NET Core.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <Reference Include="System.Buffers" />
+  </ItemGroup>
+
+  <!--
+    These references exist only in the .nuspec files and baseline checks are not aware of them. Keep suppressions
+    in sync with the two .nuspec files:
+    - Anytime a reference is added to this project file, remove its suppression.
+    - Remove InNuspecFile attributes of references removed from the .nuspec files. Make suppression conditional on
+      Major.Minor during previews. After RTM (and baseline updates), remove suppressions entirely.
+  -->
+  <ItemGroup>
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" InNuspecFile="true" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" InNuspecFile="true" />
+    <SuppressBaselineReference Include="Microsoft.JSInterop" InNuspecFile="true" />
+    <SuppressBaselineReference Include="System.ComponentModel.Annotations" InNuspecFile="true"
+        Condition=" '$(TargetFramework)'=='netstandard2.0' " />
+  </ItemGroup>
+
+  <Target Name="_GetNuspecDependencyPackageVersions">
+    <MSBuild Targets="_GetPackageVersionInfo"
+        BuildInParallel="$(BuildInParallel)"
+        Projects="../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectPathWithVersion" />
+    </MSBuild>
+    <ItemGroup>
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Components.Analyzers')->'componentAnalyzerPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Authorization')->'authorizationPackageVersion=%(PackageVersion)')" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp.nuspec</NuspecFile>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
+    <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
+    <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
+    <NuspecProperty Include="OutputPath=$(OutputPath)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
+  </ItemGroup>
+
+</Project>

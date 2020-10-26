@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
 
-        private static readonly byte[] _dataPrefix = Encoding.UTF8.GetBytes("data: ");
-        private static readonly byte[] _sseLineEnding = Encoding.UTF8.GetBytes("\r\n");
+        private static ReadOnlySpan<byte> _dataPrefix => new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
+        private static ReadOnlySpan<byte> _sseLineEnding => new byte[] { (byte)'\r', (byte)'\n' };
         private static readonly byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             message = null;
 
             var start = consumed;
-            var end = examined;
 
             while (buffer.Length > 0)
             {
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // data: bar\r\n
                 else if (line[line.Length - _sseLineEnding.Length] != ByteCR)
                 {
-                    throw new FormatException("Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'");
+                    throw new FormatException("Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'");
                 }
                 else
                 {

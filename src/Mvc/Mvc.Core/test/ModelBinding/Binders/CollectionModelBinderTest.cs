@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -211,13 +210,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Empty(boundCollection.Model);
         }
 
-        [Fact]
-        public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
+        private IActionResult ActionWithListParameter(List<string> parameter) => null;
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject(
+            bool allowValidatingTopLevelNodes,
+            bool isBindingRequired)
         {
             // Arrange
             var binder = new CollectionModelBinder<string>(
                 new StubModelBinder(result: ModelBindingResult.Failed()),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -226,7 +233,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
+            var parameter = typeof(CollectionModelBinderTest)
+                .GetMethod(nameof(ActionWithListParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
 
             bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
@@ -236,6 +249,45 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Empty(Assert.IsType<List<string>>(bindingContext.Result.Model));
             Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_CreatesEmptyCollectionAndAddsError_IfIsTopLevelObject()
+        {
+            // Arrange
+            var binder = new CollectionModelBinder<string>(
+                new StubModelBinder(result: ModelBindingResult.Failed()),
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes: true);
+
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
+            bindingContext.FieldName = "fieldName";
+            bindingContext.ModelName = "modelName";
+
+            var metadataProvider = new TestModelMetadataProvider();
+            var parameter = typeof(CollectionModelBinderTest)
+                .GetMethod(nameof(ActionWithListParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = true);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Empty(Assert.IsType<List<string>>(bindingContext.Result.Model));
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var keyValuePair = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("modelName", keyValuePair.Key);
+            var error = Assert.Single(keyValuePair.Value.Errors);
+            Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
         }
 
         // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
@@ -272,19 +324,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData("")]
-        [InlineData("param")]
-        public async Task CollectionModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
+        [InlineData("", false, false)]
+        [InlineData("", true, false)]
+        [InlineData("", false, true)]
+        [InlineData("", true, true)]
+        [InlineData("param", false, false)]
+        [InlineData("param", true, false)]
+        [InlineData("param", false, true)]
+        [InlineData("param", true, true)]
+        public async Task CollectionModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(
+            string prefix,
+            bool allowValidatingTopLevelNodes,
+            bool isBindingRequired)
         {
             // Arrange
             var binder = new CollectionModelBinder<string>(
                 new StubModelBinder(result: ModelBindingResult.Failed()),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
 
             var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(ModelWithListProperty), nameof(ModelWithListProperty.ListProperty))
+                .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
             bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithListProperty),
                 nameof(ModelWithListProperty.ListProperty));
@@ -296,6 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
         }
 
         // Model type -> can create instance.
@@ -365,15 +431,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 typeof(ModelWithIListProperty),
                 nameof(ModelWithIListProperty.ListProperty));
 
-            var bindingContext = new DefaultModelBindingContext
-            {
-                ModelMetadata = metadata,
-                ModelName = "someName",
-                ModelState = new ModelStateDictionary(),
-                ValueProvider = valueProvider,
-                ValidationState = new ValidationStateDictionary(),
-                FieldName = "testfieldname",
-            };
+            var bindingContext = CreateContext();
+            bindingContext.FieldName = "testfieldname";
+            bindingContext.ModelName = "someName";
+            bindingContext.ModelMetadata = metadata;
+            bindingContext.ValueProvider = valueProvider;
 
             return bindingContext;
         }
@@ -412,12 +474,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static DefaultModelBindingContext CreateContext()
         {
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext(),
+            };
             var modelBindingContext = new DefaultModelBindingContext()
             {
-                ActionContext = new ActionContext()
-                {
-                    HttpContext = new DefaultHttpContext(),
-                },
+                ActionContext = actionContext,
+                ModelState = actionContext.ModelState,
+                ValidationState = new ValidationStateDictionary(),
             };
 
             return modelBindingContext;

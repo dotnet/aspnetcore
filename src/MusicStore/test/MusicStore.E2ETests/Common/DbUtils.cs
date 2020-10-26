@@ -1,6 +1,6 @@
 using System;
-using System.Data.SqlClient;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace E2ETests

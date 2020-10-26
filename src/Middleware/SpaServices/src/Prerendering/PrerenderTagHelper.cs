@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -13,6 +17,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// A tag helper for prerendering JavaScript applications on the server.
     /// </summary>
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class PrerenderTagHelper : TagHelper
     {
         private const string PrerenderModuleAttributeName = "asp-prerender-module";
@@ -31,11 +36,11 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         public PrerenderTagHelper(IServiceProvider serviceProvider)
         {
-            var hostEnv = (IHostingEnvironment) serviceProvider.GetService(typeof(IHostingEnvironment));
-            _nodeServices = (INodeServices) serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
+            var hostEnv = (IWebHostEnvironment)serviceProvider.GetService(typeof(IWebHostEnvironment));
+            _nodeServices = (INodeServices)serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
             _applicationBasePath = hostEnv.ContentRootPath;
-            
-            var applicationLifetime = (IApplicationLifetime) serviceProvider.GetService(typeof(IApplicationLifetime));
+
+            var applicationLifetime = (IHostApplicationLifetime)serviceProvider.GetService(typeof(IHostApplicationLifetime));
             _applicationStoppingToken = applicationLifetime.ApplicationStopping;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
@@ -102,7 +107,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             if (!string.IsNullOrEmpty(result.RedirectUrl))
             {
                 // It's a redirection
-                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl);
+                var permanentRedirect = result.StatusCode.GetValueOrDefault() == 301;
+                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl, permanentRedirect);
                 return;
             }
 

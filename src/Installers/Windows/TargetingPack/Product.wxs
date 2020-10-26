@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)"
+             Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
+        <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="$(var.EmbedCab)" />
+
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.rtf" />
+        <UIRef Id="WixUI_Minimal" />
+
+        <FeatureRef Id="FT_DepProvider" />
+        <FeatureRef Id="FT_AspNetCoreTargetingPack" />
+        <FeatureRef Id="FT_ProductInfo" />
+    </Product>
+
+    <?ifdef PFilesFolder?>
+    <?undef PFilesFolder?>
+    <?endif?>
+
+    <?if $(var.Platform)=x86?>
+    <?define PFilesFolder=ProgramFilesFolder?>
+    <?elseif $(var.Platform)=x64?>
+    <?define PFilesFolder=ProgramFiles64Folder?>
+    <?else?>
+    <?error Invalid Platform ($(var.Platform))?>
+    <?endif?>
+
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="$(var.PFilesFolder)">
+                <Directory Id="DOTNETHOME" Name="dotnet" />
+            </Directory>
+        </Directory>
+    </Fragment>
+
+    <Fragment>
+        <Feature Id="FT_AspNetCoreTargetingPack" Absent="allow" Description="!(loc.FT_AspNetCoreTargetingPackDescription)" Display="2" Level="1" Title="!(loc.FT_AspNetCoreTargetingPackTitle)">
+            <ComponentGroupRef Id="CG_AspNetCoreTargetingPack" />
+        </Feature>
+    </Fragment>
+
+    <Fragment>
+        <Feature Id="FT_ProductInfo">
+            <ComponentGroupRef Id="CG_ProductInfo" />
+        </Feature>
+
+        <ComponentGroup Id="CG_ProductInfo">
+            <ComponentRef Id="C_ProductVersion"/>
+            <ComponentRef Id="C_ProductInstallDir"/>
+        </ComponentGroup>
+
+        <DirectoryRef Id="DOTNETHOME">
+            <?ifdef ProductVersionKey?>
+            <?undef ProductVersionKey?>
+            <?endif?>
+
+            <?define ProductVersionKey=SOFTWARE\Microsoft\ASP.NET Core\Targeting Pack\v$(var.MajorVersion).$(var.MinorVersion)\$(var.PackageVersion)?>
+
+            <Component Id="C_ProductVersion">
+                <RegistryKey Key="$(var.ProductVersionKey)" Root="HKLM">
+                    <RegistryValue Name="Version" Type="string" Value="$(var.Version)" />
+                </RegistryKey>
+            </Component>
+
+            <Component Id="C_ProductInstallDir">
+                <RegistryKey Key="SOFTWARE\Microsoft\ASP.NET Core\Targeting Pack" Root="HKLM">
+                    <RegistryValue Name="InstallDir" Type="string" Value="[DOTNETHOME]" />
+                </RegistryKey>
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+</Wix>

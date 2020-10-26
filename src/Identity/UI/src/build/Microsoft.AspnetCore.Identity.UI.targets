@@ -1,0 +1,34 @@
+<Project>
+
+  <Target Name="ValidateIdentityUIFrameworkVersion" BeforeTargets="Build">
+
+    <PropertyGroup>
+      <_IdentityUIBootstrap3WarningMessage>'Bootstrap3' is obsolete. It is recommended that the application is updated to use a supported Bootstrap version by removing the 'IdentityUIFrameworkVersion' property from '$(MSBuildProjectFile)' or setting 'IdentityUIFrameworkVersion' explicitly to 'Bootstrap4'.
+        </_IdentityUIBootstrap3WarningMessage>
+      <_IdentityUIUnknownVersionErrorMessage>The 'IdentityUIFrameworkVersion' '$(IdentityUIFrameworkVersion)' in '$(MSBuildProjectFile)' is not valid. Valid versions are 'Bootstrap3' and 'Bootstrap4'.
+      </_IdentityUIUnknownVersionErrorMessage>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_IdentityUIActiveWarnings Include="IdentityUI001;IdentityUI002" Exclude="$(NoWarn)" />
+    </ItemGroup>
+
+    <Warning Code="IdentityUI001"
+             Text="$(_IdentityUIBootstrap3WarningMessage)"
+             File="@(MSBuildThisProjectFile)"
+             Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3' and '%(_IdentityUIActiveWarnings.Identity)' == 'IdentityUI001' and '$(WarningsAsErrors)' != 'true'" />
+
+    <Error Code="IdentityUI001"
+           Text="$(_IdentityUIBootstrap3WarningMessage)"
+           File="@(MSBuildThisProjectFile)"
+           Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3' and '%(_IdentityUIActiveWarnings.Identity)' == 'IdentityUI001' and '$(WarningsAsErrors)' == 'true'" />
+
+    <Error
+           Code="IdentityUI002"
+           Text="$(_IdentityUIUnknownVersionErrorMessage)"
+           File="@(MSBuildThisProjectFile)"
+           Condition="'$(IdentityUIFrameworkVersion)' != 'Bootstrap3' and $(IdentityUIFrameworkVersion) != 'Bootstrap4' and '%(_IdentityUIActiveWarnings.Identity)' == 'IdentityUI002'" />
+
+  </Target>
+
+</Project>

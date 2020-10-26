@@ -6,9 +6,13 @@ using System.IO;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ConsoleReporter : IReporter
     {
-        private object _writeLock = new object();
+        private readonly object _writeLock = new object();
 
         public ConsoleReporter(IConsole console)
             : this(console, verbose: false, quiet: false)

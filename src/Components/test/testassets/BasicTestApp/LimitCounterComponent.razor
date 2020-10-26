@@ -1,0 +1,25 @@
+<h1>Counter</h1>
+
+<p>This counter component is used in the server-side limit tests to showcase that we keep dispatching and processing
+    events when the unacknowledged render batches queue is full and that we produce the update UI once we receive an
+    acknowledgement.</p>
+
+<p>Current count: <span id="the-count">@currentCount</span></p>
+<p><button id="increment" @onclick="@(handleClicks ? (Action)IncrementCount : null)">Click me</button></p>
+
+
+@code {
+    int currentCount = 0;
+    bool handleClicks = true;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    public void Reset()
+    {
+        currentCount = 0;
+        StateHasChanged();
+    }
+}

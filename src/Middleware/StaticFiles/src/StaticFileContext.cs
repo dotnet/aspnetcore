@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
@@ -20,123 +19,97 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     internal struct StaticFileContext
     {
-        private const int StreamCopyBufferSize = 64 * 1024;
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
-        private readonly PathString _matchUrl;
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly IContentTypeProvider _contentTypeProvider;
-        private string _method;
-        private bool _isGet;
-        private bool _isHead;
-        private PathString _subPath;
-        private string _contentType;
-        private IFileInfo _fileInfo;
-        private long _length;
-        private DateTimeOffset _lastModified;
-        private EntityTagHeaderValue _etag;
+        private readonly string _method;
+        private readonly string _contentType;
 
+        private IFileInfo _fileInfo;
+        private EntityTagHeaderValue _etag;
         private RequestHeaders _requestHeaders;
         private ResponseHeaders _responseHeaders;
+        private RangeItemHeaderValue _range;
+
+        private long _length;
+        private readonly PathString _subPath;
+        private DateTimeOffset _lastModified;
 
         private PreconditionState _ifMatchState;
         private PreconditionState _ifNoneMatchState;
         private PreconditionState _ifModifiedSinceState;
         private PreconditionState _ifUnmodifiedSinceState;
 
-        private RangeItemHeaderValue _range;
-        private bool _isRangeRequest;
+        private RequestType _requestType;
 
-        public StaticFileContext(HttpContext context, StaticFileOptions options, PathString matchUrl, ILogger logger, IFileProvider fileProvider, IContentTypeProvider contentTypeProvider)
+        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string contentType, PathString subPath)
         {
             _context = context;
             _options = options;
-            _matchUrl = matchUrl;
             _request = context.Request;
             _response = context.Response;
             _logger = logger;
-            _requestHeaders = _request.GetTypedHeaders();
-            _responseHeaders = _response.GetTypedHeaders();
             _fileProvider = fileProvider;
-            _contentTypeProvider = contentTypeProvider;
-
-            _method = null;
-            _isGet = false;
-            _isHead = false;
-            _subPath = PathString.Empty;
-            _contentType = null;
+            _method = _request.Method;
+            _contentType = contentType;
             _fileInfo = null;
-            _length = 0;
-            _lastModified = new DateTimeOffset();
             _etag = null;
+            _requestHeaders = null;
+            _responseHeaders = null;
+            _range = null;
+
+            _length = 0;
+            _subPath = subPath;
+            _lastModified = new DateTimeOffset();
             _ifMatchState = PreconditionState.Unspecified;
             _ifNoneMatchState = PreconditionState.Unspecified;
             _ifModifiedSinceState = PreconditionState.Unspecified;
             _ifUnmodifiedSinceState = PreconditionState.Unspecified;
-            _range = null;
-            _isRangeRequest = false;
+
+            if (HttpMethods.IsGet(_method))
+            {
+                _requestType = RequestType.IsGet;
+            }
+            else if (HttpMethods.IsHead(_method))
+            {
+                _requestType = RequestType.IsHead;
+            }
+            else
+            {
+                _requestType = RequestType.Unspecified;
+            }
         }
 
-        internal enum PreconditionState
-        {
-            Unspecified,
-            NotModified,
-            ShouldProcess,
-            PreconditionFailed
-        }
+        private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
 
-        public bool IsHeadMethod
-        {
-            get { return _isHead; }
-        }
+        private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
+
+        public bool IsHeadMethod => _requestType.HasFlag(RequestType.IsHead);
+
+        public bool IsGetMethod => _requestType.HasFlag(RequestType.IsGet);
 
         public bool IsRangeRequest
         {
-            get { return _isRangeRequest; }
-        }
-
-        public string SubPath
-        {
-            get { return _subPath.Value; }
-        }
-
-        public string PhysicalPath
-        {
-            get { return _fileInfo?.PhysicalPath; }
-        }
-
-        public bool ValidateMethod()
-        {
-            _method = _request.Method;
-            _isGet = HttpMethods.IsGet(_method);
-            _isHead = HttpMethods.IsHead(_method);
-            return _isGet || _isHead;
-        }
-
-        // Check if the URL matches any expected paths
-        public bool ValidatePath()
-        {
-            return Helpers.TryMatchPath(_context, _matchUrl, forDirectory: false, subpath: out _subPath);
-        }
-
-        public bool LookupContentType()
-        {
-            if (_contentTypeProvider.TryGetContentType(_subPath.Value, out _contentType))
+            get => _requestType.HasFlag(RequestType.IsRange);
+            private set
             {
-                return true;
+                if (value)
+                {
+                    _requestType |= RequestType.IsRange;
+                }
+                else
+                {
+                    _requestType &= ~RequestType.IsRange;
+                }
             }
-
-            if (_options.ServeUnknownFileTypes)
-            {
-                _contentType = _options.DefaultContentType;
-                return true;
-            }
-
-            return false;
         }
+
+        public string SubPath => _subPath.Value;
+
+        public string PhysicalPath => _fileInfo?.PhysicalPath;
 
         public bool LookupFileInfo()
         {
@@ -168,8 +141,10 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private void ComputeIfMatch()
         {
+            var requestHeaders = RequestHeaders;
+
             // 14.24 If-Match
-            var ifMatch = _requestHeaders.IfMatch;
+            var ifMatch = requestHeaders.IfMatch;
             if (ifMatch != null && ifMatch.Any())
             {
                 _ifMatchState = PreconditionState.PreconditionFailed;
@@ -184,7 +159,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
 
             // 14.26 If-None-Match
-            var ifNoneMatch = _requestHeaders.IfNoneMatch;
+            var ifNoneMatch = requestHeaders.IfNoneMatch;
             if (ifNoneMatch != null && ifNoneMatch.Any())
             {
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
@@ -201,10 +176,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private void ComputeIfModifiedSince()
         {
+            var requestHeaders = RequestHeaders;
             var now = DateTimeOffset.UtcNow;
 
             // 14.25 If-Modified-Since
-            var ifModifiedSince = _requestHeaders.IfModifiedSince;
+            var ifModifiedSince = requestHeaders.IfModifiedSince;
             if (ifModifiedSince.HasValue && ifModifiedSince <= now)
             {
                 bool modified = ifModifiedSince < _lastModified;
@@ -212,7 +188,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
 
             // 14.28 If-Unmodified-Since
-            var ifUnmodifiedSince = _requestHeaders.IfUnmodifiedSince;
+            var ifUnmodifiedSince = requestHeaders.IfUnmodifiedSince;
             if (ifUnmodifiedSince.HasValue && ifUnmodifiedSince <= now)
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
@@ -223,7 +199,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private void ComputeIfRange()
         {
             // 14.27 If-Range
-            var ifRangeHeader = _requestHeaders.IfRange;
+            var ifRangeHeader = RequestHeaders.IfRange;
             if (ifRangeHeader != null)
             {
                 // If the validator given in the If-Range header field matches the
@@ -233,14 +209,14 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // the Range header field.
                 if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (_lastModified !=null && _lastModified > ifRangeHeader.LastModified)
+                    if (_lastModified > ifRangeHeader.LastModified)
                     {
-                        _isRangeRequest = false;
+                        IsRangeRequest = false;
                     }
                 }
                 else if (_etag != null && ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(_etag, useStrongComparison: true))
                 {
-                    _isRangeRequest = false;
+                    IsRangeRequest = false;
                 }
             }
         }
@@ -252,12 +228,15 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // A server MUST ignore a Range header field received with a request method other
             // than GET.
-            if (!_isGet)
+            if (!IsGetMethod)
             {
                 return;
             }
 
-            (_isRangeRequest, _range) = RangeHelper.ParseRange(_context, _requestHeaders, _length, _logger);
+            (var isRangeRequest, var range) = RangeHelper.ParseRange(_context, RequestHeaders, _length, _logger);
+
+            _range = range;
+            IsRangeRequest = isRangeRequest;
         }
 
         public void ApplyResponseHeaders(int statusCode)
@@ -271,9 +250,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     _response.ContentType = _contentType;
                 }
-                _responseHeaders.LastModified = _lastModified;
-                _responseHeaders.ETag = _etag;
-                _responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
+
+                var responseHeaders = ResponseHeaders;
+                responseHeaders.LastModified = _lastModified;
+                responseHeaders.ETag = _etag;
+                responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
             }
             if (statusCode == Constants.Status200Ok)
             {
@@ -282,18 +263,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // it is not returned for 304, 412, and 416
                 _response.ContentLength = _length;
             }
-            _options.OnPrepareResponse(new StaticFileResponseContext()
-            {
-                Context = _context,
-                File = _fileInfo,
-            });
+
+            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
         }
 
         public PreconditionState GetPreconditionState()
-        {
-            return GetMaxPreconditionState(_ifMatchState, _ifNoneMatchState,
-                _ifModifiedSinceState, _ifUnmodifiedSinceState);
-        }
+            => GetMaxPreconditionState(_ifMatchState, _ifNoneMatchState, _ifModifiedSinceState, _ifUnmodifiedSinceState);
 
         private static PreconditionState GetMaxPreconditionState(params PreconditionState[] states)
         {
@@ -312,35 +287,69 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             ApplyResponseHeaders(statusCode);
 
-            _logger.LogHandled(statusCode, SubPath);
+            _logger.Handled(statusCode, SubPath);
             return Task.CompletedTask;
+        }
+
+        public async Task ServeStaticFile(HttpContext context, RequestDelegate next)
+        {
+            ComprehendRequestHeaders();
+            switch (GetPreconditionState())
+            {
+                case PreconditionState.Unspecified:
+                case PreconditionState.ShouldProcess:
+                    if (IsHeadMethod)
+                    {
+                        await SendStatusAsync(Constants.Status200Ok);
+                        return;
+                    }
+
+                    try
+                    {
+                        if (IsRangeRequest)
+                        {
+                            await SendRangeAsync();
+                            return;
+                        }
+
+                        await SendAsync();
+                        _logger.FileServed(SubPath, PhysicalPath);
+                        return;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        context.Response.Clear();
+                    }
+                    await next(context);
+                    return;
+                case PreconditionState.NotModified:
+                    _logger.FileNotModified(SubPath);
+                    await SendStatusAsync(Constants.Status304NotModified);
+                    return;
+                case PreconditionState.PreconditionFailed:
+                    _logger.PreconditionFailed(SubPath);
+                    await SendStatusAsync(Constants.Status412PreconditionFailed);
+                    return;
+                default:
+                    var exception = new NotImplementedException(GetPreconditionState().ToString());
+                    Debug.Fail(exception.ToString());
+                    throw exception;
+            }
         }
 
         public async Task SendAsync()
         {
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status200Ok);
-            string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-            {
-                // We don't need to directly cancel this, if the client disconnects it will fail silently.
-                await sendFile.SendFileAsync(physicalPath, 0, _length, CancellationToken.None);
-                return;
-            }
-
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
-                }
+                await _context.Response.SendFileAsync(_fileInfo, 0, _length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was cancelled for any other reason we need to prevent empty responses.
+                // However, if it was canceled for any other reason we need to prevent empty responses.
                 _context.Abort();
             }
         }
@@ -353,42 +362,28 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // 14.16 Content-Range - A server sending a response with status code 416 (Requested range not satisfiable)
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
-                _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
+                ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
 
-                _logger.LogRangeNotSatisfiable(SubPath);
+                _logger.RangeNotSatisfiable(SubPath);
                 return;
             }
 
-            long start, length;
-            _responseHeaders.ContentRange = ComputeContentRange(_range, out start, out length);
+            ResponseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status206PartialContent);
-
-            string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-            {
-                _logger.LogSendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
-                // We don't need to directly cancel this, if the client disconnects it will fail silently.
-                await sendFile.SendFileAsync(physicalPath, start, length, CancellationToken.None);
-                return;
-            }
-
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                    _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
-                }
+                var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : SubPath;
+                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], logPath);
+                await _context.Response.SendFileAsync(_fileInfo, start, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was cancelled for any other reason we need to prevent empty responses.
+                // However, if it was canceled for any other reason we need to prevent empty responses.
                 _context.Abort();
             }
         }
@@ -400,6 +395,33 @@ namespace Microsoft.AspNetCore.StaticFiles
             long end = range.To.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
+        }
+
+        // Only called when we expect to serve the body.
+        private void SetCompressionMode()
+        {
+            var responseCompressionFeature = _context.Features.Get<IHttpsCompressionFeature>();
+            if (responseCompressionFeature != null)
+            {
+                responseCompressionFeature.Mode = _options.HttpsCompression;
+            }
+        }
+
+        internal enum PreconditionState : byte
+        {
+            Unspecified,
+            NotModified,
+            ShouldProcess,
+            PreconditionFailed
+        }
+
+        [Flags]
+        private enum RequestType : byte
+        {
+            Unspecified = 0b_000,
+            IsHead = 0b_001,
+            IsGet = 0b_010,
+            IsRange = 0b_100,
         }
     }
 }

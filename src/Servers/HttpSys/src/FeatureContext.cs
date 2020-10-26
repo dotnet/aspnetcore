@@ -5,14 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -21,16 +25,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestFeature,
         IHttpConnectionFeature,
         IHttpResponseFeature,
-        IHttpSendFileFeature,
+        IHttpResponseBodyFeature,
         ITlsConnectionFeature,
+        ITlsHandshakeFeature,
         // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
-        IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
-        IHttpBodyControlFeature
+        IHttpBodyControlFeature,
+        IHttpSysRequestInfoFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -55,6 +60,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private ClaimsPrincipal _user;
         private CancellationToken _disconnectToken;
         private Stream _responseStream;
+        private PipeWriter _pipeWriter;
+        private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
 
         private Fields _initializedFields;
@@ -168,11 +175,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (IsNotInitialized(Fields.Protocol))
                 {
                     var protocol = Request.ProtocolVersion;
-                    if (protocol.Major == 1 && protocol.Minor == 1)
+                    if (protocol == Constants.V2)
+                    {
+                        _httpProtocolVersion = "HTTP/2";
+                    }
+                    else if (protocol == Constants.V1_1)
                     {
                         _httpProtocolVersion = "HTTP/1.1";
                     }
-                    else if (protocol.Major == 1 && protocol.Minor == 0)
+                    else if (protocol == Constants.V1_0)
                     {
                         _httpProtocolVersion = "HTTP/1.0";
                     }
@@ -305,7 +316,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
-                    _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync;
+                    var method = _requestContext.Server.Options.ClientCertificateMethod;
+                    if (method == ClientCertificateMethod.AllowCertificate)
+                    {
+                        _clientCert = Request.ClientCertificate;
+                    }
+                    else if (method == ClientCertificateMethod.AllowRenegotation)
+                    {
+                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync over async;
+                    }
+                    // else if (method == ClientCertificateMethod.NoCertificate) // No-op
+
                     SetInitialized(Fields.ClientCertificate);
                 }
                 return _clientCert;
@@ -331,6 +352,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             return Request.IsHttps ? this : null;
         }
+
+        internal ITlsHandshakeFeature GetTlsHandshakeFeature()
+        {
+            return Request.IsHttps ? this : null;
+        }
+
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
@@ -341,12 +368,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Request.IsHttps ? this : null;
         }
         */
-        void IHttpBufferingFeature.DisableRequestBuffering()
-        {
-            // There is no request buffering.
-        }
 
-        void IHttpBufferingFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
             // TODO: What about native buffering?
         }
@@ -355,6 +378,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get { return _responseStream; }
             set { _responseStream = value; }
+        }
+
+        Stream IHttpResponseBodyFeature.Stream => _responseStream;
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (_pipeWriter == null)
+                {
+                    _pipeWriter = PipeWriter.Create(_responseStream, new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return _pipeWriter;
+            }
         }
 
         IHeaderDictionary IHttpResponseFeature.Headers
@@ -405,10 +443,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { Response.StatusCode = value; }
         }
 
-        async Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        async Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             await OnResponseStart();
             await Response.SendFileAsync(path, offset, length, cancellation);
+        }
+
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellation)
+        {
+            return OnResponseStart();
+        }
+
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
+
+        internal async Task CompleteAsync()
+        {
+            if (!_responseStarted)
+            {
+                await OnResponseStart();
+            }
+
+            if (!_bodyCompleted)
+            {
+                _bodyCompleted = true;
+                if (_pipeWriter != null)
+                {
+                    // Flush and complete the pipe
+                    await _pipeWriter.CompleteAsync();
+                }
+
+                // Ends the response body.
+                Response.Dispose();
+            }
         }
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
@@ -445,8 +511,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _user = value; }
         }
 
-        IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
-
         string IHttpRequestIdentifierFeature.TraceIdentifier
         {
             get
@@ -479,6 +543,22 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set => Request.MaxRequestBodySize = value;
         }
 
+        SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
+
+        CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
+
+        int ITlsHandshakeFeature.CipherStrength => Request.CipherStrength;
+
+        HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => Request.HashAlgorithm;
+
+        int ITlsHandshakeFeature.HashStrength => Request.HashStrength;
+
+        ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
+
+        int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+
+        IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+
         internal async Task OnResponseStart()
         {
             if (_responseStarted)
@@ -488,6 +568,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _responseStarted = true;
             await NotifiyOnStartingAsync();
             ConsiderEnablingResponseCache();
+
+            Response.Headers.IsReadOnly = true; // Prohibit further modifications.
         }
 
         private async Task NotifiyOnStartingAsync()

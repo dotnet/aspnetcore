@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public OutputProducerTests()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
         }
 
         public void Dispose()
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WritesNoopAfterConnectionCloses()
+        public async Task WritesNoopAfterConnectionCloses()
         {
             var pipeOptions = new PipeOptions
             (
@@ -46,16 +45,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Close
                 socketOutput.Dispose();
 
-                var called = false;
+                await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
 
-                socketOutput.Write((buffer, state) =>
-                {
-                    called = true;
-                    return 0;
-                },
-                0);
+                Assert.False(socketOutput.Pipe.Reader.TryRead(out var result));
 
-                Assert.False(called);
+                socketOutput.Pipe.Writer.Complete();
+                socketOutput.Pipe.Reader.Complete();
             }
         }
 
@@ -79,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
         }
 
-        private Http1OutputProducer CreateOutputProducer(
+        private TestHttpOutputProducer CreateOutputProducer(
             PipeOptions pipeOptions = null,
             ConnectionContext connectionContext = null)
         {
@@ -88,15 +83,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var pipe = new Pipe(pipeOptions);
             var serviceContext = new TestServiceContext();
-            var socketOutput = new Http1OutputProducer(
-                pipe.Writer,
+            var socketOutput = new TestHttpOutputProducer(
+                pipe,
                 "0",
                 connectionContext,
                 serviceContext.Log,
                 Mock.Of<ITimeoutControl>(),
-                Mock.Of<IBytesWrittenFeature>());
+                Mock.Of<IHttpMinResponseDataRateFeature>(),
+                _memoryPool);
 
             return socketOutput;
+        }
+
+        private class TestHttpOutputProducer : Http1OutputProducer
+        {
+            public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, IKestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, MemoryPool<byte> memoryPool) : base(pipe.Writer, connectionId, connectionContext, log, timeoutControl, minResponseDataRateFeature, memoryPool)
+            {
+                Pipe = pipe;
+            }
+
+            public Pipe Pipe { get; }
         }
     }
 }

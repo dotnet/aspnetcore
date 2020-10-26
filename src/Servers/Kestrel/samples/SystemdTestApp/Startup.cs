@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -51,9 +50,6 @@ namespace SystemdTestApp
                 {
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
-
                     options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                     {
                         // Uncomment the following to enable Nagle's algorithm for this endpoint.
@@ -64,7 +60,7 @@ namespace SystemdTestApp
 
                     options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps();
                         listenOptions.UseConnectionLogging();
                     });
 

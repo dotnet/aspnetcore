@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var key = await manager.GetAuthenticatorKeyAsync(user);
             int code;
-            if (!int.TryParse(token, out code))
+            if (key == null || !int.TryParse(token, out code))
             {
                 return false;
             }

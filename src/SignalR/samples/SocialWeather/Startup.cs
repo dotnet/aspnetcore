@@ -3,7 +3,9 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SocialWeather.Json;
 using SocialWeather.Pipe;
@@ -23,15 +25,21 @@ namespace SocialWeather
             services.AddSingleton<FormatterResolver>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseConnections(o => o.MapConnectionHandler<SocialWeatherConnectionHandler>("/weather"));
             app.UseFileServer();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapConnectionHandler<SocialWeatherConnectionHandler>("/weather");
+            });
 
             var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();
             formatterResolver.AddFormatter<WeatherReport, JsonStreamFormatter<WeatherReport>>("json");

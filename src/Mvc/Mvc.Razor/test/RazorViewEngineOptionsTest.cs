@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -72,26 +71,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Assert
             Assert.Equal(viewLocations, formats, StringComparer.Ordinal);
-        }
-
-        [Fact]
-        public void AddRazorOptions_ConfiguresOptionsAsExpected()
-        {
-            // Arrange
-            var services = new ServiceCollection().AddOptions();
-            var fileProvider = new TestFileProvider();
-
-            // Act
-            var builder = new MvcBuilder(services, new ApplicationPartManager());
-            builder.AddRazorOptions(options =>
-            {
-                options.FileProviders.Add(fileProvider);
-            });
-            var serviceProvider = services.BuildServiceProvider();
-
-            // Assert
-            var accessor = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-            Assert.Same(fileProvider, accessor.Value.FileProviders[0]);
         }
     }
 }

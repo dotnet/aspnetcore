@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Web Application",
+    "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content."
+  }
+}

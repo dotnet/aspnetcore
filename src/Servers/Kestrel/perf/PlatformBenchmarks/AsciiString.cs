@@ -3,11 +3,10 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace PlatformBenchmarks
 {
-    public struct AsciiString : IEquatable<AsciiString>
+    public readonly struct AsciiString : IEquatable<AsciiString>
     {
         private readonly byte[] _data;
 
@@ -22,7 +21,7 @@ namespace PlatformBenchmarks
 
         public static implicit operator AsciiString(string str) => new AsciiString(str);
 
-        public override string ToString() => HttpUtilities.GetAsciiStringNonNullCharacters(_data);
+        public override string ToString() => Encoding.ASCII.GetString(_data);
         public static explicit operator string(AsciiString str) => str.ToString();
 
         public bool Equals(AsciiString other) => ReferenceEquals(_data, other._data) || SequenceEqual(_data, other._data);

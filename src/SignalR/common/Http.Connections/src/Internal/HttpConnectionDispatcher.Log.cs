@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
-        private static class Log
+        internal static class Log
         {
             private static readonly Action<ILogger, string, Exception> _connectionDisposed =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection {TransportConnectionId} was disposed.");
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this connection handler.");
 
             private static readonly Action<ILogger, HttpTransportType, HttpTransportType, Exception> _cannotChangeTransport =
-                LoggerMessage.Define<HttpTransportType, HttpTransportType>(LogLevel.Error, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
+                LoggerMessage.Define<HttpTransportType, HttpTransportType>(LogLevel.Debug, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
 
             private static readonly Action<ILogger, Exception> _postNotallowedForWebsockets =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(9, "PostNotAllowedForWebSockets"), "POST requests are not allowed for websocket connections.");
@@ -48,6 +48,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             private static readonly Action<ILogger, string, Exception> _connectionDisposedWhileWriteInProgress =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, "ConnectionDisposedWhileWriteInProgress"), "Connection {TransportConnectionId} was disposed while a write was in progress.");
+
+            private static readonly Action<ILogger, string, Exception> _failedToReadHttpRequestBody =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "FailedToReadHttpRequestBody"), "Connection {TransportConnectionId} failed to read the HTTP request body.");
+
+            private static readonly Action<ILogger, int, Exception> _negotiateProtocolVersionMismatch =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(15, "NegotiateProtocolVersionMismatch"), "The client requested version '{clientProtocolVersion}', but the server does not support this version.");
+
+            private static readonly Action<ILogger, string, Exception> _invalidNegotiateProtocolVersion =
+               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(16, "InvalidNegotiateProtocolVersion"), "The client requested an invalid protocol version '{queryStringVersionValue}'");
 
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
@@ -112,6 +121,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             public static void ConnectionDisposedWhileWriteInProgress(ILogger logger, string connectionId, Exception ex)
             {
                 _connectionDisposedWhileWriteInProgress(logger, connectionId, ex);
+            }
+
+            public static void FailedToReadHttpRequestBody(ILogger logger, string connectionId, Exception ex)
+            {
+                _failedToReadHttpRequestBody(logger, connectionId, ex);
+            }
+
+            public static void NegotiateProtocolVersionMismatch(ILogger logger, int clientProtocolVersion)
+            {
+                _negotiateProtocolVersionMismatch(logger, clientProtocolVersion, null);
+            }
+
+            public static void InvalidNegotiateProtocolVersion(ILogger logger, string requestedProtocolVersion)
+            {
+                _invalidNegotiateProtocolVersion(logger, requestedProtocolVersion, null);
             }
         }
     }

@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security;
+using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -29,6 +34,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -51,8 +58,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
@@ -62,19 +67,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            // These paths are both unescaped already.
-            else if (originalPath.Length == prefix.Path.Length - 1)
+            else if (requestContext.Server.RequestQueue.Created)
             {
-                // They matched exactly except for the trailing slash.
-                PathBase = originalPath;
-                Path = string.Empty;
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+
+                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                {
+                    // They matched exactly except for the trailing slash.
+                    PathBase = originalPath;
+                    Path = string.Empty;
+                }
+                else
+                {
+                    // url: /base/path, prefix: /base/, base: /base, path: /path
+                    // url: /, prefix: /, base: , path: /
+                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                }
             }
             else
             {
-                // url: /base/path, prefix: /base/, base: /base, path: /path
-                // url: /, prefix: /, base: , path: /
-                PathBase = originalPath.Substring(0, prefix.Path.Length - 1);
-                Path = originalPath.Substring(prefix.Path.Length - 1);
+                // When attaching to an existing queue, the UrlContext hint may not match our configuration. Search manualy.
+                if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                {
+                    PathBase = pathBase;
+                    Path = path;
+                }
+                else
+                {
+                    PathBase = string.Empty;
+                    Path = originalPath;
+                }
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
@@ -82,6 +105,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Headers = new RequestHeaders(_nativeRequestContext);
 
             User = _nativeRequestContext.GetUser();
+
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
@@ -231,6 +259,96 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
         internal WindowsPrincipal User { get; }
+
+        public SslProtocols Protocol { get; private set; }
+
+        public CipherAlgorithmType CipherAlgorithm { get; private set; }
+
+        public int CipherStrength { get; private set; }
+
+        public HashAlgorithmType HashAlgorithm { get; private set; }
+
+        public int HashStrength { get; private set; }
+
+        public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+
+        public int KeyExchangeStrength { get; private set; }
+
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
+        {
+            get
+            {
+                if (_requestInfo == null)
+                {
+                    _requestInfo = _nativeRequestContext.GetRequestInfo();
+                }
+                return _requestInfo;
+            }
+        }
+
+        private void GetTlsHandshakeResults()
+        {
+            var handshake = _nativeRequestContext.GetTlsHandshake();
+
+            Protocol = handshake.Protocol;
+            // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
+            // We need to fill in the client bits so the enum shows the expected protocol.
+            // https://docs.microsoft.com/en-us/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+            // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
+#pragma warning disable CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Ssl2) != 0)
+            {
+                Protocol |= SslProtocols.Ssl2;
+            }
+            if ((Protocol & SslProtocols.Ssl3) != 0)
+            {
+                Protocol |= SslProtocols.Ssl3;
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Tls) != 0)
+            {
+                Protocol |= SslProtocols.Tls;
+            }
+            if ((Protocol & SslProtocols.Tls11) != 0)
+            {
+                Protocol |= SslProtocols.Tls11;
+            }
+            if ((Protocol & SslProtocols.Tls12) != 0)
+            {
+                Protocol |= SslProtocols.Tls12;
+            }
+
+            CipherAlgorithm = handshake.CipherType;
+            CipherStrength = (int)handshake.CipherStrength;
+            HashAlgorithm = handshake.HashType;
+            HashStrength = (int)handshake.HashStrength;
+            KeyExchangeAlgorithm = handshake.KeyExchangeType;
+            KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+        }
+
+        public X509Certificate2 ClientCertificate
+        {
+            get
+            {
+                if (_clientCert == null && SslStatus == SslStatus.ClientCert)
+                {
+                    try
+                    {
+                        _clientCert = _nativeRequestContext.GetClientCertificate();
+                    }
+                    catch (CryptographicException ce)
+                    {
+                        RequestContext.Logger.LogDebug(ce, "An error occurred reading the client certificate.");
+                    }
+                    catch (SecurityException se)
+                    {
+                        RequestContext.Logger.LogDebug(se, "An error occurred reading the client certificate.");
+                    }
+                }
+
+                return _clientCert;
+            }
+        }
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

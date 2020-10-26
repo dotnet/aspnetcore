@@ -179,6 +179,32 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(new byte[] { 1, 2, 3 }, Read());
         }
 
+        [Fact]
+        public void BufferWriterCountsBytesCommitted()
+        {
+            BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
+
+            writer.Write(new byte[] { 1, 2, 3 });
+            Assert.Equal(0, writer.BytesCommitted);
+
+            writer.Commit();
+            Assert.Equal(3, writer.BytesCommitted);
+
+            writer.Ensure(10);
+            writer.Advance(10);
+            Assert.Equal(3, writer.BytesCommitted);
+
+            writer.Commit();
+            Assert.Equal(13, writer.BytesCommitted);
+
+            Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
+            var readResult = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+
+            // Consuming the buffer does not change BytesCommitted
+            Assert.Equal(13, readResult.Buffer.Length);
+            Assert.Equal(13, writer.BytesCommitted);
+        }
+
         [Theory]
         [InlineData(5)]
         [InlineData(50)]

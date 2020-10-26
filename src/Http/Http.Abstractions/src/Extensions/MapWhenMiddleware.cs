@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
-    /// Respresents a middleware that runs a sub-request pipeline when a given predicate is matched.
+    /// Represents a middleware that runs a sub-request pipeline when a given predicate is matched.
     /// </summary>
     public class MapWhenMiddleware
     {

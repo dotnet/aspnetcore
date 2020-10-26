@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,42 +16,44 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-
-// ReSharper disable AccessToModifiedClosure
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class HttpProtocol : IHttpResponseControl
+    internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-        private static readonly Func<PipeWriter, ReadOnlyMemory<byte>, long> _writeChunk = WriteChunk;
 
-        private readonly object _onStartingSync = new Object();
-        private readonly object _onCompletedSync = new Object();
-
-        protected Streams _streams;
-
+        protected BodyControl _bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private int _requestAborted;
-        private volatile int _ioCompleted;
+        private readonly object _abortLock = new object();
+        private volatile bool _connectionAborted;
+        private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
 
         protected RequestProcessingStatus _requestProcessingStatus;
-        protected volatile bool _keepAlive; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
-        protected bool _upgradeAvailable;
-        private bool _canHaveBody;
+
+        // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
+        // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
+        protected volatile bool _keepAlive = true;
+        // _canWriteResponseBody is set in CreateResponseHeaders.
+        // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
+        private bool _canWriteResponseBody = true;
+        private bool _hasAdvanced;
+        private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
-        private Exception _applicationException;
+        protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
@@ -62,27 +63,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _responseBytesWritten;
 
-        private readonly IHttpProtocolContext _context;
+        private readonly HttpConnectionContext _context;
+        private RouteValueDictionary _routeValues;
+        private Endpoint _endpoint;
 
         protected string _methodText = null;
         private string _scheme = null;
+        private Stream _requestStreamInternal;
+        private Stream _responseStreamInternal;
 
-        public HttpProtocol(IHttpProtocolContext context)
+        public HttpProtocol(HttpConnectionContext context)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
+
+            HttpRequestHeaders = new HttpRequestHeaders(
+                reuseHeaderValues: !ServerOptions.DisableStringReuse,
+                useLatin1: ServerOptions.Latin1RequestHeaders);
+
             HttpResponseControl = this;
-            RequestBodyPipe = CreateRequestBodyPipe();
         }
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public Pipe RequestBodyPipe { get; }
-
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         private IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
+        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public IHttpOutputProducer Output { get; protected set; }
@@ -96,6 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string ConnectionIdFeature { get; set; }
         public bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
+        public MinDataRate MinRequestBodyDataRate { get; set; }
         public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
@@ -115,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public abstract bool IsUpgradableRequest { get; }
+        public bool IsUpgradableRequest { get; private set; }
         public bool IsUpgraded { get; set; }
         public IPAddress RemoteIpAddress { get; set; }
         public int RemotePort { get; set; }
@@ -124,6 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string Scheme { get; set; }
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
+
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string RawTarget { get; set; }
@@ -194,7 +204,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public IHeaderDictionary RequestHeaders { get; set; }
+        public IHeaderDictionary RequestTrailers { get; } = new HeaderDictionary();
+        public bool RequestTrailersAvailable { get; set; }
         public Stream RequestBody { get; set; }
+        public PipeReader RequestBodyPipeReader { get; set; }
+        public HttpResponseTrailers ResponseTrailers { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -230,6 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
+        public PipeWriter ResponseBodyPipeWriter { get; set; }
 
         public CancellationToken RequestAborted
         {
@@ -240,16 +255,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return _manuallySetRequestAbortToken.Value;
                 }
-                // Otherwise, get the abort CTS.  If we have one, which would mean that someone previously
-                // asked for the RequestAborted token, simply return its token.  If we don't,
-                // check to see whether we've already aborted, in which case just return an
-                // already canceled token.  Finally, force a source into existence if we still
-                // don't have one, and return its token.
-                var cts = _abortedCts;
-                return
-                    cts != null ? cts.Token :
-                    (_ioCompleted == 1) ? new CancellationToken(true) :
-                    RequestAbortedSource.Token;
+
+                lock (_abortLock)
+                {
+                    if (_preventRequestAbortedCancellation)
+                    {
+                        return new CancellationToken(false);
+                    }
+
+                    if (_connectionAborted)
+                    {
+                        return new CancellationToken(true);
+                    }
+
+                    if (_abortedCts == null)
+                    {
+                        _abortedCts = new CancellationTokenSource();
+                    }
+
+                    return _abortedCts.Token;
+                }
             }
             set
             {
@@ -259,49 +284,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private CancellationTokenSource RequestAbortedSource
-        {
-            get
-            {
-                // Get the abort token, lazily-initializing it if necessary.
-                // Make sure it's canceled if an abort request already came in.
+        public bool HasResponseStarted => _requestProcessingStatus >= RequestProcessingStatus.HeadersCommitted;
 
-                // EnsureInitialized can return null since _abortedCts is reset to null
-                // after it's already been initialized to a non-null value.
-                // If EnsureInitialized does return null, this property was accessed between
-                // requests so it's safe to return an ephemeral CancellationTokenSource.
-                var cts = LazyInitializer.EnsureInitialized(ref _abortedCts, () => new CancellationTokenSource())
-                            ?? new CancellationTokenSource();
+        public bool HasFlushedHeaders => _requestProcessingStatus >= RequestProcessingStatus.HeadersFlushed;
 
-                if (_ioCompleted == 1)
-                {
-                    cts.Cancel();
-                }
-                return cts;
-            }
-        }
+        public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        public bool HasResponseStarted => _requestProcessingStatus == RequestProcessingStatus.ResponseStarted;
-
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; }
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        public MinDataRate MinRequestBodyDataRate { get; set; }
-
-        public MinDataRate MinResponseDataRate { get; set; }
-
-        public void InitializeStreams(MessageBody messageBody)
+        public void InitializeBodyControl(MessageBody messageBody)
         {
-            if (_streams == null)
+            if (_bodyControl == null)
             {
-                _streams = new Streams(bodyControl: this, httpResponseControl: this);
+                _bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody) = _streams.Start(messageBody);
+            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = _bodyControl.Start(messageBody);
+            _requestStreamInternal = RequestBody;
+            _responseStreamInternal = ResponseBody;
         }
-
-        public void StopStreams() => _streams.Stop();
 
         // For testing
         internal void ResetState()
@@ -311,8 +314,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-            _onStarting = null;
-            _onCompleted = null;
+            _onStarting?.Clear();
+            _onCompleted?.Clear();
+            _routeValues?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
             _autoChunk = false;
@@ -323,10 +327,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             HasStartedConsumingRequestBody = false;
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
+            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
             AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
             TraceIdentifier = null;
             Method = HttpMethod.None;
             _methodText = null;
+            _endpoint = null;
             PathBase = null;
             Path = null;
             RawTarget = null;
@@ -349,6 +355,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
+            RequestTrailers.Clear();
+            RequestTrailersAvailable = false;
+
+            _isLeasedMemoryInvalid = true;
+            _hasAdvanced = false;
+            _canWriteResponseBody = true;
 
             if (_scheme == null)
             {
@@ -359,20 +371,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Scheme = _scheme;
 
             _manuallySetRequestAbortToken = null;
-            _abortedCts = null;
 
-            // Allow two bytes for \r\n after headers
+            // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
+            CancellationTokenSource localAbortCts = null;
+
+            lock (_abortLock)
+            {
+                _preventRequestAbortedCancellation = false;
+                localAbortCts = _abortedCts;
+                _abortedCts = null;
+            }
+
+            localAbortCts?.Dispose();
+
+            Output?.Reset();
+
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
-
-            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
-            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 
             OnReset();
         }
 
         protected abstract void OnReset();
+
+        protected abstract void ApplicationAbort();
 
         protected virtual void OnRequestProcessingEnding()
         {
@@ -383,6 +406,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         protected virtual void BeginRequestProcessing()
+        {
+        }
+
+        protected virtual void OnErrorAfterResponseStarted()
         {
         }
 
@@ -402,8 +429,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                RequestAbortedSource.Cancel();
-                _abortedCts = null;
+                CancellationTokenSource localAbortCts = null;
+
+                lock (_abortLock)
+                {
+                    if (_abortedCts != null && !_preventRequestAbortedCancellation)
+                    {
+                        localAbortCts = _abortedCts;
+                        _abortedCts = null;
+                    }
+                }
+
+                // If we cancel the cts, we don't dispose as people may still be using
+                // the cts. It also isn't necessary to dispose a canceled cts.
+                localAbortCts?.Cancel();
             }
             catch (Exception ex)
             {
@@ -411,38 +450,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnInputOrOutputCompleted()
+        protected void AbortRequest()
         {
-            if (Interlocked.Exchange(ref _ioCompleted, 1) != 0)
+            var shouldScheduleCancellation = false;
+
+            lock (_abortLock)
             {
-                return;
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
+                shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
+                _connectionAborted = true;
             }
 
-            _keepAlive = false;
-
-            Output.Dispose();
-
-            // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-            ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+            if (shouldScheduleCancellation)
+            {
+                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
+                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+            }
         }
 
-        /// <summary>
-        /// Immediately kill the connection and poison the request and response streams with an error if there is one.
-        /// </summary>
-        public void Abort(ConnectionAbortedException abortReason)
+        protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            _bodyControl?.Abort(abortReason);
+        }
+
+        // Prevents the RequestAborted token from firing for the duration of the request.
+        private void PreventRequestAbortedCancellation()
+        {
+            lock (_abortLock)
             {
-                return;
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
+                _preventRequestAbortedCancellation = true;
             }
-
-            _streams?.Abort(abortReason);
-
-            // Abort output prior to calling OnIOCompleted() to give the transport the chance to
-            // complete the input with the correct error and message.
-            Output.Abort(abortReason);
-
-            OnInputOrOutputCompleted();
         }
 
         public void OnHeader(Span<byte> name, Span<byte> value)
@@ -452,9 +498,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
-            var valueString = value.GetAsciiStringNonNullCharacters();
 
-            HttpRequestHeaders.Append(name, valueString);
+            HttpRequestHeaders.Append(name, value);
+        }
+
+        public void OnTrailer(Span<byte> name, Span<byte> value)
+        {
+            // Trailers still count towards the limit.
+            _requestHeadersParsed++;
+            if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+            }
+
+            string key = name.GetHeaderName();
+            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
+            RequestTrailers.Append(key, valueStr);
+        }
+
+        public void OnHeadersComplete()
+        {
+            HttpRequestHeaders.OnHeadersComplete();
+        }
+
+        public void OnTrailersComplete()
+        {
+            RequestTrailersAvailable = true;
         }
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
@@ -481,6 +550,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 Log.RequestProcessingError(ConnectionId, ex);
             }
+            catch (ConnectionAbortedException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+            }
             catch (Exception ex)
             {
                 Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
@@ -489,13 +562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 try
                 {
-                    OnRequestProcessingEnding();
                     await TryProduceInvalidRequestResponse();
-
-                    // Prevent RequestAborted from firing.
-                    Reset();
-
-                    Output.Dispose();
                 }
                 catch (Exception ex)
                 {
@@ -510,9 +577,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
         {
-            // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
-            _keepAlive = true;
-
             while (_keepAlive)
             {
                 BeginRequestProcessing();
@@ -539,22 +603,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _keepAlive = false;
                 }
 
-                _upgradeAvailable = messageBody.RequestUpgrade;
+                IsUpgradableRequest = messageBody.RequestUpgrade;
 
-                InitializeStreams(messageBody);
+                InitializeBodyControl(messageBody);
 
-                var httpContext = application.CreateContext(this);
+                var context = application.CreateContext(this);
 
                 try
                 {
                     KestrelEventSource.Log.RequestStart(this);
 
                     // Run the application code for this request
-                    await application.ProcessRequestAsync(httpContext);
+                    await application.ProcessRequestAsync(context);
 
-                    if (_ioCompleted == 0)
+                    // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                    // already failed. If an OnStarting callback throws we can go through
+                    // our normal error handling in ProduceEnd.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
                     {
-                        VerifyResponseContentLength();
+                        await FireOnStarting();
+                    }
+
+                    if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
+                    {
+                        ReportApplicationError(lengthException);
                     }
                 }
                 catch (BadHttpRequestException ex)
@@ -572,23 +645,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 KestrelEventSource.Log.RequestStop(this);
 
-                // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                // already failed. If an OnStarting callback throws we can go through
-                // our normal error handling in ProduceEnd.
-                // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
-                {
-                    await FireOnStarting();
-                }
-
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                StopStreams();
+                try
+                {
+                    await _bodyControl.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
+                    // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
+                    // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
+                    ReportApplicationError(ex);
+                }
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
                 {
-                    if (_ioCompleted == 0)
+                    if (!_connectionAborted)
                     {
                         // Call ProduceEnd() before consuming the rest of the request body to prevent
                         // delaying clients waiting for the chunk terminator:
@@ -612,71 +686,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
 
-                if (_onCompleted != null)
+                if (_onCompleted?.Count > 0)
                 {
                     await FireOnCompleted();
                 }
 
-                application.DisposeContext(httpContext, _applicationException);
+                application.DisposeContext(context, _applicationException);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
-                if (_ioCompleted == 0 && _requestRejectedException == null && !messageBody.IsEmpty)
+                if (!_connectionAborted && _requestRejectedException == null && !messageBody.IsEmpty)
                 {
                     await messageBody.ConsumeAsync();
                 }
 
                 if (HasStartedConsumingRequestBody)
                 {
-                    RequestBodyPipe.Reader.Complete();
-
-                    // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
-
-                    // At this point both the request body pipe reader and writer should be completed.
-                    RequestBodyPipe.Reset();
                 }
             }
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
-            lock (_onStartingSync)
+            if (HasResponseStarted)
             {
-                if (HasResponseStarted)
-                {
-                    ThrowResponseAlreadyStartedException(nameof(OnStarting));
-                }
-
-                if (_onStarting == null)
-                {
-                    _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                ThrowResponseAlreadyStartedException(nameof(OnStarting));
             }
+
+            if (_onStarting == null)
+            {
+                _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
+            }
+            _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            lock (_onCompletedSync)
+            if (_onCompleted == null)
             {
-                if (_onCompleted == null)
-                {
-                    _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
             }
+            _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         protected Task FireOnStarting()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onStarting;
-            lock (_onStartingSync)
-            {
-                onStarting = _onStarting;
-                _onStarting = null;
-            }
+            var onStarting = _onStarting;
 
-            if (onStarting == null)
+            if (onStarting == null || onStarting.Count == 0)
             {
                 return Task.CompletedTask;
             }
@@ -684,19 +741,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return FireOnStartingMayAwait(onStarting);
             }
-
         }
 
         private Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
         {
             try
             {
-                var count = onStarting.Count;
-                for (var i = 0; i < count; i++)
+                while (onStarting.TryPop(out var entry))
                 {
-                    var entry = onStarting.Pop();
                     var task = entry.Key.Invoke(entry.Value);
-                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    if (!task.IsCompletedSuccessfully)
                     {
                         return FireOnStartingAwaited(task, onStarting);
                     }
@@ -716,10 +770,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 await currentTask;
 
-                var count = onStarting.Count;
-                for (var i = 0; i < count; i++)
+                while (onStarting.TryPop(out var entry))
                 {
-                    var entry = onStarting.Pop();
                     await entry.Key.Invoke(entry.Value);
                 }
             }
@@ -731,24 +783,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task FireOnCompleted()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onCompleted;
-            lock (_onCompletedSync)
-            {
-                onCompleted = _onCompleted;
-                _onCompleted = null;
-            }
+            var onCompleted = _onCompleted;
 
-            if (onCompleted == null)
+            if (onCompleted == null || onCompleted.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            return FireOnCompletedAwaited(onCompleted);
+            return FireOnCompletedMayAwait(onCompleted);
         }
 
-        private async Task FireOnCompletedAwaited(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
-            foreach (var entry in onCompleted)
+            while (onCompleted.TryPop(out var entry))
+            {
+                try
+                {
+                    var task = entry.Key.Invoke(entry.Value);
+                    if (!task.IsCompletedSuccessfully)
+                    {
+                        return FireOnCompletedAwaited(task, onCompleted);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            try
+            {
+                await currentTask;
+            }
+            catch (Exception ex)
+            {
+                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+            }
+
+            while (onCompleted.TryPop(out var entry))
             {
                 try
                 {
@@ -758,101 +835,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
                 }
-            }
-        }
-
-        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (!HasResponseStarted)
-            {
-                var initializeTask = InitializeResponseAsync(0);
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
-                {
-                    return FlushAsyncAwaited(initializeTask, cancellationToken);
-                }
-            }
-
-            return Output.FlushAsync(cancellationToken);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task FlushAsyncAwaited(Task initializeTask, CancellationToken cancellationToken)
-        {
-            await initializeTask;
-            await Output.FlushAsync(cancellationToken);
-        }
-
-        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-            var firstWrite = !HasResponseStarted;
-
-            if (firstWrite)
-            {
-                var initializeTask = InitializeResponseAsync(data.Length);
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
-                {
-                    return WriteAsyncAwaited(initializeTask, data, cancellationToken);
-                }
-            }
-            else
-            {
-                VerifyAndUpdateWrite(data.Length);
-            }
-
-            if (_canHaveBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Length == 0)
-                    {
-                        return !firstWrite ? Task.CompletedTask : FlushAsync(cancellationToken);
-                    }
-                    return WriteChunkedAsync(data, cancellationToken);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    return Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
-                }
-            }
-            else
-            {
-                HandleNonBodyResponseWrite();
-                return !firstWrite ? Task.CompletedTask : FlushAsync(cancellationToken);
-            }
-        }
-
-        public async Task WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-        {
-            await initializeTask;
-
-            // WriteAsyncAwaited is only called for the first write to the body.
-            // Ensure headers are flushed if Write(Chunked)Async isn't called.
-            if (_canHaveBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Length == 0)
-                    {
-                        await FlushAsync(cancellationToken);
-                        return;
-                    }
-
-                    await WriteChunkedAsync(data, cancellationToken);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    await Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
-                }
-            }
-            else
-            {
-                HandleNonBodyResponseWrite();
-                await FlushAsync(cancellationToken);
             }
         }
 
@@ -900,11 +882,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 responseHeaders.ContentLength.HasValue &&
                 _responseBytesWritten == responseHeaders.ContentLength.Value)
             {
-                _abortedCts = null;
+                PreventRequestAbortedCancellation();
             }
         }
 
-        protected void VerifyResponseContentLength()
+        protected bool VerifyResponseContentLength(out Exception ex)
         {
             var responseHeaders = HttpResponseHeaders;
 
@@ -921,38 +903,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _keepAlive = false;
                 }
 
-                ReportApplicationError(new InvalidOperationException(
-                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value)));
-            }
-        }
-
-        private Task WriteChunkedAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-        {
-            return Output.WriteAsync(_writeChunk, data, cancellationToken);
-        }
-
-        private static long WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
-        {
-            var bytesWritten = 0L;
-            if (buffer.Length > 0)
-            {
-                var writer = new BufferWriter<PipeWriter>(writableBuffer);
-
-                ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Length);
-                writer.Write(buffer.Span);
-                ChunkWriter.WriteEndChunkBytes(ref writer);
-                writer.Commit();
-
-                bytesWritten = writer.BytesCommitted;
+                ex = new InvalidOperationException(
+                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value));
+                return false;
             }
 
-            return bytesWritten;
-        }
-
-        private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
-        {
-            var bytes = Encoding.ASCII.GetBytes(text);
-            return new ArraySegment<byte>(bytes);
+            ex = null;
+            return true;
         }
 
         public void ProduceContinue()
@@ -963,28 +920,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             if (_httpVersion != Http.HttpVersion.Http10 &&
-                RequestHeaders.TryGetValue("Expect", out var expect) &&
+                RequestHeaders.TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                Output.Write100ContinueAsync(default(CancellationToken)).GetAwaiter().GetResult();
+                Output.Write100ContinueAsync().GetAwaiter().GetResult();
             }
         }
 
         public Task InitializeResponseAsync(int firstWriteByteCount)
         {
             var startingTask = FireOnStarting();
-            // If return is Task.CompletedTask no awaiting is required
-            if (!ReferenceEquals(startingTask, Task.CompletedTask))
+            if (!startingTask.IsCompletedSuccessfully)
             {
                 return InitializeResponseAwaited(startingTask, firstWriteByteCount);
             }
 
-            if (_applicationException != null)
-            {
-                ThrowResponseAbortedException();
-            }
+            VerifyInitializeState(firstWriteByteCount);
 
-            VerifyAndUpdateWrite(firstWriteByteCount);
             ProduceStart(appCompleted: false);
 
             return Task.CompletedTask;
@@ -995,13 +947,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             await startingTask;
 
-            if (_applicationException != null)
-            {
-                ThrowResponseAbortedException();
-            }
+            VerifyInitializeState(firstWriteByteCount);
 
-            VerifyAndUpdateWrite(firstWriteByteCount);
             ProduceStart(appCompleted: false);
+        }
+
+        private HttpResponseHeaders InitializeResponseFirstWrite(int firstWriteByteCount)
+        {
+            VerifyInitializeState(firstWriteByteCount);
+
+            var responseHeaders = CreateResponseHeaders(appCompleted: false);
+
+            // InitializeResponse can only be called if we are just about to Flush the headers
+            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+
+            return responseHeaders;
         }
 
         private void ProduceStart(bool appCompleted)
@@ -1011,15 +971,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            _requestProcessingStatus = RequestProcessingStatus.ResponseStarted;
+            _isLeasedMemoryInvalid = true;
 
-            CreateResponseHeader(appCompleted);
+            _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
+
+            var responseHeaders = CreateResponseHeaders(appCompleted);
+
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted);
+        }
+
+        private void VerifyInitializeState(int firstWriteByteCount)
+        {
+            if (_applicationException != null)
+            {
+                ThrowResponseAbortedException();
+            }
+
+            VerifyAndUpdateWrite(firstWriteByteCount);
         }
 
         protected Task TryProduceInvalidRequestResponse()
         {
-            // If _ioCompleted is set, the connection has already been closed.
-            if (_requestRejectedException != null && _ioCompleted == 0)
+            // If _requestAborted is set, the connection has already been closed.
+            if (_requestRejectedException != null && !_connectionAborted)
             {
                 return ProduceEnd();
             }
@@ -1029,12 +1003,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task ProduceEnd()
         {
+            if (HasResponseCompleted)
+            {
+                return Task.CompletedTask;
+            }
+
+            _isLeasedMemoryInvalid = true;
+
             if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
                 {
                     // We can no longer change the response, so we simply close the connection.
                     _keepAlive = false;
+                    OnErrorAfterResponseStarted();
                     return Task.CompletedTask;
                 }
 
@@ -1053,31 +1035,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!HasResponseStarted)
             {
-                return ProduceEndAwaited();
+                ProduceStart(appCompleted: true);
             }
 
             return WriteSuffix();
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task ProduceEndAwaited()
-        {
-            ProduceStart(appCompleted: true);
-
-            // Force flush
-            await Output.FlushAsync(default(CancellationToken));
-
-            await WriteSuffix();
-        }
-
         private Task WriteSuffix()
         {
-            // _autoChunk should be checked after we are sure ProduceStart() has been called
-            // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
             {
-                return WriteSuffixAwaited();
+                // For the same reason we call CheckLastWrite() in Content-Length responses.
+                PreventRequestAbortedCancellation();
             }
+
+            var writeTask = Output.WriteStreamSuffixAsync();
+
+            if (!writeTask.IsCompletedSuccessfully)
+            {
+                return WriteSuffixAwaited(writeTask);
+            }
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
             {
@@ -1092,12 +1071,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        private async Task WriteSuffixAwaited()
+        private async Task WriteSuffixAwaited(ValueTask<FlushResult> writeTask)
         {
-            // For the same reason we call CheckLastWrite() in Content-Length responses.
-            _abortedCts = null;
+            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
 
-            await Output.WriteStreamSuffixAsync(default(CancellationToken));
+            await writeTask;
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
             {
@@ -1110,7 +1090,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void CreateResponseHeader(bool appCompleted)
+        private HttpResponseHeaders CreateResponseHeaders(bool appCompleted)
         {
             var responseHeaders = HttpResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
@@ -1127,55 +1107,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // chunked is applied to a response payload body, the sender MUST either
             // apply chunked as the final transfer coding or terminate the message
             // by closing the connection.
-            if (hasTransferEncoding && 
+            if (hasTransferEncoding &&
                 HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
             {
                 _keepAlive = false;
             }
 
             // Set whether response can have body
-            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != HttpMethod.Head;
+            _canWriteResponseBody = CanWriteResponseBody();
 
-            // Don't set the Content-Length or Transfer-Encoding headers
-            // automatically for HEAD requests or 204, 205, 304 responses.
-            if (_canHaveBody)
-            {
-                if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
-                {
-                    if (appCompleted && StatusCode != StatusCodes.Status101SwitchingProtocols)
-                    {
-                        // Since the app has completed and we are only now generating
-                        // the headers we can safely set the Content-Length to 0.
-                        responseHeaders.ContentLength = 0;
-                    }
-                    else
-                    {
-                        // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
-                        // connections, even if we were to infer the client supports it because an HTTP/1.0 request
-                        // was received that used chunked encoding. Sending a chunked response to an HTTP/1.0
-                        // client would break compliance with RFC 7230 (section 3.3.1):
-                        //
-                        // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
-                        // request indicates HTTP/1.1 (or later).
-                        //
-                        // This also covers HTTP/2, which forbids chunked encoding in RFC 7540 (section 8.1:
-                        //
-                        // The chunked transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.
-                        if (_httpVersion == Http.HttpVersion.Http11 && StatusCode != StatusCodes.Status101SwitchingProtocols)
-                        {
-                            _autoChunk = true;
-                            responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
-                        }
-                        else
-                        {
-                            _keepAlive = false;
-                        }
-                    }
-                }
-            }
-            else if (hasTransferEncoding)
+            if (!_canWriteResponseBody && hasTransferEncoding)
             {
                 RejectNonBodyTransferEncodingResponse(appCompleted);
+            }
+            else if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
+            {
+                if (StatusCode == StatusCodes.Status101SwitchingProtocols)
+                {
+                    _keepAlive = false;
+                }
+                else if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
+                {
+                    // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
+                    if (CanAutoSetContentLengthZeroResponseHeader())
+                    {
+                        // Since the app has completed writing or cannot write to the response, we can safely set the Content-Length to 0.
+                        responseHeaders.ContentLength = 0;
+                    }
+                }
+                // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
+                // connections, even if we were to infer the client supports it because an HTTP/1.0 request
+                // was received that used chunked encoding. Sending a chunked response to an HTTP/1.0
+                // client would break compliance with RFC 7230 (section 3.3.1):
+                //
+                // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
+                // request indicates HTTP/1.1 (or later).
+                //
+                // This also covers HTTP/2, which forbids chunked encoding in RFC 7540 (section 8.1:
+                //
+                // The chunked transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.
+                else if (_httpVersion == Http.HttpVersion.Http11)
+                {
+                    _autoChunk = true;
+                    responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
+                }
+                else
+                {
+                    _keepAlive = false;
+                }
             }
 
             responseHeaders.SetReadOnly();
@@ -1203,18 +1182,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders);
+            return responseHeaders;
         }
 
-        public bool StatusCanHaveBody(int statusCode)
+        private bool CanWriteResponseBody()
         {
             // List of status codes taken from Microsoft.Net.Http.Server.Response
-            return statusCode != StatusCodes.Status204NoContent &&
-                   statusCode != StatusCodes.Status205ResetContent &&
-                   statusCode != StatusCodes.Status304NotModified;
+            return Method != HttpMethod.Head &&
+                   StatusCode != StatusCodes.Status204NoContent &&
+                   StatusCode != StatusCodes.Status205ResetContent &&
+                   StatusCode != StatusCodes.Status304NotModified;
         }
 
-        private void ThrowResponseAlreadyStartedException(string value)
+        private bool CanAutoSetContentLengthZeroResponseHeader()
+        {
+            return Method != HttpMethod.Head &&
+                   StatusCode != StatusCodes.Status204NoContent &&
+                   StatusCode != StatusCodes.Status304NotModified;
+        }
+
+        private static void ThrowResponseAlreadyStartedException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
         }
@@ -1224,7 +1211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse("Transfer-Encoding", StatusCode));
             if (!appCompleted)
             {
-                // Back out of header creation surface exeception in user code
+                // Back out of header creation surface exception in user code
                 _requestProcessingStatus = RequestProcessingStatus.AppStarted;
                 throw ex;
             }
@@ -1256,6 +1243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = HttpResponseHeaders;
             responseHeaders.Reset();
+            ResponseTrailers?.Reset();
             var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
 
             responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
@@ -1302,11 +1290,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
 
-        public void SetBadRequestState(RequestRejectionReason reason)
-        {
-            SetBadRequestState(BadHttpRequestException.GetException(reason));
-        }
-
         public void SetBadRequestState(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
@@ -1320,8 +1303,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestRejectedException = ex;
         }
 
-        protected void ReportApplicationError(Exception ex)
+        public void ReportApplicationError(Exception ex)
         {
+            // ReportApplicationError can be called with a null exception from MessageBody
+            if (ex == null)
+            {
+                return;
+            }
+
             if (_applicationException == null)
             {
                 _applicationException = ex;
@@ -1338,16 +1327,260 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
         }
 
-        private Pipe CreateRequestBodyPipe()
-            => new Pipe(new PipeOptions
-            (
-                pool: _context.MemoryPool,
-                readerScheduler: ServiceContext.Scheduler,
-                writerScheduler: PipeScheduler.Inline,
-                pauseWriterThreshold: 1,
-                resumeWriterThreshold: 1,
-                useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-            ));
+        public void Advance(int bytes)
+        {
+            if (bytes < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes));
+            }
+            else if (bytes > 0)
+            {
+                _hasAdvanced = true;
+            }
+
+            if (_isLeasedMemoryInvalid)
+            {
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync or CompleteAsync and Advance.");
+            }
+
+            if (_canWriteResponseBody)
+            {
+                VerifyAndUpdateWrite(bytes);
+                Output.Advance(bytes);
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+                // For HEAD requests, we still use the number of bytes written for logging
+                // how many bytes were written.
+                VerifyAndUpdateWrite(bytes);
+            }
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            _isLeasedMemoryInvalid = false;
+            return Output.GetMemory(sizeHint);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            _isLeasedMemoryInvalid = false;
+            return Output.GetSpan(sizeHint);
+        }
+
+        public ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken)
+        {
+            if (!HasResponseStarted)
+            {
+                var initializeTask = InitializeResponseAsync(0);
+                if (!initializeTask.IsCompletedSuccessfully)
+                {
+                    return FlushAsyncAwaited(initializeTask, cancellationToken);
+                }
+            }
+
+            return Output.FlushAsync(cancellationToken);
+        }
+
+        public void CancelPendingFlush()
+        {
+            Output.CancelPendingFlush();
+        }
+
+        public Task CompleteAsync(Exception exception = null)
+        {
+            if (exception != null)
+            {
+                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", exception);
+                ReportApplicationError(wrappedException);
+
+                if (HasResponseStarted)
+                {
+                    ApplicationAbort();
+                }
+            }
+
+            // Finalize headers
+            if (!HasResponseStarted)
+            {
+                var onStartingTask = FireOnStarting();
+                if (!onStartingTask.IsCompletedSuccessfully)
+                {
+                    return CompleteAsyncAwaited(onStartingTask);
+                }
+            }
+
+            // Flush headers, body, trailers...
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    // Try to throw this exception from CompleteAsync() instead of CompleteAsyncAwaited() if possible,
+                    // so it can be observed by BodyWriter.Complete(). If this isn't possible because an
+                    // async OnStarting callback hadn't yet run, it's OK, since the Exception will be observed with
+                    // the call to _bodyControl.StopAsync() in ProcessRequests().
+                    ThrowException(lengthException);
+                }
+
+                return ProduceEnd();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task CompleteAsyncAwaited(Task onStartingTask)
+        {
+            await onStartingTask;
+
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    ThrowException(lengthException);
+                }
+
+                await ProduceEnd();
+            }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowException(Exception exception)
+        {
+            throw exception;
+        }
+
+        public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
+            if (!HasResponseStarted)
+            {
+                return FirstWriteAsync(data, cancellationToken);
+            }
+            else
+            {
+                VerifyAndUpdateWrite(data.Length);
+            }
+
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        return default;
+                    }
+
+                    return Output.WriteChunkAsync(data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
+                }
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+                return default;
+            }
+        }
+
+        private ValueTask<FlushResult> FirstWriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            Debug.Assert(!HasResponseStarted);
+
+            var startingTask = FireOnStarting();
+            if (!startingTask.IsCompletedSuccessfully)
+            {
+                return FirstWriteAsyncAwaited(startingTask, data, cancellationToken);
+            }
+
+            return FirstWriteAsyncInternal(data, cancellationToken);
+        }
+
+        private async ValueTask<FlushResult> FirstWriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+
+            return await FirstWriteAsyncInternal(data, cancellationToken);
+        }
+
+        private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            var responseHeaders = InitializeResponseFirstWrite(data.Length);
+
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+                        return Output.FlushAsync(cancellationToken);
+                    }
+
+                    return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                }
+            }
+            else
+            {
+                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
+                HandleNonBodyResponseWrite();
+                return Output.FlushAsync(cancellationToken);
+            }
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken = default)
+        {
+            return FlushPipeAsync(cancellationToken).GetAsTask();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private async ValueTask<FlushResult> FlushAsyncAwaited(Task initializeTask, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+            return await Output.FlushAsync(cancellationToken);
+        }
+
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        {
+            return WritePipeAsync(data, cancellationToken).GetAsTask();
+        }
+
+        public async ValueTask<FlushResult> WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+
+            // WriteAsyncAwaited is only called for the first write to the body.
+            // Ensure headers are flushed if Write(Chunked)Async isn't called.
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        return await Output.FlushAsync(cancellationToken);
+                    }
+
+                    return await Output.WriteChunkAsync(data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return await Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
+                }
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+                return await Output.FlushAsync(cancellationToken);
+            }
+        }
     }
 }

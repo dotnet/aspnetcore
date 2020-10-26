@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10", entry.RawValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_NoData()
         {
             // Arrange
@@ -337,9 +337,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, int>(), modelBindingResult.Model);
 
-            Assert.Empty(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Key").Value;
+            Assert.Single(entry.Errors);
         }
 
         private class Person
@@ -474,7 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10", entry.RawValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_NoData()
         {
             // Arrange
@@ -500,9 +502,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, Person>(), modelBindingResult.Model);
 
-            Assert.Empty(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(2, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Key").Value;
+            Assert.Single(entry.Errors);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "Value").Value;
+            Assert.Single(entry.Errors);
         }
 
         [Fact]

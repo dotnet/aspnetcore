@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="EnvironmentTagHelper"/>.
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        public EnvironmentTagHelper(IHostingEnvironment hostingEnvironment)
+        public EnvironmentTagHelper(IWebHostEnvironment hostingEnvironment)
         {
             HostingEnvironment = hostingEnvironment;
         }
@@ -59,7 +59,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </remarks>
         public string Exclude { get; set; }
 
-        protected IHostingEnvironment HostingEnvironment { get; }
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// </summary>
+        protected IWebHostEnvironment HostingEnvironment { get; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)

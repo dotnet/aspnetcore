@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    enum HttpStreamState
+    internal enum HttpStreamState
     {
         Open,
         Closed,

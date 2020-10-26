@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
+    internal class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
         private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
         private const byte TokenVersion = 0x01;

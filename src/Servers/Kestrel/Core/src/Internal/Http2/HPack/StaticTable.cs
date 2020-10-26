@@ -3,10 +3,11 @@
 
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class StaticTable
+    internal class StaticTable
     {
         private static readonly StaticTable _instance = new StaticTable();
 
@@ -35,20 +36,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private readonly HeaderField[] _staticTable = new HeaderField[]
         {
-            CreateHeaderField(":authority", ""),
-            CreateHeaderField(":method", "GET"),
-            CreateHeaderField(":method", "POST"),
-            CreateHeaderField(":path", "/"),
-            CreateHeaderField(":path", "/index.html"),
-            CreateHeaderField(":scheme", "http"),
-            CreateHeaderField(":scheme", "https"),
-            CreateHeaderField(":status", "200"),
-            CreateHeaderField(":status", "204"),
-            CreateHeaderField(":status", "206"),
-            CreateHeaderField(":status", "304"),
-            CreateHeaderField(":status", "400"),
-            CreateHeaderField(":status", "404"),
-            CreateHeaderField(":status", "500"),
+            CreateHeaderField(HeaderNames.Authority, ""),
+            CreateHeaderField(HeaderNames.Method, "GET"),
+            CreateHeaderField(HeaderNames.Method, "POST"),
+            CreateHeaderField(HeaderNames.Path, "/"),
+            CreateHeaderField(HeaderNames.Path, "/index.html"),
+            CreateHeaderField(HeaderNames.Scheme, "http"),
+            CreateHeaderField(HeaderNames.Scheme, "https"),
+            CreateHeaderField(HeaderNames.Status, "200"),
+            CreateHeaderField(HeaderNames.Status, "204"),
+            CreateHeaderField(HeaderNames.Status, "206"),
+            CreateHeaderField(HeaderNames.Status, "304"),
+            CreateHeaderField(HeaderNames.Status, "400"),
+            CreateHeaderField(HeaderNames.Status, "404"),
+            CreateHeaderField(HeaderNames.Status, "500"),
             CreateHeaderField("accept-charset", ""),
             CreateHeaderField("accept-encoding", "gzip, deflate"),
             CreateHeaderField("accept-language", ""),

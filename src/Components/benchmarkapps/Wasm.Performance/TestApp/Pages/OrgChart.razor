@@ -1,0 +1,38 @@
+@page "/orgchart"
+@inject IJSRuntime JSRuntime
+
+<h1>Org Chart</h1>
+<fieldset>
+    <label>Depth: <input id="depth" type="number" @bind="depth" /></label>
+    <label>Subordinates: <input id="subs" type="number" @bind="subs" /></label>
+
+    <button id="show" @onclick="Show">Show</button>
+    <button id="hide" @onclick="Hide">Hide</button>
+</fieldset>
+
+@if (show)
+{
+    <PersonDisplay Person="Person.GenerateOrgChart(depth, subs)" />
+}
+
+@code
+{
+    int depth = 2;
+    int subs = 5;
+    bool show;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BenchmarkEvent.Send(JSRuntime, "Finished OrgChart rendering");
+    }
+
+    void Hide()
+    {
+        show = false;
+    }
+
+    void Show()
+    {
+        show = true;
+    }
+}

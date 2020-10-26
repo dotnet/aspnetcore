@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -24,13 +26,15 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         private readonly RequestDelegate _next;
         private readonly StringValues _strictTransportSecurityValue;
         private readonly IList<string> _excludedHosts;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initialize the HSTS middleware.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public HstsMiddleware(RequestDelegate next, IOptions<HstsOptions> options)
+        /// <param name="loggerFactory"></param>
+        public HstsMiddleware(RequestDelegate next, IOptions<HstsOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -46,7 +50,16 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             var preload = hstsOptions.Preload ? Preload : StringSegment.Empty;
             _strictTransportSecurityValue = new StringValues($"max-age={maxAge}{includeSubdomains}{preload}");
             _excludedHosts = hstsOptions.ExcludedHosts;
+            _logger = loggerFactory.CreateLogger<HstsMiddleware>();
         }
+
+        /// <summary>
+        /// Initialize the HSTS middleware.
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="options"></param>
+        public HstsMiddleware(RequestDelegate next, IOptions<HstsOptions> options)
+            : this(next, options, NullLoggerFactory.Instance) { }
 
         /// <summary>
         /// Invoke the middleware.
@@ -55,10 +68,20 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            if (context.Request.IsHttps && !IsHostExcluded(context.Request.Host.Host))
+            if (!context.Request.IsHttps)
             {
-                context.Response.Headers[HeaderNames.StrictTransportSecurity] = _strictTransportSecurityValue;
+                _logger.SkippingInsecure();
+                return _next(context);
             }
+
+            if (IsHostExcluded(context.Request.Host.Host))
+            {
+                _logger.SkippingExcludedHost(context.Request.Host.Host);
+                return _next(context);
+            }
+
+            context.Response.Headers[HeaderNames.StrictTransportSecurity] = _strictTransportSecurityValue;
+            _logger.AddingHstsHeader();
 
             return _next(context);
         }

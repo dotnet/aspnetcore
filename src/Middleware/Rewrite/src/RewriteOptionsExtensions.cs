@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -129,6 +128,17 @@ namespace Microsoft.AspNetCore.Rewrite
         }
 
         /// <summary>
+        /// Permanently redirects the request to the www subdomain if the request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToWwwPermanent(this RewriteOptions options, params string[] domains)
+        {
+            return AddRedirectToWww(options, statusCode: StatusCodes.Status308PermanentRedirect, domains);
+        }
+
+        /// <summary>
         /// Redirect the request to the www subdomain if the incoming request is non-www.
         /// </summary>
         /// <param name="options">The <see cref="RewriteOptions"/>.</param>
@@ -141,10 +151,32 @@ namespace Microsoft.AspNetCore.Rewrite
         /// Redirect the request to the www subdomain if the incoming request is non-www.
         /// </summary>
         /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        public static RewriteOptions AddRedirectToWww(this RewriteOptions options, params string[] domains)
+        {
+            return AddRedirectToWww(options, statusCode: StatusCodes.Status307TemporaryRedirect, domains);
+        }
+
+        /// <summary>
+        /// Redirect the request to the www subdomain if the incoming request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="statusCode">The status code to add to the response.</param>
         public static RewriteOptions AddRedirectToWww(this RewriteOptions options, int statusCode)
         {
             options.Rules.Add(new RedirectToWwwRule(statusCode));
+            return options;
+        }
+
+        /// <summary>
+        /// Redirect the request to the www subdomain if the incoming request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="statusCode">The status code to add to the response.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        public static RewriteOptions AddRedirectToWww(this RewriteOptions options, int statusCode, params string[] domains)
+        {
+            options.Rules.Add(new RedirectToWwwRule(statusCode, domains));
             return options;
         }
     }

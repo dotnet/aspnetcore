@@ -9,12 +9,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     {
         internal static string BuildErrorMessage(string message, Exception exception, bool includeExceptionDetails)
         {
-            if (!includeExceptionDetails)
+            if (exception is HubException || includeExceptionDetails)
             {
-                return message;
+                return $"{message} {exception.GetType().Name}: {exception.Message}";
+
             }
 
-            return message + $" {exception.GetType().Name}: {exception.Message}";
+            return message;
         }
     }
 }

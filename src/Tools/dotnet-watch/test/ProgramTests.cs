@@ -28,23 +28,25 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp1.0")
+                .WithTargetFrameworks("netcoreapp3.1")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();
 
-            var stdout = new StringBuilder();
-            _console.Out = new StringWriter(stdout);
-            var program = new Program(_console, _tempDir.Root)
-                .RunAsync(new[] { "run" });
+            var output = new StringBuilder();
+            _console.Error = _console.Out = new StringWriter(output);
+            using (var app = new Program(_console, _tempDir.Root))
+            {
+                var run = app.RunAsync(new[] { "run" });
 
-            await _console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
-            _console.ConsoleCancelKey();
+                await _console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
+                _console.ConsoleCancelKey();
 
-            var exitCode = await program.TimeoutAfter(TimeSpan.FromSeconds(30));
+                var exitCode = await run.TimeoutAfter(TimeSpan.FromSeconds(30));
 
-            Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", stdout.ToString());
-            Assert.Equal(0, exitCode);
+                Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", output.ToString());
+                Assert.Equal(0, exitCode);
+            }
         }
 
         public void Dispose()
