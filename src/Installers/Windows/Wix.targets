@@ -27,10 +27,10 @@
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs);$(OutputType)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 
