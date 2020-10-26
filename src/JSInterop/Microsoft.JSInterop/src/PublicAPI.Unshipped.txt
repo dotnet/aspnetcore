@@ -34,6 +34,7 @@ Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string!
 Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.Implementation.JSObjectReference.JSObjectReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id) -> void
 Microsoft.JSInterop.Implementation.JSObjectReference.ThrowIfDisposed() -> void
+Microsoft.JSInterop.Implementation.JSObjectReference.~JSObjectReference() -> void
 Microsoft.JSInterop.Infrastructure.DotNetDispatcher
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.AssemblyName.get -> string?
@@ -75,6 +76,7 @@ Microsoft.JSInterop.JSRuntimeExtensions
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string?
 abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 abstract Microsoft.JSInterop.JSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult invocationResult) -> void
+override Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Dispose(bool disposing) -> void
 static Microsoft.JSInterop.DotNetObjectReference.Create<TValue>(TValue! value) -> Microsoft.JSInterop.DotNetObjectReference<TValue!>!
 static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson) -> void
 static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(Microsoft.JSInterop.JSRuntime! jsRuntime, string! arguments) -> void
@@ -93,5 +95,7 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsof
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Threading.CancellationToken cancellationToken, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.JSInterop.Implementation.JSObjectReference.Dispose(bool disposing) -> void
+virtual Microsoft.JSInterop.Implementation.JSObjectReference.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
 virtual Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson) -> string?
 virtual Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson) -> void
