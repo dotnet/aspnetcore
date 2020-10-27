@@ -484,11 +484,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                cancel = await Renderer.Dispatcher.InvokeAsync(() =>
+                cancel = await Renderer.Dispatcher.InvokeAsync( async () =>
                 {
                     Log.LocationChanging(_logger, uri, CircuitId);
                     var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                    return navigationManager.HandleLocationChanging(uri, intercepted, false);
+                    return await navigationManager.HandleLocationChanging(uri, intercepted, false);
                 });
             }
 

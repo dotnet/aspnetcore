@@ -6,6 +6,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @implements IDisposable
+@implements IHandleLocationChanging
 
 <button id="test-button" @onclick=@( () => NavigationManager.NavigateTo("LocationChangingStart"))>Navigate</button>
 <button id="test-button-gotoexternal" @onclick=@( () => NavigationManager.NavigateTo("www.google.com"))>Navigate external</button>
@@ -15,26 +16,29 @@
 <a id="test-link-gotoexternal" href="www.google.com">Can We go external</a>>
 <a id="test-link-gotoinvalid" href="thispagedoesnotexist">Can We go invalid</a>>
 
+<input id="test-shoulddelay" type="checkbox" @bind="@shouldDelay" />
+
 <span id="test-info">@UrlLocation</span>
 <button id="test-enable" @onclick=@( () => cancel = false)>Enable navigation</button>
 
-Can@(cancel ? " Not"  : "") Navigate
+Can@(cancel ? " Not" : "") Navigate
 
 @code{
     string UrlLocation;
+    bool shouldDelay = false;
     bool cancel = true;
 
     protected override void OnInitialized()
     {
         UrlLocation = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
-        NavigationManager.LocationChanging += OnLocationChanging;
+        NavigationManager.AddLocationChangingHandler(this);
     }
 
     void IDisposable.Dispose()
     {
+        NavigationManager.RemoveLocationChangingHandler(this);
         NavigationManager.LocationChanged -= OnLocationChanged;
-        NavigationManager.LocationChanging -= OnLocationChanging;
     }
 
     void OnLocationChanged(object sender, LocationChangedEventArgs e)
@@ -43,8 +47,13 @@ Can@(cancel ? " Not"  : "") Navigate
         StateHasChanged();
     }
 
-    void OnLocationChanging(object sender, LocationChangingEventArgs e)
+    public async ValueTask<bool> OnLocationChanging(LocationChangingContext e)
     {
-        e.Cancel = cancel;
+        if (shouldDelay)
+        {
+            await Task.Delay(1000);
+        }
+        return cancel;
     }
+
 }

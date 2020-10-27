@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
@@ -30,26 +33,8 @@ namespace Microsoft.AspNetCore.Components
 
         private EventHandler<LocationChangedEventArgs>? _locationChanged;
 
-        /// <summary>
-        /// An event that fires when the navigation location is about to change
-        /// </summary>
-        public event EventHandler<LocationChangingEventArgs> LocationChanging
-        {
-            add
-            {
-                AssertInitialized();
-                _locationChanging += value;
-                UpdateHasLocationChangingEventHandlers();
-            }
-            remove
-            {
-                AssertInitialized();
-                _locationChanging -= value;
-                UpdateHasLocationChangingEventHandlers();
-            }
-        }
+        private readonly IList<IHandleLocationChanging> _locationChangingListeners = new List<IHandleLocationChanging>();
 
-        private EventHandler<LocationChangingEventArgs>? _locationChanging;
 
         private bool _hasLocationChangingEventHandlers;
 
@@ -235,15 +220,26 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Triggers the <see cref="LocationChanging"/> event with the current URI value.
+        /// Calls all registered <see cref="IHandleLocationChanging"/> handlers, to see if navigation should be canceled.
+        /// Returns true if navigation should be canceled.
         /// </summary>
-        protected bool NotifyLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
+        protected async ValueTask<bool> NotifyLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
         {
             try
             {
-                var evt = new LocationChangingEventArgs(uri, isInterceptedLink, forceLoad);
-                _locationChanging?.Invoke(this, evt);
-                return evt.Cancel;
+                if (_locationChangingListeners.Count > 0)
+                {
+                    var context = new LocationChangingContext(uri, isInterceptedLink, forceLoad);
+                    //Copy List to local array, to prevent exception when user removes handler during execution
+                    foreach (var listener in _locationChangingListeners.ToArray())
+                    {
+                        if (await listener.OnLocationChanging(context))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             catch (Exception ex)
             {
@@ -252,7 +248,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Called when <see cref="LocationChanging"/> the fact that any event handlers are present or not changes.
+        /// Called when <see cref="IHandleLocationChanging"/> the fact that any event handlers are present or not changes.
         /// this can be used by descendants to inform the JSRuntime that there are locationchanging event handlers
         /// </summary>
         /// <param name="value">true if there are event handlers</param>
@@ -264,11 +260,11 @@ namespace Microsoft.AspNetCore.Components
 
         /// <summary>
         /// Calls <see cref="SetHasLocationChangingEventHandlers"/> when needed
-        /// This function is normally called when event handlers are added or removed from <see cref="LocationChanging"/>
+        /// This function is normally called when event handlers are added or removed from <see cref="NavigationManager"/>
         /// </summary>
         protected void UpdateHasLocationChangingEventHandlers()
         {
-            var value = _locationChanging != null;
+            var value = _locationChangingListeners.Any();
             if (_hasLocationChangingEventHandlers != value)
             {
                 //If SetHasLocationChangingEventHandlers returns false, we won't update the _hasLocationChangingEventHandlers.
@@ -278,6 +274,33 @@ namespace Microsoft.AspNetCore.Components
                     _hasLocationChangingEventHandlers = value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Will add a <see cref="IHandleLocationChanging"/> handler to be called during a navigation Location change
+        /// </summary>
+        /// <param name="locationChangingHandler"> <see cref="IHandleLocationChanging"/> handler to be added.</param>
+        public void AddLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+        {
+            AssertInitialized();
+            _locationChangingListeners.Add(locationChangingHandler);
+            UpdateHasLocationChangingEventHandlers();
+        }
+
+        /// <summary>
+        /// Will remove a <see cref="IHandleLocationChanging"/> handler that was previously added by <see cref="AddLocationChangingHandler"/>.
+        /// </summary>
+        /// <param name="locationChangingHandler"> <see cref="IHandleLocationChanging"/> handler to be removed.</param>
+        /// <returns></returns>
+        public bool RemoveLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+        {
+            AssertInitialized();
+            var isRemoved = _locationChangingListeners.Remove(locationChangingHandler);
+            if (isRemoved)
+            {
+                UpdateHasLocationChangingEventHandlers();
+            }
+            return isRemoved;
         }
 
         private void AssertInitialized()

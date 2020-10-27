@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(NotifyLocationChanging))]
-        public static bool NotifyLocationChanging(string uri, bool isInterceptedLink)
+        public static async Task<bool> NotifyLocationChanging(string uri, bool isInterceptedLink)
         {
-            return WebAssemblyNavigationManager.Instance.HandleLocationChanging(uri, isInterceptedLink, false);
+            return await WebAssemblyNavigationManager.Instance.HandleLocationChanging(uri, isInterceptedLink, false);
         }
 
         /// <summary>

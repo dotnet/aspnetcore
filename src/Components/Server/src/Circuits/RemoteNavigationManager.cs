@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -64,13 +65,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             NotifyLocationChanged(intercepted);
         }
 
-        public bool HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
+        public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
         {
             return NotifyLocationChanging(uri, intercepted, forceLoad);
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override async void NavigateToCore(string uri, bool forceLoad)
         {
             if (uri == null)
             {
@@ -85,10 +86,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            //In serverside blazor we call the locationChanging event here to avoid an extra browser / server roundtrip
-            if (!NotifyLocationChanging(uri, false, forceLoad))
+
+            //In serverside blazor we call the locationChanging handlers here to avoid an extra browser / server roundtrip
+            if (!await NotifyLocationChanging(uri, false, forceLoad))
             {
-                _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+                await _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
             }
             else
             {

@@ -1,22 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Routing
 {
+
     /// <summary>
-    /// <see cref="EventArgs" /> for <see cref="NavigationManager.LocationChanging" />.
+    /// context used by <see cref="IHandleLocationChanging" /> to see what kind of navigation is occuring.
     /// </summary>
-    public class LocationChangingEventArgs : EventArgs
+    public class LocationChangingContext
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="LocationChangingEventArgs" />.
+        /// Initializes a new instance of <see cref="LocationChangingContext" />.
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="isNavigationIntercepted">A value that determines if navigation for the link was intercepted.</param>
         /// <param name="forceLoad">A value that shows if the forceLoad flag was set during a call to <see cref="NavigationManager.NavigateTo" /> </param>
-        public LocationChangingEventArgs(string location, bool isNavigationIntercepted, bool forceLoad)
+        public LocationChangingContext(string location, bool isNavigationIntercepted, bool forceLoad)
         {
             Location = location;
             IsNavigationIntercepted = isNavigationIntercepted;
@@ -37,10 +36,5 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets a value if the Forceload flag was set during a call to <see cref="NavigationManager.NavigateTo" /> 
         /// </summary>
         public bool ForceLoad { get; }
-
-        /// <summary>
-        /// Gets or sets a value to cancel the current navigation
-        /// </summary>
-        public bool Cancel { get; set; }
     }
 }

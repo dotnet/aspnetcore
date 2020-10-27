@@ -482,6 +482,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             app.FindElement(By.Id("test-link-gotoinvalid")).Click();
             Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
 
+            //Now we add an awaitable delay, see if navigation is still blocked
+            app.FindElement(By.Id("test-shoulddelay")).Click();
+
+            //Attempt to navigate with navigateto should fail (Even with await)
+            app.FindElement(By.Id("test-button")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
             //Enable navigation again
             app.FindElement(By.Id("test-enable")).Click();
 

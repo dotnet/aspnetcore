@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -27,20 +28,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             NotifyLocationChanged(isInterceptedLink);
         }
 
-        public bool HandleLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
+        public ValueTask<bool> HandleLocationChanging(string uri, bool isInterceptedLink, bool forceLoad)
         {
             return NotifyLocationChanging(uri , isInterceptedLink, forceLoad);
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri, bool forceLoad)
+        protected override async void NavigateToCore(string uri, bool forceLoad)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (!NotifyLocationChanging(uri, false, forceLoad))
+            if (!await NotifyLocationChanging(uri, false, forceLoad))
             {
                 DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
             }
