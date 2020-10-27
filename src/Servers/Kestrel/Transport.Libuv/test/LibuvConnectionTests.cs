@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 await thread.StartAsync();
                 await thread.PostAsync(_ =>
-                {      
-                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                {
+                    var socket = new MockSocket(mockLibuv, Environment.CurrentManagedThreadId, transportContext.Log);
                     listenerContext.HandleConnection(socket);
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Write enough to make sure back pressure will be applied
                 await thread.PostAsync<object>(_ =>
                 {
-                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    var socket = new MockSocket(mockLibuv, Environment.CurrentManagedThreadId, transportContext.Log);
                     listenerContext.HandleConnection(socket);
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
@@ -144,9 +144,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Write enough to make sure back pressure will be applied
                 await thread.PostAsync<object>(_ =>
                 {
-                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    var socket = new MockSocket(mockLibuv, Environment.CurrentManagedThreadId, transportContext.Log);
                     listenerContext.HandleConnection(socket);
-                    
+
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 // Now complete the output writer and wait for the connection to close
                 await connection.DisposeAsync();
-                
+
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
                 Assert.Null(mockLibuv.ReadCallback);
@@ -203,9 +203,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await thread.StartAsync();
                 await thread.PostAsync(_ =>
                 {
-                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    var socket = new MockSocket(mockLibuv, Environment.CurrentManagedThreadId, transportContext.Log);
                     listenerContext.HandleConnection(socket);
-                    
+
                     var ignored = new LibuvFunctions.uv_buf_t();
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
                 }, (object)null);
