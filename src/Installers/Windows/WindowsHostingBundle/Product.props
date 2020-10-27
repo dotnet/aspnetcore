@@ -27,7 +27,5 @@
     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
   </PropertyGroup>
 </Project>
