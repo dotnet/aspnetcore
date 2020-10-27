@@ -7,7 +7,6 @@ Param(
   [string] $msbuildEngine = $null,
   [bool] $warnAsError = $true,
   [bool] $nodeReuse = $true,
-  [bool] $useDefaultDotnetInstall = $false,
   [switch][Alias('r')]$restore,
   [switch] $deployDeps,
   [switch][Alias('b')]$build,
@@ -66,7 +65,6 @@ function Print-Usage() {
   Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
   Write-Host "  -warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
   Write-Host "  -msbuildEngine <value>  Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
-  Write-Host "  -useDefaultDotnetInstall <value> Use dotnet-install.* scripts from public location as opposed to from eng common folder"
   Write-Host ""
 
   Write-Host "Command line arguments not listed above are passed thru to msbuild."

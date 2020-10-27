@@ -4,7 +4,7 @@ source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 baseline_core_root_directory=
 architecture=x64
-framework=net6.0
+framework=net5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH
@@ -192,7 +192,7 @@ if [[ "$internal" == true ]]; then
     helix_source_prefix="official"
     creator=
     extra_benchmark_dotnet_arguments=
-
+    
     if [[ "$architecture" = "arm64" ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
@@ -201,6 +201,7 @@ if [[ "$internal" == true ]]; then
 fi
 
 if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
 fi
 
@@ -232,7 +233,7 @@ if [[ "$run_from_perf_repo" = true ]]; then
     setup_arguments="--perf-hash $commit_sha $common_setup_arguments"
 else
     git clone --branch master --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
-
+    
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
 fi
