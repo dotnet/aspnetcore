@@ -21,10 +21,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <RepoRoot
-      Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'AspNetCore.sln'))\</RepoRoot>
-    <ArtifactsBinDir
-      Condition="'$(ArtifactsBinDir)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
+    <ArtifactsBinDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
   </PropertyGroup>
 
 	<ItemGroup>
