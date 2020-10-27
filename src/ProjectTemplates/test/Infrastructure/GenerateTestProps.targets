@@ -15,6 +15,7 @@
         MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim());
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
         RepoRoot=$(RepoRoot);
         Configuration=$(Configuration);
         ArtifactsBinDir=$(ArtifactsBinDir);

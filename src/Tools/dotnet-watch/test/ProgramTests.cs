@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("net5.0")
+                .WithTargetFrameworks("net6.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();
