@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NET5.0" />
+      <group targetFramework=".NET6.0" />
     </dependencies>
   </metadata>
 
@@ -12,7 +12,7 @@
     <file src="Sdk\*" target="Sdk" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
-    <file src="_._" target="lib\net5.0\_._" />
+    <file src="_._" target="lib\net6.0\_._" />
 
     <file src="$outputPath$\**" target="\" />
   </files>

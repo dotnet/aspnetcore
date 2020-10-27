@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "背景工作服務",
-    "description": "用於建立背景工作服務的空白專案範本。"
+    "name": "Worker Service",
+    "description": "An empty project template for creating a worker service."
   }
 }

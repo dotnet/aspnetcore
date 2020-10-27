@@ -18,14 +18,14 @@ namespace MusicStore.Mocks.MicrosoftAccount
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/token", StringComparison.Ordinal))
             {
                 var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["grant_type"] == "authorization_code")
                 {
                     if (formData["code"] == "ValidCode")
                     {
-                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-microsoft") &&
+                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-microsoft", StringComparison.Ordinal) &&
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"token_type\":\"bearer\",\"expires_in\":3600,\"scope\":\"https://graph.microsoft.com/user.read\",\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"authentication_token\":\"ValidAuthenticationToken\"}");
@@ -37,7 +37,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 response.StatusCode = (HttpStatusCode)400;
                 return response;
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.microsoft.com/v1.0/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.microsoft.com/v1.0/me", StringComparison.Ordinal))
             {
                 if (request.Headers.Authorization.Parameter == "ValidAccessToken")
                 {

@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            return string.Equals(FullPrefix, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(FullPrefix, Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />

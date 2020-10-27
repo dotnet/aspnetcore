@@ -34,7 +34,7 @@ namespace E2ETests
                     EnvironmentName = "SocialTesting",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Tfm.Net50,
+                    TargetFramework = Tfm.Default,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);

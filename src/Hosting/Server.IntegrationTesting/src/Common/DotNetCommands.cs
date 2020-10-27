@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             else if (!string.IsNullOrEmpty(dotnetRoot))
             {
-                if (dotnetRoot.EndsWith("x64"))
+                if (dotnetRoot.EndsWith("x64", StringComparison.Ordinal))
                 {
                     // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
                     result = dotnetRoot[0..^3];

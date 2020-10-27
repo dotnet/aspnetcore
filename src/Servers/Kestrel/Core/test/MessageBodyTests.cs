@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Max is 10 bytes
                 for (int i = 0; i < 11; i++)
                 {
-                    input.Add(i.ToString());
+                    input.Add(i.ToString(CultureInfo.InvariantCulture));
                 }
 
 #pragma warning disable CS0618 // Type or member is obsolete

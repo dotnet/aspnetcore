@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -155,7 +156,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(AllowAnyOrigin);
             builder.Append(", PreflightMaxAge: ");
             builder.Append(PreflightMaxAge.HasValue ?
-                PreflightMaxAge.Value.TotalSeconds.ToString() : "null");
+                PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture) : "null");
             builder.Append(", SupportsCredentials: ");
             builder.Append(SupportsCredentials);
             builder.Append(", Origins: {");

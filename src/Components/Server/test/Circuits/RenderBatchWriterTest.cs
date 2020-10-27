@@ -1,6 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -8,11 +14,6 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server
@@ -314,7 +315,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 {
                     // Assume enums are represented as ints
                     var expectedEntry = expectedEntryIterationVar.GetType().IsEnum
-                        ? Convert.ToInt32(expectedEntryIterationVar)
+                        ? Convert.ToInt32(expectedEntryIterationVar, CultureInfo.InvariantCulture)
                         : expectedEntryIterationVar;
 
                     if (expectedEntry is int expectedInt)

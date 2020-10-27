@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
         //     ConfigureContainer
         //   ConfigureContainerFilter2
         // ConfigureContainerFilter1
-        // 
+        //
         // If the Startup class ConfigureServices returns an <see cref="IServiceProvider"/> and there is at least an <see cref="IStartupConfigureServicesFilter"/> registered we
         // throw as the filters can't be applied.
         public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName, object instance = null)
@@ -228,15 +228,17 @@ namespace Microsoft.AspNetCore.Hosting
             if (string.IsNullOrEmpty(startupAssemblyName))
             {
                 throw new ArgumentException(
-                    string.Format("A startup method, startup type or startup assembly is required. If specifying an assembly, '{0}' cannot be null or empty.",
-                    nameof(startupAssemblyName)),
-                    nameof(startupAssemblyName));
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "A startup method, startup type or startup assembly is required. If specifying an assembly, '{0}' cannot be null or empty.",
+                        nameof(startupAssemblyName)),
+                        nameof(startupAssemblyName));
             }
 
             var assembly = Assembly.Load(new AssemblyName(startupAssemblyName));
             if (assembly == null)
             {
-                throw new InvalidOperationException(String.Format("The assembly '{0}' failed to load.", startupAssemblyName));
+                throw new InvalidOperationException($"The assembly '{startupAssemblyName}' failed to load.");
             }
 
             var startupNameWithEnv = "Startup" + environmentName;
@@ -266,7 +268,9 @@ namespace Microsoft.AspNetCore.Hosting
 
             if (type == null)
             {
-                throw new InvalidOperationException(String.Format("A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
                     startupNameWithEnv,
                     startupNameWithoutEnv,
                     startupAssemblyName));
@@ -308,14 +312,14 @@ namespace Microsoft.AspNetCore.Hosting
             var selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithEnv, StringComparison.OrdinalIgnoreCase)).ToList();
             if (selectedMethods.Count > 1)
             {
-                throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithEnv));
+                throw new InvalidOperationException($"Having multiple overloads of method '{methodNameWithEnv}' is not supported.");
             }
             if (selectedMethods.Count == 0)
             {
                 selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithNoEnv, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (selectedMethods.Count > 1)
                 {
-                    throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithNoEnv));
+                    throw new InvalidOperationException($"Having multiple overloads of method '{methodNameWithNoEnv}' is not supported.");
                 }
             }
 
@@ -324,7 +328,9 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 if (required)
                 {
-                    throw new InvalidOperationException(string.Format("A public method named '{0}' or '{1}' could not be found in the '{2}' type.",
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        "A public method named '{0}' or '{1}' could not be found in the '{2}' type.",
                         methodNameWithEnv,
                         methodNameWithNoEnv,
                         startupType.FullName));
@@ -336,7 +342,9 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 if (required)
                 {
-                    throw new InvalidOperationException(string.Format("The '{0}' method in the type '{1}' must have a return type of '{2}'.",
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        "The '{0}' method in the type '{1}' must have a return type of '{2}'.",
                         methodInfo.Name,
                         startupType.FullName,
                         returnType.Name));

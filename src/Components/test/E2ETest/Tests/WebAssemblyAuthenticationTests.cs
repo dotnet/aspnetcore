@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -201,8 +202,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             },
             payload.Scopes.OrderBy(id => id));
 
-            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text);
-            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text);
+            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.InvariantCulture);
+            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.InvariantCulture);
             Assert.True(currentTime.AddMinutes(50) < tokenExpiration);
             Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
         }
@@ -306,7 +307,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateLoggedIn(userName);
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void CanNotRedirect_To_External_ReturnUrl()
         {
             Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/login?returnUrl=https%3A%2F%2Fwww.bing.com").AbsoluteUri);

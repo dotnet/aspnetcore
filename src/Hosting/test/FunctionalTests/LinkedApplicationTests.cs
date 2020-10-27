@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeFlavor.CoreClr,
                     RuntimeArchitecture.x64)
                 {
-                    TargetFramework = Tfm.Net50,
+                    TargetFramework = Tfm.Default,
                     RuntimeArchitecture = RuntimeArchitecture.x64,
                     ApplicationType = ApplicationType.Standalone,
                     PublishApplicationBeforeDeployment = true,

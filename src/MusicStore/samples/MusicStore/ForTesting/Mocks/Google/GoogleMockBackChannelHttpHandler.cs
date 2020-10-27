@@ -18,14 +18,14 @@ namespace MusicStore.Mocks.Google
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/oauth2/v4/token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/oauth2/v4/token", StringComparison.Ordinal))
             {
                 var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["grant_type"] == "authorization_code")
                 {
                     if (formData["code"] == "ValidCode")
                     {
-                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-google") &&
+                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-google", StringComparison.Ordinal) &&
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"token_type\":\"Bearer\",\"expires_in\":\"1200\",\"id_token\":\"Token\"}", Encoding.UTF8, "application/json");
@@ -36,7 +36,7 @@ namespace MusicStore.Mocks.Google
                 response.StatusCode = (HttpStatusCode)400;
                 return response;
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/plus/v1/people/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/plus/v1/people/me", StringComparison.Ordinal))
             {
                 if (request.Headers.Authorization.Parameter == "ValidAccessToken")
                 {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -2062,7 +2063,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var reader = new StreamReader(request.Body, Encoding.ASCII))
                 {
                     var statusString = await reader.ReadLineAsync();
-                    response.StatusCode = int.Parse(statusString);
+                    response.StatusCode = int.Parse(statusString, CultureInfo.InvariantCulture);
                 }
             }, testContext))
             {
@@ -4186,7 +4187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 throw new InvalidDataException($"No StatusCode found in '{response}'");
             }
 
-            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
+            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
         }
     }
 }

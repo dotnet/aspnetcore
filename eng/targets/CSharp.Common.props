@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ImportGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
+    <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net6.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
   </ImportGroup>
 
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">

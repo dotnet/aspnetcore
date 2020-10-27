@@ -6,6 +6,12 @@ Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext.HandleResponse() 
 Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext.Handled.get -> bool
 Microsoft.AspNetCore.Authentication.Negotiate.LdapContext
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheAbsoluteExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheAbsoluteExpiration.set -> void
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheSize.get -> int
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheSize.set -> void
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheSlidingExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.ClaimsCacheSlidingExpiration.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapClaimResolution.get -> bool
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.EnableLdapClaimResolution.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.LdapSettings.IgnoreNestedGroups.get -> bool

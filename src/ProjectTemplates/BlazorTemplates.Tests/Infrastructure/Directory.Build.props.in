@@ -1,8 +1,8 @@
 <Project>
 <!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository -->
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
   </PropertyGroup>
-  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
+  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\${DefaultNetCoreTargetFramework}\Microsoft.NET.Sdk.BlazorWebAssembly.props" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
 
 </Project>

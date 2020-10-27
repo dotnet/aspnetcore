@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -489,6 +490,7 @@ WriteLiteral(""👧‍👧"");
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(string.Format(
+                CultureInfo.InvariantCulture,
 @"WriteLiteral(@""{0}"");
 WriteLiteral(@""{1}"");
 ", new string('*', 1024), new string('*', 976)),

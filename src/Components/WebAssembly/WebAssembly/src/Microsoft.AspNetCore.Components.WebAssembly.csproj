@@ -47,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\net5.0\" LinkBase="build\net5.0\" />
-    <Content Include="build\net5.0\*.props" Pack="true" PackagePath="build\net5.0\" />
+    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
+    <Content Include="build\$(DefaultNetCoreTargetFramework)\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 </Project>

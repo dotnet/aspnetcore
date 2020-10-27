@@ -101,6 +101,9 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ViewComponentContext"/>.
+        /// </summary>
         [ViewComponentContext]
         public ViewComponentContext ViewComponentContext
         {

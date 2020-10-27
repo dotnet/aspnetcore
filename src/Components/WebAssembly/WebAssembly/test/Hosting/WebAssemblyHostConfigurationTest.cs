@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private class CustomizedTestConfigurationProvider : ConfigurationProvider
         {
             public CustomizedTestConfigurationProvider(string key, string value)
-                => Data.Add(key, value.ToUpper());
+                => Data.Add(key, value.ToUpperInvariant());
 
             public override void Set(string key, string value)
             {

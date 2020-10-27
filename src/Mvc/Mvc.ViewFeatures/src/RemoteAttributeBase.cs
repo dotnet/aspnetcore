@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,10 @@ namespace Microsoft.AspNetCore.Mvc
         private string[] _additionalFieldsSplit = Array.Empty<string>();
         private bool _checkedForLocalizer;
         private IStringLocalizer _stringLocalizer;
-        
+
+        /// <summary>
+        /// Initialize a new instance of <see cref="RemoteAttributeBase"/>.
+        /// </summary>
         protected RemoteAttributeBase()
             : base(errorMessageAccessor: () => Resources.RemoteAttribute_RemoteValidationFailed)
         {
