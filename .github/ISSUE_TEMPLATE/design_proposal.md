@@ -6,8 +6,6 @@ labels: design-proposal
 
 <!--
 This template is useful to build consensus about whether work should be done, and if so, the high-level shape of how it should be approached. Use this before fixating on a particular implementation.
-
-Consider labelling your issue `design-proposal` to get feedback from a wide range of people.
 -->
 
 ## Summary
