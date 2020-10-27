@@ -20,10 +20,18 @@
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <RepoRoot
+      Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'AspNetCore.sln'))\</RepoRoot>
+    <ArtifactsBinDir
+      Condition="'$(ArtifactsBinDir)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
+  </PropertyGroup>
+
 	<ItemGroup>
     <HelixContent Include="..\testassets\**\*" />
     <HelixContent Include="$(RepoRoot)global.json" />
     <HelixContent Include="$(RepoRoot)eng\Versions.props" />
+    <HelixContent Include="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props" Link="$(MSBuildThisFileDirectory)\GenerateFiles.Directory.Build.props"/>
   </ItemGroup>
 
   <ItemGroup>
