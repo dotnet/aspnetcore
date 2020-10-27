@@ -1003,6 +1003,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await AssertFailsToStart(deploymentResult);
+            
+            StopServer();
+
             var expectedString = new string('a', 30000);
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
