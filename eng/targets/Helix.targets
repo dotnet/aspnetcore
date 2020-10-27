@@ -97,6 +97,7 @@
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('(Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>

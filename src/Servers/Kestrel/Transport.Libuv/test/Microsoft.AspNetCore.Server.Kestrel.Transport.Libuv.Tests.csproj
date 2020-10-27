@@ -5,7 +5,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- https://github.com/dotnet/aspnetcore/issues/22114 -->
-    <SkipHelixQueues>Windows.10.Arm64;Windows.10.Arm64.Open;(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673</SkipHelixQueues>
+    <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixAlpine>true</SkipHelixAlpine>
   </PropertyGroup>
 
   <ItemGroup>

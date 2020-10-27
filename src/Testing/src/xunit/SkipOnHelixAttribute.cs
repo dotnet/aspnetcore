@@ -42,19 +42,26 @@ namespace Microsoft.AspNetCore.Testing
                 return $"This test is skipped on helix";
             }
         }
-        
+
         private bool ShouldSkip()
         {
-            if (Queues == null) 
+            if (Queues == null)
             {
                 return true;
             }
-            
+
             var targetQueue = GetTargetHelixQueue().ToLowerInvariant();
-            if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx")) 
+
+            if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx"))
             {
                 return true;
             }
+
+            if (Queues.Contains("All.Alpine") && targetQueue.StartsWith("(alpine."))
+            {
+                return true;
+            }
+
             return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
         }
 
