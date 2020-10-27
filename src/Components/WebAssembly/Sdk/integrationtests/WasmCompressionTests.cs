@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public class WasmCompressionTests
     {
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -51,7 +50,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -82,7 +80,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange

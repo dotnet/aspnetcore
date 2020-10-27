@@ -684,7 +684,8 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var message = Assert.Single(sink.Writes);
+            Assert.NotEmpty(sink.Writes);
+            var message = sink.Writes.First();
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
         }
@@ -732,7 +733,8 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var message = Assert.Single(sink.Writes);
+            Assert.NotEmpty(sink.Writes);
+            var message = sink.Writes.First();
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
         }

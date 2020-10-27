@@ -3814,6 +3814,66 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(exception2, aex.InnerExceptions);
         }
 
+        [Fact]
+        public async Task DisposingRenderer_CapturesSyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => { disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_CapturesAsyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            var disposal = renderer.DisposeAsync();
+            Assert.False(disposed);
+            Assert.False(disposal.IsCompleted);
+
+            tcs.TrySetResult();
+            await disposal;
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
+        }
+
         [Theory]
         [InlineData(null)] // No existing attribute to update
         [InlineData("old property value")] // Has existing attribute to update

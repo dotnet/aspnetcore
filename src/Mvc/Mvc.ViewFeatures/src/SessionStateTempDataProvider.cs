@@ -17,6 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal const string TempDataSessionStateKey = "__ControllerTempData";
         private readonly TempDataSerializer _tempDataSerializer;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SessionStateTempDataProvider"/>.
+        /// </summary>
+        /// <param name="tempDataSerializer">The <see cref="TempDataSerializer"/>.</param>
         public SessionStateTempDataProvider(TempDataSerializer tempDataSerializer)
         {
             _tempDataSerializer = tempDataSerializer;

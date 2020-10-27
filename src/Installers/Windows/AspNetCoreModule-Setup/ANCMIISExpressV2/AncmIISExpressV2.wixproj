@@ -7,7 +7,7 @@
     <IsShipping>true</IsShipping>
     <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
     <OutputType>Package</OutputType>
-    <OutputName>ancm_iis_express_$(Platform)_en_v2</OutputName>
+    <OutputName>$(Name)_$(Platform)</OutputName>
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <SchemaVersion>2.0</SchemaVersion>
@@ -67,6 +67,6 @@
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <PackageFileName>ancm_iis_express_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
   </PropertyGroup>
 </Project>

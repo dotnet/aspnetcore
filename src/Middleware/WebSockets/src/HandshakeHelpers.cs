@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.WebSockets
             return validConnection && validUpgrade && validVersion && validKey;
         }
 
-        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
+        public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
         {
             headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
             headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;

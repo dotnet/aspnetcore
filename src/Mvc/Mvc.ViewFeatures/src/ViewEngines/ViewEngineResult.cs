@@ -8,20 +8,41 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewEngines
 {
+    /// <summary>
+    /// Represents the result of a view engine.
+    /// </summary>
     public class ViewEngineResult
     {
         private ViewEngineResult()
         {
         }
 
+        /// <summary>
+        /// The list of locations searched.
+        /// </summary>
         public IEnumerable<string> SearchedLocations { get; private set; }
 
+        /// <summary>
+        /// The <see cref="IView"/>.
+        /// </summary>
         public IView View { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the name of the view.
+        /// </summary>
         public string ViewName { get; private set; }
 
+        /// <summary>
+        /// Whether the result was successful
+        /// </summary>
         public bool Success => View != null;
 
+        /// <summary>
+        /// Returns a result that represents when a view is not found.
+        /// </summary>
+        /// <param name="viewName">The name of the view.</param>
+        /// <param name="searchedLocations">The locations searched.</param>
+        /// <returns>The not found result.</returns>
         public static ViewEngineResult NotFound(
             string viewName,
             IEnumerable<string> searchedLocations)
@@ -43,6 +64,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             };
         }
 
+        /// <summary>
+        /// Returns a result when a view is found.
+        /// </summary>
+        /// <param name="viewName">The name of the view.</param>
+        /// <param name="view">The <see cref="IView"/>.</param>
+        /// <returns>The found result.</returns>
         public static ViewEngineResult Found(string viewName, IView view)
         {
             if (viewName == null)
