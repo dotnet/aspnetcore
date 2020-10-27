@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixQueues>(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673</SkipHelixQueues>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>
