@@ -23,6 +23,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             AuthenticationProperties properties)
             : base(context, scheme, options, properties) { }
 
+        /// <summary>
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
         public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>

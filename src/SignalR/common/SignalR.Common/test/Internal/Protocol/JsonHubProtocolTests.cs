@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             {
                 PayloadSerializerOptions = new JsonSerializerOptions()
                 {
-                    IgnoreNullValues = ignoreNullValues,
+                    DefaultIgnoreCondition = ignoreNullValues ? System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault : System.Text.Json.Serialization.JsonIgnoreCondition.Never,
                     PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null,
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 }

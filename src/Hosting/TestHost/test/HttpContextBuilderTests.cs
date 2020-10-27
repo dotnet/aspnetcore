@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("/A/Path", context.Request.PathBase.Value);
             Assert.Equal("/and/file.txt", context.Request.Path.Value);
             Assert.Equal("?and=query", context.Request.QueryString.Value);
+            Assert.Null(context.Request.CanHaveBody());
             Assert.NotNull(context.Request.Body);
             Assert.NotNull(context.Request.Headers);
             Assert.NotNull(context.Response.Headers);
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });

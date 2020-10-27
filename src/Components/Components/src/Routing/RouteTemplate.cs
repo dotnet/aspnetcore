@@ -3,6 +3,7 @@
 
 
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -13,10 +14,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             TemplateText = templateText;
             Segments = segments;
+            OptionalSegmentsCount = segments.Count(template => template.IsOptional);
+            ContainsCatchAllSegment = segments.Any(template => template.IsCatchAll);
         }
 
         public string TemplateText { get; }
 
         public TemplateSegment[] Segments { get; }
+
+        public int OptionalSegmentsCount { get; }
+
+        public bool ContainsCatchAllSegment { get; }
     }
 }

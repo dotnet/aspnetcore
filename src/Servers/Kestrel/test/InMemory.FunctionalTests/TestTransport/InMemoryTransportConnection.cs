@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         private readonly ILogger _logger;
         private bool _isClosed;
-        private readonly TaskCompletionSource<object> _waitForCloseTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _waitForCloseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public InMemoryTransportConnection(MemoryPool<byte> memoryPool, ILogger logger, PipeScheduler scheduler = null)
         {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             {
                 state._connectionClosedTokenSource.Cancel();
 
-                state._waitForCloseTcs.TrySetResult(null);
+                state._waitForCloseTcs.TrySetResult();
             },
             this,
             preferLocal: false);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             private class ObservablePipeReader : PipeReader
             {
                 private readonly PipeReader _reader;
-                private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                private readonly TaskCompletionSource _tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 public Task WaitForReadTask => _tcs.Task;
 
@@ -164,9 +164,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 private class ObservableValueTask<T> : IValueTaskSource<T>
                 {
                     private readonly ValueTask<T> _task;
-                    private readonly TaskCompletionSource<object> _tcs;
+                    private readonly TaskCompletionSource _tcs;
 
-                    public ObservableValueTask(ValueTask<T> task, TaskCompletionSource<object> tcs)
+                    public ObservableValueTask(ValueTask<T> task, TaskCompletionSource tcs)
                     {
                         _task = task;
                         _tcs = tcs;
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     {
                         _task.GetAwaiter().UnsafeOnCompleted(() => continuation(state));
 
-                        _tcs.TrySetResult(null);
+                        _tcs.TrySetResult();
                     }
                 }
             }

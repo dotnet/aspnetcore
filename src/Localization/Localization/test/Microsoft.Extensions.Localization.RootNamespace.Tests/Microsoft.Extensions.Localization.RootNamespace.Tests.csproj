@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
     <RootNamespace>LocalizationTest.Abc</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="NewFolder\**" />
@@ -13,7 +14,6 @@
     <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.Extensions.Localization" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 

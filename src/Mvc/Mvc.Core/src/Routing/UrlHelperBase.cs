@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    /// <summary>
+    /// An abstraction for <see cref="IUrlHelper" />.
+    /// </summary>
     public abstract class UrlHelperBase : IUrlHelper
     {
         // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
@@ -20,6 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Perf: Reuse the RouteValueDictionary across multiple calls of Action for this UrlHelper
         private readonly RouteValueDictionary _routeValueDictionary;
 
+        /// <summary>
+        /// Initializes an instance of a <see cref="UrlHelperBase"/>
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         protected UrlHelperBase(ActionContext actionContext)
         {
             if (actionContext == null)
@@ -60,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "//" or "/\"
                 if (url[1] != '/' && url[1] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(1));
                 }
 
                 return false;
@@ -78,13 +85,27 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "~//" or "~/\"
                 if (url[2] != '/' && url[2] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(2));
                 }
 
                 return false;
             }
 
             return false;
+
+            static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
+            {
+                // URLs may not contain ASCII control characters.
+                for (var i = 0; i < readOnlySpan.Length; i++)
+                {
+                    if (char.IsControl(readOnlySpan[i]))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
         /// <inheritdoc />
@@ -123,6 +144,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public abstract string RouteUrl(UrlRouteContext routeContext);
 
+        /// <summary>
+        /// Gets a <see cref="RouteValueDictionary"/> using the specified values.
+        /// </summary>
+        /// <param name="values">The values to use.</param>
+        /// <returns>A <see cref="RouteValueDictionary"/> with the specified values.</returns>
         protected RouteValueDictionary GetValuesDictionary(object values)
         {
             // Perf: RouteValueDictionary can be cast to IDictionary<string, object>, but it is
@@ -152,6 +178,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new RouteValueDictionary(values);
         }
 
+        /// <summary>
+        /// Generate a url using the specified values.
+        /// </summary>
+        /// <param name="protocol">The protocol.</param>
+        /// <param name="host">The host.</param>
+        /// <param name="virtualPath">The virtual path.</param>
+        /// <param name="fragment">The fragment.</param>
+        /// <returns>The generated url</returns>
         protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment)
         {
             if (virtualPath == null)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
@@ -35,8 +36,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 
         /// <inheritdoc />
         public virtual bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                         return true;
                     }
 
-                    return AllowedMethods.Contains(Convert.ToString(obj), StringComparer.OrdinalIgnoreCase);
+                    return AllowedMethods.Contains(Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(routeDirection));

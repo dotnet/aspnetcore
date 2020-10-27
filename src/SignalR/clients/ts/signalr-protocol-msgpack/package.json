@@ -7,6 +7,7 @@
   "typings": "./dist/esm/index.d.ts",
   "umd": "./dist/browser/signalr-protocol-msgpack.js",
   "umd_name": "signalR.protocols.msgpack",
+  "unpkg": "./dist/browser/signalr-protocol-msgpack.js",
   "directories": {
     "test": "spec"
   },

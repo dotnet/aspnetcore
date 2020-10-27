@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -24,6 +25,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -33,14 +35,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
         {
             var onStartingCalled = false;
-            TaskCompletionSource<object> onCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource onCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(context =>
             {
                 context.Response.OnStarting(() => Task.Run(() => onStartingCalled = true));
                 context.Response.OnCompleted(() => Task.Run(() =>
                 {
-                    onCompletedTcs.SetResult(null);
+                    onCompletedTcs.SetResult();
                 }));
 
                 // Prevent OnStarting call (see HttpProtocol.ProcessRequestsAsync()).
@@ -140,8 +142,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var serviceContext = new TestServiceContext(LoggerFactory);
             var cts = new CancellationTokenSource();
-            var appTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var writeBlockedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeBlockedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
@@ -163,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         completedTask = await Task.WhenAny(writeTask, timerTask);
                     }
 
-                    writeBlockedTcs.TrySetResult(null);
+                    writeBlockedTcs.TrySetResult();
 
                     await writeTask;
                 }
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
                 finally
                 {
-                    appTcs.TrySetResult(null);
+                    appTcs.TrySetResult();
                 }
             }, serviceContext))
             {
@@ -288,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         await context.Request.Body.ReadAsync(new byte[1], 0, 1);
                     }
-                    catch (BadHttpRequestException)
+                    catch (Microsoft.AspNetCore.Http.BadHttpRequestException)
                     {
                     }
                 },
@@ -330,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task OnCompletedShouldNotBlockAResponse()
         {
-            var delayTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var delayTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
@@ -360,20 +362,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
 
-                delayTcs.SetResult(null);
+                delayTcs.SetResult();
             }
         }
 
         [Fact]
         public async Task InvalidChunkedEncodingInRequestShouldNotBlockOnCompleted()
         {
-            var onCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.OnCompleted(() => Task.Run(() =>
                 {
-                    onCompletedTcs.SetResult(null);
+                    onCompletedTcs.SetResult();
                 }));
                 return Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
@@ -403,11 +405,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task NoErrorResponseSentWhenAppSwallowsBadRequestException()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException readException = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await using (var server = new TestServer(async httpContext =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 readException = await Assert.ThrowsAsync<BadHttpRequestException>(
+#pragma warning restore CS0618 // Type or member is obsolete
                     async () => await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1));
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -430,8 +436,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Assert.NotNull(readException);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -637,11 +645,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             const string response = "hello, world";
 
-            var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length))
-                .Callback<string, long>((connectionId, count) => logTcs.SetResult(null));
+                .Callback<string, long>((connectionId, count) => logTcs.SetResult());
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -824,13 +832,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task WhenAppWritesLessThanContentLengthErrorLogged()
         {
-            var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockTrace = new Mock<IKestrelTrace>();
             mockTrace
                 .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
                 .Callback<string, string, Exception>((connectionId, requestId, ex) =>
                 {
-                    logTcs.SetResult(null);
+                    logTcs.SetResult();
                 });
 
             await using (var server = new TestServer(async httpContext =>
@@ -871,7 +879,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
         }
 
         [Fact]
@@ -879,13 +887,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             InvalidOperationException completeEx = null;
 
-            var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockTrace = new Mock<IKestrelTrace>();
             mockTrace
                 .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
                 .Callback<string, string, Exception>((connectionId, requestId, ex) =>
                 {
-                    logTcs.SetResult(null);
+                    logTcs.SetResult();
                 });
 
             await using (var server = new TestServer(async httpContext =>
@@ -929,7 +937,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
 
             Assert.NotNull(completeEx);
         }
@@ -937,14 +945,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
         {
-            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockTrace = new Mock<IKestrelTrace>();
 
             await using (var server = new TestServer(async httpContext =>
             {
                 httpContext.RequestAborted.Register(() =>
                 {
-                    requestAborted.SetResult(null);
+                    requestAborted.SetResult();
                 });
 
                 httpContext.Response.ContentLength = 12;
@@ -1018,7 +1026,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var error = TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
             Assert.Equal(2, error.Count());
-            Assert.All(error, message => message.Message.Equals("Response Content-Length mismatch: too few bytes written (0 of 5)."));
+            Assert.All(error, message => message.Message.Equals(CoreStrings.FormatTooFewBytesWritten(0, 5)));
         }
 
         [Theory]
@@ -1158,7 +1166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
         {
-            var flushed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -1181,7 +1189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
 
-                    flushed.SetResult(null);
+                    flushed.SetResult();
                 }
             }
         }
@@ -1189,7 +1197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task HeadResponseBodyNotWrittenWithSyncWrite()
         {
-            var flushed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
 
@@ -1214,7 +1222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
 
-                    flushed.SetResult(null);
+                    flushed.SetResult();
                 }
             }
         }
@@ -1222,7 +1230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ZeroLengthWritesFlushHeaders()
         {
-            var flushed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var flushed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -1246,7 +1254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
 
-                    flushed.SetResult(null);
+                    flushed.SetResult();
 
                     await connection.Receive("hello, world");
                 }
@@ -1257,7 +1265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task AppCanWriteOwnBadRequestResponse()
         {
             var expectedResponse = string.Empty;
-            var responseWritten = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseWritten = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -1265,13 +1273,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
                 }
-                catch (BadHttpRequestException ex)
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
                 {
                     expectedResponse = ex.Message;
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     httpContext.Response.ContentLength = ex.Message.Length;
                     await httpContext.Response.WriteAsync(ex.Message);
-                    responseWritten.SetResult(null);
+                    responseWritten.SetResult();
                 }
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -1749,8 +1757,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -1801,8 +1811,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         while (TestApplicationErrorLogger.Messages.TryDequeue(out var message))
                         {
+#pragma warning disable CS0618 // Type or member is obsolete
                             if (message.EventId.Id == 17 && message.LogLevel <= LogLevel.Debug && message.Exception is BadHttpRequestException
                                 && ((BadHttpRequestException)message.Exception).StatusCode == StatusCodes.Status400BadRequest)
+#pragma warning restore CS0618 // Type or member is obsolete
                             {
                                 foundMessage = true;
                                 break;
@@ -1862,8 +1874,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -2049,7 +2063,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var reader = new StreamReader(request.Body, Encoding.ASCII))
                 {
                     var statusString = await reader.ReadLineAsync();
-                    response.StatusCode = int.Parse(statusString);
+                    response.StatusCode = int.Parse(statusString, CultureInfo.InvariantCulture);
                 }
             }, testContext))
             {
@@ -2244,7 +2258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task OnStartingThrowsInsideOnStartingCallbacksRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -2253,7 +2267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     response.OnStarting(state2 =>
                     {
-                        tcs.TrySetResult(null);
+                        tcs.TrySetResult();
                         return Task.CompletedTask;
                     },
                     null);
@@ -2288,7 +2302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task OnCompletedThrowsInsideOnCompletedCallbackRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -2297,7 +2311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     response.OnCompleted(state2 =>
                     {
-                        tcs.TrySetResult(null);
+                        tcs.TrySetResult();
 
                         return Task.CompletedTask;
                     },
@@ -2541,24 +2555,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24164")]
+        [Repeat(100)]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            await using (var server = new TestServer(httpContext =>
+            var closeTaskTcs = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using (var server = new TestServer(async httpContext =>
             {
+                var closeTask = await closeTaskTcs.Task.DefaultTimeout();
                 var feature = httpContext.Features.Get<IConnectionLifetimeFeature>();
                 feature.Abort();
 
                 // Ensure the response doesn't get flush before the abort is observed.
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                feature.ConnectionClosed.Register(() => tcs.TrySetResult(null));
-
-                return tcs.Task;
+                await closeTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
+                    closeTaskTcs.SetResult(connection.TransportConnection.WaitForCloseTask);
+
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "Host:",
@@ -2832,7 +2850,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -2860,7 +2878,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                     // If we reach this point before the app exits, this means the flush finished early.
-                    tcs.SetResult(null);
+                    tcs.SetResult();
                 }
             }
         }
@@ -3013,14 +3031,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
 
             var callOrder = new Stack<int>();
-            var onStartingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onStartingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
                 context.Response.OnStarting(_ =>
                 {
                     callOrder.Push(1);
-                    onStartingTcs.SetResult(null);
+                    onStartingTcs.SetResult();
                     return Task.CompletedTask;
                 }, null);
                 context.Response.OnStarting(_ =>
@@ -3064,14 +3082,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
 
             var callOrder = new Stack<int>();
-            var onCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
                 context.Response.OnCompleted(_ =>
                 {
                     callOrder.Push(1);
-                    onCompletedTcs.SetResult(null);
+                    onCompletedTcs.SetResult();
                     return Task.CompletedTask;
                 }, null);
                 context.Response.OnCompleted(_ =>
@@ -3396,8 +3414,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World!");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -3535,7 +3551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoesThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionNextWriteDoesThrow()
         {
             InvalidOperationException writeEx = null;
 
@@ -3563,6 +3579,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             Assert.NotNull(writeEx);
+        }
+
+        [Fact]
+        public async Task ResponseBodyWriterCompleteFlushesChunkTerminator()
+        {
+            var middlewareCompletionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("hello, world");
+                await httpContext.Response.BodyWriter.CompleteAsync();
+                await middlewareCompletionTcs.Task;
+            }, new TestServiceContext(LoggerFactory));
+
+            using var connection = server.CreateConnection();
+
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "",
+                "c",
+                "hello, world",
+                "0",
+                "",
+                "");
+
+            middlewareCompletionTcs.SetResult();
         }
 
         [Fact]
@@ -3897,7 +3947,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-
         [Fact]
         public async Task ResponseGetMemoryAndStartAsyncAdvanceThrows()
         {
@@ -4049,7 +4098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 });
 
             await using (var server = new TestServer(handler, new TestServiceContext(loggerFactory),
-                options => options.ListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))),
+                options => options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))),
                 services => services.AddSingleton(mockHttpContextFactory.Object)))
             {
                 using (var connection = server.CreateConnection())
@@ -4116,8 +4165,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             if (sendMalformedRequest)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Contains(testSink.Writes, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                     && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             else
             {
@@ -4136,7 +4187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 throw new InvalidDataException($"No StatusCode found in '{response}'");
             }
 
-            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
+            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
         }
     }
 }

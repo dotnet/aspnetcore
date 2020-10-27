@@ -20,7 +20,7 @@ namespace MusicStore.Mocks.Twitter
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/access_token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/access_token", StringComparison.Ordinal))
             {
                 var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["oauth_verifier"] == "valid_oauth_verifier")
@@ -47,7 +47,7 @@ namespace MusicStore.Mocks.Twitter
                 response.StatusCode = (HttpStatusCode)400;
                 return response;
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/request_token"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/request_token", StringComparison.Ordinal))
             {
                 var response_Form_data = new List<KeyValuePair<string, string>>()
                 {

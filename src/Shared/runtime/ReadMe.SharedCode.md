@@ -14,22 +14,22 @@ dotnet/AspNetCore code paths:
 
 ## Building dotnet/runtime code:
 - https://github.com/dotnet/runtime/tree/master/docs/workflow
-- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -subsetCategory libraries`
+- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -runtimeConfiguration Release  -subset clr+libs`
 - Build the individual projects:
-- `PS D:\github\dotnet\src\libraries\Common\tests> dotnet msbuild /t:rebuild`
-- `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet msbuild /t:rebuild`
+- `PS D:\github\dotnet\src\libraries\Common\tests> dotnet build`
+- `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet build`
 
 ### Running dotnet/runtime tests:
-- `PS D:\github\runtime\src\libraries\Common\tests> dotnet msbuild /t:rebuildandtest`
-- `PS D:\github\runtime\src\libraries\System.Net.Http\tests\UnitTests> dotnet msbuild /t:rebuildandtest`
+- `PS D:\github\runtime\src\libraries\Common\tests> dotnet build /t:test`
+- `PS D:\github\runtime\src\libraries\System.Net.Http\tests\UnitTests> dotnet build /t:test`
 
 ## Building dotnet/AspNetCore code:
 - https://github.com/dotnet/AspNetCore/blob/master/docs/BuildFromSource.md
 - Run restore in the root once: `PS D:\github\AspNetCore> .\restore.cmd`
 - Activate to use the repo local runtime: `PS D:\github\AspNetCore> . .\activate.ps1`
 - Build the individual projects:
-- `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet msbuild`
-- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet msbuild`
+- `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet build`
+- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet build`
 
 ### Running dotnet/AspNetCore tests:
 - `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet test`

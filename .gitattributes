@@ -71,3 +71,9 @@ gradlew eol=lf
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# Make sure jQuery files always have LF as line endings (to pass SRI checks)
+###############################################################################
+jquery*.js eol=lf
+jquery*.map eol=lf

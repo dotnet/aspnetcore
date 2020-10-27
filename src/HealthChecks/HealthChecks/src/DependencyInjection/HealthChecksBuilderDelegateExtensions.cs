@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -41,11 +42,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
             this IHealthChecksBuilder builder,
             string name,
             Func<HealthCheckResult> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -80,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, HealthCheckResult> check,
-            IEnumerable<string> tags)
+            IEnumerable<string>? tags)
         {
             return AddCheck(builder, name, check, tags, default);
         }
@@ -94,11 +96,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, HealthCheckResult> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -147,11 +150,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
             this IHealthChecksBuilder builder,
             string name,
             Func<Task<HealthCheckResult>> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -200,11 +204,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, Task<HealthCheckResult>> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)

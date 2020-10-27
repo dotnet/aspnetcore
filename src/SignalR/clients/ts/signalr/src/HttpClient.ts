@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortSignal } from "./AbortController";
+import { MessageHeaders } from "./IHubProtocol";
 
 /** Represents an HTTP request. */
 export interface HttpRequest {
@@ -15,7 +16,7 @@ export interface HttpRequest {
     content?: string | ArrayBuffer;
 
     /** An object describing headers to apply to the request. */
-    headers?: { [key: string]: string };
+    headers?: MessageHeaders;
 
     /** The XMLHttpRequestResponseType to apply to the request. */
     responseType?: XMLHttpRequestResponseType;

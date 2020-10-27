@@ -87,12 +87,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp5.0",
-          "description": "Target netcoreapp5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "netcoreapp5.0",
-      "defaultValue": "netcoreapp5.0"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "HostIdentifier": {
       "type": "bind",

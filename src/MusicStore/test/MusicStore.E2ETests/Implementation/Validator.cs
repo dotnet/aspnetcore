@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -183,7 +184,7 @@ namespace E2ETests
 
         private string PrefixBaseAddress(string url)
         {
-            url = string.Format(url, string.Empty);
+            url = string.Format(CultureInfo.InvariantCulture, url, string.Empty);
 
             return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
         }
@@ -264,8 +265,8 @@ namespace E2ETests
             //Account verification
             Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/Register", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains("For DEMO only: You can click this link to confirm the email:", responseContent, StringComparison.OrdinalIgnoreCase);
-            var startIndex = responseContent.IndexOf("[[<a href=\"", 0) + "[[<a href=\"".Length;
-            var endIndex = responseContent.IndexOf("\">link</a>]]", startIndex);
+            var startIndex = responseContent.IndexOf("[[<a href=\"", 0, StringComparison.Ordinal) + "[[<a href=\"".Length;
+            var endIndex = responseContent.IndexOf("\">link</a>]]", startIndex, StringComparison.Ordinal);
             var confirmUrl = responseContent.Substring(startIndex, endIndex - startIndex);
             confirmUrl = WebUtility.HtmlDecode(confirmUrl);
             response = await DoGetAsync(confirmUrl);
@@ -293,7 +294,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/Register", content);
             responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Contains(string.Format("User name &#x27;{0}&#x27; is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "User name &#x27;{0}&#x27; is already taken.", email), responseContent, StringComparison.OrdinalIgnoreCase);
             _logger.LogInformation("Identity threw a valid exception that user '{email}' already exists in the system", email);
         }
 
@@ -361,7 +362,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/Login", content);
             responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Contains(string.Format("Hello {0}!", email), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Hello {0}!", email), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
             Assert.Contains(IdentityCookieName, GetCookieNames());
@@ -420,13 +421,13 @@ namespace E2ETests
             // Run some CORS validation.
             _logger.LogInformation("Fetching the album id of '{album}'", albumName);
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://notpermitteddomain.com");
-            var response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
+            var response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
             await ThrowIfResponseStatusNotOk(response);
             Assert.False(response.Headers.TryGetValues("Access-Control-Allow-Origin", out var values));
 
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://example.com");
-            response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
+            response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
             await ThrowIfResponseStatusNotOk(response);
             Assert.Equal("http://example.com", response.Headers.GetValues("Access-Control-Allow-Origin").First());
             _httpClient.DefaultRequestHeaders.Remove("Origin");
@@ -439,12 +440,12 @@ namespace E2ETests
         public async Task VerifyAlbumDetails(string albumId, string albumName)
         {
             _logger.LogInformation("Getting details of album with Id '{id}'", albumId);
-            var response = await DoGetAsync(string.Format("Admin/StoreManager/Details?id={0}", albumId));
+            var response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Admin/StoreManager/Details?id={0}", albumId));
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(PrefixBaseAddress(string.Format("<a href=\"/{0}/Admin/StoreManager/Edit?id={1}\">Edit</a>", "{0}", albumId)), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress(string.Format(CultureInfo.InvariantCulture, "<a href=\"/{0}/Admin/StoreManager/Edit?id={1}\">Edit</a>", "{0}", albumId)), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Admin/StoreManager\">Back to List</a>"), responseContent, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -463,7 +464,7 @@ namespace E2ETests
         public async Task GetAlbumDetailsFromStore(string albumId, string albumName)
         {
             _logger.LogInformation("Getting details of album with Id '{id}'", albumId);
-            var response = await DoGetAsync(string.Format("Store/Details/{0}", albumId));
+            var response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Store/Details/{0}", albumId));
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
@@ -472,7 +473,7 @@ namespace E2ETests
         public async Task AddAlbumToCart(string albumId, string albumName)
         {
             _logger.LogInformation("Adding album id '{albumId}' to the cart", albumId);
-            var response = await DoGetAsync(string.Format("ShoppingCart/AddToCart?id={0}", albumId));
+            var response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "ShoppingCart/AddToCart?id={0}", albumId));
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
@@ -523,7 +524,7 @@ namespace E2ETests
             await ThrowIfResponseStatusNotOk(response);
 
             _logger.LogInformation("Verifying if the album '{album}' is deleted from store", albumName);
-            response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
+            response = await DoGetAsync(string.Format(CultureInfo.InvariantCulture, "Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.LogInformation("Album '{album}' with id '{Id}' is successfully deleted from the store.", albumName, albumId);
         }
@@ -535,7 +536,7 @@ namespace E2ETests
                 LogHeaders(response, LogLevel.Information);
                 var content = await response.Content.ReadAsStringAsync();
                 _logger.LogError("Content: Length={0}\n{1}", content.Length, content);
-                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
+                throw new Exception(string.Format(CultureInfo.InvariantCulture, "Received the above response with status code : {0}", response.StatusCode));
             }
         }
 

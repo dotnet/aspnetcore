@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
 using System;
 using System.IO;
 using System.Reflection;
@@ -84,7 +85,7 @@ namespace Microsoft.Extensions.Localization.Tests
 
             // Assert
             Assert.Equal(typeFactory.BaseName, stringFactory.BaseName);
-            Assert.Equal(typeFactory.Assembly.FullName, stringFactory.Assembly.FullName);
+            Assert.Equal(typeFactory.Assembly!.FullName, stringFactory.Assembly!.FullName);
         }
 
         [Fact]
@@ -293,7 +294,7 @@ namespace Microsoft.Extensions.Localization.Tests
             var factory = new ResourceManagerStringLocalizerFactory(localizationOptions: options.Object, loggerFactory: loggerFactory);
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => factory.Create("baseName", location: null));
+            Assert.Throws<ArgumentNullException>(() => factory.Create("baseName", location: null!));
         }
     }
 }

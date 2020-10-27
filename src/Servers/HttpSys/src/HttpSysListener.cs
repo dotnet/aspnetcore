@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public Task<RequestContext> AcceptAsync()
         {
-            AsyncAcceptContext asyncResult = null;
+            AsyncAcceptContext acceptContext = null;
             try
             {
                 CheckDisposed();
@@ -287,14 +287,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // prepare the ListenerAsyncResult object (this will have it's own
                 // event that the user can wait on for IO completion - which means we
                 // need to signal it when IO completes)
-                asyncResult = new AsyncAcceptContext(this);
-                uint statusCode = asyncResult.QueueBeginGetContext();
+                acceptContext = new AsyncAcceptContext(this);
+                uint statusCode = acceptContext.QueueBeginGetContext();
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
                 {
                     // some other bad error, possible(?) return values are:
                     // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                    asyncResult.Dispose();
+                    acceptContext.Dispose();
                     throw new HttpSysException((int)statusCode);
                 }
             }
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw;
             }
 
-            return asyncResult.Task;
+            return acceptContext.Task;
         }
 
         internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Copied from the multi-value headers section of SerializeHeaders
                 if (authChallenges != null && authChallenges.Count > 0)
                 {
-                    pinnedHeaders = new List<GCHandle>();
+                    pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
 
                     HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
                     knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];

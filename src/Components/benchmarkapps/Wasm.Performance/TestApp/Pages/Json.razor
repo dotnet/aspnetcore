@@ -1,4 +1,4 @@
-@page "/json"
+﻿@page "/json"
 @using System.Text.Json
 @inject IJSRuntime JSRuntime
 
@@ -24,9 +24,8 @@
 }
 
 @code {
-    static string[] Clearances = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
-    Person smallOrgChart = GenerateOrgChart(1, 4);
-    Person largeOrgChart = GenerateOrgChart(5, 4);
+    Person smallOrgChart = Person.GenerateOrgChart(1, 4);
+    Person largeOrgChart = Person.GenerateOrgChart(5, 4);
     string smallOrgChartJson;
     string largeOrgChartJson;
     int numPeopleDeserialized;
@@ -62,23 +61,6 @@
     void DeserializeLarge()
         => numPeopleDeserialized = Deserialize(largeOrgChartJson);
 
-    static Person GenerateOrgChart(int totalDepth, int numDescendantsPerNode, int thisDepth = 0, string namePrefix = null, int siblingIndex = 0)
-    {
-        var name = $"{namePrefix ?? "CEO"} - Subordinate {siblingIndex}";
-        var rng = new Random(0);
-        return new Person
-        {
-            Name = name,
-            IsAdmin = siblingIndex % 2 == 0,
-            Salary = 10000000 / (thisDepth + 1),
-            SecurityClearances = Clearances
-                .ToDictionary(c => c, _ => (object)(rng.Next(0, 2) == 0)),
-            Subordinates = Enumerable.Range(0, thisDepth < totalDepth ? numDescendantsPerNode : 0)
-                .Select(index => GenerateOrgChart(totalDepth, numDescendantsPerNode, thisDepth + 1, name, index))
-                .ToList()
-        };
-    }
-
     static int Deserialize(string json)
     {
         var ceo = JsonSerializer.Deserialize<Person>(json);
@@ -87,13 +69,4 @@
 
     static int CountPeople(Person root)
         => 1 + (root.Subordinates?.Sum(CountPeople) ?? 0);
-
-    class Person
-    {
-        public string Name { get; set; }
-        public int Salary { get; set; }
-        public bool IsAdmin { get; set; }
-        public List<Person> Subordinates { get; set; }
-        public Dictionary<string, object> SecurityClearances { get; set; }
-    }
 }

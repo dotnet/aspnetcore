@@ -10,12 +10,11 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class MultipartSection
     {
-        public string ContentType
+        public string? ContentType
         {
             get
             {
-                StringValues values;
-                if (Headers.TryGetValue(HeaderNames.ContentType, out values))
+                if (Headers != null && Headers.TryGetValue(HeaderNames.ContentType, out var values))
                 {
                     return values;
                 }
@@ -23,12 +22,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public string ContentDisposition
+        public string? ContentDisposition
         {
             get
             {
-                StringValues values;
-                if (Headers.TryGetValue(HeaderNames.ContentDisposition, out values))
+                if (Headers != null && Headers.TryGetValue(HeaderNames.ContentDisposition, out var values))
                 {
                     return values;
                 }
@@ -36,9 +34,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public Dictionary<string, StringValues> Headers { get; set; }
+        public Dictionary<string, StringValues>? Headers { get; set; }
 
-        public Stream Body { get; set; }
+        /// <summary>
+        /// Gets or sets the body.
+        /// </summary>
+        public Stream Body { get; set; } = default!;
 
         /// <summary>
         /// The position where the body starts in the total multipart body.

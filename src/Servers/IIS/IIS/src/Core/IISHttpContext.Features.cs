@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
+        private static readonly Type IHttpRequestBodyDetectionFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
         private static readonly Type IHttpResponseBodyFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature);
@@ -28,8 +29,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IISHttpContextType = typeof(IISHttpContext);
         private static readonly Type IServerVariablesFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
         private static readonly Type IHttpMaxRequestBodySizeFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
+        private static readonly Type IHttpResponseTrailersFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
+        private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
 
         private object _currentIHttpRequestFeature;
+        private object _currentIHttpRequestBodyDetectionFeature;
         private object _currentIHttpResponseFeature;
         private object _currentIHttpResponseBodyFeature;
         private object _currentIHttpRequestIdentifierFeature;
@@ -48,10 +52,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object _currentIHttpBodyControlFeature;
         private object _currentIServerVariablesFeature;
         private object _currentIHttpMaxRequestBodySizeFeature;
+        private object _currentIHttpResponseTrailersFeature;
+        private object _currentIHttpResetFeature;
 
         private void Initialize()
         {
             _currentIHttpRequestFeature = this;
+            _currentIHttpRequestBodyDetectionFeature = this;
             _currentIHttpResponseFeature = this;
             _currentIHttpResponseBodyFeature = this;
             _currentIHttpUpgradeFeature = this;
@@ -63,6 +70,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentIServerVariablesFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentITlsConnectionFeature = this;
+            _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
+            _currentIHttpResetFeature = GetResetFeature();
         }
 
         internal object FastFeatureGet(Type key)
@@ -70,6 +79,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpRequestFeatureType)
             {
                 return _currentIHttpRequestFeature;
+            }
+            if (key == IHttpRequestBodyDetectionFeature)
+            {
+                return _currentIHttpRequestBodyDetectionFeature;
             }
             if (key == IHttpResponseFeatureType)
             {
@@ -147,6 +160,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 return _currentIHttpMaxRequestBodySizeFeature;
             }
+            if (key == IHttpResponseTrailersFeature)
+            {
+                return _currentIHttpResponseTrailersFeature;
+            }
+            if (key == IHttpResetFeature)
+            {
+                return _currentIHttpResetFeature;
+            }
 
             return ExtraFeatureGet(key);
         }
@@ -158,6 +179,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpRequestFeatureType)
             {
                 _currentIHttpRequestFeature = feature;
+                return;
+            }
+            if (key == IHttpRequestBodyDetectionFeature)
+            {
+                _currentIHttpRequestBodyDetectionFeature = feature;
                 return;
             }
             if (key == IHttpResponseFeatureType)
@@ -249,6 +275,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 _currentIHttpMaxRequestBodySizeFeature = feature;
             }
+            if (key == IHttpResponseTrailersFeature)
+            {
+                _currentIHttpResponseTrailersFeature = feature;
+            }
+            if (key == IHttpResetFeature)
+            {
+                _currentIHttpResetFeature = feature;
+            }
             if (key == IISHttpContextType)
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
@@ -261,6 +295,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpRequestFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
+            }
+            if (_currentIHttpRequestBodyDetectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpRequestBodyDetectionFeature, _currentIHttpRequestBodyDetectionFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature);
             }
             if (_currentIHttpResponseFeature != null)
             {
@@ -333,6 +371,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpMaxRequestBodySizeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpMaxRequestBodySizeFeature, _currentIHttpMaxRequestBodySizeFeature as global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
+            }
+            if (_currentIHttpResponseTrailersFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResponseTrailersFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
+            }
+            if (_currentIHttpResetFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResetFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
             }
 
             if (MaybeExtra != null)

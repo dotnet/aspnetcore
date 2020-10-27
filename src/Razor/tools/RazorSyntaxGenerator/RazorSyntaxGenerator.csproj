@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Generates Razor syntax nodes from xml. For internal use only.</Description>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>dotnet-razorsyntaxgenerator</AssemblyName>
+    <PackageId>RazorSyntaxGenerator</PackageId>
+    <OutputType>Exe</OutputType>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

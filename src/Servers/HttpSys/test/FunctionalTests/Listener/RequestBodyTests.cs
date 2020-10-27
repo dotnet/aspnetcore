@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class RequestBodyTests
     {
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1826", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1826")]
         public async Task RequestBody_SyncReadDisabledByDefault_WorksWhenEnabled()
         {
             string address;
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2206", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2206")]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();

@@ -17,32 +17,23 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCorePerfLabConfig()
         {
-            Add(ConsoleLogger.Default);
+            AddLogger(ConsoleLogger.Default);
 
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-            Add(new ParamsSummaryColumn());
-            Add(DefaultColumnProviders.Statistics, DefaultColumnProviders.Diagnosers, DefaultColumnProviders.Target);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddColumn(StatisticColumn.OperationsPerSecond);
+            AddColumn(new ParamsSummaryColumn());
+            AddColumnProvider(DefaultColumnProviders.Statistics, DefaultColumnProviders.Metrics, DefaultColumnProviders.Descriptor);
 
-            // TODO: When upgrading to BDN 0.11.1, use Add(DefaultColumnProviders.Descriptor); 
-            // DefaultColumnProviders.Target is deprecated
+            AddValidator(JitOptimizationsValidator.FailOnError);
 
-            Add(JitOptimizationsValidator.FailOnError);
+            AddJob(Job.InProcess
+                .WithStrategy(RunStrategy.Throughput));
 
-            Add(Job.InProcess
-                .With(RunStrategy.Throughput));
+            AddExporter(MarkdownExporter.GitHub);
 
-            Add(MarkdownExporter.GitHub);
-
-            Add(new CsvExporter(
+            AddExporter(new CsvExporter(
                 CsvSeparator.Comma,
-                new Reports.SummaryStyle
-                {
-                    PrintUnitsInHeader = true,
-                    PrintUnitsInContent = false,
-                    TimeUnit = Horology.TimeUnit.Microsecond,
-                    SizeUnit = SizeUnit.KB
-                }));
+                new Reports.SummaryStyle(cultureInfo: null, printUnitsInHeader: true, printUnitsInContent: false, timeUnit: Perfolizer.Horology.TimeUnit.Microsecond, sizeUnit: SizeUnit.KB)));
         }
     }
 }

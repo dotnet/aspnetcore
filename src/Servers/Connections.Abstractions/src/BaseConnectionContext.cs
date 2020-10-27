@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
+    /// <summary>
+    /// Represents the context for a connection.
+    /// </summary>
     public abstract class BaseConnectionContext : IAsyncDisposable
     {
         /// <summary>
@@ -25,7 +28,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets a key/value collection that can be used to share data within the scope of this connection.
         /// </summary>
-        public abstract IDictionary<object, object> Items { get; set; }
+        public abstract IDictionary<object, object?> Items { get; set; }
 
         /// <summary>
         /// Triggered when the client connection is closed.
@@ -35,12 +38,12 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets the local endpoint for this connection.
         /// </summary>
-        public virtual EndPoint LocalEndPoint { get; set; }
+        public virtual EndPoint? LocalEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the remote endpoint for this connection.
         /// </summary>
-        public virtual EndPoint RemoteEndPoint { get; set; }
+        public virtual EndPoint? RemoteEndPoint { get; set; }
 
         /// <summary>
         /// Aborts the underlying connection.

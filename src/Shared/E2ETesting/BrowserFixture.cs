@@ -4,13 +4,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Safari;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -66,19 +70,66 @@ namespace Microsoft.AspNetCore.E2ETesting
             var browsers = await Task.WhenAll(_browsers.Values);
             foreach (var (browser, log) in browsers)
             {
-                browser.Dispose();
+                browser?.Quit();
+                browser?.Dispose();
+            }
+
+            await DeleteBrowserUserProfileDirectoriesAsync();
+        }
+
+        private async Task DeleteBrowserUserProfileDirectoriesAsync()
+        {
+            foreach (var context in _browsers.Keys)
+            {
+                var userProfileDirectory = UserProfileDirectory(context);
+                if (!string.IsNullOrEmpty(userProfileDirectory) && Directory.Exists(userProfileDirectory))
+                {
+                    var attemptCount = 0;
+                    while (true)
+                    {
+                        try
+                        {
+                            Directory.Delete(userProfileDirectory, recursive: true);
+                            break;
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            attemptCount++;
+                            if (attemptCount < 5)
+                            {
+                                Console.WriteLine($"Failed to delete browser profile directory '{userProfileDirectory}': '{ex}'. Will retry.");
+                                await Task.Delay(2000);
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                    }
+                }
             }
         }
 
         public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
         {
-            if (!IsHostAutomationSupported())
+            Func<string, ITestOutputHelper, Task<(IWebDriver, ILogs)>> createBrowserFunc;
+            if (E2ETestOptions.Instance.SauceTest)
             {
-                output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return Task.FromResult<(IWebDriver, ILogs)>(default);
+                createBrowserFunc = CreateSauceBrowserAsync;
+            }
+            else
+            {
+                if (!IsHostAutomationSupported())
+                {
+                    output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
+                    return Task.FromResult<(IWebDriver, ILogs)>(default);
+                }
+
+                createBrowserFunc = CreateBrowserAsync;
             }
 
-            return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
+
+            return _browsers.GetOrAdd(isolationContext, createBrowserFunc, output);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
@@ -87,14 +138,20 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             var opts = new ChromeOptions();
 
+            // Force language to english for tests
+            opts.AddUserProfilePreference("intl.accept_languages", "en");
+
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
             if (!Debugger.IsAttached)
             {
                 opts.AddArgument("--headless");
             }
 
+            opts.AddArgument("--no-sandbox");
+
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
+            opts.SetLoggingPreference(LogType.Driver, LogLevel.All);
 
             // On Windows/Linux, we don't need to set opts.BinaryLocation
             // But for Travis Mac builds we do
@@ -105,10 +162,18 @@ namespace Microsoft.AspNetCore.E2ETesting
                 output.WriteLine($"Set {nameof(ChromeOptions)}.{nameof(opts.BinaryLocation)} to {binaryLocation}");
             }
 
+            var userProfileDirectory = UserProfileDirectory(context);
+            if (!string.IsNullOrEmpty(userProfileDirectory))
+            {
+                Directory.CreateDirectory(userProfileDirectory);
+                opts.AddArgument($"--user-data-dir={userProfileDirectory}");
+            }
+
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
 
             var attempt = 0;
             const int maxAttempts = 3;
+            Exception innerException;
             do
             {
                 try
@@ -122,12 +187,146 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // Additionally, if we think the selenium server has become irresponsive, we could spin up
                     // replace the current selenium server instance and let a new instance take over for the
                     // remaining tests.
-                    var driver = new RemoteWebDriver(
+                    var driver = new RemoteWebDriverWithLogs(
                         instance.Uri,
                         opts.ToCapabilities(),
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+                    var logs = new RemoteLogs(driver);
+
+                    return (driver, logs);
+                }
+                catch (Exception ex)
+                {
+                    output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
+                    innerException = ex;
+                }
+
+                attempt++;
+
+            } while (attempt < maxAttempts);
+
+            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
+        }
+
+        private string UserProfileDirectory(string context)
+        {
+            if (string.IsNullOrEmpty(context))
+            {
+                return null;
+            }
+
+            return Path.Combine(Path.GetTempPath(), "BrowserFixtureUserProfiles", context);
+        }
+
+        private async Task<(IWebDriver browser, ILogs log)> CreateSauceBrowserAsync(string context, ITestOutputHelper output)
+        {
+            var sauce = E2ETestOptions.Instance.Sauce;
+
+            if (sauce == null ||
+                string.IsNullOrEmpty(sauce.TestName) ||
+                string.IsNullOrEmpty(sauce.Username) ||
+                string.IsNullOrEmpty(sauce.AccessKey) ||
+                string.IsNullOrEmpty(sauce.TunnelIdentifier) ||
+                string.IsNullOrEmpty(sauce.PlatformName) ||
+                string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                throw new InvalidOperationException("Required SauceLabs environment variables not set.");
+            }
+
+            var name = sauce.TestName;
+            if (!string.IsNullOrEmpty(context))
+            {
+                name = $"{name} - {context}";
+            }
+
+            DriverOptions options;
+
+            switch (sauce.BrowserName.ToLowerInvariant())
+            {
+                case "chrome":
+                    options = new ChromeOptions();
+                    break;
+                case "safari":
+                    options = new SafariOptions();
+                    break;
+                case "internet explorer":
+                    options = new InternetExplorerOptions();
+                    break;
+                case "microsoftedge":
+                    options = new EdgeOptions();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Browser name {sauce.BrowserName} not recognized");
+            }
+
+            // Required config
+            options.AddAdditionalOption("username", sauce.Username);
+            options.AddAdditionalOption("accessKey", sauce.AccessKey);
+            options.AddAdditionalOption("tunnelIdentifier", sauce.TunnelIdentifier);
+            options.AddAdditionalOption("name", name);
+
+            if (!string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                options.AddAdditionalOption("browserName", sauce.BrowserName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.PlatformVersion))
+            {
+                options.PlatformName = sauce.PlatformName;
+                options.AddAdditionalOption("platformVersion", sauce.PlatformVersion);
+            }
+            else
+            {
+                // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
+                options.AddAdditionalOption("platform", sauce.PlatformName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.BrowserVersion))
+            {
+                options.BrowserVersion = sauce.BrowserVersion;
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceName))
+            {
+                options.AddAdditionalOption("deviceName", sauce.DeviceName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
+            {
+                options.AddAdditionalOption("deviceOrientation", sauce.DeviceOrientation);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.AppiumVersion))
+            {
+                options.AddAdditionalOption("appiumVersion", sauce.AppiumVersion);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
+            {
+                options.AddAdditionalOption("seleniumVersion", sauce.SeleniumVersion);
+            }
+
+            var capabilities = options.ToCapabilities();
+
+            await SauceConnectServer.StartAsync(output);
+
+            var attempt = 0;
+            const int maxAttempts = 3;
+            do
+            {
+                try
+                {
+                    // Attempt to create a new browser in SauceLabs.
+                    var driver = new RemoteWebDriver(
+                        new Uri("http://localhost:4445/wd/hub"),
+                        capabilities,
+                        TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
+
+                    // Make sure implicit waits are disabled as they don't mix well with explicit waiting
+                    // see https://www.selenium.dev/documentation/en/webdriver/waits/#implicit-wait
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
                     var logs = new RemoteLogs(driver);
 
                     return (driver, logs);
@@ -141,7 +340,16 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             } while (attempt < maxAttempts);
 
-            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+            throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
+        }
+
+        // This is a workaround for https://github.com/SeleniumHQ/selenium/issues/8229
+        private class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
+        {
+            public RemoteWebDriverWithLogs(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+                : base(remoteAddress, desiredCapabilities, commandTimeout)
+            {
+            }
         }
     }
 }

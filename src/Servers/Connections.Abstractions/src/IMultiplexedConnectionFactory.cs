@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections.Experimental
 {
     /// <summary>
     /// A factory abstraction for creating connections to an endpoint.
     /// </summary>
-    public interface IMultiplexedConnectionFactory
+    internal interface IMultiplexedConnectionFactory
     {
         /// <summary>
         /// Creates a new connection to an endpoint.
@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Connections
         /// <returns>
         /// A <see cref="ValueTask{TResult}" /> that represents the asynchronous connect, yielding the <see cref="MultiplexedConnectionContext" /> for the new connection when completed.
         /// </returns>
-        ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default);
+        ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default);
     }
 }

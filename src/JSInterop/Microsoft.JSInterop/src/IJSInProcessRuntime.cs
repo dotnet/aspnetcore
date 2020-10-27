@@ -11,10 +11,10 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Invokes the specified JavaScript function synchronously.
         /// </summary>
-        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
+        /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
-        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
-        T Invoke<T>(string identifier, params object[] args);
+        /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
+        TResult Invoke<TResult>(string identifier, params object?[]? args);
     }
 }

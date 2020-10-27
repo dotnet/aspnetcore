@@ -24,14 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            object value;
-            if (actionDescriptor.Properties.TryGetValue(typeof(T), out value))
+            if (actionDescriptor.Properties.TryGetValue(typeof(T), out var value))
             {
                 return (T)value;
             }
             else
             {
-                return default(T);
+                return default!;
             }
         }
 

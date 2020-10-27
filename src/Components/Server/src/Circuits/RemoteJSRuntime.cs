@@ -17,12 +17,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
 
+        public ElementReferenceContext ElementReferenceContext { get; }
+
         public RemoteJSRuntime(IOptions<CircuitOptions> options, ILogger<RemoteJSRuntime> logger)
         {
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
+            ElementReferenceContext = new WebElementReferenceContext(this);
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)
@@ -68,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             if (_clientProxy is null)
             {
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
-            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson);
+            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
         }
 
         public static class Log

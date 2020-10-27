@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,10 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var enUs = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = enUs;
+            CultureInfo.DefaultThreadCurrentUICulture = enUs;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -39,6 +44,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub();
+                    endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });
             });

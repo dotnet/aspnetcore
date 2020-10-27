@@ -679,12 +679,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public static IEnumerable<object[]> HttpResponseStreamWriterData()
+        public static IEnumerable<object?[]> HttpResponseStreamWriterData()
         {
-            yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
+            yield return new object?[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
         }
 
         public static IEnumerable<object[]> HttpResponseDisposeData()

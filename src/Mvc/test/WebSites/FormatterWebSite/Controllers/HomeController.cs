@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FormatterWebSite.Controllers
 {
@@ -10,7 +12,7 @@ namespace FormatterWebSite.Controllers
         [HttpPost]
         public IActionResult Index([FromBody]DummyClass dummyObject)
         {
-            return Content(dummyObject.SampleInt.ToString());
+            return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
         }
 
         [HttpPost]
@@ -34,5 +36,13 @@ namespace FormatterWebSite.Controllers
                 SampleIntInDerived = 50
             };
         }
+
+        [HttpPost]
+        public IActionResult DefaultBody([FromBody] DummyClass dummy)
+            => ModelState.IsValid ? Ok() : ValidationProblem();
+
+        [HttpPost]
+        public IActionResult OptionalBody([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] DummyClass dummy)
+            => ModelState.IsValid ? Ok() : ValidationProblem();
     }
 }

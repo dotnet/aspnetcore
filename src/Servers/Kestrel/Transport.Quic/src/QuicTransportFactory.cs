@@ -6,14 +6,15 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
-    public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
+    internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
         private QuicTrace _log;
         private QuicTransportOptions _options;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             _options = options.Value;
         }
 
-        public  ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             var transport = new QuicConnectionListener(_options, _log, endpoint);
             return new ValueTask<IMultiplexedConnectionListener>(transport);

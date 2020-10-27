@@ -78,9 +78,27 @@ public:
             environmentVariables.insert_or_assign(HOSTING_STARTUP_ASSEMBLIES_ENV_STR, hostingStartupValues);
         }
 
+        auto preferEnvironmentVariablesSetting = Environment::GetEnvironmentVariableValue(ANCM_PREFER_ENVIRONMENT_VARIABLES_ENV_STR).value_or(L"false");
+        auto preferEnvironmentVariables = equals_ignore_case(L"1", preferEnvironmentVariablesSetting) || equals_ignore_case(L"true", preferEnvironmentVariablesSetting);
+
         for (auto& environmentVariable : environmentVariables)
         {
-            environmentVariable.second = Environment::ExpandEnvironmentVariables(environmentVariable.second);
+            if (preferEnvironmentVariables)
+            {
+                auto env = Environment::GetEnvironmentVariableValue(environmentVariable.first);
+                if (env.has_value())
+                {
+                    environmentVariable.second = env.value();
+                }
+                else
+                {
+                    environmentVariable.second = Environment::ExpandEnvironmentVariables(environmentVariable.second);
+                }
+            }
+            else
+            {
+                environmentVariable.second = Environment::ExpandEnvironmentVariables(environmentVariable.second);
+            }
         }
 
         return environmentVariables;

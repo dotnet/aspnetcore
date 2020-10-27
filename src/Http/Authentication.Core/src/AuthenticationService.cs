@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private HashSet<ClaimsPrincipal> _transformCache;
+        private HashSet<ClaimsPrincipal>? _transformCache;
 
         /// <summary>
         /// Constructor.
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
+        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
         {
             if (scheme == null)
             {
@@ -77,10 +77,12 @@ namespace Microsoft.AspNetCore.Authentication
                 throw await CreateMissingHandlerException(scheme);
             }
 
-            var result = await handler.AuthenticateAsync();
-            if (result != null && result.Succeeded)
+            // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
+            var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
+
+            if (result.Succeeded)
             {
-                var principal = result.Principal;
+                var principal = result.Principal!;
                 var doTransform = true;
                 _transformCache ??= new HashSet<ClaimsPrincipal>();
                 if (_transformCache.Contains(principal))
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Authentication
                     principal = await Transform.TransformAsync(principal);
                     _transformCache.Add(principal);
                 }
-                return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket.AuthenticationScheme));
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket!.AuthenticationScheme));
             }
             return result;
         }
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task ChallengeAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {
@@ -133,7 +135,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> to sign in.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        public virtual async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
         {
             if (principal == null)
             {
@@ -213,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task SignOutAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {

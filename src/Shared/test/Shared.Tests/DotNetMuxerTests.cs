@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 {
     public class DotNetMuxerTests
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24082")]
         public void FindsTheMuxer()
         {
             var muxerPath = DotNetMuxer.MuxerPath;

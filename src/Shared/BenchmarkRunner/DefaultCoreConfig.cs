@@ -18,29 +18,31 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCoreConfig()
         {
-            Add(ConsoleLogger.Default);
-            Add(MarkdownExporter.GitHub);
+            AddLogger(ConsoleLogger.Default);
+            AddExporter(MarkdownExporter.GitHub);
 
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-            Add(DefaultColumnProviders.Instance);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddColumn(StatisticColumn.OperationsPerSecond);
+            AddColumnProvider(DefaultColumnProviders.Instance);
 
-            Add(JitOptimizationsValidator.FailOnError);
+            AddValidator(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.Core
+            AddJob(Job.Default
 #if NETCOREAPP2_1
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+                .WithToolchain(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
 #elif NETCOREAPP3_0
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
 #elif NETCOREAPP3_1
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.1", null, ".NET Core 3.1")))
-#elif NETCOREAPP5_0
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp5.0", null, ".NET Core 5.0")))
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.1", null, ".NET Core 3.1")))
+#elif NET5_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net5.0", null, ".NET Core 5.0")))
+#elif NET6_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net6.0", null, ".NET Core 6.0")))
 #else
 #error Target frameworks need to be updated.
 #endif
-                .With(new GcMode { Server = true })
-                .With(RunStrategy.Throughput));
+                .WithGcMode(new GcMode { Server = true })
+                .WithStrategy(RunStrategy.Throughput));
         }
     }
 }

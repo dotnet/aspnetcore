@@ -1,7 +1,7 @@
 name: AspNetCore-Runtime Code Sync
 on:
-  # Test this script using on: push
-  # push:
+  # Manual run
+  workflow_dispatch:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
@@ -10,6 +10,8 @@ on:
 
 jobs:
   compare_repos:
+    # Comment out this line to test the scripts in a fork
+    if: github.repository == 'dotnet/aspnetcore'
     name: Compare the shared code in the AspNetCore and Runtime repos and notify if they're out of sync.
     runs-on: windows-latest
     steps:
@@ -19,12 +21,14 @@ jobs:
         # Test this script using changes in a fork 
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
+        ref: master
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
         repository: 'dotnet/runtime'
         path: runtime
+        ref: master
     - name: Copy
       shell: cmd
       working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\aspnetcore\
@@ -63,5 +67,6 @@ jobs:
         title: 'Sync shared code from runtime'
         body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
         labels: area-servers
+        base: master
         branch: github-action/sync-runtime
         branch-suffix: timestamp

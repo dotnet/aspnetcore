@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The <see cref="ModelMetadata"/> instance for the property specified by <paramref name="propertyName"/>, or
         /// <c>null</c> if no match can be found.
         /// </returns>
-        public ModelMetadata this[string propertyName]
+        public ModelMetadata? this[string propertyName]
         {
             get
             {

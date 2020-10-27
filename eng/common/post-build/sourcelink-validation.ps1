@@ -144,11 +144,27 @@ $ValidatePackage = {
 
   if ($FailedFiles -eq 0) {
     Write-Host 'Passed.'
-    return 0
+    return [pscustomobject]@{
+      result = 0
+      packagePath = $PackagePath
+    }
   }
   else {
     Write-PipelineTelemetryError -Category 'SourceLink' -Message "$PackagePath has broken SourceLink links."
-    return 1
+    return [pscustomobject]@{
+      result = 1
+      packagePath = $PackagePath
+    }
+  }
+}
+
+function CheckJobResult(
+    $result, 
+    $packagePath,
+    [ref]$ValidationFailures) {
+  if ($jobResult.result -ne '0') {
+    Write-PipelineTelemetryError -Category 'SourceLink' -Message "$packagePath has broken SourceLink links."
+    $ValidationFailures.Value++
   }
 }
 
@@ -196,6 +212,8 @@ function ValidateSourceLinkLinks {
     Remove-Item $ExtractPath -Force -Recurse -ErrorAction SilentlyContinue
   }
 
+  $ValidationFailures = 0
+
   # Process each NuGet package in parallel
   Get-ChildItem "$InputPath\*.symbols.nupkg" |
     ForEach-Object {
@@ -209,17 +227,18 @@ function ValidateSourceLinkLinks {
       }
 
       foreach ($Job in @(Get-Job -State 'Completed')) {
-        Receive-Job -Id $Job.Id
+        $jobResult = Wait-Job -Id $Job.Id | Receive-Job
+        CheckJobResult $jobResult.result $jobResult.packagePath ([ref]$ValidationFailures)
         Remove-Job -Id $Job.Id
       }
     }
 
-  $ValidationFailures = 0
   foreach ($Job in @(Get-Job)) {
     $jobResult = Wait-Job -Id $Job.Id | Receive-Job
     if ($jobResult -ne '0') {
       $ValidationFailures++
     }
+    Remove-Job -Id $Job.Id
   }
   if ($ValidationFailures -gt 0) {
     Write-PipelineTelemetryError -Category 'SourceLink' -Message "$ValidationFailures package(s) failed validation."

@@ -26,6 +26,27 @@ namespace System.Buffers
             return buffer.ToArray();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(in this ReadOnlySequence<byte> buffer, PipeWriter pipeWriter)
+        {
+            if (buffer.IsSingleSegment)
+            {
+                pipeWriter.Write(buffer.FirstSpan);
+            }
+            else
+            {
+                CopyToMultiSegment(buffer, pipeWriter);
+            }
+        }
+
+        private static void CopyToMultiSegment(in ReadOnlySequence<byte> buffer, PipeWriter pipeWriter)
+        {
+            foreach (var item in buffer)
+            {
+                pipeWriter.Write(item.Span);
+            }
+        }
+
         public static ArraySegment<byte> GetArray(this Memory<byte> buffer)
         {
             return ((ReadOnlyMemory<byte>)buffer).GetArray();
@@ -38,6 +59,50 @@ namespace System.Buffers
                 throw new InvalidOperationException("Buffer backed by array was expected");
             }
             return result;
+        }
+
+        /// <summary>
+        /// Returns position of first occurrence of item in the <see cref="ReadOnlySequence{T}"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SequencePosition? PositionOfAny<T>(in this ReadOnlySequence<T> source, T value0, T value1) where T : IEquatable<T>
+        {
+            if (source.IsSingleSegment)
+            {
+                int index = source.First.Span.IndexOfAny(value0, value1);
+                if (index != -1)
+                {
+                    return source.GetPosition(index);
+                }
+
+                return null;
+            }
+            else
+            {
+                return PositionOfAnyMultiSegment(source, value0, value1);
+            }
+        }
+
+        private static SequencePosition? PositionOfAnyMultiSegment<T>(in ReadOnlySequence<T> source, T value0, T value1) where T : IEquatable<T>
+        {
+            SequencePosition position = source.Start;
+            SequencePosition result = position;
+            while (source.TryGet(ref position, out ReadOnlyMemory<T> memory))
+            {
+                int index = memory.Span.IndexOfAny(value0, value1);
+                if (index != -1)
+                {
+                    return source.GetPosition(index, result);
+                }
+                else if (position.GetObject() == null)
+                {
+                    break;
+                }
+
+                result = position;
+            }
+
+            return null;
         }
 
         internal static void WriteAscii(ref this BufferWriter<PipeWriter> buffer, string data)

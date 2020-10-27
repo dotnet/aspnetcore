@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private const int AlignmentPadding = 8;
         private const int DefaultBufferSize = 4096 - AlignmentPadding;
         private IntPtr _originalBufferAddress;
+        private bool _useLatin1;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
         private IMemoryOwner<byte> _backingBuffer;
         private MemoryHandle _memoryHandle;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // No size limit
                 _backingBuffer = MemoryPool<byte>.Shared.Rent(newSize);
             }
-            _backingBuffer.Memory.Span.Fill(0);// Zero the buffer
+            _backingBuffer.Memory.Span.Clear();
             _memoryHandle = _backingBuffer.Memory.Pin();
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
 
@@ -61,8 +62,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         // To be used by IIS Integration.
-        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request)
+        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request, bool useLatin1)
         {
+            _useLatin1 = useLatin1;
             _nativeRequest = request;
             _bufferAlignment = 0;
             _permanentlyPinned = true;
@@ -155,7 +157,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else if (verb == HttpApiTypes.HTTP_VERB.HttpVerbUnknown && NativeRequest->pUnknownVerb != null)
             {
-                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength);
+                // Never use Latin1 for the VERB
+                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, useLatin1: false);
             }
 
             return null;
@@ -321,7 +324,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             // pRawValue will point to empty string ("\0")
             if (pKnownHeader->RawValueLength > 0)
             {
-                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength);
+                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength, _useLatin1);
             }
 
             return value;
@@ -359,11 +362,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     // pRawValue will be null.
                     if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
                     {
-                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength);
+                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
                         string headerValue;
                         if (pUnknownHeader->pRawValue != null && pUnknownHeader->RawValueLength > 0)
                         {
-                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength);
+                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength, _useLatin1);
                         }
                         else
                         {

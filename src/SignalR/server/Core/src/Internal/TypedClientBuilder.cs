@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,6 +146,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 paramTypes = paramTypes.Take(paramTypes.Length - 1).ToArray();
             }
 
+            var methodName =
+                    interfaceMethodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
+                    interfaceMethodInfo.Name;
+
             var generator = methodBuilder.GetILGenerator();
 
             // Declare local variable to store the arguments to IClientProxy.SendCoreAsync
@@ -154,7 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldfld, proxyField);
 
             // The first argument to IClientProxy.SendCoreAsync is this method's name
-            generator.Emit(OpCodes.Ldstr, interfaceMethodInfo.Name);
+            generator.Emit(OpCodes.Ldstr, methodName);
 
             // Create an new object array to hold all the parameters to this method
             generator.Emit(OpCodes.Ldc_I4, paramTypes.Length); // Stack: 

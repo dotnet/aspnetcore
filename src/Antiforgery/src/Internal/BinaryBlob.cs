@@ -59,12 +59,12 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BinaryBlob);
         }
 
-        public bool Equals(BinaryBlob other)
+        public bool Equals(BinaryBlob? other)
         {
             if (other == null)
             {

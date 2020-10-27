@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var projectPath = ResolveProjectPath(ProjectPath, WorkingDirectory);
 
             // Load the project file as XML
-            var projectDocument = XDocument.Load(projectPath);
+            var projectDocument = XDocument.Load(projectPath, LoadOptions.PreserveWhitespace);
 
             // Accept the `--id` CLI option to the main app
             string newSecretsId = string.IsNullOrWhiteSpace(OverrideId)
@@ -120,19 +120,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 }
 
                 // Add UserSecretsId element
+                propertyGroup.Add("  ");
                 propertyGroup.Add(new XElement("UserSecretsId", newSecretsId));
+                propertyGroup.Add($"{Environment.NewLine}  ");
             }
 
             var settings = new XmlWriterSettings
             {
-                Indent = true,
                 OmitXmlDeclaration = true,
             };
 
-            using (var xw = XmlWriter.Create(projectPath, settings))
-            {
-                projectDocument.Save(xw);
-            }
+            using var xw = XmlWriter.Create(projectPath, settings);
+            projectDocument.Save(xw);
 
             context.Reporter.Output(Resources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
         }

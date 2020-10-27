@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -641,20 +642,30 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
         }
 
-        private Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
+        private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
         {
-            var builder = new WebHostBuilder()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy();
+                            app.Run(handleRequest);
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.Configure(configureOptions);
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy();
-                    app.Run(handleRequest);
-                });
-            var server = new TestServer(builder);
-            return server.SendAsync(configureRequest);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
+
+            return await server.SendAsync(configureRequest);
         }
     }
 }

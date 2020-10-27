@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// <param name="claimType">The claim type that must be present.</param>
         /// <param name="allowedValues">The optional list of claim values, which, if present, 
         /// the claim must match.</param>
-        public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues)
+        public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string>? allowedValues)
         {
             if (claimType == null)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// Gets the optional list of claim values, which, if present, 
         /// the claim must match.
         /// </summary>
-        public IEnumerable<string> AllowedValues { get; }
+        public IEnumerable<string>? AllowedValues { get; }
 
         /// <summary>
         /// Makes a decision if authorization is allowed based on the claims requirements specified.
@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var value = (AllowedValues == null || !AllowedValues.Any())

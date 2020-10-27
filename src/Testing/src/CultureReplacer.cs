@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using Xunit;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Testing
         // We want to be able to find issues where the InvariantCulture is used, but a specific culture should be.
         //
         // UICulture => Language
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "Required to maintain compatibility")]
         public CultureReplacer(string culture = _defaultCultureName, string uiCulture = _defaultUICultureName)
             : this(new CultureInfo(culture), new CultureInfo(uiCulture))
         {
@@ -30,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
-            _threadId = Thread.CurrentThread.ManagedThreadId;
+            _threadId = Environment.CurrentManagedThreadId;
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = uiCulture;
         }
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (disposing)
             {
-                Assert.True(Thread.CurrentThread.ManagedThreadId == _threadId,
+                Assert.True(Environment.CurrentManagedThreadId == _threadId,
                     "The current thread is not the same as the thread invoking the constructor. This should never happen.");
                 CultureInfo.CurrentCulture = _originalCulture;
                 CultureInfo.CurrentUICulture = _originalUICulture;

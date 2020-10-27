@@ -1,0 +1,8 @@
+﻿<option @attributes="InputAttributes">@ChildContent</option>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

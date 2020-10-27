@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Localization
         /// <param name="value">The actual string.</param>
         /// <param name="resourceNotFound">Whether the string was not found in a resource. Set this to <c>true</c> to indicate an alternate string value was used.</param>
         /// <param name="searchedLocation">The location which was searched for a localization value.</param>
-        public LocalizedString(string name, string value, bool resourceNotFound, string searchedLocation)
+        public LocalizedString(string name, string value, bool resourceNotFound, string? searchedLocation)
         {
             if (name == null)
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Localization
         /// Implicitly converts the <see cref="LocalizedString"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="localizedString">The string to be implicitly converted.</param>
-        public static implicit operator string(LocalizedString localizedString)
+        public static implicit operator string?(LocalizedString localizedString)
         {
             return localizedString?.Value;
         }
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// The location which was searched for a localization value.
         /// </summary>
-        public string SearchedLocation { get; }
+        public string? SearchedLocation { get; }
 
         /// <summary>
         /// Returns the actual string.

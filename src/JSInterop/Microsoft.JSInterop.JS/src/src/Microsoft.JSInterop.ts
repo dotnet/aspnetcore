@@ -1,14 +1,73 @@
 // This is a single-file self-contained module to avoid the need for a Webpack build
 
-module DotNet {
+export module DotNet {
   (window as any).DotNet = DotNet; // Ensure reachable from anywhere
 
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
 
+  class JSObject {
+    _cachedFunctions: Map<string, Function>;
+
+    constructor(private _jsObject: any)
+    {
+      this._cachedFunctions = new Map<string, Function>();
+    }
+
+    public findFunction(identifier: string) {
+      const cachedFunction = this._cachedFunctions.get(identifier);
+
+      if (cachedFunction) {
+        return cachedFunction;
+      }
+
+      let result: any = this._jsObject;
+      let lastSegmentValue: any;
+
+      identifier.split('.').forEach(segment => {
+        if (segment in result) {
+          lastSegmentValue = result;
+          result = result[segment];
+        } else {
+          throw new Error(`Could not find '${identifier}' ('${segment}' was undefined).`);
+        }
+      });
+
+      if (result instanceof Function) {
+        result = result.bind(lastSegmentValue);
+        this._cachedFunctions.set(identifier, result);
+        return result;
+      } else {
+        throw new Error(`The value '${identifier}' is not a function.`);
+      }
+    }
+
+    public getWrappedObject() {
+      return this._jsObject;
+    }
+  }
+
+  const jsObjectIdKey = "__jsObjectId";
+
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
-  const cachedJSFunctions: { [identifier: string]: Function } = {};
+  const windowJSObjectId = 0;
+  const cachedJSObjectsById: { [id: number]: JSObject } = {
+    [windowJSObjectId]: new JSObject(window),
+  };
+
+  cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set('import', (url: any) => {
+    // In most cases developers will want to resolve dynamic imports relative to the base HREF.
+    // However since we're the one calling the import keyword, they would be resolved relative to
+    // this framework bundle URL. Fix this by providing an absolute URL.
+    if (typeof url === 'string' && url.startsWith('./')) {
+      url = document.baseURI + url.substr(2);
+    }
+
+    return import(/* webpackIgnore: true */ url);
+  });
+
   let nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
+  let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
   let dotNetDispatcher: DotNetCallDispatcher | null = null;
 
@@ -53,6 +112,58 @@ module DotNet {
    */
   export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
     return invokePossibleInstanceMethodAsync(assemblyName, methodIdentifier, null, args);
+  }
+
+  /**
+   * Creates a JavaScript object reference that can be passed to .NET via interop calls.
+   *
+   * @param jsObject The JavaScript Object used to create the JavaScript object reference.
+   * @returns The JavaScript object reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object.
+   */
+  export function createJSObjectReference(jsObject: any): any {
+    if (jsObject && typeof jsObject === 'object') {
+      cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
+
+      const result = {
+        [jsObjectIdKey]: nextJsObjectId
+      };
+
+      nextJsObjectId++;
+
+      return result;
+    } else {
+      throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
+    }
+  }
+
+  /**
+   * Disposes the given JavaScript object reference.
+   *
+   * @param jsObjectReference The JavaScript Object reference.
+   */
+  export function disposeJSObjectReference(jsObjectReference: any): void {
+    const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
+
+    if (typeof id === 'number') {
+      disposeJSObjectReferenceById(id);
+    }
+  }
+
+  /**
+   * Parses the given JSON string using revivers to restore args passed from .NET to JS.
+   * 
+   * @param json The JSON stirng to parse.
+   */
+  export function parseJsonWithRevivers(json: string): any {
+    return json ? JSON.parse(json, (key, initialValue) => {
+      // Invoke each reviver in order, passing the output from the previous reviver,
+      // so that each one gets a chance to transform the value
+      return jsonRevivers.reduce(
+        (latestValue, reviver) => reviver(key, latestValue),
+        initialValue
+      );
+    }) : null;
   }
 
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
@@ -115,6 +226,14 @@ module DotNet {
   }
 
   /**
+   * Represents the type of result expected from a JS interop call.
+   */
+  export enum JSCallResultType {
+    Default = 0,
+    JSObjectReference = 1
+  }
+
+  /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
   export interface DotNetCallDispatcher {
@@ -158,19 +277,31 @@ module DotNet {
      * Finds the JavaScript function matching the specified identifier.
      *
      * @param identifier Identifies the globally-reachable function to be returned.
+     * @param targetInstanceId The instance ID of the target JS object.
      * @returns A Function instance.
      */
     findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself
+
+    /**
+     * Disposes the JavaScript object reference with the specified object ID.
+     *
+     * @param id The ID of the JavaScript object reference.
+     */
+    disposeJSObjectReferenceById,
 
     /**
      * Invokes the specified synchronous JavaScript function.
      *
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The instance ID of the target JS object.
      * @returns JSON representation of the invocation result.
      */
-    invokeJSFromDotNet: (identifier: string, argsJson: string) => {
-      const result = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
+    invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
+      const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
+      const result = createJSCallResult(returnValue, resultType);
+
       return result === null || result === undefined
         ? null
         : JSON.stringify(result, argReplacer);
@@ -182,12 +313,14 @@ module DotNet {
      * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The ID of the target JS object instance.
      */
-    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string): void => {
+    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): void => {
       // Coerce synchronous functions into async ones, plus treat
       // synchronous exceptions the same as async ones
       const promise = new Promise<any>(resolve => {
-        const synchronousResultOrPromise = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
+        const synchronousResultOrPromise = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
         resolve(synchronousResultOrPromise);
       });
 
@@ -196,7 +329,7 @@ module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, result], argReplacer)),
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)], argReplacer)),
           error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
@@ -214,17 +347,6 @@ module DotNet {
     }
   }
 
-  function parseJsonWithRevivers(json: string): any {
-    return json ? JSON.parse(json, (key, initialValue) => {
-      // Invoke each reviver in order, passing the output from the previous reviver,
-      // so that each one gets a chance to transform the value
-      return jsonRevivers.reduce(
-        (latestValue, reviver) => reviver(key, latestValue),
-        initialValue
-      );
-    }) : null;
-  }
-
   function formatError(error: any): string {
     if (error instanceof Error) {
       return `${error.message}\n${error.stack}`;
@@ -233,31 +355,18 @@ module DotNet {
     }
   }
 
-  function findJSFunction(identifier: string): Function {
-    if (cachedJSFunctions.hasOwnProperty(identifier)) {
-      return cachedJSFunctions[identifier];
-    }
+  function findJSFunction(identifier: string, targetInstanceId: number): Function {
+    let targetInstance = cachedJSObjectsById[targetInstanceId];
 
-    let result: any = window;
-    let resultIdentifier = 'window';
-    let lastSegmentValue: any;
-    identifier.split('.').forEach(segment => {
-      if (segment in result) {
-        lastSegmentValue = result;
-        result = result[segment];
-        resultIdentifier += '.' + segment;
-      } else {
-        throw new Error(`Could not find '${segment}' in '${resultIdentifier}'.`);
-      }
-    });
-
-    if (result instanceof Function) {
-      result = result.bind(lastSegmentValue);
-      cachedJSFunctions[identifier] = result;
-      return result;
+    if (targetInstance) {
+      return targetInstance.findFunction(identifier);
     } else {
-      throw new Error(`The value '${resultIdentifier}' is not a function.`);
+      throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
     }
+  }
+
+  function disposeJSObjectReferenceById(id: number) {
+    delete cachedJSObjectsById[id];
   }
 
   class DotNetObject {
@@ -291,6 +400,33 @@ module DotNet {
     // Unrecognized - let another reviver handle it
     return value;
   });
+
+  attachReviver(function reviveJSObjectReference(key: any, value: any) {
+    if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
+      const id = value[jsObjectIdKey];
+      const jsObject = cachedJSObjectsById[id];
+
+      if (jsObject) {
+        return jsObject.getWrappedObject();
+      } else {
+        throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
+      }
+    }
+
+    // Unrecognized - let another reviver handle it
+    return value;
+  });
+
+  function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
+    switch (resultType) {
+      case JSCallResultType.Default:
+        return returnValue;
+      case JSCallResultType.JSObjectReference:
+        return createJSObjectReference(returnValue);
+      default:
+        throw new Error(`Invalid JS call result type '${resultType}'.`);
+    }
+  }
 
   function argReplacer(key: string, value: any) {
     return value instanceof DotNetObject ? value.serializeAsArg() : value;

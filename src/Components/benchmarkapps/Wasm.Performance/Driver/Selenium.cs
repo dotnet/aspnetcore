@@ -1,9 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +13,9 @@ namespace Wasm.Performance.Driver
 {
     class Selenium
     {
+        const int SeleniumPort = 4444;
         static bool RunHeadlessBrowser = true;
+
         static bool PoolForBrowserLogs = true;
 
         private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
@@ -55,15 +55,20 @@ namespace Wasm.Performance.Driver
             throw new Exception($"Unable to connect to selenium-server at {uri}");
         }
 
-        public static async Task<RemoteWebDriver> CreateBrowser(int port, CancellationToken cancellationToken)
+        public static async Task<RemoteWebDriver> CreateBrowser(CancellationToken cancellationToken, bool captureBrowserMemory = false)
         {
-            var uri = await WaitForServerAsync(port, cancellationToken);
+            var uri = await WaitForServerAsync(SeleniumPort, cancellationToken);
 
             var options = new ChromeOptions();
 
             if (RunHeadlessBrowser)
             {
                 options.AddArgument("--headless");
+            }
+
+            if (captureBrowserMemory)
+            {
+                options.AddArgument("--enable-precise-memory-info");
             }
 
             options.SetLoggingPreference(LogType.Browser, LogLevel.All);

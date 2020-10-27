@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -11,9 +14,9 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public class RouteData
     {
-        private RouteValueDictionary _dataTokens;
-        private List<IRouter> _routers;
-        private RouteValueDictionary _values;
+        private RouteValueDictionary? _dataTokens;
+        private List<IRouter>? _routers;
+        private RouteValueDictionary? _values;
 
         /// <summary>
         /// Creates a new instance of <see cref="RouteData"/> instance.
@@ -138,14 +141,16 @@ namespace Microsoft.AspNetCore.Routing
         /// <see cref="DataTokens"/> will not be changed.
         /// </param>
         /// <returns>A <see cref="RouteDataSnapshot"/> that captures the current state.</returns>
-        public RouteDataSnapshot PushState(IRouter router, RouteValueDictionary values, RouteValueDictionary dataTokens)
+        public RouteDataSnapshot PushState(IRouter? router, RouteValueDictionary? values, RouteValueDictionary? dataTokens)
         {
             // Perf: this is optimized for small list sizes, in particular to avoid overhead of a native call in
             // Array.CopyTo inside the List(IEnumerable<T>) constructor.
-            List<IRouter> routers = null;
+            List<IRouter>? routers = null;
             var count = _routers?.Count;
             if (count > 0)
             {
+                Debug.Assert(_routers != null);
+
                 routers = new List<IRouter>(count.Value);
                 for (var i = 0; i < count.Value; i++)
                 {
@@ -192,9 +197,9 @@ namespace Microsoft.AspNetCore.Routing
         public readonly struct RouteDataSnapshot
         {
             private readonly RouteData _routeData;
-            private readonly RouteValueDictionary _dataTokens;
-            private readonly IList<IRouter> _routers;
-            private readonly RouteValueDictionary _values;
+            private readonly RouteValueDictionary? _dataTokens;
+            private readonly IList<IRouter>? _routers;
+            private readonly RouteValueDictionary? _values;
 
             /// <summary>
             /// Creates a new instance of <see cref="RouteDataSnapshot"/> for <paramref name="routeData"/>.
@@ -205,9 +210,9 @@ namespace Microsoft.AspNetCore.Routing
             /// <param name="values">The route values.</param>
             public RouteDataSnapshot(
                 RouteData routeData,
-                RouteValueDictionary dataTokens,
-                IList<IRouter> routers,
-                RouteValueDictionary values)
+                RouteValueDictionary? dataTokens,
+                IList<IRouter>? routers,
+                RouteValueDictionary? values)
             {
                 if (routeData == null)
                 {
@@ -231,11 +236,11 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else if (_dataTokens == null)
                 {
-                    _routeData._dataTokens.Clear();
+                    _routeData._dataTokens!.Clear();
                 }
                 else
                 {
-                    _routeData._dataTokens.Clear();
+                    _routeData._dataTokens!.Clear();
 
                     foreach (var kvp in _dataTokens)
                     {
@@ -251,7 +256,7 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     // Perf: this is optimized for small list sizes, in particular to avoid overhead of a native call in
                     // Array.Clear inside the List.Clear() method.
-                    var routers = _routeData._routers;
+                    var routers = _routeData._routers!;
                     for (var i = routers.Count - 1; i >= 0 ; i--)
                     {
                         routers.RemoveAt(i);
@@ -264,7 +269,7 @@ namespace Microsoft.AspNetCore.Routing
                     //
                     // We want to basically copy the contents of _routers in _routeData._routers - this change does
                     // that with the minimal number of reads/writes and without calling Clear().
-                    var routers = _routeData._routers;
+                    var routers = _routeData._routers!;
                     var snapshotRouters = _routers;
 
                     // This is made more complicated by the fact that List[int] throws if i == Count, so we have
@@ -293,11 +298,11 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else if (_values == null)
                 {
-                    _routeData._values.Clear();
+                    _routeData._values!.Clear();
                 }
                 else
                 {
-                    _routeData._values.Clear();
+                    _routeData._values!.Clear();
 
                     foreach (var kvp in _values)
                     {

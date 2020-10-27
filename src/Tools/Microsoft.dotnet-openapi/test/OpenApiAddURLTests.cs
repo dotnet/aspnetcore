@@ -17,7 +17,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         public OpenApiAddURLTests(ITestOutputHelper output) : base(output){ }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_WithContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -50,7 +49,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPI_Add_Url_NoContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -84,7 +82,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPI_Add_Url_NoExtension_AssumesJson()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -118,7 +115,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NoSegment()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -152,7 +148,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -185,7 +180,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_SameName_UniqueFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -246,7 +240,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NSwagCSharp()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -279,7 +272,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -312,7 +304,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_OutputFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -345,7 +336,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -404,7 +394,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public void OpenApi_Add_URL_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -431,12 +420,11 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPi_Add_URL_InvalidUrl()
         {
             var project = CreateBasicProject(withOpenApi: false);
 
-            var app = GetApplication(realHttp: true);
+            var app = GetApplication();
             var url = BrokenUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
@@ -457,36 +445,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
 
             var jsonFile = Path.Combine(_tempDir.Root, expectedJsonName);
             Assert.False(File.Exists(jsonFile));
-        }
-
-        [Flaky("<No longer needed, tracked in Kusto>", FlakyOn.All)]
-        [Fact]
-        public void OpenApi_Add_URL_ActualResponse()
-        {
-            var project = CreateBasicProject(withOpenApi: false);
-
-            var app = GetApplication(realHttp: true);
-            var url = ActualUrl;
-            var run = app.Execute(new[] { "add", "url", url });
-
-            AssertNoErrors(run);
-
-            app = GetApplication(realHttp: true);
-            run = app.Execute(new[] { "add", "url", url });
-
-            AssertNoErrors(run);
-
-            // csproj contents
-            var csproj = new FileInfo(project.Project.Path);
-            using var csprojStream = csproj.OpenRead();
-            using var reader = new StreamReader(csprojStream);
-            var content = reader.ReadToEnd();
-            var escapedPkgRef = Regex.Escape("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"");
-            Assert.Single(Regex.Matches(content, escapedPkgRef));
-            var escapedApiRef = Regex.Escape($"SourceUrl=\"{url}\"");
-            Assert.Single(Regex.Matches(content, escapedApiRef));
-            Assert.Contains(
-$@"<OpenApiReference Include=""api-with-examples.yaml"" SourceUrl=""{ActualUrl}"" />", content);
         }
     }
 }

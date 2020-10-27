@@ -10,7 +10,7 @@ using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMe
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    internal class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
+    public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
@@ -22,6 +22,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
             {
                 InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
+                ParseData();
+            }
+        }
+
+        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+        public void JsonTechEmpower()
+        {
+            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+            {
+                InsertData(RequestParsingData.JsonTechEmpowerRequest);
                 ParseData();
             }
         }
@@ -53,21 +63,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
-            _buffer = _buffer.Slice(consumed, _buffer.End);
-
-            var reader = new SequenceReader<byte>(_buffer);
             if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
         }
 
@@ -104,8 +112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.OnHeadersComplete(endStream);
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-                => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
+            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+                => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
 
             public void OnStaticIndexedHeader(int index)
             {

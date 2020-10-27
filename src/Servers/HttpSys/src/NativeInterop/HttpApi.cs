@@ -46,6 +46,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static extern uint HttpCreateUrlGroup(ulong serverSessionId, ulong* urlGroupId, uint reserved);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern uint HttpFindUrlGroupId(string pFullyQualifiedUrl, SafeHandle requestQueueHandle, ulong* urlGroupId);
+
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern uint HttpAddUrlToUrlGroup(ulong urlGroupId, string pFullyQualifiedUrl, ulong context, uint pReserved);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
@@ -69,6 +72,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
+
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        internal static extern bool HttpIsFeatureSupported(HTTP_FEATURE_ID feature);
+
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern unsafe uint HttpDelegateRequestEx(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId,
+            ulong delegateUrlGroupId, ulong propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);
 
         internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
@@ -144,6 +154,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 return supported;
             }
+        }
+
+        internal static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
+        {
+            try
+            {
+                return HttpIsFeatureSupported(feature);
+            }
+            catch (EntryPointNotFoundException) { }
+
+            return false;
         }
     }
 }

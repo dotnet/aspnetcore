@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SaveTempDataAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <summary>
+        /// Initialize a new instance of <see cref="SaveTempDataAttribute"/>.
+        /// </summary>
         public SaveTempDataAttribute()
         {
             // Since SaveTempDataFilter registers for a response's OnStarting callback, we want this filter to run

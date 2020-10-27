@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
@@ -772,7 +775,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteIndented = false,
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 AllowTrailingCommas = false,
-                IgnoreNullValues = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,

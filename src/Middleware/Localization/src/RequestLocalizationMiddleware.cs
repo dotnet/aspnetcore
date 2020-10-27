@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +37,6 @@ namespace Microsoft.AspNetCore.Localization
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        [ActivatorUtilitiesConstructor]
         public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -47,18 +47,6 @@ namespace Microsoft.AspNetCore.Localization
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(loggerFactory));
             _options = options.Value;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
-        /// </summary>
-        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-        /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
-        /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
-        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
-               : this(next, options, NullLoggerFactory.Instance)
-        {
         }
 
         /// <summary>
@@ -75,7 +63,7 @@ namespace Microsoft.AspNetCore.Localization
 
             var requestCulture = _options.DefaultRequestCulture;
 
-            IRequestCultureProvider winningProvider = null;
+            IRequestCultureProvider? winningProvider = null;
 
             if (_options.RequestCultureProviders != null)
             {
@@ -89,8 +77,8 @@ namespace Microsoft.AspNetCore.Localization
                     var cultures = providerResultCulture.Cultures;
                     var uiCultures = providerResultCulture.UICultures;
 
-                    CultureInfo cultureInfo = null;
-                    CultureInfo uiCultureInfo = null;
+                    CultureInfo? cultureInfo = null;
+                    CultureInfo? uiCultureInfo = null;
                     if (_options.SupportedCultures != null)
                     {
                         cultureInfo = GetCultureInfo(
@@ -122,23 +110,13 @@ namespace Microsoft.AspNetCore.Localization
                         continue;
                     }
 
-                    if (cultureInfo == null && uiCultureInfo != null)
-                    {
-                        cultureInfo = _options.DefaultRequestCulture.Culture;
-                    }
-                    else if (cultureInfo != null && uiCultureInfo == null)
-                    {
-                        uiCultureInfo = _options.DefaultRequestCulture.UICulture;
-                    }
+                    cultureInfo ??= _options.DefaultRequestCulture.Culture;
+                    uiCultureInfo ??= _options.DefaultRequestCulture.UICulture;
 
                     var result = new RequestCulture(cultureInfo, uiCultureInfo);
-
-                    if (result != null)
-                    {
-                        requestCulture = result;
-                        winningProvider = provider;
-                        break;
-                    }
+                    requestCulture = result;
+                    winningProvider = provider;
+                    break;
                 }
             }
 
@@ -160,7 +138,7 @@ namespace Microsoft.AspNetCore.Localization
             CultureInfo.CurrentUICulture = requestCulture.UICulture;
         }
 
-        private static CultureInfo GetCultureInfo(
+        private static CultureInfo? GetCultureInfo(
             IList<StringSegment> cultureNames,
             IList<CultureInfo> supportedCultures,
             bool fallbackToParentCultures)
@@ -182,7 +160,7 @@ namespace Microsoft.AspNetCore.Localization
             return null;
         }
 
-        private static CultureInfo GetCultureInfo(StringSegment name, IList<CultureInfo> supportedCultures)
+        private static CultureInfo? GetCultureInfo(StringSegment name, IList<CultureInfo>? supportedCultures)
         {
             // Allow only known culture names as this API is called with input from users (HTTP requests) and
             // creating CultureInfo objects is expensive and we don't want it to throw either.
@@ -201,7 +179,7 @@ namespace Microsoft.AspNetCore.Localization
             return CultureInfo.ReadOnly(culture);
         }
 
-        private static CultureInfo GetCultureInfo(
+        private static CultureInfo? GetCultureInfo(
             StringSegment cultureName,
             IList<CultureInfo> supportedCultures,
             bool fallbackToParentCultures,

@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.ObjectPool
     /// Represents a policy for managing pooled objects.
     /// </summary>
     /// <typeparam name="T">The type of object which is being pooled.</typeparam>
-    public interface IPooledObjectPolicy<T>
+    public interface IPooledObjectPolicy<T> where T : notnull
     {
         /// <summary>
         /// Create a <typeparamref name="T"/>.

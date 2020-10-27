@@ -1,0 +1,85 @@
+﻿<p>
+    Item size:<br />
+    <input id="item-size-input" type="number" @bind-value="itemSize" />
+</p>
+
+<p>
+    Synchronous:<br />
+    <div id="sync-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
+            <div @key="context" id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Asynchronous:<br />
+    <button id="finish-loading-button" @onclick="FinishLoadingAsync">Finish loading</button><br />
+    Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
+    <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
+            <ItemContent>
+                <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </ItemContent>
+            <Placeholder>
+                <div id="async-placeholder" style="height: @(context.Size)px; background-color: orange;">Loading item @context.Index...</div>
+            </Placeholder>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Slightly incorrect item size:<br />
+    <div id="incorrect-size-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize Items="@fixedItems" ItemSize="50">
+            <div @key="context" class="incorrect-size-item" style="height: 49px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+        </Virtualize>
+    </div>
+</p>
+
+<p id="viewport-as-root">
+    Viewport as root:<br />
+    <Virtualize Items="@fixedItems" ItemSize="itemSize">
+        <div @key="context" id="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+    </Virtualize>
+</p>
+
+@code {
+    float itemSize = 100;
+    ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+
+    int asyncTotalItemCount = 200;
+    int asyncCancellationCount = 0;
+    TaskCompletionSource asyncTcs = new TaskCompletionSource();
+
+    HashSet<int> cachedItems = new HashSet<int>();
+
+    async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
+    {
+        var loadingTask = asyncTcs.Task;
+
+        var registration = request.CancellationToken.Register(() => CancelLoadingAsync(request.CancellationToken));
+
+        await loadingTask;
+
+        registration.Dispose();
+
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), asyncTotalItemCount);
+    }
+
+    void FinishLoadingAsync()
+    {
+        asyncTcs.SetResult();
+        asyncTcs = new TaskCompletionSource();
+    }
+
+    void CancelLoadingAsync(System.Threading.CancellationToken cancellationToken)
+    {
+        asyncTcs.TrySetCanceled(cancellationToken);
+        asyncTcs = new TaskCompletionSource();
+
+        asyncCancellationCount++;
+
+        StateHasChanged();
+    }
+}

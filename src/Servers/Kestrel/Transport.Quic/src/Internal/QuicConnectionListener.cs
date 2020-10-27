@@ -9,10 +9,11 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     /// <summary>
     /// Listens for new Quic Connections.
@@ -29,10 +30,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
+
+            var quicListenerOptions = new QuicListenerOptions();
             var sslConfig = new SslServerAuthenticationOptions();
             sslConfig.ServerCertificate = options.Certificate;
             sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
-            _listener = new QuicListener(QuicImplementationProviders.MsQuic, endpoint as IPEndPoint, sslConfig);
+
+            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
+            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
+            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+            quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+
+            _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();
         }
 

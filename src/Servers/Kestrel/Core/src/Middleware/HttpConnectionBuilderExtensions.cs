@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {

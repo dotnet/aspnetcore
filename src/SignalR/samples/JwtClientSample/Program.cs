@@ -39,10 +39,10 @@ namespace JwtClientSample
                 })
                 .Build();
 
-            var closedTcs = new TaskCompletionSource<object>();
+            var closedTcs = new TaskCompletionSource();
             hubConnection.Closed += e =>
             {
-                closedTcs.SetResult(null);
+                closedTcs.SetResult();
                 return Task.CompletedTask;
             };
 
@@ -71,7 +71,7 @@ namespace JwtClientSample
 
                     if (ticks % nextMsgAt == 0)
                     {
-                        await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now.ToString()}");
+                        await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
                         nextMsgAt = _random.Next(2, 5);
                     }
                 }

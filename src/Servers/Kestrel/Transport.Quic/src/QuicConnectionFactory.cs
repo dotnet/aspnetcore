@@ -9,14 +9,15 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
-    public class QuicConnectionFactory : IMultiplexedConnectionFactory
+    internal class QuicConnectionFactory : IMultiplexedConnectionFactory
     {
         private QuicTransportContext _transportContext;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Client");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Client");
             var trace = new QuicTrace(logger);
 
             _transportContext = new QuicTransportContext(trace, options.Value);

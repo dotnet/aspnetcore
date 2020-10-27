@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ServerShouldReturnETag()
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Headers.ETag);
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task SameETagShouldBeReturnedAgain()
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage response1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             HttpResponseMessage response2 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
@@ -47,7 +49,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfMatchShouldReturn412WhenNotListed(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "\"fake\"");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -58,7 +61,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfMatchShouldBeServedWhenListed(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
@@ -71,7 +75,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfMatchShouldBeServedForAsterisk(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -82,7 +87,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(UnsupportedMethods))]
         public async Task IfMatchShouldBeIgnoredForUnsupportedMethods(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -107,7 +113,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfNoneMatchShouldReturn304ForMatching(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
@@ -120,7 +127,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfNoneMatchAllShouldReturn304ForMatching(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
@@ -133,7 +141,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(UnsupportedMethods))]
         public async Task IfNoneMatchShouldBeIgnoredForNonTwoHundredAnd304Responses(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
@@ -156,7 +165,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task ServerShouldReturnLastModified(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage response = await server.CreateClient().SendAsync(
                 new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml"));
@@ -179,7 +189,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task MatchingBothConditionsReturnsNotModified(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .SendAsync(method.Method);
@@ -198,7 +209,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task MatchingAtLeastOneETagReturnsNotModified(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .SendAsync(method.Method);
@@ -223,7 +235,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task MissingEitherOrBothConditionsReturnsNormally(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .SendAsync(method.Method);
@@ -271,7 +284,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task InvalidIfModifiedSinceDateFormatGivesNormalGet(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -285,7 +299,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task FutureIfModifiedSinceDateFormatGivesNormalGet(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -306,7 +321,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfModifiedSinceDateGreaterThanLastModifiedShouldReturn304(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -324,7 +340,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task SupportsIfModifiedDateFormats(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .SendAsync(method.Method);
@@ -340,7 +357,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 HttpResponseMessage res2 = await server
                     .CreateRequest("/SubFolder/extra.xml")
-                    .AddHeader("If-Modified-Since", DateTimeOffset.UtcNow.ToString(format))
+                    .AddHeader("If-Modified-Since", DateTimeOffset.UtcNow.ToString(format, CultureInfo.InvariantCulture))
                     .SendAsync(method.Method);
 
                 Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);
@@ -351,7 +368,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfModifiedSinceDateLessThanLastModifiedShouldReturn200(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -369,7 +387,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task InvalidIfUnmodifiedSinceDateFormatGivesNormalGet(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -383,7 +402,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task FutureIfUnmodifiedSinceDateFormatGivesNormalGet(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -397,7 +417,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(SupportedMethods))]
         public async Task IfUnmodifiedSinceDateLessThanLastModifiedShouldReturn412(HttpMethod method)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+            using var server = host.GetTestServer();
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")

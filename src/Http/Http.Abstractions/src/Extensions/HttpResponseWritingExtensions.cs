@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="text">The text to write to the response.</param>
         /// <param name="cancellationToken">Notifies when request operations should be cancelled.</param>
         /// <returns>A task that represents the completion of the write operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsync(this HttpResponse response, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)
@@ -46,6 +48,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="encoding">The encoding to use.</param>
         /// <param name="cancellationToken">Notifies when request operations should be cancelled.</param>
         /// <returns>A task that represents the completion of the write operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static Task WriteAsync(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)

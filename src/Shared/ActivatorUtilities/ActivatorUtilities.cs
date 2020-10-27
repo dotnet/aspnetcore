@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+#nullable enable annotations
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -158,7 +160,7 @@ namespace Microsoft.Extensions.Internal
             return mc.Method;
         }
 
-        private static object GetService(IServiceProvider sp, Type type, Type requiredBy, bool isDefaultParameterRequired)
+        private static object? GetService(IServiceProvider sp, Type type, Type requiredBy, bool isDefaultParameterRequired)
         {
             var service = sp.GetService(type);
             if (service == null && !isDefaultParameterRequired)
@@ -217,11 +219,11 @@ namespace Microsoft.Extensions.Internal
             out ConstructorInfo matchingConstructor,
             out int?[] parameterMap)
         {
-            matchingConstructor = null;
-            parameterMap = null;
+            matchingConstructor = null!;
+            parameterMap = null!;
 
-            if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
-                !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
+            if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor!, ref parameterMap!) &&
+                !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor!, ref parameterMap!))
             {
                 var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
                 throw new InvalidOperationException(message);

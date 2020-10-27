@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.Identity
         private static readonly IDictionary<UIFramework, string> _assemblyMap =
             new Dictionary<UIFramework, string>()
             {
-                [UIFramework.Bootstrap3] = "Microsoft.AspNetCore.Identity.UI.Views.V3",
                 [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
             };
 

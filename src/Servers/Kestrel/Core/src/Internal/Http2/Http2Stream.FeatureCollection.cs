@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IHttpResetFeature.Reset(int errorCode)
         {
             var abortReason = new ConnectionAbortedException(CoreStrings.FormatHttp2StreamResetByApplication((Http2ErrorCode)errorCode));
-            ResetAndAbort(abortReason, (Http2ErrorCode)errorCode);
+            ApplicationAbort(abortReason, (Http2ErrorCode)errorCode);
         }
     }
 }

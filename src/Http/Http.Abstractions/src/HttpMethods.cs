@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Contains methods to verify the request method of an HTTP request. 
+    /// Contains methods to verify the request method of an HTTP request.
     /// </summary>
     public static class HttpMethods
     {
@@ -16,20 +16,47 @@ namespace Microsoft.AspNetCore.Http
         // Using .'static readonly' means that all consumers get these exact same
         // 'string' instance, which means the 'ReferenceEquals' checks below work
         // and allow us to optimize comparisons when these constants are used.
-        
+
         // Please do NOT change these to 'const'
+        /// <summary>
+        /// HTTP "CONNECT" method.
+        /// </summary>
         public static readonly string Connect = "CONNECT";
+        /// <summary>
+        /// HTTP "DELETE" method.
+        /// </summary>
         public static readonly string Delete = "DELETE";
+        /// <summary>
+        /// HTTP "GET" method.
+        /// </summary>
         public static readonly string Get = "GET";
+        /// <summary>
+        /// HTTP "HEAD" method.
+        /// </summary>
         public static readonly string Head = "HEAD";
+        /// <summary>
+        /// HTTP "OPTIONS" method.
+        /// </summary>
         public static readonly string Options = "OPTIONS";
+        /// <summary>
+        /// HTTP "PATCH" method.
+        /// </summary>
         public static readonly string Patch = "PATCH";
+        /// <summary>
+        /// HTTP "POST" method.
+        /// </summary>
         public static readonly string Post = "POST";
+        /// <summary>
+        /// HTTP "PUT" method.
+        /// </summary>
         public static readonly string Put = "PUT";
+        /// <summary>
+        /// HTTP "TRACE" method.
+        /// </summary>
         public static readonly string Trace = "TRACE";
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is CONNECT. 
+        /// Returns a value that indicates if the HTTP request method is CONNECT.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -37,11 +64,11 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsConnect(string method)
         {
-            return object.ReferenceEquals(Connect, method) || StringComparer.OrdinalIgnoreCase.Equals(Connect, method);
+            return Equals(Connect, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is DELETE. 
+        /// Returns a value that indicates if the HTTP request method is DELETE.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -49,47 +76,47 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsDelete(string method)
         {
-            return object.ReferenceEquals(Delete, method) || StringComparer.OrdinalIgnoreCase.Equals(Delete, method);
+            return Equals(Delete, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is GET. 
+        /// Returns a value that indicates if the HTTP request method is GET.
         /// </summary>
         /// <param name="method">The  HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is GET; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is GET; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsGet(string method)
         {
-            return object.ReferenceEquals(Get, method) || StringComparer.OrdinalIgnoreCase.Equals(Get, method);
+            return Equals(Get, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is HEAD. 
+        /// Returns a value that indicates if the HTTP request method is HEAD.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is HEAD; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is HEAD; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsHead(string method)
         {
-            return object.ReferenceEquals(Head, method) || StringComparer.OrdinalIgnoreCase.Equals(Head, method);
+            return Equals(Head, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is OPTIONS. 
+        /// Returns a value that indicates if the HTTP request method is OPTIONS.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is OPTIONS; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is OPTIONS; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsOptions(string method)
         {
-            return object.ReferenceEquals(Options, method) || StringComparer.OrdinalIgnoreCase.Equals(Options, method);
+            return Equals(Options, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is PATCH. 
+        /// Returns a value that indicates if the HTTP request method is PATCH.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -97,11 +124,11 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPatch(string method)
         {
-            return object.ReferenceEquals(Patch, method) || StringComparer.OrdinalIgnoreCase.Equals(Patch, method);
+            return Equals(Patch, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is POST. 
+        /// Returns a value that indicates if the HTTP request method is POST.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -109,11 +136,11 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPost(string method)
         {
-            return object.ReferenceEquals(Post, method) || StringComparer.OrdinalIgnoreCase.Equals(Post, method);
+            return Equals(Post, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is PUT. 
+        /// Returns a value that indicates if the HTTP request method is PUT.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -121,11 +148,11 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPut(string method)
         {
-            return object.ReferenceEquals(Put, method) || StringComparer.OrdinalIgnoreCase.Equals(Put, method);
+            return Equals(Put, method);
         }
 
         /// <summary>
-        /// Returns a value that indicates if the HTTP request method is TRACE. 
+        /// Returns a value that indicates if the HTTP request method is TRACE.
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
@@ -133,7 +160,39 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsTrace(string method)
         {
-            return object.ReferenceEquals(Trace, method) || StringComparer.OrdinalIgnoreCase.Equals(Trace, method);
+            return Equals(Trace, method);
+        }
+
+        /// <summary>
+        ///  Returns the equivalent static instance, or the original instance if none match. This conversion is optional but allows for performance optimizations when comparing method values elsewhere.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public static string GetCanonicalizedValue(string method) => method switch
+        {
+            string _ when IsGet(method) => Get,
+            string _ when IsPost(method) => Post,
+            string _ when IsPut(method) => Put,
+            string _ when IsDelete(method) => Delete,
+            string _ when IsOptions(method) => Options,
+            string _ when IsHead(method) => Head,
+            string _ when IsPatch(method) => Patch,
+            string _ when IsTrace(method) => Trace,
+            string _ when IsConnect(method) => Connect,
+            string _ => method
+        };
+
+        /// <summary>
+        /// Returns a value that indicates if the HTTP methods are the same.
+        /// </summary>
+        /// <param name="methodA">The first HTTP request method to compare.</param>
+        /// <param name="methodB">The second HTTP request method to compare.</param>
+        /// <returns>
+        /// <see langword="true" /> if the methods are the same; otherwise, <see langword="false" />.
+        /// </returns>
+        public static bool Equals(string methodA, string methodB)
+        {
+            return object.ReferenceEquals(methodA, methodB) || StringComparer.OrdinalIgnoreCase.Equals(methodA, methodB);
         }
     }
 }

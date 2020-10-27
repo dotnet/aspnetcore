@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// An interface for an <see cref="IRouter"/> with a name.
+    /// </summary>
     public interface INamedRouter : IRouter
     {
-        string Name { get; }
+        /// <summary>
+        /// The name of the router. Can be null.
+        /// </summary>
+        string? Name { get; }
     }
 }

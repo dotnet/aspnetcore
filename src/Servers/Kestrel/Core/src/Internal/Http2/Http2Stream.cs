@@ -6,6 +6,8 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Net.Http.HPack;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -14,15 +16,17 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
     {
         private Http2StreamContext _context;
         private Http2OutputProducer _http2Output;
         private StreamInputFlowControl _inputFlowControl;
         private StreamOutputFlowControl _outputFlowControl;
+        private Http2MessageBody _messageBody;
 
         private bool _decrementCalled;
 
@@ -37,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             base.Initialize(context);
 
+            CanReuse = false;
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
             InputRemaining = null;
@@ -45,32 +50,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _context = context;
 
-            _inputFlowControl = new StreamInputFlowControl(
-                context.StreamId,
-                context.FrameWriter,
-                context.ConnectionInputFlowControl,
-                context.ServerPeerSettings.InitialWindowSize,
-                context.ServerPeerSettings.InitialWindowSize / 2);
+            // First time the stream is used we need to create flow control, producer and pipes.
+            // When a stream is reused these types will be reset and reused.
+            if (_inputFlowControl == null)
+            {
+                _inputFlowControl = new StreamInputFlowControl(
+                    this,
+                    context.FrameWriter,
+                    context.ConnectionInputFlowControl,
+                    context.ServerPeerSettings.InitialWindowSize,
+                    context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(
-                context.ConnectionOutputFlowControl,
-                context.ClientPeerSettings.InitialWindowSize);
+                _outputFlowControl = new StreamOutputFlowControl(
+                    context.ConnectionOutputFlowControl,
+                    context.ClientPeerSettings.InitialWindowSize);
 
-            _http2Output = new Http2OutputProducer(
-                context.StreamId,
-                context.FrameWriter,
-                _outputFlowControl,
-                context.MemoryPool,
-                this,
-                context.ServiceContext.Log);
+                _http2Output = new Http2OutputProducer(this, context, _outputFlowControl);
 
-            RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
-            Output = _http2Output;
+                RequestBodyPipe = CreateRequestBodyPipe();
+
+                Output = _http2Output;
+            }
+            else
+            {
+                _inputFlowControl.Reset();
+                _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
+                _http2Output.StreamReset();
+                RequestBodyPipe.Reset();
+            }
         }
 
         public void InitializeWithExistingContext(int streamId)
         {
             _context.StreamId = streamId;
+
             Initialize(_context);
         }
 
@@ -93,6 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
         }
+
+        public bool CanReuse { get; private set; }
 
         protected override void OnReset()
         {
@@ -136,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                _http2Output.Dispose();
+                _http2Output.Complete();
 
                 RequestBodyPipe.Reader.Complete();
 
@@ -144,7 +159,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
 
-                Reset();
+                // We only want to reuse a stream that was not aborted and has completely finished writing.
+                // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
+                CanReuse = !_connectionAborted && HasResponseCompleted;
             }
             finally
             {
@@ -156,7 +173,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this);
+        {
+            if (ReceivedEmptyRequestBody)
+            {
+                return MessageBody.ZeroContentLengthClose;
+            }
+
+            if (_messageBody != null)
+            {
+                _messageBody.Reset();
+            }
+            else
+            {
+                _messageBody = new Http2MessageBody(this);
+            }
+
+            return _messageBody;
+        }
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -174,7 +207,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _httpVersion = Http.HttpVersion.Http2;
 
-            if (!TryValidateMethod())
+            // Method could already have been set from :method static table index
+            if (Method == HttpMethod.None && !TryValidateMethod())
             {
                 return false;
             }
@@ -206,7 +240,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
             // - For now we'll restrict it to http/s and require it match the transport.
             // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(HttpRequestHeaders.HeaderScheme, Scheme, StringComparison.OrdinalIgnoreCase))
+            var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            if (!ReferenceEquals(headerScheme, Scheme) &&
+                !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 ResetAndAbort(new ConnectionAbortedException(
                     CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
@@ -404,10 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
                     if (!IsAborted)
                     {
-                        foreach (var segment in dataPayload)
-                        {
-                            RequestBodyPipe.Writer.Write(segment.Span);
-                        }
+                        dataPayload.CopyTo(RequestBodyPipe.Writer);
 
                         // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
                         // Data will still be available to the reader.
@@ -416,7 +449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             var flushTask = RequestBodyPipe.Writer.FlushAsync();
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
-                            Debug.Assert(flushTask.IsCompleted);
+                            Debug.Assert(flushTask.IsCompletedSuccessfully);
                         }
                     }
                 }
@@ -487,10 +520,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        protected override void ApplicationAbort()
+        protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http2ErrorCode.INTERNAL_ERROR);
+
+        private void ApplicationAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
+            ResetAndAbort(abortReason, error);
         }
 
         internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
@@ -518,10 +552,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
             _http2Output.Stop();
 
-            AbortRequest();
+            CancelRequestAbortedToken();
 
             // Unblock the request body.
-            PoisonRequestBodyStream(abortReason);
+            PoisonBody(abortReason);
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
@@ -544,7 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
-        private Pipe CreateRequestBodyPipe(uint windowSize)
+        private Pipe CreateRequestBodyPipe()
             => new Pipe(new PipeOptions
             (
                 pool: _context.MemoryPool,
@@ -552,8 +586,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 writerScheduler: PipeScheduler.Inline,
                 // Never pause within the window range. Flow control will prevent more data from being added.
                 // See the assert in OnDataAsync.
-                pauseWriterThreshold: windowSize + 1,
-                resumeWriterThreshold: windowSize + 1,
+                pauseWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
+                resumeWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
                 useSynchronizationContext: false,
                 minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
@@ -574,6 +608,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         /// </summary>
         public abstract void Execute();
 
+        public void Dispose()
+        {
+            _http2Output.Dispose();
+        }
+
         [Flags]
         private enum StreamCompletionFlags
         {
@@ -581,6 +620,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RstStreamReceived = 1,
             EndStreamReceived = 2,
             Aborted = 4,
+        }
+
+        public override void OnHeader(int index, bool indexedValue, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            base.OnHeader(index, indexedValue, name, value);
+
+            if (indexedValue)
+            {
+                // Special case setting headers when the value is indexed for performance.
+                switch (index)
+                {
+                    case H2StaticTable.MethodGet:
+                        HttpRequestHeaders.HeaderMethod = HttpMethods.Get;
+                        Method = HttpMethod.Get;
+                        _methodText = HttpMethods.Get;
+                        return;
+                    case H2StaticTable.MethodPost:
+                        HttpRequestHeaders.HeaderMethod = HttpMethods.Post;
+                        Method = HttpMethod.Post;
+                        _methodText = HttpMethods.Post;
+                        return;
+                    case H2StaticTable.SchemeHttp:
+                        HttpRequestHeaders.HeaderScheme = SchemeHttp;
+                        return;
+                    case H2StaticTable.SchemeHttps:
+                        HttpRequestHeaders.HeaderScheme = SchemeHttps;
+                        return;
+                }
+            }
+
+            // HPack append will return false if the index is not a known request header.
+            // For example, someone could send the index of "Server" (a response header) in the request.
+            // If that happens then fallback to using Append with the name bytes.
+            if (!HttpRequestHeaders.TryHPackAppend(index, value))
+            {
+                AppendHeader(name, value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AppendHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            HttpRequestHeaders.Append(name, value);
         }
     }
 }

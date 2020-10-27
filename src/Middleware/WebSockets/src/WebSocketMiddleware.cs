@@ -17,6 +17,10 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets
 {
+    /// <summary>
+    /// Enables accepting WebSocket requests by adding a <see cref="IHttpWebSocketFeature"/>
+    /// to the <see cref="HttpContext"/> if the request is a valid WebSocket request.
+    /// </summary>
     public class WebSocketMiddleware
     {
         private readonly RequestDelegate _next;
@@ -25,6 +29,12 @@ namespace Microsoft.AspNetCore.WebSockets
         private readonly bool _anyOriginAllowed;
         private readonly List<string> _allowedOrigins;
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="WebSocketMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="options">The configuration options.</param>
+        /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
         public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options, ILoggerFactory loggerFactory)
         {
             if (next == null)
@@ -46,6 +56,12 @@ namespace Microsoft.AspNetCore.WebSockets
             // TODO: validate options.
         }
 
+        /// <summary>
+        /// Processes a request to determine if it is a WebSocket request, and if so,
+        /// sets the <see cref="IHttpWebSocketFeature"/> on the <see cref="HttpContext.Features"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> representing the request.</param>
+        /// <returns>The <see cref="Task"/> that represents the completion of the middleware pipeline.</returns>
         public Task Invoke(HttpContext context)
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
@@ -124,21 +140,16 @@ namespace Microsoft.AspNetCore.WebSockets
                     throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
 
-                string subProtocol = null;
+                string? subProtocol = null;
                 if (acceptContext != null)
                 {
                     subProtocol = acceptContext.SubProtocol;
                 }
 
                 TimeSpan keepAliveInterval = _options.KeepAliveInterval;
-                int receiveBufferSize = _options.ReceiveBufferSize;
                 var advancedAcceptContext = acceptContext as ExtendedWebSocketAcceptContext;
                 if (advancedAcceptContext != null)
                 {
-                    if (advancedAcceptContext.ReceiveBufferSize.HasValue)
-                    {
-                        receiveBufferSize = advancedAcceptContext.ReceiveBufferSize.Value;
-                    }
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
                         keepAliveInterval = advancedAcceptContext.KeepAliveInterval.Value;

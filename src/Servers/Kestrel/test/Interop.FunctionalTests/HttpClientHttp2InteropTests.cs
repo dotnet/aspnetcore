@@ -27,12 +27,6 @@ namespace Interop.FunctionalTests
     /// </summary>
     public class HttpClientHttp2InteropTests : LoggedTest
     {
-        public HttpClientHttp2InteropTests()
-        {
-            // H2C
-            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-        }
-
         public static IEnumerable<object[]> SupportedSchemes
         {
             get
@@ -42,7 +36,7 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                if (Utilities.CurrentPlatformSupportsAlpn())
+                if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
                 }
@@ -1024,7 +1018,6 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
         [MemberData(nameof(SupportedSchemes))]
         public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
         {
@@ -1118,7 +1111,7 @@ namespace Interop.FunctionalTests
                 Assert.Equal(oneKbString + i, response.Headers.GetValues("header" + i).Single());
             }
 
-            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15636 and flags END_STREAM")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15610 and flags END_STREAM")));
             Assert.Equal(2, TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 15585 and flags NONE")).Count());
             Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 14546 and flags END_HEADERS")));
 
@@ -1189,6 +1182,7 @@ namespace Interop.FunctionalTests
         // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
         {
@@ -1250,6 +1244,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
@@ -1346,7 +1341,6 @@ namespace Interop.FunctionalTests
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
         [Theory]
-        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
         {
@@ -1604,6 +1598,7 @@ namespace Interop.FunctionalTests
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             return client;
         }
 
@@ -1612,6 +1607,7 @@ namespace Interop.FunctionalTests
             return new HttpRequestMessage(method, url)
             {
                 Version = HttpVersion.Version20,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
                 Content = content,
             };
         }

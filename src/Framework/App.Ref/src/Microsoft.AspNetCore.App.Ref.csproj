@@ -1,0 +1,255 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <PackageId>$(TargetingPackName)</PackageId>
+    <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+
+    <!-- This is a reference package and does not include any dependencies. -->
+    <!-- We also disable warnings about package downgrades, because we intentionally reference lower versions of certain packages -->
+    <NoWarn>$(NoWarn);NU5128;NU1605</NoWarn>
+
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
+
+This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
+    <PackageTags>aspnetcore;targeting-pack</PackageTags>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <PackageType>DotnetPlatform</PackageType>
+    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <!-- There are no symbols for reference assemblies. -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
+    <DebugType>none</DebugType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <!--
+      We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
+      We need both to compose the targeting pack with reference assemblies and xml docs.
+    -->
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
+    <!-- We are ignoring NU5131 and NU5128 warnings since the dependency group should be kept empty. -->
+    <NoWarn>$(NoWarn);NU5131;NU5128</NoWarn>
+
+    <!-- Platform manifest data -->
+    <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+
+    <!-- Runtime extensions transport paths -->
+    <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
+
+    <!-- Package overrides and platform manifest metadata. -->
+    <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
+    <!-- PackageOverrides.txt is written in GeneratePackageOverrides target unless servicing. -->
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' != 'true'">$(ArtifactsObjDir)$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <!-- PlatformManifest.txt is written in App.Runtime's GenerateSharedFxDepsFile target but not used here when servicing. -->
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+    <!-- Enforce build order. Targeting pack needs to bundle information about the runtime. -->
+    <ProjectReference Include="..\..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
+
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)</ArchiveOutputFileName>
+    <ZipArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).zip</ZipArchiveOutputPath>
+    <TarArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).tar.gz</TarArchiveOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- If this project won't produce a package, don't bother building anything. -->
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
+      $(BuildDependsOn);
+      _ResolveTargetingPackContent;
+      GeneratePackageOverrides;
+      IncludeFrameworkListFile;
+      _BatchCopyToLayoutTargetDir;
+      _InstallTargetingPackIntoLocalDotNet;
+      _CreateTargetingPackArchive;
+    </BuildDependsOn>
+
+    <!-- No-op when in source build -->
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'"/>
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- This target finds the reference assemblies. -->
+  <Target Name="_ResolveTargetingPackContent"
+          Returns="@(AspNetCoreReferenceAssemblyPath)"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <_AvailableExtensionsRefAssemblies Include="$(RuntimeExtensionsReferenceDirectory)*.dll" />
+    </ItemGroup>
+
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ReferencedExtensionsRefAssemblies" />
+    </JoinItems>
+
+    <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(ExternalAspNetCoreAppReference)" LeftKey="Filename" RightKey="Identity" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefs" />
+    </JoinItems>
+
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_SelectedExtensionsRefs)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefAssemblies" />
+    </JoinItems>
+
+    <ItemGroup>
+      <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
+      <AspNetCoreReferenceAssemblyPath
+          Include="@(ReferencePathWithRefAssemblies)"
+          Exclude="
+            @(_ReferencedExtensionsRefAssemblies);
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Security.Cryptography.Pkcs'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Drawing.Common'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Win32.SystemEvents'));" />
+
+      <AspNetCoreReferenceAssemblyPath
+          Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName)%(Extension)')" />
+
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).xml')"
+          Condition="Exists('%(RootDir)%(Directory)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName).xml')" />
+      <!-- Grab remaining .xml files from packages -->
+      <AspNetCoreReferenceDocXml
+          Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')"
+          Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="$(ReferencePackageOverridesPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePackageOverrides"
+          Condition=" '$(IsServicingBuild)' != 'true' "
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="$(ReferencePackageOverridesPath">
+    <ItemGroup>
+      <!-- Use package version for non-Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+          Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+
+      <!-- Use NETCore.App.Runtime version for Extensions references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')" />
+
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
+          Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
+    </ItemGroup>
+
+    <WriteLinesToFile
+        Lines="@(_AspNetCoreAppPackageOverrides)"
+        File="$(ReferencePackageOverridesPath)"
+        Overwrite="true" />
+  </Target>
+
+  <!-- Written to take advantage of target batching in MSBuild. -->
+  <Target Name="_BatchCopyToLayoutTargetDir"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
+  </Target>
+
+  <ItemGroup>
+    <CreateDirectory Include="$(LocalInstallationOutputPath)" />
+  </ItemGroup>
+
+  <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
+  <Target Name="_InstallTargetingPackIntoLocalDotNet"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')">
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LocalInstallationOutputPath)" />
+  </Target>
+
+  <Target Name="_CreateTargetingPackArchive"
+          Inputs="@(RefPackContent)"
+          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
+          Condition=" '$(IsPackable)' == 'true' ">
+    <PropertyGroup>
+      <_TarCommand>tar</_TarCommand>
+      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">"$(RepoRoot).tools\tar.exe"</_TarCommand>
+
+      <!-- For the tar packed with git, transform e.g. "C:\root\AspNetCore\File.tar.gz" to "/C/root/AspNetCore/File.tar.gz". -->
+      <_TarArchiveOutputPath>$(TarArchiveOutputPath)</_TarArchiveOutputPath>
+      <_TarArchiveOutputPath
+          Condition="Exists('$(repoRoot)\.tools\tar.fromGit')">/$(TarArchiveOutputPath.Replace('\','/').Replace(':',''))</_TarArchiveOutputPath>
+    </PropertyGroup>
+
+    <ZipDirectory
+      SourceDirectory="$(TargetingPackLayoutRoot)"
+      DestinationFile="$(ZipArchiveOutputPath)"
+      Overwrite="true" />
+
+    <!-- Requires Windows 10 version 1803 or newer -->
+    <Message Importance="High" Text="Executing: $(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ." />
+    <Exec Command="$(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ."
+        WorkingDirectory="$(TargetingPackLayoutRoot)" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
+  </Target>
+
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(RefPackContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RefPackContent)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

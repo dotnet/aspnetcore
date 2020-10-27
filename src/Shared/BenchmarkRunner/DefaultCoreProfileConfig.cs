@@ -16,17 +16,17 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCoreProfileConfig()
         {
-            Add(ConsoleLogger.Default);
-            Add(MarkdownExporter.GitHub);
+            AddLogger(ConsoleLogger.Default);
+            AddExporter(MarkdownExporter.GitHub);
 
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-            Add(DefaultColumnProviders.Instance);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddColumn(StatisticColumn.OperationsPerSecond);
+            AddColumnProvider(DefaultColumnProviders.Instance);
 
-            Add(JitOptimizationsValidator.FailOnError);
+            AddValidator(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.InProcess
-                .With(RunStrategy.Throughput));
+            AddJob(Job.InProcess
+                .WithStrategy(RunStrategy.Throughput));
         }
     }
 }

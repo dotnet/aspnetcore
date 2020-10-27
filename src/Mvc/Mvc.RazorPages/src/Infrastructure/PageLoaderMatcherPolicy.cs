@@ -111,6 +111,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             for (var i = index + 1; i < candidates.Count; i++)
             {
+                if (!candidates.IsValidCandidate(i))
+                {
+                    continue;
+                }
+
                 var candidate = candidates[i];
                 var endpoint = candidate.Endpoint;
 

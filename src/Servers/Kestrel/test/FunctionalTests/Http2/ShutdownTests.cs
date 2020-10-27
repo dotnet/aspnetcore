@@ -21,9 +21,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
@@ -44,27 +43,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [CollectDump]
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/9985", Queues = "Fedora.28.Amd64;Fedora.28.Amd64.Open")]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestStopping = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<KestrelTrace>(TestApplicationErrorLogger)
             {
                 CallBase = true
             };
             mockKestrelTrace
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => requestStopping.SetResult(null));
+                .Callback(() => requestStopping.SetResult());
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
 
             testContext.InitializeHeartbeat();
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
-                requestStarted.SetResult(null);
+                requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
@@ -88,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await requestStopping.Task.DefaultTimeout();
 
                 // Unblock the request
-                requestUnblocked.SetResult(null);
+                requestUnblocked.SetResult();
 
                 Assert.Equal("hello world HTTP/2", await requestTask);
                 await stopTask.DefaultTimeout();
@@ -102,8 +100,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [ConditionalFact]
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
@@ -115,9 +113,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
 
             // Abortive shutdown leaves one request hanging
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
-                requestStarted.SetResult(null);
+                requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
@@ -144,7 +142,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 var stopServerTask = server.StopAsync(cts.Token).DefaultTimeout();
 
                 await closingMessageTask;
+
+                var closedMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closed. The last processed stream ID was 1.")).DefaultTimeout();
                 cts.Cancel();
+
+                // Wait for "is closed" message as this is logged from a different thread and aborting
+                // can timeout and return from server.StopAsync before this is logged.
+                await closedMessageTask;
+                requestUnblocked.SetResult();
                 await stopServerTask;
             }
 
@@ -152,8 +157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
-
-            requestUnblocked.SetResult(null);
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }

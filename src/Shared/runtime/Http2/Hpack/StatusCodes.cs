@@ -1,13 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.
-// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Text;
 
 namespace System.Net.Http.HPack
 {
-    internal static class StatusCodes
+    internal static partial class StatusCodes
     {
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
 

@@ -4,6 +4,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionContext = connectionContext,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                MemoryPool = memoryPoolFeature.MemoryPool,
+                MemoryPool = memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
                 LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };

@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.WebSockets
             return validConnection && validUpgrade && validVersion && validKey;
         }
 
-        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
+        public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
         {
             headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
             headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
@@ -110,23 +110,20 @@ namespace Microsoft.AspNetCore.WebSockets
             // this concatenated value to obtain a 20-byte value and base64-encoding"
             // https://tools.ietf.org/html/rfc6455#section-4.2.2
 
-            using (var algorithm = SHA1.Create())
+            // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' and everything is 1:1 mapping to UTF8 bytes
+            // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
+            Span<byte> mergedBytes = stackalloc byte[60];
+            Encoding.UTF8.GetBytes(requestKey, mergedBytes);
+            EncodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
+
+            Span<byte> hashedBytes = stackalloc byte[20];
+            var written = SHA1.HashData(mergedBytes, hashedBytes);
+            if (written != 20)
             {
-                // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' and everything is 1:1 mapping to UTF8 bytes
-                // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
-                Span<byte> mergedBytes = stackalloc byte[60];
-                Encoding.UTF8.GetBytes(requestKey, mergedBytes);
-                EncodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
-
-                Span<byte> hashedBytes = stackalloc byte[20];
-                var success = algorithm.TryComputeHash(mergedBytes, hashedBytes, out var written);
-                if (!success || written != 20)
-                {
-                    throw new InvalidOperationException("Could not compute the hash for the 'Sec-WebSocket-Accept' header.");
-                }
-
-                return Convert.ToBase64String(hashedBytes);
+                throw new InvalidOperationException("Could not compute the hash for the 'Sec-WebSocket-Accept' header.");
             }
+
+            return Convert.ToBase64String(hashedBytes);
         }
     }
 }

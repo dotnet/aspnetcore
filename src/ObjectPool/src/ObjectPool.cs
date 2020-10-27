@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.ObjectPool
 {
@@ -28,7 +30,7 @@ namespace Microsoft.Extensions.ObjectPool
     public static class ObjectPool
     {
         /// <inheritdoc />
-        public static ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy = null) where T : class, new()
+        public static ObjectPool<T> Create<T>(IPooledObjectPolicy<T>? policy = null) where T : class, new()
         {
             var provider = new DefaultObjectPoolProvider();
             return provider.Create(policy ?? new DefaultPooledObjectPolicy<T>());

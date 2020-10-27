@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -10,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
@@ -31,13 +31,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
-        private object _sync = new object();
-        private MultiplexedConnectionContext _multiplexedContext;
+        private readonly object _sync = new object();
+        private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
-        private object _protocolSelectionLock = new object();
+        private readonly object _protocolSelectionLock = new object();
 
         public Http3Connection(Http3ConnectionContext context)
         {
@@ -243,6 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         {
                             _streams[streamId] = http3Stream;
                         }
+                        KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                 }

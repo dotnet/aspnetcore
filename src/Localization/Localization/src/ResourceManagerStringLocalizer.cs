@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Extensions.Localization.Internal;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.Localization
     /// <remarks>This type is thread-safe.</remarks>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private readonly ConcurrentDictionary<string, object> _missingManifestCache = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object?> _missingManifestCache = new ConcurrentDictionary<string, object?>();
         private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly IResourceStringProvider _resourceStringProvider;
@@ -52,11 +53,9 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Intended for testing purposes only.
         /// </summary>
-        public ResourceManagerStringLocalizer(
+        internal ResourceManagerStringLocalizer(
             ResourceManager resourceManager,
-#pragma warning disable PUB0001 // Pubternal type AssemblyWrapper in public API
             AssemblyWrapper resourceAssemblyWrapper,
-#pragma warning restore PUB0001 // Pubternal type AssemblyWrapper in public API
             string baseName,
             IResourceNamesCache resourceNamesCache,
             ILogger logger)
@@ -76,11 +75,9 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Intended for testing purposes only.
         /// </summary>
-        public ResourceManagerStringLocalizer(
+        internal ResourceManagerStringLocalizer(
             ResourceManager resourceManager,
-#pragma warning disable PUB0001 // Pubternal type IResourceStringProvider in public API
             IResourceStringProvider resourceStringProvider,
-#pragma warning restore PUB0001 // Pubternal type IResourceStringProvider in public API
             string baseName,
             IResourceNamesCache resourceNamesCache,
             ILogger logger)
@@ -144,7 +141,7 @@ namespace Microsoft.Extensions.Localization
                 }
 
                 var format = GetStringSafely(name, null);
-                var value = string.Format(format ?? name, arguments);
+                var value = string.Format(CultureInfo.CurrentCulture, format ?? name, arguments);
 
                 return new LocalizedString(name, value, resourceNotFound: format == null, searchedLocation: _resourceBaseName);
             }
@@ -171,7 +168,7 @@ namespace Microsoft.Extensions.Localization
                 ? GetResourceNamesFromCultureHierarchy(culture)
                 : _resourceStringProvider.GetAllResourceStrings(culture, true);
 
-            foreach (var name in resourceNames)
+            foreach (var name in resourceNames ?? Enumerable.Empty<string>())
             {
                 var value = GetStringSafely(name, culture);
                 yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _resourceBaseName);
@@ -179,13 +176,13 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <summary>
-        /// Gets a resource string from the <see cref="_resourceManager"/> and returns <c>null</c> instead of
+        /// Gets a resource string from a <see cref="ResourceManager"/> and returns <c>null</c> instead of
         /// throwing exceptions if a match isn't found.
         /// </summary>
         /// <param name="name">The name of the string resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get the string for.</param>
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
-        protected string GetStringSafely(string name, CultureInfo culture)
+        protected string? GetStringSafely(string name, CultureInfo? culture)
         {
             if (name == null)
             {
@@ -205,7 +202,7 @@ namespace Microsoft.Extensions.Localization
 
             try
             {
-                return culture == null ? _resourceManager.GetString(name) : _resourceManager.GetString(name, culture);
+                return _resourceManager.GetString(name, culture);
             }
             catch (MissingManifestResourceException)
             {

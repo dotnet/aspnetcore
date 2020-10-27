@@ -485,5 +485,25 @@ namespace Microsoft.AspNetCore.Authentication
 
             Assert.NotNull(jwtOptions.Get("other"));
         }
+
+        [Fact]
+        public void AddAzureAD_SkipsOptionsValidationForNonAzureOpenIdConnect()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureAD(o => { })
+                .AddOpenIdConnect("other", null, o =>
+                {
+                    o.ClientId = "ClientId";
+                    o.Authority = "https://authority.com";
+                });
+
+            var provider = services.BuildServiceProvider();
+            var openIdConnectOptions = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+
+            Assert.NotNull(openIdConnectOptions.Get("other"));
+        }
     }
 }

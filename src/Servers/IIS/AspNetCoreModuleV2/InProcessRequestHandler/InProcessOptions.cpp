@@ -4,6 +4,7 @@
 #include "InProcessOptions.h"
 #include "InvalidOperationException.h"
 #include "EventLog.h"
+#include "Environment.h"
 
 HRESULT InProcessOptions::Create(
     IHttpServer& pServer,
@@ -51,6 +52,11 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     auto const aspNetCoreSection = configurationSource.GetRequiredSection(CS_ASPNETCORE_SECTION);
     m_strArguments = aspNetCoreSection->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);
     m_strProcessPath = aspNetCoreSection->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
+    // We prefer the environment variables for LAUNCHER_PATH and LAUNCHER_ARGS
+    m_strProcessPath = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_PATH)
+        .value_or(m_strProcessPath);
+    m_strArguments = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS)
+        .value_or(m_strArguments);
     m_fStdoutLogEnabled = aspNetCoreSection->GetRequiredBool(CS_ASPNETCORE_STDOUT_LOG_ENABLED);
     m_struStdoutLogFile = aspNetCoreSection->GetRequiredString(CS_ASPNETCORE_STDOUT_LOG_FILE);
     m_fDisableStartUpErrorPage = aspNetCoreSection->GetRequiredBool(CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE);
@@ -60,6 +66,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
     m_fCallStartupHook = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK).value_or(L"true"), L"true");
     m_strStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE).value_or(L"1048576");
+    m_fSuppressRecycleOnStartupTimeout = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_SUPPRESS_RECYCLE_ON_STARTUP_TIMEOUT).value_or(L"false"), L"true");
 
     m_dwStartupTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT) * 1000;
     m_dwShutdownTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_SHUTDOWN_TIME_LIMIT) * 1000;

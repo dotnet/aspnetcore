@@ -1,4 +1,4 @@
-import { ReconnectionHandler, ReconnectionOptions } from './BlazorOptions';
+import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
@@ -20,8 +20,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-          ? new UserSpecifiedDisplay(modal)
-          : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
+          ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
+          : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -38,6 +38,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 };
 
 class ReconnectionProcess {
+  static readonly MaximumFirstRetryInterval = 3000;
+
   readonly reconnectDisplay: ReconnectDisplay;
   isDisposed = false;
 
@@ -54,7 +56,13 @@ class ReconnectionProcess {
 
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; i < options.maxRetries; i++) {
-      await this.delay(options.retryIntervalMilliseconds);
+      this.reconnectDisplay.update(i + 1);
+
+      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+                            ? ReconnectionProcess.MaximumFirstRetryInterval
+                            : options.retryIntervalMilliseconds;
+      await this.delay(delayDuration);
+
       if (this.isDisposed) {
         break;
       }

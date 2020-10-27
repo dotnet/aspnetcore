@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task ThrowsIfClientIdMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
@@ -43,13 +44,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.TokenEndpoint = "/";
                     o.AuthorizationEndpoint = "/";
                 }));
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("ClientId", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfClientSecretMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
@@ -58,13 +60,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.TokenEndpoint = "/";
                     o.AuthorizationEndpoint = "/";
                 }));
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("ClientSecret", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfCallbackPathMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -73,13 +76,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.AuthorizationEndpoint = "/";
                     o.SignInScheme = "eh";
                 }));
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("CallbackPath", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfTokenEndpointMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -88,13 +92,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.AuthorizationEndpoint = "/";
                     o.SignInScheme = "eh";
                 }));
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfAuthorizationEndpointMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -103,13 +108,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.TokenEndpoint = "/";
                     o.SignInScheme = "eh";
                 }));
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -122,20 +128,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/challenge");
             var res = transaction.Response;
 
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/oauth-callback", correlation);
         }
 
         [Fact]
         public async Task RedirectToAuthorizeEndpoint_CorrelationIdCookieOptions_CanBeOverriden()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -149,20 +156,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/challenge");
             var res = transaction.Response;
 
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/", correlation);
         }
 
         [Fact]
         public async Task RedirectToAuthorizeEndpoint_HasScopeAsConfigured()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -178,6 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/challenge");
             var res = transaction.Response;
 
@@ -188,7 +197,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwritten()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -206,6 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/challenge");
             var res = transaction.Response;
 
@@ -216,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwrittenWithBaseAuthenticationProperties()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -234,6 +244,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/challenge");
             var res = transaction.Response;
 
@@ -254,7 +265,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task HandleRequestAsync_RedirectsToAccessDeniedPathWhenExplicitlySet()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -270,17 +281,18 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         opt.Events.OnRemoteFailure = context => throw new InvalidOperationException("This event should not be called.");
                     }));
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
+            Assert.Equal("https://www.example.com/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
         public async Task HandleRequestAsync_InvokesAccessDeniedEvent()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -304,8 +316,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         };
                     }));
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
@@ -314,7 +327,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task HandleRequestAsync_InvokesRemoteFailureEventWhenAccessDeniedPathIsNotExplicitlySet()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -339,8 +352,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         };
                     }));
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
@@ -349,7 +363,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task RemoteAuthenticationFailed_OAuthError_IncludesProperties()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -374,29 +388,34 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         };
                     }));
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=custom_error&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
         }
 
-        private static TestServer CreateServer(Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler = null)
+        private static async Task<IHost> CreateHost(Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler = null)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Use(async (context, next) =>
-                    {
-                        if (handler == null || ! await handler(context))
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
                         {
-                            await next();
-                        }
-                    });
-                })
-                .ConfigureServices(configureServices);
-            return new TestServer(builder);
+                            app.UseAuthentication();
+                            app.Use(async (context, next) =>
+                            {
+                                if (handler == null || ! await handler(context))
+                                {
+                                    await next();
+                                }
+                            });
+                        })
+                        .ConfigureServices(configureServices))
+                    .Build();
+            await host.StartAsync();
+            return host;
         }
 
         private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>

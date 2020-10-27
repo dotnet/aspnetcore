@@ -32,40 +32,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_FilePath()
         {
-            Navigate("/filepath");
+            Navigate("/subdir/filepath");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
+            Assert.NotNull(Browser.Exists(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_Pattern_FilePath()
         {
-            Navigate("/pattern_filepath/test");
+            Navigate("/subdir/pattern_filepath/test");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
+            Assert.NotNull(Browser.Exists(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_FilePath()
         {
-            Navigate("/assemblypath_filepath");
+            Navigate("/subdir/assemblypath_filepath");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
+            Assert.NotNull(Browser.Exists(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_Pattern_FilePath()
         {
-            Navigate("/assemblypath_pattern_filepath/test");
+            Navigate("/subdir/assemblypath_pattern_filepath/test");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
+            Assert.NotNull(Browser.Exists(By.Id("test-selector")));
         }
-
 
         private void WaitUntilLoaded()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            var app = Browser.Exists(By.TagName("app"));
+            Browser.NotEqual("Loading...", () => app.Text);
         }
     }
 }

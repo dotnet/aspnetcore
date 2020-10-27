@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private bool _returningResponse;
         private object _testContext;
-        private Pipe _requestPipe;
+        private readonly Pipe _requestPipe;
 
         private Action<HttpContext> _responseReadCompleteCallback;
         private Task _sendRequestStreamTask;
@@ -115,10 +115,25 @@ namespace Microsoft.AspNetCore.TestHost
                     // This could throw an error if there was a pending server read. Needs to
                     // happen before completing the response so the response returns the error.
                     var requestBodyInProgress = RequestBodyReadInProgress();
+                    if (requestBodyInProgress)
+                    {
+                        // If request is still in progress then abort it.
+                        CancelRequestBody();
+                    }
 
                     // Matches Kestrel server: response is completed before request is drained
                     await CompleteResponseAsync();
-                    await CompleteRequestAsync(requestBodyInProgress);
+
+                    if (!requestBodyInProgress)
+                    {
+                        // Writer was already completed in send request callback.
+                        await _requestPipe.Reader.CompleteAsync();
+
+                        // Don't wait for request to drain. It could block indefinitely. In a real server
+                        // we would wait for a timeout and then kill the socket.
+                        // Potential future improvement: add logging that the request timed out
+                    }
+
                     _application.DisposeContext(_testContext, exception: null);
                 }
                 catch (Exception ex)
@@ -163,24 +178,6 @@ namespace Microsoft.AspNetCore.TestHost
             // Cancel any pending request async activity when the client aborts a duplex
             // streaming scenario by disposing the HttpResponseMessage.
             CancelRequestBody();
-        }
-
-        private async Task CompleteRequestAsync(bool requestBodyInProgress)
-        {
-            if (requestBodyInProgress)
-            {
-                // If request is still in progress then abort it.
-                CancelRequestBody();
-            }
-            else
-            {
-                // Writer was already completed in send request callback.
-                await _requestPipe.Reader.CompleteAsync();
-            }
-
-            // Don't wait for request to drain. It could block indefinitely. In a real server
-            // we would wait for a timeout and then kill the socket.
-            // Potential future improvement: add logging that the request timed out
         }
 
         private bool RequestBodyReadInProgress()

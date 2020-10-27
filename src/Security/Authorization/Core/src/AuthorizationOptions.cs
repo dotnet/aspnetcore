@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authorization
     /// </summary>
     public class AuthorizationOptions
     {
-        private IDictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Determines whether authentication handlers should be invoked after a failure.
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// effect unless you have the AuthorizationMiddleware in your pipeline. It is not used in any way by the 
         /// default <see cref="IAuthorizationService"/>.
         /// </summary>
-        public AuthorizationPolicy FallbackPolicy { get; set; }
+        public AuthorizationPolicy? FallbackPolicy { get; set; }
 
         /// <summary>
         /// Add an authorization policy with the provided name.
@@ -84,14 +84,19 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="name">The name of the policy to return.</param>
         /// <returns>The policy for the specified name, or null if a policy with the name does not exist.</returns>
-        public AuthorizationPolicy GetPolicy(string name)
+        public AuthorizationPolicy? GetPolicy(string name)
         {
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return PolicyMap.ContainsKey(name) ? PolicyMap[name] : null;
+            if (PolicyMap.TryGetValue(name, out var value))
+            {
+                return value;
+            }
+
+            return null;
         }
     }
 }

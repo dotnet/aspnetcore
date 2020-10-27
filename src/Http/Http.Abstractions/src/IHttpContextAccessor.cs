@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the current <see cref="HttpContext"/>. Returns <see langword="null" /> if there is no active <see cref="HttpContext" />.
         /// </summary>
-        HttpContext HttpContext { get; set; }
+        HttpContext? HttpContext { get; set; }
     }
 }

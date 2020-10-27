@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -28,8 +29,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly StringBuilder _builder = new StringBuilder();
         private int _bufferOffset;
         private int _bufferCount;
-        private string _currentKey;
-        private string _currentValue;
+        private string? _currentKey;
+        private string? _currentValue;
         private bool _endOfStream;
         private bool _disposed;
 
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
-        private bool TryReadWord(char separator, int limit, out string value)
+        private bool TryReadWord(char separator, int limit, [NotNullWhen(true)] out string? value)
         {
             do
             {
@@ -201,7 +202,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return false;
         }
 
-        private bool ReadChar(char separator, int limit, out string word)
+        private bool ReadChar(char separator, int limit, [NotNullWhen(true)] out string? word)
         {
             // End
             if (_bufferCount == 0)
@@ -283,6 +284,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator.GetResults();
         }
 
+        [MemberNotNullWhen(true, nameof(_currentKey), nameof(_currentValue))]
         private bool ReadSucceeded()
         {
             return _currentKey != null && _currentValue != null;

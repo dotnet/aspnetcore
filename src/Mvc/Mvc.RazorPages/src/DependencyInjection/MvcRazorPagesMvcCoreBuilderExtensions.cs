@@ -15,8 +15,16 @@ using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds razor page functionality to <see cref="IMvcCoreBuilder"/>.
+    /// </summary>
     public static class MvcRazorPagesMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Register services needed for Razor Pages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
         {
             if (builder == null)
@@ -31,6 +39,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Register services needed for Razor Pages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The action to setup the <see cref="RazorPagesOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorPages(
             this IMvcCoreBuilder builder,
             Action<RazorPagesOptions> setupAction)
@@ -89,15 +103,15 @@ namespace Microsoft.Extensions.DependencyInjection
             // Routing
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
-            services.TryAddSingleton<DynamicPageEndpointSelector>();
+            services.TryAddSingleton<DynamicPageEndpointSelectorCache>();
+            services.TryAddSingleton<PageActionEndpointDataSourceIdProvider>();
 
             // Action description and invocation
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
-            services.TryAddSingleton<PageActionEndpointDataSource>();
-            services.TryAddSingleton<DynamicPageEndpointSelector>();
+            services.TryAddSingleton<PageActionEndpointDataSourceFactory>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
 
             services.TryAddEnumerable(

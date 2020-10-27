@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
-        private Http3FrameWriter _frameWriter;
-        private Http3OutputProducer _http3Output;
+        private readonly Http3FrameWriter _frameWriter;
+        private readonly Http3OutputProducer _http3Output;
         private int _isClosed;
         private int _gracefulCloseInitiator;
         private readonly Http3StreamContext _context;
@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
-        private TaskCompletionSource<object> _appCompleted;
+        private TaskCompletionSource _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
+        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context)
         {
             Initialize(context);
 
@@ -116,13 +116,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void OnStaticIndexedHeader(int index)
         {
-            var knownHeader = H3StaticTable.Instance[index];
+            var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
             OnHeader(knownHeader.Name, knownHeader.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
-            var knownHeader = H3StaticTable.Instance[index];
+            var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
             OnHeader(knownHeader.Name, value);
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     base.OnHeader(name, value);
                 }
             }
-            catch (BadHttpRequestException bre)
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
             {
                 throw new Http3StreamErrorException(bre.Message, Http3ErrorCode.ProtocolError);
             }
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void HandleRequestHeadersTimeout()
         {
-            Log.ConnectionBadRequest(ConnectionId, BadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
+            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
             Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
         }
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             Debug.Assert(_appCompleted != null);
 
-            _appCompleted.SetResult(new object());
+            _appCompleted.SetResult();
         }
 
         private bool TryClose()
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                         if (result.IsCompleted)
                         {
-                            OnEndStreamReceived();
+                            await OnEndStreamReceived();
                             return;
                         }
                     }
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
 
-                Input.Complete();
+                await Input.CompleteAsync();
 
                 await RequestBodyPipe.Writer.CompleteAsync();
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _frameWriter.Complete();
+                    await _frameWriter.CompleteAsync();
                 }
                 catch
                 {
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private void OnEndStreamReceived()
+        private ValueTask OnEndStreamReceived()
         {
             if (InputRemaining.HasValue)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             OnTrailersComplete();
-            RequestBodyPipe.Writer.Complete();
+            return RequestBodyPipe.Writer.CompleteAsync();
         }
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _receivedHeaders = true;
             InputRemaining = HttpRequestHeaders.ContentLength;
 
-            _appCompleted = new TaskCompletionSource<object>();
+            _appCompleted = new TaskCompletionSource();
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
 

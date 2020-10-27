@@ -122,6 +122,7 @@ export class HubConnectionBuilder {
     public withUrl(url: string, options: IHttpConnectionOptions): HubConnectionBuilder;
     public withUrl(url: string, transportTypeOrOptions?: IHttpConnectionOptions | HttpTransportType): HubConnectionBuilder {
         Arg.isRequired(url, "url");
+        Arg.isNotEmpty(url, "url");
 
         this.url = url;
 

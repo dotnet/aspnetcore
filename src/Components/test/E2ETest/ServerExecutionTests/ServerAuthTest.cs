@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor._internal.forceCloseConnection()");
 
             // Wait until the reconnection dialog has been shown but is now hidden
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => driver.FindElement(By.Id("components-reconnect-modal"))?.GetCssValue("display") == "none");
+            var reconnectModel = Browser.Exists(By.Id("components-reconnect-modal"));
+            Browser.Equal("none", () => reconnectModel.GetCssValue("display"));
         }
     }
 }

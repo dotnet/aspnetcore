@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -101,6 +103,77 @@ namespace Microsoft.AspNetCore.TestHost
             httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent);
 
             return httpClient.GetAsync("http://example.com");
+        }
+
+        [Fact]
+        public Task ContentLengthWithBodyWorks()
+        {
+            var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.True(context.Request.CanHaveBody());
+                Assert.Equal(contentBytes.LongLength, context.Request.ContentLength);
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            var content = new ByteArrayContent(contentBytes);
+
+            return httpClient.PostAsync("http://example.com", content);
+        }
+
+        [Fact]
+        public Task ContentLengthNotPresentWithNoBody()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.False(context.Request.CanHaveBody());
+                Assert.Null(context.Request.ContentLength);
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+
+            return httpClient.GetAsync("http://example.com");
+        }
+
+        [Fact]
+        public Task ContentLengthWithImplicitChunkedTransferEncodingWorks()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.True(context.Request.CanHaveBody());
+                Assert.Null(context.Request.ContentLength);
+                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+
+                return Task.CompletedTask;
+            }));
+
+            var httpClient = new HttpClient(handler);
+
+            return httpClient.PostAsync("http://example.com", new UnlimitedContent());
+        }
+
+        [Fact]
+        public Task ContentLengthWithExplicitChunkedTransferEncodingWorks()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.True(context.Request.CanHaveBody());
+                Assert.Null(context.Request.ContentLength);
+                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+
+                return Task.CompletedTask;
+            }));
+
+            var httpClient = new HttpClient(handler);
+            httpClient.DefaultRequestHeaders.TransferEncodingChunked = true;
+            var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
+            var content = new ByteArrayContent(contentBytes);
+
+            return httpClient.PostAsync("http://example.com", content);
         }
 
         [Fact]
@@ -289,7 +362,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
+                await context.Response.Body.FlushAsync();
                 await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
@@ -305,11 +378,11 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientDisposalCloses()
         {
             var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
-                return block.Task;
+                await context.Response.Body.FlushAsync();
+                await block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
@@ -327,11 +400,11 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientCancellationAborts()
         {
             var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
-                return block.Task;
+                await context.Response.Body.FlushAsync();
+                await block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
@@ -564,6 +637,20 @@ namespace Microsoft.AspNetCore.TestHost
                 public void Dispose()
                 {
                 }
+            }
+        }
+
+        private class UnlimitedContent : HttpContent
+        {
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            {
+                return Task.CompletedTask;
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = -1;
+                return false;
             }
         }
     }

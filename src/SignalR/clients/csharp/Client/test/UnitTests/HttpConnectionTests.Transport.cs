@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
 
                     // Call count increments with each call and is used as the access token
-                    Assert.Equal(callCount.ToString(), request.Headers.Authorization.Parameter);
+                    Assert.Equal(callCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
 
                     requestsExecuted = true;
 
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Task<string> AccessTokenProvider()
                 {
                     callCount++;
-                    return Task.FromResult(callCount.ToString());
+                    return Task.FromResult(callCount.ToString(CultureInfo.InvariantCulture));
                 }
 
                 await WithConnectionAsync(
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var requestedWithHeader = request.Headers.GetValues("X-Requested-With");
+                    var requestedWithHeader = request.Headers.GetValues(HeaderNames.XRequestedWith);
                     var requestedWithValue = Assert.Single(requestedWithHeader);
                     Assert.Equal("XMLHttpRequest", requestedWithValue);
 

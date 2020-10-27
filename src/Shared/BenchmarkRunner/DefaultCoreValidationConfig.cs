@@ -4,7 +4,7 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Toolchains.InProcess;
+using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 
 namespace BenchmarkDotNet.Attributes
 {
@@ -12,9 +12,9 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCoreValidationConfig()
         {
-            Add(ConsoleLogger.Default);
+            AddLogger(ConsoleLogger.Default);
 
-            Add(Job.Dry.With(InProcessToolchain.Instance));
+            AddJob(Job.Dry.WithToolchain(InProcessNoEmitToolchain.Instance));
         }
     }
 }

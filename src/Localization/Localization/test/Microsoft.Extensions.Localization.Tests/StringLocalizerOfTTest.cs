@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using Moq;
 using Xunit;
 
@@ -15,7 +14,7 @@ namespace Microsoft.Extensions.Localization
         {
             // Arrange, act and assert
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StringLocalizer<object>(factory: null));
+                () => new StringLocalizer<object>(factory: null!));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -45,7 +44,7 @@ namespace Microsoft.Extensions.Localization
             var localizer = new StringLocalizer<object>(factory.Object);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => localizer[name: null]);
+            var exception = Assert.Throws<ArgumentNullException>(() => localizer[name: null!]);
 
             Assert.Equal("name", exception.ParamName);
         }
@@ -80,7 +79,7 @@ namespace Microsoft.Extensions.Localization
             var localizer = new StringLocalizer<object>(factory.Object);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => localizer[name: null]);
+            var exception = Assert.Throws<ArgumentNullException>(() => localizer[name: null!]);
 
             Assert.Equal("name", exception.ParamName);
         }

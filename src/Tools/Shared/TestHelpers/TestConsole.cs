@@ -91,6 +91,8 @@ namespace Microsoft.Extensions.Tools.Internal
                         _output.WriteLine(_sb.ToString());
                         _sb.Clear();
                     }
+
+                    _currentOutput.Append(value);
                 }
                 else
                 {
