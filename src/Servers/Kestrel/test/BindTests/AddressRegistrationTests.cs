@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Contains(5001, host.GetPorts());
                 }
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Debug &&
+                Assert.Single(Messages, log => log.LogLevel == LogLevel.Debug &&
                     (string.Equals(CoreStrings.FormatBindingToDefaultAddresses(Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress), log.Message, StringComparison.Ordinal)
                         || string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal)));
 
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [IPv6SupportedCondition]
         public async Task ThrowsWhenBindingToIPv6AddressInUse()
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(IOException));
+            IgnoredExceptions.Add(typeof(IOException));
 
             using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
             {
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var useUrlsAddressWithPort = $"http://127.0.0.1:{port}";
                 Assert.Equal(serverAddresses.First(), useUrlsAddressWithPort);
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Information &&
+                Assert.Single(Messages, log => log.LogLevel == LogLevel.Information &&
                     string.Equals(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(IServerAddressesFeature.PreferHostingUrls), useUrlsAddress),
                     log.Message, StringComparison.Ordinal));
 
@@ -685,7 +685,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var endPointAddress = $"https://127.0.0.1:{port}";
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Warning &&
+                Assert.Single(Messages, log => log.LogLevel == LogLevel.Warning &&
                     string.Equals(CoreStrings.FormatOverridingWithKestrelOptions(useUrlsAddress, "UseKestrel()"),
                     log.Message, StringComparison.Ordinal));
 
@@ -747,7 +747,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ThrowsWhenBindingLocalhostToDynamicPort()
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
+            IgnoredExceptions.Add(typeof(InvalidOperationException));
 
             var hostBuilder = TransportSelector.GetHostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -772,7 +772,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("ssh://localhost")]
         public async Task ThrowsForUnsupportedAddressFromHosting(string address)
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
+            IgnoredExceptions.Add(typeof(InvalidOperationException));
 
             var hostBuilder = TransportSelector.GetHostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -931,7 +931,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private void ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily addressFamily)
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(IOException));
+            IgnoredExceptions.Add(typeof(IOException));
 
             var addressInUseCount = 0;
             var wrongMessageCount = 0;

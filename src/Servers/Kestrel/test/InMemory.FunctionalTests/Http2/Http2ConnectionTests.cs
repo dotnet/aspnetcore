@@ -37,16 +37,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _connection.ServerSettings.MaxConcurrentStreams = 2;
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            Assert.Equal(0, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(0, Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // Log message because we've reached the stream limit
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(1, Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // This stream will error because it exceeds max concurrent streams
             await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
             await WaitForStreamErrorAsync(5, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(1, Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
         }
@@ -1171,7 +1171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.NO_ERROR, null);
             // Logged without an exception.
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            Assert.Contains(Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             // Writing over half the initial window size induces a connection-level window update.
             // But no stream window update since this is the last frame.
@@ -4426,7 +4426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
             await StopConnectionAsync(1, ignoreNonGoAwayFrames: false);
-            Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
+            Assert.Single(Messages, m => m.Exception is ConnectionResetException);
         }
 
         [Fact]
@@ -4437,7 +4437,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
-            Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
+            Assert.DoesNotContain(Messages, m => m.Exception is ConnectionResetException);
         }
 
         [Fact]
@@ -4628,9 +4628,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            Assert.All(TestApplicationErrorLogger.Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
+            Assert.All(Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.EventId == 20);
+            var logMessage = Messages.Single(m => m.EventId == 20);
 
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
@@ -4646,7 +4646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
+            var logMessage = Messages.Single(m => m.LogLevel >= LogLevel.Information);
 
             Assert.Equal(LogLevel.Warning, logMessage.LogLevel);
             Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
@@ -4679,7 +4679,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
             // Logged without an exception.
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            Assert.Contains(Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)
