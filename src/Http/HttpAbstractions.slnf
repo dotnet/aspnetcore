@@ -44,7 +44,10 @@
       "src\\Http\\WebUtilities\\perf\\Microsoft.AspNetCore.WebUtilities.Performance\\Microsoft.AspNetCore.WebUtilities.Performance.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
-      "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj"
+      "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }
