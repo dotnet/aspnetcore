@@ -27,11 +27,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SingleAssembly Include="System.Private.Xml.dll"/>
-    <SingleAssembly Include="System.Linq.Expressions.dll"/>
-    <SingleAssembly Include="Microsoft.CodeAnalysis.VisualBasic.dll"/>
-    <SingleAssembly Include="Microsoft.CodeAnalysis.CSharp.dll"/>
-    <SingleAssembly Include="System.Private.CoreLib.dll"/>
+    <SingleAssembly Include="System.Net.WebProxy.dll"/>                 <!-- Approx. 10 KB as of 2020/10 -->
+    <SingleAssembly Include="System.Net.Http.Json.dll"/>                <!-- Approx. 20 KB as of 2020/10 -->
+    <SingleAssembly Include="System.Drawing.Primitives.dll"/>           <!-- Approx. 50 KB as of 2020/10 -->
+    <SingleAssembly Include="System.ServiceModel.Syndication.dll"/>     <!-- Approx. 100 KB as of 2020/10 -->
+    <SingleAssembly Include="System.Net.Sockets.dll"/>                  <!-- Approx. 200 KB as of 2020/10 -->
+    <SingleAssembly Include="System.Linq.Expressions.dll"/>             <!-- Approx. 500 KB as of 2020/10 -->
+    <SingleAssembly Include="System.Data.Common.dll"/>                  <!-- Approx. 1 MB as of 2020/10 -->
+    <SingleAssembly Include="Microsoft.CodeAnalysis.dll"/>              <!-- Approx. 2 MB as of 2020/10 -->
+    <SingleAssembly Include="System.Private.Xml.dll"/>                  <!-- Approx. 3 MB as of 2020/10 -->
+    <SingleAssembly Include="Microsoft.CodeAnalysis.VisualBasic.dll"/>  <!-- Approx. 4 MB as of 2020/10 -->
+    <SingleAssembly Include="Microsoft.CodeAnalysis.CSharp.dll"/>       <!-- Approx. 4 MB as of 2020/10 -->
+    <SingleAssembly Include="System.Private.CoreLib.dll"/>              <!-- Approx. 10 MB as of 2020/10 -->
   </ItemGroup>
   <ItemGroup>
     <Composite Include="framework-r2r.dll.rsp"/>
@@ -51,6 +58,13 @@
     </Crossgen2WorkItem>
   </ItemGroup>
 
+  <ItemGroup> 
+    <Crossgen2SingleThreadedWorkItem Include="@(SingleAssembly)">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <Command>$(Python) $(Crossgen2Directory)test.py crossgen2 --core-root $(CoreRoot) --single %(Identity) --singlethreaded True</Command>
+    </Crossgen2SingleThreadedWorkItem>
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Enable crossgen tests on Windows x64 and Windows x86 -->
     <HelixWorkItem Include="@(CrossgenWorkItem -> 'Crossgen %(Identity)')" Condition="'$(AGENT_OS)' == 'Windows_NT'">
@@ -58,6 +72,9 @@
     </HelixWorkItem>
     <!-- Enable crossgen2 tests on Windows x64 and Linux x64 -->
     <HelixWorkItem Include="@(Crossgen2WorkItem -> 'Crossgen2 %(Identity)')" Condition="'$(Architecture)' == 'x64'">
+      <Timeout>4:00</Timeout>
+    </HelixWorkItem>
+    <HelixWorkItem Include="@(Crossgen2SingleThreadedWorkItem -> 'Crossgen2 single-threaded %(Identity)')" Condition="'$(Architecture)' == 'x64'">
       <Timeout>4:00</Timeout>
     </HelixWorkItem>
     <HelixWorkItem Include="Crossgen2 Composite Framework R2R" Condition="'$(Architecture)' == 'x64'">
