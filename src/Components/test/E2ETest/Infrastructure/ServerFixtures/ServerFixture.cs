@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 {
                      projectName = projectName.Substring(0, comma);
                 }
-                var path = Path.Combine(AppContext.BaseDirectory, projectName);
+                var path = Path.Combine(AppContext.BaseDirectory, "testassets", projectName);
                 if (!Directory.Exists(path))
                 {
                     throw new ArgumentException($"Cannot find a sample or test site directory: '{path}'.");
