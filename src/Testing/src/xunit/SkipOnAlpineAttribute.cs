@@ -13,6 +13,13 @@ namespace Microsoft.AspNetCore.Testing
     /// </summary>
     public class SkipOnAlpineAttribute : Attribute, ITestCondition
     {
+        public SkipOnAlpineAttribute(string issueUrl = "")
+        {
+            IssueUrl = issueUrl;
+        }
+
+        public string IssueUrl { get; }
+
         public bool IsMet { get; } = !IsAlpine;
 
         public string SkipReason => "Test cannot run on Alpine Linux.";
