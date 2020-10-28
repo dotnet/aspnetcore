@@ -57,11 +57,6 @@ namespace Microsoft.AspNetCore.Testing
                 return true;
             }
 
-            if (Queues.Contains("All.Alpine") && targetQueue.StartsWith("(alpine."))
-            {
-                return true;
-            }
-
             return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
         }
 

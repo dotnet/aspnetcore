@@ -33,7 +33,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;All.Alpine")]
+        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX")]
+        [SkipOnAlpine]
         public async Task GrpcTemplate()
         {
             var project = await ProjectFactory.GetOrCreateProject("grpc", Output);
