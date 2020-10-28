@@ -28,7 +28,7 @@
     <HelixContent Include="..\testassets\**\*" />
     <HelixContent Include="$(RepoRoot)global.json" />
     <HelixContent Include="$(RepoRoot)eng\Versions.props" />
-    <HelixContent Include="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props" Link="$(MSBuildThisFileDirectory)\GenerateFiles.Directory.Build.props"/>
+    <HelixContent Include="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props" Link="GenerateFiles.Directory.Build.props"/>
   </ItemGroup>
 
   <ItemGroup>
