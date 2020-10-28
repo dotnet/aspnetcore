@@ -329,6 +329,7 @@ elif [[ -n $__CodeName ]]; then
     chroot $__RootfsDir apt-get -f -y install
     chroot $__RootfsDir apt-get -y install $__UbuntuPackages
     chroot $__RootfsDir symlinks -cr /usr
+    chroot $__RootfsDir apt clean
 
     if [ $__SkipUnmount == 0 ]; then
         umount $__RootfsDir/* || true

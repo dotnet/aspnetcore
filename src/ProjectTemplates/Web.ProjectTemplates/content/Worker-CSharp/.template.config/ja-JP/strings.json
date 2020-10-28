@@ -2,6 +2,6 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ワーカー サービス",
-    "description": "ワーカー サービスを作成するための空のプロジェクト テンプレート。"
+    "description": "Worker Service を作成するための空のプロジェクト テンプレート。"
   }
 }

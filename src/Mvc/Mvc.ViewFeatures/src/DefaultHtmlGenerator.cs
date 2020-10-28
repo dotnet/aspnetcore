@@ -20,6 +20,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Default implementation of <see cref="IHtmlGenerator"/>.
+    /// </summary>
     public class DefaultHtmlGenerator : IHtmlGenerator
     {
         private const string HiddenListItem = @"<li style=""display:none""></li>";
@@ -1208,6 +1211,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate an input tag.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
+        /// <param name="inputType">The <see cref="InputType"/>.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="useViewData">Whether to use view data.</param>
+        /// <param name="isChecked">If the input is checked.</param>
+        /// <param name="setId">Whether this should set id.</param>
+        /// <param name="isExplicitValue">Whether this is an explicit value.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="htmlAttributes">The html attributes.</param>
+        /// <returns></returns>
         protected virtual TagBuilder GenerateInput(
             ViewContext viewContext,
             InputType inputType,
@@ -1356,6 +1374,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a link.
+        /// </summary>
+        /// <param name="linkText">The text for the link.</param>
+        /// <param name="url">The url for the link.</param>
+        /// <param name="htmlAttributes">The html attributes.</param>
+        /// <returns>The <see cref="TagBuilder"/>.</returns>
         protected virtual TagBuilder GenerateLink(
             string linkText,
             string url,

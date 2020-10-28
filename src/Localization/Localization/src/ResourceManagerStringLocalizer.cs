@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.Localization
 
             try
             {
-                return culture == null ? _resourceManager.GetString(name, CultureInfo.CurrentUICulture) : _resourceManager.GetString(name, culture);
+                return _resourceManager.GetString(name, culture);
             }
             catch (MissingManifestResourceException)
             {

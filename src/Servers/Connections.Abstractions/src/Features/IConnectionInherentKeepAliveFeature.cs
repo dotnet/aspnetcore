@@ -15,6 +15,9 @@ namespace Microsoft.AspNetCore.Connections.Features
     /// </remarks>
     public interface IConnectionInherentKeepAliveFeature
     {
+        /// <summary>
+        /// Gets whether or not the connection has an inherent keep-alive concept.
+        /// </summary>
         bool HasInherentKeepAlive { get; }
     }
 }

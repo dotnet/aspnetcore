@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 try
                 {
-                    Renderer.Dispose();
+                    await Renderer.DisposeAsync();
 
                     // This cast is needed because it's possible the scope may not support async dispose.
                     // Our DI container does, but other DI systems may not.
