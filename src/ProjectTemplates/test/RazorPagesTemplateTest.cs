@@ -106,7 +106,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/26776")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
