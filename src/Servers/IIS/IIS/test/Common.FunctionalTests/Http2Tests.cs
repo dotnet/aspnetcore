@@ -326,6 +326,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
+        public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
+        {
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable", http2: false);
+
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version11, response.Version);
+            Assert.Empty(response.TrailingHeaders);
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_NoBody_TrailersSent()
         {
             var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_NoBody_TrailersSent");
@@ -742,7 +753,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    await h2Connection.StartStreamAsync(1, GetHeaders("/Reset_CompleteAsyncDuringRequestBody_Resets"), endStream: false);
+                    await h2Connection.StartStreamAsync(1, GetPostHeaders("/Reset_CompleteAsyncDuringRequestBody_Resets"), endStream: false);
                     await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
