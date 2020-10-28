@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionResetEventId = 19;
         private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
-        public static Dictionary<string, Func<ListenOptions>> ConnectionMiddlewareData => new Dictionary<string, Func<ListenOptions>>
+        public static Dictionary<string, Func<ListenOptions>> ConnectionMiddlewareData { get; } = new Dictionary<string, Func<ListenOptions>>
         {
             { "Loopback", () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)) },
             { "PassThrough", () => new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough() }
