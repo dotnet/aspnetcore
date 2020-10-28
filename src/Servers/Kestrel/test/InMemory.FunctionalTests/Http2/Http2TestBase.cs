@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Emulate transport abort so the _connectionTask completes.
                 Task.Run(() =>
                 {
-                    TestApplicationErrorLogger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
+                    Logger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
                     _pair.Application.Output.Complete(ex);
                 });
             });
@@ -1205,13 +1205,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage?.Length > 0)
             {
-                var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is TException);
+                var message = Assert.Single(LogMessages, m => m.Exception is TException);
 
                 Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
             }
 
+            Logger.LogInformation("Waiting for Connection task");
             await _connectionTask.DefaultTimeout();
-            TestApplicationErrorLogger.LogInformation("Stopping Connection From ConnectionErrorAsync");
+            Logger.LogInformation("Stopping Connection From ConnectionErrorAsync");
         }
 
         internal async Task WaitForStreamErrorAsync(int expectedStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
@@ -1226,7 +1227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage != null)
             {
-                Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                Assert.Contains(LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
             }
         }
 
