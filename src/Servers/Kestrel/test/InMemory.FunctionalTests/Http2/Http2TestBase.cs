@@ -1205,7 +1205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage?.Length > 0)
             {
-                var message = Assert.Single(Messages, m => m.Exception is TException);
+                var message = Assert.Single(LogMessages, m => m.Exception is TException);
 
                 Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
             }
@@ -1227,7 +1227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage != null)
             {
-                Assert.Contains(Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                Assert.Contains(LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
             }
         }
 

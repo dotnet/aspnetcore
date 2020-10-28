@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Contains(Messages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
         }
 
         [Fact]

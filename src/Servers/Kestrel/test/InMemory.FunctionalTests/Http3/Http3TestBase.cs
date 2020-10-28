@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 if (expectedErrorMessage != null)
                 {
-                    Assert.Contains(_testBase.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                    Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
                 }
             }
         }

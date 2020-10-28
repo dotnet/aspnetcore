@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         private TestApplicationErrorLogger TestApplicationErrorLogger { get; set; }
 
-        public ConcurrentQueue<LogMessage> Messages => TestApplicationErrorLogger.Messages;
+        public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
 
         public bool ThrowOnUngracefulShutdown
         {
@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Testing
             set => TestApplicationErrorLogger.ThrowOnUngracefulShutdown = value;
         }
 
-        public List<Type> IgnoredExceptions => TestApplicationErrorLogger.IgnoredExceptions;
+        public List<Type> IgnoredCriticalLogExceptions => TestApplicationErrorLogger.IgnoredExceptions;
 
-        public Task<LogMessage> WaitForMessage(Func<LogMessage, bool> messageFilter)
+        public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
             => TestApplicationErrorLogger.WaitForMessage(messageFilter);
 
         public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
