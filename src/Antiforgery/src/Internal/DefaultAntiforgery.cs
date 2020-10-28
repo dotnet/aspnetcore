@@ -377,42 +377,42 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
         {
-						// Because Pragma is non-standard, deprecated, and only has one possible value ("no-cache"), set it unconditionally:
-						httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+		// Because Pragma is non-standard, deprecated, and only has one possible value ("no-cache"), set it unconditionally:
+		httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
 
-						CacheControlHeaderValue.TryParse(httpContext.Response.Headers[HeaderNames.CacheControl].ToString(), out var cacheControlHeaderValue);
-						if (cacheControlHeaderValue == null)
-						{
-							httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-							return;
-						}
+		CacheControlHeaderValue.TryParse(httpContext.Response.Headers[HeaderNames.CacheControl].ToString(), out var cacheControlHeaderValue);
+		if (cacheControlHeaderValue == null)
+		{
+			httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
+			return;
+		}
 
-						var headerOverridden = false;
-						if (cacheControlHeaderValue.NoCache != true)
-						{
-							cacheControlHeaderValue.NoCache = true;
-							headerOverridden = true;
-						}
-						if (cacheControlHeaderValue.NoStore != true)
-						{
-							cacheControlHeaderValue.NoStore = true;
-							headerOverridden = true;
-						}
-						if (cacheControlHeaderValue.Public == true)
-						{
-							cacheControlHeaderValue.Public = false;
-							headerOverridden = true;
-						}
+		var headerOverridden = false;
+		if (cacheControlHeaderValue.NoCache != true)
+		{
+			cacheControlHeaderValue.NoCache = true;
+			headerOverridden = true;
+		}
+		if (cacheControlHeaderValue.NoStore != true)
+		{
+			cacheControlHeaderValue.NoStore = true;
+			headerOverridden = true;
+		}
+		if (cacheControlHeaderValue.Public == true)
+		{
+			cacheControlHeaderValue.Public = false;
+			headerOverridden = true;
+		}
 
-						if (headerOverridden == true)
-						{
-							httpContext.Response.Headers[HeaderNames.CacheControl] = cacheControlHeaderValue.ToString();
+		if (headerOverridden == true)
+		{
+			httpContext.Response.Headers[HeaderNames.CacheControl] = cacheControlHeaderValue.ToString();
 
-							// Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them
-							// by default), log a warning to let users know of the change in behavior to any cache headers they might
-							// have set explicitly.
-            	_logger.ResponseCacheHeadersOverridenToNoCache();
-						}
+			// Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them
+			// by default), log a warning to let users know of the change in behavior to any cache headers they might
+			// have set explicitly.
+			_logger.ResponseCacheHeadersOverridenToNoCache();
+		}
         }
 
         private AntiforgeryTokenSet Serialize(IAntiforgeryFeature antiforgeryFeature)
