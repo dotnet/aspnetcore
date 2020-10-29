@@ -33,6 +33,7 @@
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673" Platform="Linux" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true'">
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
