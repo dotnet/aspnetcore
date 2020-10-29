@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -66,12 +67,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(conventions));
             }
 
+            var requestDelegate = CreateRequestDelegate(action) ?? _requestDelegate;
+
             if (createInertEndpoints)
             {
                 var builder = new InertEndpointBuilder()
                 {
                     DisplayName = action.DisplayName,
-                    RequestDelegate = _requestDelegate,
+                    RequestDelegate = requestDelegate,
                 };
                 AddActionDataToBuilder(
                     builder,
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                     // We suppress link generation for each conventionally routed endpoint. We generate a single endpoint per-route
                     // to handle link generation.
-                    var builder = new RouteEndpointBuilder(_requestDelegate, updatedRoutePattern, route.Order)
+                    var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, route.Order)
                     {
                         DisplayName = action.DisplayName,
                     };
@@ -142,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         $"To fix this error, choose a different parmaeter name.");
                 }
 
-                var builder = new RouteEndpointBuilder(_requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)
+                var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)
                 {
                     DisplayName = action.DisplayName,
                 };
@@ -403,6 +406,67 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 perRouteConventions[i](builder);
             }
+        }
+
+        private static RequestDelegate CreateRequestDelegate(ActionDescriptor action)
+        {
+            // Super happy path
+            if (action is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata))
+            {
+                ControllerActionInvokerCache cache = null;
+                IActionResultTypeMapper mapper = null;
+
+                return async context =>
+                {
+                    var endpoint = context.GetEndpoint();
+                    // var dataTokens = endpoint.Metadata.GetMetadata<IDataTokensMetadata>();
+
+                    // Allocation :(
+                    var routeData = new RouteData();
+                    routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: null);
+
+                    // Allocation :(
+                    var actionContext = new ActionContext(context, routeData, action);
+
+                    // Allocation :(
+                    var controllerContext = new ControllerContext(actionContext)
+                    {
+                        // Allocation :(
+                        // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                        // ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                    };
+                    // controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+
+                    if (cache == null)
+                    {
+                        cache = context.RequestServices.GetRequiredService<ControllerActionInvokerCache>();
+                    }
+
+                    if (mapper == null)
+                    {
+                        mapper = context.RequestServices.GetRequiredService<IActionResultTypeMapper>();
+                    }
+
+                    var (cacheEntry, filters) = cache.GetCachedResult(controllerContext);
+
+                    var controller = cacheEntry.ControllerFactory(controllerContext);
+
+                    await cacheEntry.ControllerBinderDelegate?.Invoke(controllerContext, controller, null);
+
+                    try
+                    {
+
+                        var result = await cacheEntry.ActionMethodExecutor.Execute(mapper, cacheEntry.ObjectMethodExecutor, controller, null);
+
+                        await result.ExecuteResultAsync(actionContext);
+                    }
+                    finally
+                    {
+                        cacheEntry.ControllerReleaser?.Invoke(controllerContext, controller);
+                    }
+                };
+            }
+            return null;
         }
 
         private static RequestDelegate CreateRequestDelegate()
