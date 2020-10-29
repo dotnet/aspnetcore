@@ -21,6 +21,7 @@
       "src\\Razor\\tools\\Microsoft.AspNetCore.Razor.Internal.Transport\\Microsoft.AspNetCore.Razor.Internal.Transport.csproj",
       "src\\Razor\\tools\\RazorSyntaxGenerator\\RazorSyntaxGenerator.csproj",
       "src\\Razor\\perf\\Microsoft.AspNetCore.Razor.Performance\\Microsoft.AspNetCore.Razor.Performance.csproj",
+      "src\\Razor\\SourceGenerator\\src\\RazorSourceGenerators.csproj",
       "src\\Razor\\Microsoft.NET.Sdk.Razor\\src\\Microsoft.NET.Sdk.Razor.csproj",
       "src\\Razor\\Microsoft.NET.Sdk.Razor\\test\\Microsoft.NET.Sdk.Razor.Test.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.Common\\Microsoft.AspNetCore.Razor.Test.Common.csproj",

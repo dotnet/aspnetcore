@@ -40,15 +40,21 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new ComponentTypeVisitor(symbols, types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            if ((context.DiscoveryMode & TagHelperDiscoveryMode.CurrentAssembly) == TagHelperDiscoveryMode.CurrentAssembly)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                visitor.Visit(compilation.Assembly);
+            }
+
+            if ((context.DiscoveryMode & TagHelperDiscoveryMode.References) == TagHelperDiscoveryMode.References)
+            {
+                foreach (var reference in compilation.References)
                 {
-                    visitor.Visit(assembly);
+                    // We ignore .netmodules here - there really isn't a case where they are used by user code
+                    // even though the Roslyn APIs all support them.
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly.GlobalNamespace);
+                    }
                 }
             }
 

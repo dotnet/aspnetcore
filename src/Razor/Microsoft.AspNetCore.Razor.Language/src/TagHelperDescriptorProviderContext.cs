@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract ItemCollection Items { get; }
 
         public abstract ICollection<TagHelperDescriptor> Results { get; }
+
+        public TagHelperDiscoveryMode DiscoveryMode { get; set; } = TagHelperDiscoveryMode.All;
 
         public static TagHelperDescriptorProviderContext Create()
         {

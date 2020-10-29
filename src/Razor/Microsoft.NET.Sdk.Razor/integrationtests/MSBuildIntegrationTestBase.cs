@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             string target,
             string args = null,
             bool suppressTimeout = false,
-            bool suppressBuildServer = false,
+            bool suppressTestSpecificBuildServer = false,
             string buildServerPipeName = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 $"/p:RepoRoot={BuildVariables.RepoRoot}",
             };
 
-            if (!suppressBuildServer)
+            if (!suppressTestSpecificBuildServer)
             {
                 buildArgumentList.Add($@"/p:_RazorBuildServerPipeName=""{buildServerPipeName ?? BuildServer.PipeName}""");
             }

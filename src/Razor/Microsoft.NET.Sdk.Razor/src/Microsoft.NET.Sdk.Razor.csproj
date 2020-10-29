@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
@@ -33,6 +33,11 @@
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir;SelfContained" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+
+    <Reference Include="RazorSourceGenerators"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
@@ -72,6 +77,7 @@
 
     <ItemGroup>
       <RazorToolsOutput Include="$(ArtifactsBinDir)rzc\$(Configuration)\$(DefaultNetCoreTargetFramework)\publish\**\*.*" />
+      <RazorSourceGeneratorOutput Include="$(ArtifactsBinDir)RazorSourceGenerators\$(Configuration)\netstandard2.0\*" />
       <MvcRazorExtensionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
@@ -80,11 +86,19 @@
       Condition="'@(RazorToolsOutput->Count())' == '0'" />
 
     <Error
+      Text="Source generator output were not found in $(ArtifactsBinDir)RazorSourceGenerators\$(Configuration)\netstandard2.0\"
+      Condition="'@(RazorSourceGeneratorOutput->Count())' == '0'" />
+
+    <Error
       Text="Mvc extensions outputs were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0"
       Condition="'@(MvcRazorExtensionOutput->Count())' == '0'" />
 
     <Copy SourceFiles="@(RazorToolsOutput)" DestinationFolder="$(SdkOutputPath)tools\" SkipUnchangedFiles="true" Retries="$(_Retries)" ContinueOnError="$(_ContinueOnError)" />
     <Copy SourceFiles="@(MvcRazorExtensionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true" Retries="$(_Retries)" ContinueOnError="$(_ContinueOnError)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+
+    <Copy SourceFiles="@(RazorSourceGeneratorOutput)" DestinationFolder="$(SdkOutputPath)source-generators\" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 

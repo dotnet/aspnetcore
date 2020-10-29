@@ -121,5 +121,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets a value that determines if the components code writer may omit values for minimized attributes.
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if special ifdefs are added to the generated code to support
+        /// features such as Edit & Continue in the IDE.
+        /// </summary>
+        internal bool GenerateDesignerIfDefs { get; set; }
     }
 }

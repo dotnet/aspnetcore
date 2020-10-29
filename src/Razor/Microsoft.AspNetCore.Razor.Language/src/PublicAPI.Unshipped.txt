@@ -1,1 +1,6 @@
-#nullable enable
+Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext.DiscoveryMode.get -> Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode
+Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext.DiscoveryMode.set -> void
+Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode
+Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode.All = Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode.CurrentAssembly | Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode.References -> Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode
+Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode.CurrentAssembly = 1 -> Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode
+Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode.References = 2 -> Microsoft.AspNetCore.Razor.Language.TagHelperDiscoveryMode

@@ -66,8 +66,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="RazorCoreCompile"
           Inputs="$(MSBuildAllProjects);
                   @(RazorCompile);
+                  @(RazorGenerate);
                   $(AssemblyOriginatorKeyFile);
-                  @(RazorReferencePath);
+                  @(ReferencePath);
+                  @(IntermediateAssembly);
                   @(CompiledLicenseFile);
                   @(LinkResource);
                   $(ResolvedCodeAnalysisRuleSet);
@@ -105,6 +107,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="('$(AdditionalFileItemNames)' != '')">
       <AdditionalFileItems Include="$(AdditionalFileItemNames)" />
       <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Remove="@(_RazorAdditionalFile)" />
+      <Analyzer Remove="@(_RazorAnalyzer)" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
@@ -156,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          Prefer32Bit="$(Prefer32Bit)"
          PreferredUILang="$(PreferredUILang)"
          ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
-         References="@(RazorReferencePath)"
+         References="@(ReferencePath);@(IntermediateAssembly)"
          ReportAnalyzer="$(ReportAnalyzer)"
          Resources="@(_RazorCoreCompileResourceInputs);@(CompiledLicenseFile)"
          ResponseFiles="$(CompilerResponseFile)"

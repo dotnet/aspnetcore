@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.DoesNotContain("RazorCoreCompile", result.Output);
         }
 
-        [Fact]
+        [Fact(Skip = "Skipping until https://github.com/dotnet/aspnetcore/issues/28825 is resolved.")]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
         {

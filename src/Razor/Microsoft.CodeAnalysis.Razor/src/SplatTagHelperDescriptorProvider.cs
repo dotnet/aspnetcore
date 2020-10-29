@@ -27,6 +27,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            if ((context.DiscoveryMode & TagHelperDiscoveryMode.References) != TagHelperDiscoveryMode.References)
+            {
+                return;
+            }
+
             var renderTreeBuilder = compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.FullTypeName);
             if (renderTreeBuilder == null)
             {

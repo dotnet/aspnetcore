@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild("Build",
                 "/p:UseRazorBuildServer=false",
-                suppressBuildServer: true,
+                suppressTestSpecificBuildServer: true,
                 msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
         }
 
-        [Fact]
+        [Fact(Skip = "Blocked until https://github.com/dotnet/roslyn/issues/50090 is resolved.")]
         [InitializeTestProject("SimplePages", additionalProjects: "LinkedDir")]
         public async Task Build_SetsUpEmbeddedResourcesWithLogicalName()
         {
@@ -478,25 +479,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/13303")]
-        [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
-        public async Task Build_SimpleMvcFSharp_NoopsWithoutFailing()
-        {
-            var result = await DotnetMSBuild("Build");
-
-            Assert.BuildPassed(result);
-
-            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.pdb");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.pdb");
-
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvcFSharp.RazorAssemblyInfo.cs");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvcFSharp.RazorAssemblyInfo.fs");
-        }
-
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithGenerateRazorAssemblyInfo_False_DoesNotGenerateAssemblyInfo()
@@ -568,6 +550,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibraryMvc21" })]
         public async Task Build_WithP2P_Referencing21Project_Works()
         {
+
             // Verifies building with different versions of Razor.Tasks works. Loosely modeled after the repro
             // scenario listed in https://github.com/Microsoft/msbuild/issues/3572
             var additionalProjectContent = @"
@@ -577,7 +560,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 ";
             AddProjectFileContent(additionalProjectContent);
 
-            var result = await DotnetMSBuild(target: default);
+            var result = await DotnetMSBuild(target: default, suppressTestSpecificBuildServer: true);
 
             Assert.BuildPassed(result);
 
@@ -628,21 +611,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_WithoutServer_ErrorDuringBuild_DisplaysErrorInMsBuildOutput()
+        public async Task Build_ErrorDuringBuild_DisplaysErrorInMsBuildOutput()
         {
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:UseRazorBuildServer=false /p:RazorLangVersion=99.0",
-                suppressBuildServer: true);
+                suppressTestSpecificBuildServer: true);
 
             Assert.BuildFailed(result);
-            Assert.BuildOutputContainsLine(
+            Assert.BuildError(
                 result,
-                $"Invalid option 99.0 for Razor language version --version; must be Latest or a valid version in range 1.0 to 5.0.");
-
-            // Compilation failed without creating the views assembly
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+                "RZ3600",
+                message: "Invalid value 99.0 for RazorLangVersion. Valid values include 'Latest' or a valid version in range 1.0 to 5.0.");
         }
 
         [Fact]
@@ -652,7 +632,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:Nullable=enable",
-                suppressBuildServer: true);
+                suppressTestSpecificBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: true);
@@ -668,7 +648,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:LangVersion=7.3",
-                suppressBuildServer: true);
+                suppressTestSpecificBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: false);
@@ -698,7 +678,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:LangVersion=8.0 /p:Nullable=enable",
-                suppressBuildServer: true);
+                suppressTestSpecificBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: true);
@@ -714,7 +694,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:AddRazorSupportForMvc=false",
-                suppressBuildServer: true);
+                suppressTestSpecificBuildServer: true);
 
             Assert.BuildWarning(result, "RAZORSDK1004");
         }
@@ -731,6 +711,42 @@ AddProjectFileContent(@"
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildWarning(result, "RAZORSDK1000");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_EmbedRazorGenerateSources_EmbedsCshtmlFiles()
+        {
+            var result = await DotnetMSBuild("Build", "/p:EmbedRazorGenerateSources=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+            var assembly = LoadAssemblyFromBytes(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var resources = assembly.GetManifestResourceNames();
+
+            Assert.Equal(new string[]
+            {
+                "/Views/Home/About.cshtml",
+                "/Views/Home/Contact.cshtml",
+                "/Views/Home/Index.cshtml",
+                "/Views/Shared/Error.cshtml",
+                "/Views/Shared/_Layout.cshtml",
+                "/Views/Shared/_ValidationScriptsPartial.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/Views/_ViewStart.cshtml",
+            },
+            resources.OrderBy(r => r, StringComparer.Ordinal));
+        }
+
+        private Assembly LoadAssemblyFromBytes(params string[] paths)
+        {
+            // We need to load the assembly from bytes to load it without locking the file - and yes, we need to
+            // load the pdb too, or else the CLR will load/lock it based on the path specified in the assembly.
+            var assemblyBytes = File.ReadAllBytes(Path.Combine(paths));
+            var symbolBytes = File.ReadAllBytes(Path.ChangeExtension(Path.Combine(paths), ".pdb"));
+            return Assembly.Load(assemblyBytes, symbolBytes);
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)

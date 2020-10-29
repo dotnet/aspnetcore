@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; set; }
 
+        /// <summary>
+        /// <see cref="RazorCodeGenerationOptions.GenerateDesignerIfDefs"/>.
+        /// </summary>
+        internal bool GenerateDesignerIfDefs { get; set; }
+
         public abstract RazorCodeGenerationOptions Build();
 
         public virtual void SetDesignTime(bool designTime)

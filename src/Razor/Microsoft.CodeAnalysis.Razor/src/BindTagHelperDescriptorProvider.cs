@@ -101,6 +101,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            if ((context.DiscoveryMode & TagHelperDiscoveryMode.References) != TagHelperDiscoveryMode.References)
+            {
+                return;
+            }
+
             // Tag Helper defintion for case #1. This is the most general case.
             context.Results.Add(CreateFallbackBindTagHelper());
 

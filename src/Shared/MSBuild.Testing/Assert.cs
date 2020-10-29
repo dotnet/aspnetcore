@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         // Matches `{filename}: error {code}: {message} [{project}]
         // See https://stackoverflow.com/questions/3441452/msbuild-and-ignorestandarderrorwarningformat/5180353#5180353
-        private static readonly Regex ErrorRegex = new Regex(@"^(?'location'.+): error (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
-        private static readonly Regex WarningRegex = new Regex(@"^(?'location'.+): warning (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
+        private static readonly Regex ErrorRegex = new Regex(@"^((?'location'.+): )?error (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
+        private static readonly Regex WarningRegex = new Regex(@"^((?'location'.+): )?warning (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
         private static readonly string[] AllowedBuildWarnings = new[]
         {
             "MSB3491" , // The process cannot access the file. As long as the build succeeds, we're ok.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static void BuildError(MSBuildResult result, string errorCode, string location = null)
+        public static void BuildError(MSBuildResult result, string errorCode, string location = null, string message = null)
         {
             if (result == null)
             {
@@ -71,6 +71,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     }
 
                     if (location != null && match.Groups["location"].Value.Trim() != location)
+                    {
+                        continue;
+                    }
+
+                    if (message != null && match.Groups["message"].Value.Trim() != message)
                     {
                         continue;
                     }
@@ -516,7 +521,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
 
             var typeNames = GetDeclaredTypeNames(assemblyPath);
-            Assert.Contains(fullTypeName, typeNames);
+
+            if (!typeNames.Contains(fullTypeName, StringComparer.Ordinal))
+            {
+                throw new MSBuildXunitException(result, $"{fullTypeName} was not found in {string.Join(", ", typeNames)}");
+            }
         }
 
         public static void AssemblyDoesNotContainType(MSBuildResult result, string assemblyPath, string fullTypeName)

@@ -89,7 +89,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="RazorGenerateDesignTime"
     DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths"
-    Returns="@(RazorGenerateWithTargetPath)">
+    Returns="@(RazorGenerateWithTargetPath)"
+    Condition="'$(_UseRazorSourceGenerator)' != 'true'">
   </Target>
 
   <!--
@@ -99,7 +100,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="RazorGenerateComponentDesignTime"
     DependsOnTargets="$(_RazorGenerateComponentDesignTimeDependsOn)"
-    Returns="@(RazorComponentWithTargetPath)">
+    Returns="@(RazorComponentWithTargetPath)"
+    Condition="'$(_UseRazorSourceGenerator)' != 'true'">
   </Target>
 
 
@@ -111,7 +113,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target
     Name="RazorGenerateComponentDeclarationDesignTime"
-    DependsOnTargets="$(_RazorGenerateComponentDeclarationDesignTimeDependsOn)">
+    DependsOnTargets="$(_RazorGenerateComponentDeclarationDesignTimeDependsOn)"
+    Condition="'$(_UseRazorSourceGenerator)' != 'true'">
   </Target>
 
 </Project>

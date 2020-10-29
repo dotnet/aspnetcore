@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            var eventHandlerData = GetEventHandlerData(compilation);
+            var eventHandlerData = GetEventHandlerData(compilation, context.DiscoveryMode);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
             {
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private List<EventHandlerData> GetEventHandlerData(Compilation compilation)
+        private List<EventHandlerData> GetEventHandlerData(Compilation compilation, TagHelperDiscoveryMode discoveryMode)
         {
             var eventHandlerAttribute = compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName);
             if (eventHandlerAttribute == null)
@@ -56,15 +56,21 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            if ((discoveryMode & TagHelperDiscoveryMode.CurrentAssembly) == TagHelperDiscoveryMode.CurrentAssembly)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                visitor.Visit(compilation.Assembly.GlobalNamespace);
+            }
+
+            if ((discoveryMode & TagHelperDiscoveryMode.References) == TagHelperDiscoveryMode.References)
+            {
+                foreach (var reference in compilation.References)
                 {
-                    visitor.Visit(assembly);
+                    // We ignore .netmodules here - there really isn't a case where they are used by user code
+                    // even though the Roslyn APIs all support them.
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly.GlobalNamespace);
+                    }
                 }
             }
 

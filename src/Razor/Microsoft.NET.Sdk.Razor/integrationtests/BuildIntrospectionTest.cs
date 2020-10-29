@@ -287,5 +287,32 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, "Watch: Index.razor");
             Assert.BuildOutputContainsLine(result, "Watch: Index.razor.css");
         }
+
+        [Fact(Skip = "Blocked until https://github.com/dotnet/roslyn/issues/50090 is resolved.")]
+        [InitializeTestProject("SimpleMvc", additionalProjects: "LinkedDir")]
+        public async Task Build_WorksWithLinkedFiles()
+        {
+            // Arrange
+            var projectContent = @"
+<ItemGroup>
+  <Content Include=""..\LinkedDir\LinkedFile.cshtml"" />
+  <Content Include=""..\LinkedDir\LinkedFile2.cshtml"" Link=""LinkedFileOut\LinkedFile2.cshtml"" />
+  <Content Include=""..\LinkedDir\LinkedFile3.cshtml"" Link=""LinkedFileOut\LinkedFileWithRename.cshtml"" />
+</ItemGroup>
+";
+            AddProjectFileContent(projectContent);
+
+            var result = await DotnetMSBuild("ResolveRazorGenerateInputs", "/t:_IntrospectRazorGenerateWithTargetPath");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFile.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cshtml.g.cs");
+
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} LinkedFile.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFile.cshtml.g.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile2.cshtml")} LinkedFileOut\LinkedFile2.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cshtml.g.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile3.cshtml")} LinkedFileOut\LinkedFileWithRename.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cshtml.g.cs")}");
+        }
     }
 }

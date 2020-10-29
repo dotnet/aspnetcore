@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -191,6 +191,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 // Then fall back to the FilePath (yeah it's a bad name) which is like an MVC view engine path
                 // It's much better to have something than nothing.
                 filePath = projectItem.FilePath;
+            }
+
+            if (projectItem.RazorSourceDocument is not null)
+            {
+                return projectItem.RazorSourceDocument;
             }
 
             using (var stream = projectItem.Read())

@@ -52,7 +52,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 SuppressMetadataAttributes,
                 SuppressPrimaryMethodBody,
                 SuppressNullabilityEnforcement,
-                OmitMinimizedComponentAttributeValues);
+                OmitMinimizedComponentAttributeValues)
+            {
+                GenerateDesignerIfDefs = GenerateDesignerIfDefs,
+            };
         }
 
         public override void SetDesignTime(bool designTime)

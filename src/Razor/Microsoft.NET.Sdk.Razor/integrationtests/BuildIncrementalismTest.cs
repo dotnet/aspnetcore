@@ -66,35 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        [InitializeTestProject("SimpleMvc")]
-        public async Task RazorGenerate_RegeneratesTagHelperInputs_IfFileChanges()
-        {
-            // Act - 1
-            var expectedTagHelperCacheContent = @"""Name"":""SimpleMvc.SimpleTagHelper""";
-            var result = await DotnetMSBuild("Build");
-            var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
-            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
-
-            // Assert - 1
-            Assert.BuildPassed(result);
-            Assert.FileContains(result, tagHelperOutputCache, expectedTagHelperCacheContent);
-            var fileThumbPrint = GetThumbPrint(generatedFile);
-
-            // Act - 2
-            // Update the source content and build. We should expect the outputs to be regenerated.
-            ReplaceContent(string.Empty, file);
-            result = await DotnetMSBuild("Build");
-
-            // Assert - 2
-            Assert.BuildPassed(result);
-            Assert.FileDoesNotContain(result, tagHelperOutputCache, @"""Name"":""SimpleMvc.SimpleTagHelper""");
-            var newThumbPrint = GetThumbPrint(generatedFile);
-            Assert.NotEqual(fileThumbPrint, newThumbPrint);
-        }
-
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
         {
@@ -171,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]
         [InitializeTestProject("MvcWithComponents")]
         public async Task BuildComponents_DoesNotRegenerateComponentDefinition_WhenDefinitionIsUnchanged()
         {
@@ -221,118 +193,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("MvcWithComponents")]
-        public async Task BuildComponents_RegeneratesComponentDefinition_WhenFilesChange()
-        {
-            // Act - 1
-            var updatedContent = "@code { [Parameter] public string AParameter { get; set; } }";
-            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
-
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
-            var generatedDefinitionFile = Path.Combine(RazorComponentIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
-
-            // Assert - 1
-            var result = await DotnetMSBuild("Build");
-
-            Assert.BuildPassed(result);
-            var outputFile = Path.Combine(OutputPath, "MvcWithComponents.dll");
-            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
-            var outputAssemblyThumbprint = GetThumbPrint(outputFile);
-
-            Assert.FileExists(result, generatedDefinitionFile);
-            var generatedDefinitionThumbprint = GetThumbPrint(generatedDefinitionFile);
-            Assert.FileExists(result, generatedFile);
-            var generatedFileThumbprint = GetThumbPrint(generatedFile);
-
-            Assert.FileExists(result, tagHelperOutputCache);
-            Assert.FileContains(
-                result,
-                tagHelperOutputCache,
-                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
-
-            var definitionThumbprint = GetThumbPrint(tagHelperOutputCache);
-
-            // Act - 2
-            ReplaceContent(updatedContent, "Views", "Shared", "NavMenu.razor");
-            result = await DotnetMSBuild("Build");
-
-            // Assert - 2
-            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
-            Assert.NotEqual(outputAssemblyThumbprint, GetThumbPrint(outputFile));
-
-            Assert.FileExists(result, generatedDefinitionFile);
-            Assert.NotEqual(generatedDefinitionThumbprint, GetThumbPrint(generatedDefinitionFile));
-            Assert.FileExists(result, generatedFile);
-            Assert.NotEqual(generatedFileThumbprint, GetThumbPrint(generatedFile));
-
-            Assert.FileExists(result, tagHelperOutputCache);
-            Assert.FileContains(
-                result,
-                tagHelperOutputCache,
-                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
-
-            Assert.FileContains(
-                result,
-                tagHelperOutputCache,
-                "AParameter");
-
-            Assert.NotEqual(definitionThumbprint, GetThumbPrint(tagHelperOutputCache));
-        }
-
-        [Fact]
-        [InitializeTestProject("MvcWithComponents")]
-        public async Task BuildComponents_DoesNotModifyFiles_IfFilesDoNotChange()
-        {
-            // Act - 1
-            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
-
-            var file = Path.Combine(Project.DirectoryPath, "Views", "Shared", "NavMenu.razor.g.cs");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
-            var generatedDefinitionFile = Path.Combine(RazorComponentIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
-
-            // Assert - 1
-            var result = await DotnetMSBuild("Build");
-
-            Assert.BuildPassed(result);
-            var outputFile = Path.Combine(OutputPath, "MvcWithComponents.dll");
-            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
-            var outputAssemblyThumbprint = GetThumbPrint(outputFile);
-
-            Assert.FileExists(result, generatedDefinitionFile);
-            var generatedDefinitionThumbprint = GetThumbPrint(generatedDefinitionFile);
-            Assert.FileExists(result, generatedFile);
-            var generatedFileThumbprint = GetThumbPrint(generatedFile);
-
-            Assert.FileExists(result, tagHelperOutputCache);
-            Assert.FileContains(
-                result,
-                tagHelperOutputCache,
-                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
-
-            var definitionThumbprint = GetThumbPrint(tagHelperOutputCache);
-
-            // Act - 2
-            result = await DotnetMSBuild("Build");
-
-            // Assert - 2
-            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
-            Assert.Equal(outputAssemblyThumbprint, GetThumbPrint(outputFile));
-
-            Assert.FileExists(result, generatedDefinitionFile);
-            Assert.Equal(generatedDefinitionThumbprint, GetThumbPrint(generatedDefinitionFile));
-            Assert.FileExists(result, generatedFile);
-            Assert.Equal(generatedFileThumbprint, GetThumbPrint(generatedFile));
-
-            Assert.FileExists(result, tagHelperOutputCache);
-            Assert.FileContains(
-                result,
-                tagHelperOutputCache,
-                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
-
-            Assert.Equal(definitionThumbprint, GetThumbPrint(tagHelperOutputCache));
-        }
-
-        [Fact]
         [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public async Task IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
@@ -369,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_TouchesUpToDateMarkerFile()
         {

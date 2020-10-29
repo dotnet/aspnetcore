@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     </ScopedCssInput>
 </ItemGroup>
 ");
-            var result = await DotnetMSBuild("Build", "/p:EnableDefaultScopedCssItems=false");
+            var result = await DotnetMSBuild("Build", "/p:EnableDefaultScopedCssItems=false /p:_RazorSourceGeneratorWriteGeneratedOutput=true");
             Assert.BuildPassed(result);
 
             var scoped = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Styles", "Pages", "Counter.rz.scp.css");
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentApp", language: "C#")]
         public async Task Build_GeneratedComponentContainsScope()
         {
-            var result = await DotnetMSBuild("Build");
+            var result = await DotnetMSBuild("Build", "/p:_RazorSourceGeneratorWriteGeneratedOutput=true");
             Assert.BuildPassed(result);
 
             var generatedCounter = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentApp", language: "C#")]
         public async Task Build_RemovingScopedCssAndBuilding_UpdatesGeneratedCodeAndBundle()
         {
-            var result = await DotnetMSBuild("Build");
+            var result = await DotnetMSBuild("Build", "/p:_RazorSourceGeneratorWriteGeneratedOutput=true");
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             File.Delete(Path.Combine(Project.DirectoryPath, "Components", "Pages", "Counter.razor.css"));
 
-            result = await DotnetMSBuild("Build");
+            result = await DotnetMSBuild("Build", "/p:_RazorSourceGeneratorWriteGeneratedOutput=true");
             Assert.BuildPassed(result);
 
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var thumbprintLookup = new Dictionary<string, FileThumbPrint>();
 
             // Act 1
-            var result = await DotnetMSBuild("Build");
+            var result = await DotnetMSBuild("Build", "/p:_RazorSourceGeneratorWriteGeneratedOutput=true");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath, "scopedcss");
 

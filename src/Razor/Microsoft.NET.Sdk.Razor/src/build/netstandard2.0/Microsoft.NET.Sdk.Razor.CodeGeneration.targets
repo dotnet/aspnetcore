@@ -174,12 +174,4 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveRazorCompileInputsDependsOn>$(ResolveRazorCompileInputsDependsOn);_ResolveGeneratedRazorCompileInputs</ResolveRazorCompileInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="_ResolveGeneratedRazorCompileInputs">
-    <ItemGroup>
-      <RazorCompile
-        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)"
-        Condition="'%(RazorGenerateWithTargetPath.DocumentKind)'=='mvc'" />
-    </ItemGroup>
-  </Target>
-
 </Project>
