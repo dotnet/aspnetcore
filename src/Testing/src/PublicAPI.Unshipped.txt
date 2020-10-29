@@ -65,8 +65,6 @@ Microsoft.AspNetCore.Testing.RuntimeFrameworks.Mono = 1 -> Microsoft.AspNetCore.
 Microsoft.AspNetCore.Testing.RuntimeFrameworks.None = 0 -> Microsoft.AspNetCore.Testing.RuntimeFrameworks
 Microsoft.AspNetCore.Testing.ShortClassNameAttribute
 Microsoft.AspNetCore.Testing.ShortClassNameAttribute.ShortClassNameAttribute() -> void
-Microsoft.AspNetCore.Testing.SkipOnAlpineAttribute
-Microsoft.AspNetCore.Testing.SkipOnAlpineAttribute.IsMet.get -> bool
 Microsoft.AspNetCore.Testing.SkipOnCIAttribute
 Microsoft.AspNetCore.Testing.SkipOnCIAttribute.IsMet.get -> bool
 Microsoft.AspNetCore.Testing.SkipOnHelixAttribute
@@ -192,9 +190,6 @@ virtual Microsoft.AspNetCore.Testing.LoggedTestBase.Dispose() -> void
 ~Microsoft.AspNetCore.Testing.ReplaceCultureAttribute.Culture.get -> System.Globalization.CultureInfo
 ~Microsoft.AspNetCore.Testing.ReplaceCultureAttribute.ReplaceCultureAttribute(string currentCulture, string currentUICulture) -> void
 ~Microsoft.AspNetCore.Testing.ReplaceCultureAttribute.UICulture.get -> System.Globalization.CultureInfo
-~Microsoft.AspNetCore.Testing.SkipOnAlpineAttribute.IssueUrl.get -> string
-~Microsoft.AspNetCore.Testing.SkipOnAlpineAttribute.SkipOnAlpineAttribute(string issueUrl = "") -> void
-~Microsoft.AspNetCore.Testing.SkipOnAlpineAttribute.SkipReason.get -> string
 ~Microsoft.AspNetCore.Testing.SkipOnCIAttribute.IssueUrl.get -> string
 ~Microsoft.AspNetCore.Testing.SkipOnCIAttribute.SkipOnCIAttribute(string issueUrl = "") -> void
 ~Microsoft.AspNetCore.Testing.SkipOnCIAttribute.SkipReason.get -> string
