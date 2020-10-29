@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal class IISNativeApplication
     {
         private readonly NativeSafeHandle _nativeApplication;
-        private object _sync = new object();
+        private readonly object _sync = new object();
 
         public IISNativeApplication(NativeSafeHandle nativeApplication)
         {
