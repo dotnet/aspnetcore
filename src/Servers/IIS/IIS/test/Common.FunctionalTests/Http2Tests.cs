@@ -25,11 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(IISHttpsTestSiteCollection.Name)]
     public class Http2Tests
     {
-
-        // TODO: Remove when the regression is fixed.
-        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-        private static readonly Version Win10_Regressed_DataFrame = new Version(10, 0, 20145, 0);
-        private const string WindowsVersionForTrailers = "10.0.20300";
+        private const string WindowsVersionForTrailers = "10.0.20238";
 
         public Http2Tests(IISTestSiteFixture fixture)
         {
@@ -75,14 +71,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        // TODO: Remove when the regression is fixed.
-                        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
 
-                        dataFrame = await h2Connection.ReceiveFrameAsync();
-                    }
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -326,23 +315,23 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
-        public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
-        {
-            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable");
-
-            response.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version11, response.Version);
-            Assert.Empty(response.TrailingHeaders);
-        }
-
-        [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_ProhibitedTrailers_Blocked()
         {
             var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_ProhibitedTrailers_Blocked");
 
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Empty(response.TrailingHeaders);
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
+        public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
+        {
+            var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable", http2: false);
+
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version11, response.Version);
             Assert.Empty(response.TrailingHeaders);
         }
 
@@ -489,14 +478,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        // TODO: Remove when the regression is fixed.
-                        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
-
-                        dataFrame = await h2Connection.ReceiveFrameAsync();
-                    }
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -524,14 +505,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     });
 
                     var frame = await h2Connection.ReceiveFrameAsync();
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        // TODO: Remove when the regression is fixed.
-                        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                        Http2Utilities.VerifyDataFrame(frame, 1, endOfStream: false, length: 0);
 
-                        frame = await h2Connection.ReceiveFrameAsync();
-                    }
                     Http2Utilities.VerifyResetFrame(frame, expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -642,9 +616,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     {
                         Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                     });
-
-                    var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyDataFrame(dataFrame, expectedStreamId: 1, endOfStream: false, length: 0);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
@@ -782,7 +753,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
+                    await h2Connection.StartStreamAsync(1, GetPostHeaders("/Reset_CompleteAsyncDuringRequestBody_Resets"), endStream: false);
                     await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
@@ -791,14 +762,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        // TODO: Remove when the regression is fixed.
-                        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
 
-                        dataFrame = await h2Connection.ReceiveFrameAsync();
-                    }
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
