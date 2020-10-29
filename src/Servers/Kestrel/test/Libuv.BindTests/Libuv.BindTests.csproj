@@ -5,7 +5,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Libuv.BindTests</TestGroupName>
     <!-- https://github.com/dotnet/aspnetcore/issues/22114 -->
-    <SkipHelixQueues>Windows.10.Arm64;Windows.10.Arm64.Open</SkipHelixQueues>
+    <SkipHelixQueues>Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
