@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeNames,
                     action,
                     routeName: null,
+                    dataTokens: null,
                     suppressLinkGeneration: false,
                     suppressPathMatching: false,
                     conventions,
@@ -116,6 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         routeNames,
                         action,
                         route.RouteName,
+                        route.DataTokens,
                         suppressLinkGeneration: true,
                         suppressPathMatching: false,
                         conventions,
@@ -154,6 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeNames,
                     action,
                     action.AttributeRouteInfo.Name,
+                    null,
                     action.AttributeRouteInfo.SuppressLinkGeneration,
                     action.AttributeRouteInfo.SuppressPathMatching,
                     conventions,
@@ -305,6 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             HashSet<string> routeNames,
             ActionDescriptor action,
             string routeName,
+            RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching,
             IReadOnlyList<Action<EndpointBuilder>> conventions,
@@ -340,6 +344,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 builder.Metadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName == null)
             {
                 builder.Metadata.Add(new EndpointNameMetadata(routeName));
+            }
+
+            if (dataTokens != null)
+            {
+                builder.Metadata.Add(new DataTokensMetadata(dataTokens));
             }
 
             builder.Metadata.Add(new RouteNameMetadata(routeName));
