@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeNames,
                     action,
                     action.AttributeRouteInfo.Name,
-                    null,
+                    dataTokens: null,
                     action.AttributeRouteInfo.SuppressLinkGeneration,
                     action.AttributeRouteInfo.SuppressPathMatching,
                     conventions,
