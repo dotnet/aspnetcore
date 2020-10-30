@@ -67,21 +67,18 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(conventions));
             }
 
-            var requestDelegate = CreateRequestDelegate(action) ?? _requestDelegate;
-
             if (createInertEndpoints)
             {
                 var builder = new InertEndpointBuilder()
                 {
                     DisplayName = action.DisplayName,
-                    RequestDelegate = requestDelegate,
+                    RequestDelegate = _requestDelegate,
                 };
                 AddActionDataToBuilder(
                     builder,
                     routeNames,
                     action,
                     routeName: null,
-                    dataTokens: null,
                     suppressLinkGeneration: false,
                     suppressPathMatching: false,
                     conventions,
@@ -105,6 +102,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         continue;
                     }
 
+                    var requestDelegate = CreateRequestDelegate(action, route.DataTokens) ?? _requestDelegate;
+
                     // We suppress link generation for each conventionally routed endpoint. We generate a single endpoint per-route
                     // to handle link generation.
                     var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, route.Order)
@@ -116,7 +115,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         routeNames,
                         action,
                         route.RouteName,
-                        route.DataTokens,
                         suppressLinkGeneration: true,
                         suppressPathMatching: false,
                         conventions,
@@ -126,6 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
             else
             {
+                var requestDelegate = CreateRequestDelegate(action) ?? _requestDelegate;
                 var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
 
                 // Modify the route and required values to ensure required values can be successfully subsituted.
@@ -154,7 +153,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeNames,
                     action,
                     action.AttributeRouteInfo.Name,
-                    dataTokens: null,
                     action.AttributeRouteInfo.SuppressLinkGeneration,
                     action.AttributeRouteInfo.SuppressPathMatching,
                     conventions,
@@ -306,7 +304,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             HashSet<string> routeNames,
             ActionDescriptor action,
             string routeName,
-            RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching,
             IReadOnlyList<Action<EndpointBuilder>> conventions,
@@ -342,11 +339,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 builder.Metadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName == null)
             {
                 builder.Metadata.Add(new EndpointNameMetadata(routeName));
-            }
-
-            if (dataTokens != null)
-            {
-                builder.Metadata.Add(new DataTokensMetadata(dataTokens));
             }
 
             builder.Metadata.Add(new RouteNameMetadata(routeName));
@@ -408,9 +400,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private static RequestDelegate CreateRequestDelegate(ActionDescriptor action)
+        private static RequestDelegate CreateRequestDelegate(ActionDescriptor action, RouteValueDictionary dataTokens = null)
         {
-            // Super happy path
+            // Super happy path (well assuming nobody cares about filters :O)
             if (action is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata))
             {
                 ControllerActionInvokerCache cache = null;
@@ -418,12 +410,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                 return async context =>
                 {
-                    var endpoint = context.GetEndpoint();
+                    // var endpoint = context.GetEndpoint();
                     // var dataTokens = endpoint.Metadata.GetMetadata<IDataTokensMetadata>();
 
                     // Allocation :(
                     var routeData = new RouteData();
-                    routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: null);
+                    routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: dataTokens);
 
                     // Allocation :(
                     var actionContext = new ActionContext(context, routeData, action);
@@ -451,11 +443,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                     var controller = cacheEntry.ControllerFactory(controllerContext);
 
-                    await cacheEntry.ControllerBinderDelegate?.Invoke(controllerContext, controller, null);
+                    if (cacheEntry.ControllerBinderDelegate != null)
+                    {
+                        await cacheEntry.ControllerBinderDelegate(controllerContext, controller, null);
+                    }
 
                     try
                     {
-
                         var result = await cacheEntry.ActionMethodExecutor.Execute(mapper, cacheEntry.ObjectMethodExecutor, controller, null);
 
                         await result.ExecuteResultAsync(actionContext);
