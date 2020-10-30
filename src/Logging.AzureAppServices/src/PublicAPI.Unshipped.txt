@@ -33,3 +33,4 @@ Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions
 ~Microsoft.Extensions.Logging.AzureAppServices.BlobLoggerProvider.BlobLoggerProvider(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions> options) -> void
 ~Microsoft.Extensions.Logging.AzureAppServices.FileLoggerProvider.FileLoggerProvider(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions> options) -> void
 ~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder) -> Microsoft.Extensions.Logging.ILoggingBuilder
+~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder, string customPrefix) -> Microsoft.Extensions.Logging.ILoggingBuilder
