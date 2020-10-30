@@ -184,7 +184,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(InprocessTestVariants))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2200")]
         public async Task CheckUTF8File(TestVariant variant)
         {
             var path = "CheckConsoleFunctions";
