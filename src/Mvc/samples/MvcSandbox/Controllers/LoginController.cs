@@ -18,7 +18,7 @@ namespace MvcSandbox.Controllers
     [Route("[controller]")]
     public class WeatherController : ControllerBase
     {
-        [HttpGet]
-        public string Get() => "Hello Sunny Days!";
+        [HttpGet("~/[controller]/{name?}")]
+        public string Get(string name) => $"{name}, Hello Sunny Days!";
     }
 }

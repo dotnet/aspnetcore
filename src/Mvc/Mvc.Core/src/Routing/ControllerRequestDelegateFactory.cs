@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
@@ -49,23 +51,34 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     {
                         // Allocation :(
                         // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                        ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                        ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
+                        ModelState =
+                        {
+                            MaxAllowedErrors = _maxModelValidationErrors
+                        }
                     };
-
-                    controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
 
                     var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 
                     var controller = cacheEntry.ControllerFactory(controllerContext);
 
-                    if (cacheEntry.ControllerBinderDelegate != null)
-                    {
-                        await cacheEntry.ControllerBinderDelegate(controllerContext, controller, null);
-                    }
-
                     try
                     {
-                        var result = await cacheEntry.ActionMethodExecutor.Execute(_actionResultTypeMapper, cacheEntry.ObjectMethodExecutor, controller, null);
+                        Dictionary<string, object> arguments = null;
+
+                        if (actionDescriptor.BoundProperties.Count > 0 ||
+                            actionDescriptor.Parameters.Count > 0)
+                        {
+                            // Allocation :(
+                            arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                            //Debug.Assert(cacheEntry.ControllerBinderDelegate != null);
+                            await cacheEntry.ControllerBinderDelegate(controllerContext, controller, arguments);
+                        }
+
+                        var orderedArguments = PrepareArguments(arguments, cacheEntry.ObjectMethodExecutor);
+
+                        var result = await cacheEntry.ActionMethodExecutor.Execute(_actionResultTypeMapper, cacheEntry.ObjectMethodExecutor, controller, orderedArguments);
 
                         await result.ExecuteResultAsync(actionContext);
                     }
@@ -77,6 +90,39 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             return null;
+        }
+
+        private static object[] PrepareArguments(
+            IDictionary<string, object> actionParameters,
+            ObjectMethodExecutor actionMethodExecutor)
+        {
+            if (actionParameters is null)
+            {
+                return null;
+            }
+
+            var declaredParameterInfos = actionMethodExecutor.MethodParameters;
+            var count = declaredParameterInfos.Length;
+            if (count == 0)
+            {
+                return null;
+            }
+
+            // Allocation :(
+            var arguments = new object[count];
+            for (var index = 0; index < count; index++)
+            {
+                var parameterInfo = declaredParameterInfos[index];
+
+                if (!actionParameters.TryGetValue(parameterInfo.Name, out var value))
+                {
+                    value = actionMethodExecutor.GetDefaultValueForParameter(index);
+                }
+
+                arguments[index] = value;
+            }
+
+            return arguments;
         }
     }
 }
