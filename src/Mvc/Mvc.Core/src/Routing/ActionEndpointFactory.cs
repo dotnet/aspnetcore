@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -22,8 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     {
         private readonly RoutePatternTransformer _routePatternTransformer;
         private readonly RequestDelegate _requestDelegate;
+        private readonly IRequestDelegateFactory[] _requestDelegateFactories;
 
-        public ActionEndpointFactory(RoutePatternTransformer routePatternTransformer)
+        public ActionEndpointFactory(IEnumerable<IRequestDelegateFactory> requestDelegateFactories, RoutePatternTransformer routePatternTransformer)
         {
             if (routePatternTransformer == null)
             {
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             _routePatternTransformer = routePatternTransformer;
             _requestDelegate = CreateRequestDelegate();
+            _requestDelegateFactories = requestDelegateFactories.ToArray();
         }
 
         public void AddEndpoints(
@@ -400,66 +401,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private static RequestDelegate CreateRequestDelegate(ActionDescriptor action, RouteValueDictionary dataTokens = null)
+        private RequestDelegate CreateRequestDelegate(ActionDescriptor action, RouteValueDictionary dataTokens = null)
         {
-            // Super happy path (well assuming nobody cares about filters :O)
-            if (action is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata))
+            foreach (var factory in _requestDelegateFactories)
             {
-                ControllerActionInvokerCache cache = null;
-                IActionResultTypeMapper mapper = null;
-
-                return async context =>
+                var rd = factory.CreateRequestDelegate(action, dataTokens);
+                if (rd != null)
                 {
-                    // var endpoint = context.GetEndpoint();
-                    // var dataTokens = endpoint.Metadata.GetMetadata<IDataTokensMetadata>();
-
-                    // Allocation :(
-                    var routeData = new RouteData();
-                    routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: dataTokens);
-
-                    // Allocation :(
-                    var actionContext = new ActionContext(context, routeData, action);
-
-                    // Allocation :(
-                    var controllerContext = new ControllerContext(actionContext)
-                    {
-                        // Allocation :(
-                        // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                        // ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
-                    };
-                    // controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
-
-                    if (cache == null)
-                    {
-                        cache = context.RequestServices.GetRequiredService<ControllerActionInvokerCache>();
-                    }
-
-                    if (mapper == null)
-                    {
-                        mapper = context.RequestServices.GetRequiredService<IActionResultTypeMapper>();
-                    }
-
-                    var (cacheEntry, filters) = cache.GetCachedResult(controllerContext);
-
-                    var controller = cacheEntry.ControllerFactory(controllerContext);
-
-                    if (cacheEntry.ControllerBinderDelegate != null)
-                    {
-                        await cacheEntry.ControllerBinderDelegate(controllerContext, controller, null);
-                    }
-
-                    try
-                    {
-                        var result = await cacheEntry.ActionMethodExecutor.Execute(mapper, cacheEntry.ObjectMethodExecutor, controller, null);
-
-                        await result.ExecuteResultAsync(actionContext);
-                    }
-                    finally
-                    {
-                        cacheEntry.ControllerReleaser?.Invoke(controllerContext, controller);
-                    }
-                };
+                    return rd;
+                }
             }
+
             return null;
         }
 
