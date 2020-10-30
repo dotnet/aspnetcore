@@ -11,12 +11,14 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     {
         private readonly IConfiguration _configuration;
         private readonly IWebAppContext _context;
+        private readonly string _customPrefix;
 
-        public BlobLoggerConfigureOptions(IConfiguration configuration, IWebAppContext context)
+        public BlobLoggerConfigureOptions(IConfiguration configuration, IWebAppContext context, string customPrefix)
             : base(configuration, "AzureBlobEnabled")
         {
             _configuration = configuration;
             _context = context;
+            _customPrefix = customPrefix;
         }
 
         public void Configure(AzureBlobLoggerOptions options)
@@ -25,6 +27,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             options.ContainerUrl = _configuration.GetSection("APPSETTING_DIAGNOSTICS_AZUREBLOBCONTAINERSASURL")?.Value;
             options.ApplicationName = _context.SiteName;
             options.ApplicationInstanceId = _context.SiteInstanceId;
+            options.CustomPrefixFileName = _customPrefix;
         }
     }
 }

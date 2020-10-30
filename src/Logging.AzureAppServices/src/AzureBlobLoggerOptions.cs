@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     public class AzureBlobLoggerOptions: BatchingLoggerOptions
     {
         private string _blobName = "applicationLog.txt";
-
         /// <summary>
         /// Gets or sets the last section of log blob name.
         /// Defaults to <c>"applicationLog.txt"</c>.
@@ -30,6 +29,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
+        internal string CustomPrefixFileName { get; set; }
+       
         internal string ContainerUrl { get; set; }
 
         internal string ApplicationName { get; set; }
