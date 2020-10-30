@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -14,11 +17,18 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     {
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IActionResultTypeMapper _actionResultTypeMapper;
+        private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
+        private readonly int _maxModelValidationErrors;
 
-        public ControllerRequestDelegateFactory(ControllerActionInvokerCache controllerActionInvokerCache, IActionResultTypeMapper actionResultTypeMapper)
+        public ControllerRequestDelegateFactory(
+            ControllerActionInvokerCache controllerActionInvokerCache,
+            IActionResultTypeMapper actionResultTypeMapper,
+            IOptions<MvcOptions> options)
         {
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _actionResultTypeMapper = actionResultTypeMapper;
+            _valueProviderFactories = options.Value.ValueProviderFactories.ToArray();
+            _maxModelValidationErrors = options.Value.MaxModelValidationErrors;
         }
 
         public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
@@ -28,9 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 return async context =>
                 {
-                    // var endpoint = context.GetEndpoint();
-                    // var dataTokens = endpoint.Metadata.GetMetadata<IDataTokensMetadata>();
-
                     // Allocation :(
                     var routeData = new RouteData();
                     routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: dataTokens);
@@ -43,9 +50,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     {
                         // Allocation :(
                         // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                        // ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                        ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
                     };
-                    // controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+
+                    controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
 
                     var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 
