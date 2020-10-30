@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27371")]
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
