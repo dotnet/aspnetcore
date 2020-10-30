@@ -34,13 +34,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
         {
             // Super happy path (well assuming nobody cares about filters :O)
-            if (actionDescriptor is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata))
+            if (actionDescriptor is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata) && dataTokens == null)
             {
                 return async context =>
                 {
                     // Allocation :(
-                    var routeData = new RouteData();
-                    routeData.PushState(router: null, values: context.Request.RouteValues, dataTokens: dataTokens);
+                    var routeData = new RouteData(context.Request.RouteValues);
 
                     // Allocation :(
                     var actionContext = new ActionContext(context, routeData, actionDescriptor);
