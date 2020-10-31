@@ -423,13 +423,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     options.AbsoluteExpiration.Value,
                     "The absolute expiration value must be in the future.");
             }
-            var absoluteExpiration = options.AbsoluteExpiration;
+            
             if (options.AbsoluteExpirationRelativeToNow.HasValue)
             {
-                absoluteExpiration = creationTime + options.AbsoluteExpirationRelativeToNow;
+                return creationTime + options.AbsoluteExpirationRelativeToNow;
             }
 
-            return absoluteExpiration;
+            return options.AbsoluteExpiration;
         }
 
         public void Dispose()
