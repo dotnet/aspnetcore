@@ -128,6 +128,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                     catch (Exception ex)
                     {
                         _reporter.Output($"Unable to launch browser: {ex}");
+                        //Let the user know they can manually open the web client
+                        _reporter.Output($"Kindly, On your browser navigate to: {launchUrl}");
                         _canLaunchBrowser = false;
                     }
                 }
@@ -174,13 +176,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                 reporter.Verbose("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
                 return false;
             }
+            //Remove the Linux check
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Launching a browser requires file associations that are not available in all operating systems.
-                reporter.Verbose("Browser refresh is only supported in Windows and MacOS.");
-                return false;
-            }
+            // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            // {
+            //     // Launching a browser requires file associations that are not available in all operating systems.
+            //     reporter.Verbose("Browser refresh is only supported in Windows and MacOS.");
+            //     return false;
+            // }
 
             var dotnetCommand = context.ProcessSpec.Arguments.FirstOrDefault();
             if (!string.Equals(dotnetCommand, "run", StringComparison.Ordinal))
