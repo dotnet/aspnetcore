@@ -127,9 +127,15 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                     catch (Exception ex)
                     {
-                        _reporter.Output($"Unable to launch browser: {ex}");
-                        //Let the user know they can manually open the web client
-                        _reporter.Output($"Kindly, On your browser navigate to: {launchUrl}");
+                        // If exception occurs and the platform is not Linux print the Exception.
+                        // Why? The LaunchBrowser() may run into errors in some Linux flavours.
+                        // This is expected and the user needs navigate to the launch url manually.
+                        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        {
+                            _reporter.Output($"Unable to launch browser: {ex}");
+                        }
+                        //Let the user know they can manually open the web client in case of an exception
+                        _reporter.Output($"On your browser navigate to: {launchUrl}");
                         _canLaunchBrowser = false;
                     }
                 }
