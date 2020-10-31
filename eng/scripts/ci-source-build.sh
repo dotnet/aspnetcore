@@ -33,8 +33,8 @@ reporoot="$(dirname "$(dirname "$scriptroot")")"
 #    mv "$reporoot/global.bak.json" "$reporoot/global.json"
 #}" EXIT
 
-dotnet_runtime_source_feed=''
-dotnet_runtime_source_feed_key=''
+runtime_source_feed=''
+runtime_source_feed_key=''
 other_args=()
 
 #
