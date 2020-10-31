@@ -11,7 +11,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 {
     public abstract class AnalyzerTestBase
     {
-        private static readonly string ProjectDirectory = GetProjectDirectory();
+        // Test files are copied to both the bin/ and publish/ folders. Use BaseDirectory on or off Helix.
+        private static readonly string ProjectDirectory = AppContext.BaseDirectory;
 
         public TestSource Read(string source)
         {
@@ -44,12 +45,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         public Task<Compilation> CreateCompilationAsync(string source)
         {
             return CreateProject(source).GetCompilationAsync();
-        }
-
-        private static string GetProjectDirectory()
-        {
-            // Test files are copied to both the bin/ and publish/ folders. Use BaseDirectory on or off Helix.
-            return AppContext.BaseDirectory;
         }
     }
 }
