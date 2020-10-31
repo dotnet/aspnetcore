@@ -25,9 +25,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly bool _suppressBrowserRefresh;
         private readonly string _browserPath;
 
-        private bool _canLaunchBrowser;
+        private bool _attemptedBrowserLaunch;
         private Process _browserProcess;
-        private bool _browserLaunched;
         private BrowserRefreshServer _refreshServer;
         private IReporter _reporter;
         private string _launchPath;
@@ -59,7 +58,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                 if (CanLaunchBrowser(context, out var launchPath))
                 {
                     context.Reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
-                    _canLaunchBrowser = true;
                     _launchPath = launchPath;
                     _cancellationToken = cancellationToken;
 
@@ -81,14 +79,10 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                 }
             }
-
-            if (_canLaunchBrowser)
+            else if (!_suppressBrowserRefresh)
             {
-                if (context.Iteration > 0)
-                {
-                    // We've detected a change. Notify the browser.
-                    await SendMessage(WaitMessage, cancellationToken);
-                }
+                // We've detected a change. Notify the browser.
+                await SendMessage(WaitMessage, cancellationToken);
             }
         }
 
@@ -117,18 +111,30 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var process = (Process)sender;
                 process.OutputDataReceived -= OnOutput;
 
-                if (!_browserLaunched)
+                if (!_attemptedBrowserLaunch)
                 {
+                    _attemptedBrowserLaunch = true;
+
                     _reporter.Verbose("Launching browser.");
+
                     try
                     {
                         LaunchBrowser(launchUrl);
-                        _browserLaunched = true;
                     }
                     catch (Exception ex)
                     {
-                        _reporter.Output($"Unable to launch browser: {ex}");
-                        _canLaunchBrowser = false;
+                        _reporter.Verbose($"Unable to launch browser: {ex}");
+                        _browserProcess = null;
+                    }
+
+                    if (_browserProcess is null || _browserProcess.HasExited)
+                    {
+                        // dotnet-watch, by default, relies on URL file association to launch browsers. On Windows and MacOS, this works fairly well
+                        // where URLs are associated with the default browser. On Linux, this is a bit murky.
+                        // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
+                        // or for the process to have immediately exited.
+                        // We can use this to provide a helpful message.
+                        _reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}");
                     }
                 }
                 else
@@ -172,13 +178,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 // Browser refresh middleware supports 3.1 or newer
                 reporter.Verbose("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
-                return false;
-            }
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Launching a browser requires file associations that are not available in all operating systems.
-                reporter.Verbose("Browser refresh is only supported in Windows and MacOS.");
                 return false;
             }
 
