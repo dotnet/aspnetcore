@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Testing
         /// <summary>
         /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class with an optional <see cref="Reason"/>.
         /// </summary>
-        /// <param name="reason">A reason that this test is quarantined. Preferably a Github Url.</param>
+        /// <param name="reason">A reason that this test is quarantined. Preferably a Github issue Url.</param>
         public QuarantinedTestAttribute(string reason)
         {
             Reason = reason;
