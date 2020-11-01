@@ -122,7 +122,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
         public async Task StartsWithDotnetInstallLocation()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();

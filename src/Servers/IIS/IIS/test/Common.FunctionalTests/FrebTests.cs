@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2570")]
         [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFrebDisconnect()

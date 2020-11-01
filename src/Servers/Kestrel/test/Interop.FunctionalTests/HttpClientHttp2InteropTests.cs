@@ -1182,7 +1182,7 @@ namespace Interop.FunctionalTests
         // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27379")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
         {
@@ -1244,7 +1244,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27370")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
