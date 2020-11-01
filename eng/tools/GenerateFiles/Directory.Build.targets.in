@@ -2,43 +2,88 @@
   <PropertyGroup>
     <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
+    <UpdateAspNetCoreKnownFramework
+      Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 5.0. -->
   <ItemGroup>
-    <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 5.0. -->
     <KnownAppHostPack
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
       TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
-      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
-      />
+      Condition="@(KnownAppHostPack->Count()) != '0' AND
+        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))" />
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
       TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
-      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
-      />
+      Condition="@(KnownFrameworkReference->Count()) != '0' AND
+        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Use the same NETCore shared framework as repo built against. -->
+    <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
     <KnownFrameworkReference
-      Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
-      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
+        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+        LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}">
+      <!--
+        Change the default shared framework and targeting pack version only when _not_ servicing. Avoid bumping
+        version used in most projects. Projects can use $(TargetLatestRuntimePatch) to explicitly control whether
+        assemblies build against default (false) or latest (true). When that property is not set, SDK uses
+        default metadata in most cases but published apps e.g. tool projects (again, property not set) use latest.
+      -->
+      <DefaultRuntimeFrameworkVersion
+          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
+    </KnownFrameworkReference>
 
-    <!-- Use the just-built ASP.NET Core shared framework. -->
+    <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference
-      Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
-      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
-      TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
-      RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
-  </ItemGroup>
+        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+        Condition=" $(UpdateAspNetCoreKnownFramework) "
+        LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+        RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}">
+      <DefaultRuntimeFrameworkVersion
+          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
+    </KnownFrameworkReference>
 
-  <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
       Version="${MicrosoftNetCompilersToolsetVersion}"
       PrivateAssets="all"
       IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <!-- Warn if the "just-built" ASP.NET Core shared framework does not exist. -->
+  <Target Name="WarnAboutMissingSharedFramework"
+      BeforeTargets="Restore;Build;Rebuild;RunTests;Test;VSTest;Pack"
+      Condition=" $(UpdateAspNetCoreKnownFramework) ">
+    <PropertyGroup>
+      <!--
+        Property (already normalized) from Arcade SDK's RepoLayout.props. This covers all projects using the
+        Arcade SDK. Ignore $(LocalDotNetRoot) because that is set in root Directory.Build.props (where Arcade SDK
+        is imported) and therefore doesn't cover additional projects.
+      -->
+      <_DotNetRoot Condition=" '$(DotNetRoot)' != '' ">$(DotNetRoot)</_DotNetRoot>
+      <!--
+        Environment variable from eng/common/tools.ps1 scripts. This covers tests and assets that do not use the
+        Arcade SDK but are run from our build.* scripts.
+      -->
+      <_DotNetRoot Condition=" '$(_DotNetRoot)' == '' AND
+          '$(DOTNET_INSTALL_DIR)' != '' ">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</_DotNetRoot>
+      <!--
+        Environment variable from root activate.* and Helix runtest.* scripts. This covers tests and assets on
+        Helix agents and when run locally using 'msbuild' after activation.
+      -->
+      <_DotNetRoot Condition=" '$(_DotNetRoot)' == '' AND
+          '$(DOTNET_ROOT)' != '' ">$([MSBuild]::NormalizeDirectory('$(DOTNET_ROOT)'))</_DotNetRoot>
+    </PropertyGroup>
+
+    <Error Text="Unable to determine dotnet root location." Condition=" '$(_DotNetRoot)' == '' " />
+    <Error Text="Dotnet root location '$(_DotNetRoot)' does not exist." Condition=" !EXISTS('$(_DotNetRoot)') " />
+    <Warning Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRuntimeVersion} does not exist."
+        Condition=" !EXISTS('$(_DotNetRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}') " />
+  </Target>
 </Project>

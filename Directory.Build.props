@@ -101,7 +101,6 @@
 
   <!-- Warnings and errors -->
   <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
     <!-- For CI builds, ensure API docs are available. -->
@@ -216,6 +215,7 @@
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />
