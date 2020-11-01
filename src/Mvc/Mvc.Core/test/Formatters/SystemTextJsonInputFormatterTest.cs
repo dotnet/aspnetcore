@@ -126,9 +126,67 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal("The supplied value is invalid.", error.ErrorMessage);
         }
 
-        protected override TextInputFormatter GetInputFormatter()
+        [Theory]
+        [InlineData("{", "$", "Expected depth to be zero at the end of the JSON payload. There is an open JSON object or array that should be closed. Path: $ | LineNumber: 0 | BytePositionInLine: 1.")]
+        [InlineData("{\"a\":{\"b\"}}", "$.a", "'}' is invalid after a property name. Expected a ':'. Path: $.a | LineNumber: 0 | BytePositionInLine: 9.")]
+        [InlineData("{\"age\":\"x\"}", "$.age", "The JSON value could not be converted to System.Decimal. Path: $.age | LineNumber: 0 | BytePositionInLine: 10.")]
+        [InlineData("{\"login\":1}", "$.login", "The JSON value could not be converted to Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatterTest+UserLogin. Path: $.login | LineNumber: 0 | BytePositionInLine: 10.")]
+        public async Task ReadAsync_WithAllowSystemTextJsonInputFormatterExceptionMessages_RegistersJsonInputExceptionsAsInputFormatterException(
+                    string content,
+                    string modelStateKey,
+                    string expectedMessage)
         {
-            return new SystemTextJsonInputFormatter(new JsonOptions(), LoggerFactory.CreateLogger<SystemTextJsonInputFormatter>());
+            // Arrange
+            var formatter = GetInputFormatter(allowSystemTextJsonInputFormatterExceptionMessages: true);
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.True(!formatterContext.ModelState.IsValid);
+            Assert.True(formatterContext.ModelState.ContainsKey(modelStateKey));
+
+            var modelError = formatterContext.ModelState[modelStateKey].Errors.Single();
+            Assert.Equal(expectedMessage, modelError.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ReadAsync_DoNotAllowSystemTextJsonInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
+        {
+            // Arrange
+            var formatter = GetInputFormatter(allowSystemTextJsonInputFormatterExceptionMessages: false);
+            var contentBytes = Encoding.UTF8.GetBytes("{");
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.True(!formatterContext.ModelState.IsValid);
+            Assert.True(formatterContext.ModelState.ContainsKey("$"));
+
+            var modelError = formatterContext.ModelState["$"].Errors.Single();
+            Assert.IsNotType<InputFormatterException>(modelError.Exception);
+            Assert.Empty(modelError.ErrorMessage);
+        }
+
+        protected override TextInputFormatter GetInputFormatter(bool allowSystemTextJsonInputFormatterExceptionMessages = true)
+        {
+            return new SystemTextJsonInputFormatter(
+                new JsonOptions
+                {
+                    AllowSystemTextJsonInputFormatterExceptionMessages = allowSystemTextJsonInputFormatterExceptionMessages
+                },
+                LoggerFactory.CreateLogger<SystemTextJsonInputFormatter>());
         }
 
         internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "$.Age";
@@ -178,6 +236,24 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private sealed class User
+        {
+            public string Name { get; set; }
+
+            public decimal Age { get; set; }
+
+            public byte Small { get; set; }
+
+            public UserLogin Login { get; set; }
+        }
+
+        private sealed class UserLogin
+        {
+            public string UserName { get; set; }
+
+            public string Password { get; set; }
         }
     }
 }

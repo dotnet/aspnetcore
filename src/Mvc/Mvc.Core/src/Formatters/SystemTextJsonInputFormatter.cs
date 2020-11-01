@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private readonly JsonOptions _jsonOptions;
         private readonly ILogger<SystemTextJsonInputFormatter> _logger;
 
         /// <summary>
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ILogger<SystemTextJsonInputFormatter> logger)
         {
             SerializerOptions = options.JsonSerializerOptions;
+            _jsonOptions = options;
             _logger = logger;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
@@ -77,9 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 var path = jsonException.Path;
 
-                var formatterException = new InputFormatterException(jsonException.Message, jsonException);
+                var modelStateException = WrapExceptionForModelState(jsonException);
 
-                context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
+                context.ModelState.TryAddModelError(path, modelStateException, context.Metadata);
 
                 Log.JsonInputException(_logger, jsonException);
 
@@ -116,6 +118,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Log.JsonInputSuccess(_logger, context.ModelType);
                 return InputFormatterResult.Success(model);
             }
+        }
+
+        private Exception WrapExceptionForModelState(JsonException jsonException)
+        {
+            if (!_jsonOptions.AllowSystemTextJsonInputFormatterExceptionMessages)
+            {
+                // This app is not opted-in to System.Text.Json messages, return the original exception.
+                return jsonException;
+            }
+
+            // InputFormatterException specifies that the message is safe to return to a client, it will
+            // be added to model state.
+            return new InputFormatterException(jsonException.Message, jsonException);
         }
 
         private (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)

@@ -1,3 +1,5 @@
+Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.get -> bool
+Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.set -> void
 ~Microsoft.AspNetCore.Mvc.Controllers.ControllerActivatorProvider.CreateAsyncReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor) -> System.Func<Microsoft.AspNetCore.Mvc.ControllerContext, object, System.Threading.Tasks.ValueTask>
 ~Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator.ReleaseAsync(Microsoft.AspNetCore.Mvc.ControllerContext context, object controller) -> System.Threading.Tasks.ValueTask
 ~Microsoft.AspNetCore.Mvc.Controllers.IControllerActivatorProvider.CreateAsyncReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor) -> System.Func<Microsoft.AspNetCore.Mvc.ControllerContext, object, System.Threading.Tasks.ValueTask>
