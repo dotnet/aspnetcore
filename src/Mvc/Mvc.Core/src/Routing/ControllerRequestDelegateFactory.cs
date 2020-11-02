@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Super happy path (well assuming nobody cares about filters :O)
             if (actionDescriptor is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata) && dataTokens == null)
             {
+                var entry = _controllerActionInvokerCache.GetCachedEntry(ca);
+
                 return async context =>
                 {
                     // Allocation :(
@@ -58,9 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         }
                     };
 
-                    var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
-
-                    var controller = cacheEntry.ControllerFactory(controllerContext);
+                    var controller = entry.ControllerFactory(controllerContext);
 
                     try
                     {
@@ -72,19 +72,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                             // Allocation :(
                             arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-                            //Debug.Assert(cacheEntry.ControllerBinderDelegate != null);
-                            await cacheEntry.ControllerBinderDelegate(controllerContext, controller, arguments);
+                            // Debug.Assert(cacheEntry.ControllerBinderDelegate != null);
+                            await entry.ControllerBinderDelegate(controllerContext, controller, arguments);
                         }
 
-                        var orderedArguments = PrepareArguments(arguments, cacheEntry.ObjectMethodExecutor);
+                        var orderedArguments = PrepareArguments(arguments, entry.ObjectMethodExecutor);
 
-                        var result = await cacheEntry.ActionMethodExecutor.Execute(_actionResultTypeMapper, cacheEntry.ObjectMethodExecutor, controller, orderedArguments);
+                        var result = await entry.ActionMethodExecutor.Execute(_actionResultTypeMapper, entry.ObjectMethodExecutor, controller, orderedArguments);
 
                         await result.ExecuteResultAsync(actionContext);
                     }
                     finally
                     {
-                        cacheEntry.ControllerReleaser?.Invoke(controllerContext, controller);
+                        entry.ControllerReleaser?.Invoke(controllerContext, controller);
                     }
                 };
             }

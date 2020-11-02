@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,6 +59,44 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 return current;
             }
+        }
+
+        public ControllerActionInvokerCacheEntry GetCachedEntry(ControllerActionDescriptor actionDescriptor)
+        {
+            var cache = CurrentCache;
+
+            if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
+            {
+                var parameterDefaultValues = ParameterDefaultValues
+                    .GetParameterDefaultValues(actionDescriptor.MethodInfo);
+
+                var objectMethodExecutor = ObjectMethodExecutor.Create(
+                    actionDescriptor.MethodInfo,
+                    actionDescriptor.ControllerTypeInfo,
+                    parameterDefaultValues);
+
+                var controllerFactory = _controllerFactoryProvider.CreateControllerFactory(actionDescriptor);
+                var controllerReleaser = _controllerFactoryProvider.CreateControllerReleaser(actionDescriptor);
+                var propertyBinderFactory = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                    _parameterBinder,
+                    _modelBinderFactory,
+                    _modelMetadataProvider,
+                    actionDescriptor,
+                    _mvcOptions);
+
+                var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+
+                cacheEntry = new ControllerActionInvokerCacheEntry(
+                    Array.Empty<FilterItem>(),
+                    controllerFactory,
+                    controllerReleaser,
+                    propertyBinderFactory,
+                    objectMethodExecutor,
+                    actionMethodExecutor);
+                cacheEntry = cache.Entries.GetOrAdd(actionDescriptor, cacheEntry);
+            }
+
+            return cacheEntry;
         }
 
         public (ControllerActionInvokerCacheEntry cacheEntry, IFilterMetadata[] filters) GetCachedResult(ControllerContext controllerContext)
