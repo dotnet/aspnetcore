@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
