@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         private DateTimeOffset _lastExpirationScan;
         private readonly Action _deleteExpiredCachedItemsDelegate;
         private readonly TimeSpan _defaultSlidingExpiration;
+        private readonly Object _mutex = new Object();
 
         public SqlServerCache(IOptions<SqlServerCacheOptions> options)
         {
@@ -227,12 +228,14 @@ namespace Microsoft.Extensions.Caching.SqlServer
         // If sufficient time has elapsed then a scan is initiated on a background task.
         private void ScanForExpiredItemsIfRequired()
         {
-            var utcNow = _systemClock.UtcNow;
-            // TODO: Multiple threads could trigger this scan which leads to multiple calls to database.
-            if ((utcNow - _lastExpirationScan) > _expiredItemsDeletionInterval)
+            lock(_mutex)
             {
-                _lastExpirationScan = utcNow;
-                Task.Run(_deleteExpiredCachedItemsDelegate);
+                var utcNow = _systemClock.UtcNow;
+                if ((utcNow - _lastExpirationScan) > _expiredItemsDeletionInterval)
+                {
+                    _lastExpirationScan = utcNow;
+                    Task.Run(_deleteExpiredCachedItemsDelegate);
+                }
             }
         }
 
