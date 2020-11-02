@@ -368,17 +368,17 @@ namespace CodeGenerator
 
             private string ResolveIdentifier(string name)
             {
-                var identifer = name.Replace("-", "");
+                var identifier = name.Replace("-", "");
 
                 // Pseudo headers start with a colon. A colon isn't valid in C# names so
                 // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
                 // This identifier will match the names in HeadersNames.cs
-                if (identifer.StartsWith(':'))
+                if (identifier.StartsWith(':'))
                 {
-                    identifer = char.ToUpperInvariant(identifer[1]) + identifer.Substring(2);
+                    identifier = char.ToUpperInvariant(identifier[1]) + identifier.Substring(2);
                 }
 
-                return identifer;
+                return identifier;
             }
 
             private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
