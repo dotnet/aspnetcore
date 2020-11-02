@@ -66,6 +66,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <CrossgenSizeOnDiskWorkItem Include="@(SingleAssembly)" Condition="'$(Architecture)' == 'x64'">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <PreCommands>$(Python) pre.py crossgen --core-root $(CoreRoot) --single %(Identity) </PreCommands>
+      <Command>$(Python) test.py sod --scenario-name &quot;Crossgen %(Identity) Size&quot; --dirs ./crossgen/</Command>
+      <PostCommands>$(Python) post.py</PostCommands>
+    </CrossgenSizeOnDiskWorkItem>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Crossgen2SizeOnDiskWorkItem Include="@(SingleAssembly)" Condition="'$(Architecture)' == 'x64'">
+      <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <PreCommands>$(Python) $(Crossgen2Directory)pre.py crossgen2 --core-root $(CoreRoot) --single %(Identity) </PreCommands>
+      <Command>$(Python) test.py sod --scenario-name &quot;Crossgen2 %(Identity) Size&quot; --dirs ./crossgen/</Command>
+      <PostCommands>$(Python) post.py</PostCommands>
+    </Crossgen2SizeOnDiskWorkItem>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Enable crossgen tests on Windows x64 and Windows x86 -->
     <HelixWorkItem Include="@(CrossgenWorkItem -> 'Crossgen %(Identity)')" Condition="'$(AGENT_OS)' == 'Windows_NT'">
       <Timeout>4:00</Timeout>
@@ -81,6 +99,12 @@
       <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>	
       <Command>$(Python) $(Crossgen2Directory)test.py crossgen2 --core-root $(CoreRoot) --composite $(Crossgen2Directory)framework-r2r.dll.rsp</Command>
       <Timeout>1:00</Timeout>  
+    </HelixWorkItem>
+    <HelixWorkItem Include="@(CrossgenSizeOnDiskWorkItem -> 'Crossgen Size on Disk %(Identity)')" Condition="'$(Architecture)' == 'x64'">
+      <Timeout>4:00</Timeout>  
+    </HelixWorkItem>
+    <HelixWorkItem Include="@(Crossgen2SizeOnDiskWorkItem -> 'Crossgen2 Size on Disk %(Identity)')" Condition="'$(Architecture)' == 'x64'">
+      <Timeout>4:00</Timeout>  
     </HelixWorkItem>
   </ItemGroup>
 </Project>
