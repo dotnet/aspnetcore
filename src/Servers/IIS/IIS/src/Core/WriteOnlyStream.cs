@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     /// <summary>
     /// A <see cref="Stream"/> which only allows for writes.
     /// </summary>
-    public abstract class WriteOnlyStream : Stream
+    internal abstract class WriteOnlyStream : Stream
     {
         ///<inheritdoc/>
         public override bool CanRead => false;
