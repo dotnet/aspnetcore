@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25623")]
-        public void BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
+        public async Task BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange
             var expectedFile = Path.Combine(Directory.GetCurrentDirectory(), $"{Guid.NewGuid():N}.css");
@@ -351,12 +351,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
             };
-            
-            var modified = false;
-            using FileSystemWatcher watcher = new FileSystemWatcher();
-            
-            watcher.Path = expectedFile;
-            watcher.Changed += (object source, FileSystemEventArgs e) => modified = true;
 
             // Act
             var result = taskInstance.Execute();
@@ -388,14 +382,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }),
             };
 
+            await Task.Delay(500);
             taskInstance.Execute();
 
             // Assert
-            Assert.True(modified);
             Assert.True(result);
             Assert.True(File.Exists(expectedFile));
             var actualContents = File.ReadAllText(expectedFile);
             Assert.Equal(UpdatedBundleContent, actualContents, ignoreLineEndingDifferences: true);
+            Assert.NotEqual(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
     }
 }
