@@ -81,11 +81,11 @@ MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
-.PARAMETER DotNetRuntimeSourceFeed
-Additional feed that can be used when downloading .NET runtimes
+.PARAMETER RuntimeSourceFeed
+Additional feed that can be used when downloading .NET runtimes and SDKs
 
-.PARAMETER DotNetRuntimeSourceFeedKey
-Key for feed that can be used when downloading .NET runtimes
+.PARAMETER RuntimeSourceFeedKey
+Key for feed that can be used when downloading .NET runtimes and SDKs
 
 .EXAMPLE
 Building both native and managed projects.
@@ -174,8 +174,10 @@ param(
 
     # Optional arguments that enable downloading an internal
     # runtime or runtime from a non-default location
-    [string]$DotNetRuntimeSourceFeed,
-    [string]$DotNetRuntimeSourceFeedKey,
+    [Alias('DotNetRuntimeSourceFeed')]
+    [string]$RuntimeSourceFeed,
+    [Alias('DotNetRuntimeSourceFeedKey')]
+    [string]$RuntimeSourceFeedKey,
 
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -257,9 +259,9 @@ if (-not $Configuration) {
 $MSBuildArguments += "/p:Configuration=$Configuration"
 
 [string[]]$ToolsetBuildArguments = @()
-if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
-    $runtimeFeedArg = "/p:DotNetRuntimeSourceFeed=$DotNetRuntimeSourceFeed"
-    $runtimeFeedKeyArg = "/p:DotNetRuntimeSourceFeedKey=$DotNetRuntimeSourceFeedKey"
+if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
+    $runtimeFeedArg = "/p:DotNetRuntimeSourceFeed=$RuntimeSourceFeed"
+    $runtimeFeedKeyArg = "/p:DotNetRuntimeSourceFeedKey=$RuntimeSourceFeedKey"
     $MSBuildArguments += $runtimeFeedArg
     $MSBuildArguments += $runtimeFeedKeyArg
     $ToolsetBuildArguments += $runtimeFeedArg
