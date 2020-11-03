@@ -12,7 +12,6 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsPackable>false</IsPackable>
 
     <!-- Required to implement an HtmlEncoder -->

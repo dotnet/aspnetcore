@@ -2,7 +2,6 @@
   <PropertyGroup>
     <Description>Runtime compilation support for Razor views and Razor Pages in ASP.NET Core MVC.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;razor</PackageTags>
