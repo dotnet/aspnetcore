@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     /// <summary>
     /// Listens for new Quic Connections.

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Connections.Experimental
 {
-    internal class MultiplexedConnectionBuilder : IMultiplexedConnectionBuilder
+    public class MultiplexedConnectionBuilder : IMultiplexedConnectionBuilder
     {
         private readonly IList<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _components = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 

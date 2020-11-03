@@ -10,5 +10,5 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// </summary>
     /// <param name="connection">A <see cref="MultiplexedConnectionContext" /> representing the connection.</param>
     /// <returns>A <see cref="Task"/> that represents the connection lifetime. When the task completes, the connection will be closed.</returns>
-    internal delegate Task MultiplexedConnectionDelegate(MultiplexedConnectionContext connection);
+    public delegate Task MultiplexedConnectionDelegate(MultiplexedConnectionContext connection);
 }
