@@ -181,7 +181,7 @@ We have a single .sln file for all of ASP.NET Core, but most people don't work w
 doesn't currently handle projects of this scale very well.
 
 Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. See the Visual Studio
-documentation [here](https://docs.microsoft.com/visualstudio/ide/filtered-solutions?view=vs-2019) for more
+documentation [here](https://docs.microsoft.com/visualstudio/ide/filtered-solutions) for more
 information about Solution Filters.
 
 These principles guide how we create and manage .slnf files:
