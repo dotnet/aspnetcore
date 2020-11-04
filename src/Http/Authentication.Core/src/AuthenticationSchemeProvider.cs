@@ -140,14 +140,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return false;
             }
-
             lock (_lock)
             {
                 if (_schemes.ContainsKey(scheme.Name))
                 {
                     return false;
                 }
-
                 if (typeof(IAuthenticationRequestHandler).IsAssignableFrom(scheme.HandlerType))
                 {
                     _requestHandlers.Add(scheme);
