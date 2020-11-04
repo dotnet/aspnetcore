@@ -85,14 +85,6 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (AuthenticationScheme == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(
-                        /* property: */ nameof(AuthenticationScheme),
-                        /* type: */ nameof(SignInResult)));
-            }
-
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<SignInResult>();
 
