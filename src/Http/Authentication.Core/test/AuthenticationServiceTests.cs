@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Core.Test
@@ -134,6 +136,25 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         }
 
         [Fact]
+        public async Task CanSignInIfSchemeNotWithFactory()
+        {
+            var services = new ServiceCollection()
+                .AddOptions()
+                .AddAuthenticationCore(o =>
+            {
+                o.AddScheme<UberHandler>("uber", "whatever");
+                o.AddScheme<BaseHandler>("base", "whatever");
+                o.AddScheme<SignInHandler>("signin", "whatever");
+                o.AddScheme<SignOutHandler>("signout", "whatever");
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.SignInAsync("uber", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
+
+        }
+
+        [Fact]
         public async Task CanOnlySignOutIfSupported()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -193,6 +214,25 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         }
 
         [Fact]
+        public async Task ServicesWithDefaultUberMethodsTestWithNonFactoryScheme()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<UberHandler>("base", "whatever");
+                o.DefaultScheme = "base";
+            }).AddScoped<IAuthenticationSchemeProvider, NoFactoryAuthenticationSchemeProvider>().BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.AuthenticateAsync();
+            await context.ChallengeAsync();
+            await context.ForbidAsync();
+            await context.SignOutAsync();
+            await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
+        }
+
+
+        [Fact]
         public async Task ServicesWithDefaultSignInMethodsTest()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -241,6 +281,24 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             context.RequestServices = services;
 
             await context.ForbidAsync();
+        }
+        
+        private class NoFactoryAuthenticationSchemeProvider : AuthenticationSchemeProvider
+        {
+            public NoFactoryAuthenticationSchemeProvider(IOptions<AuthenticationOptions> options) : base(options)
+            {
+            }
+
+            protected NoFactoryAuthenticationSchemeProvider(IOptions<AuthenticationOptions> options, IDictionary<string, AuthenticationScheme> schemes) : base(options, schemes)
+            {
+            }
+
+            public override async Task<AuthenticationScheme?> GetSchemeAsync(string name)
+            {
+                var scheme =  await base.GetSchemeAsync(name);
+                //we create a new scheme, this time without the factory created by ancestor
+                return scheme != null ? new AuthenticationScheme(scheme.Name, scheme.DisplayName, scheme.HandlerType) : null;
+            }
         }
 
         private class RunOnce : IClaimsTransformation
