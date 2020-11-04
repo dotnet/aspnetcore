@@ -17,4 +17,8 @@
     <Compile Include="$(SharedSourceRoot)JSInterop\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly" />
+  </ItemGroup>
+
 </Project>

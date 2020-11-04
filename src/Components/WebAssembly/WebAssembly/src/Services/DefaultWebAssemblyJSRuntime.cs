@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using Microsoft.JSInterop;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -17,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         {
             ElementReferenceContext = new WebElementReferenceContext(this);
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
+            JsonSerializerOptions.Converters.Insert(0, new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
+                    id => new WebAssemblyJSObjectReference(this, id)));
         }
 
         #pragma warning disable IDE0051 // Remove unused private members. Invoked via Mono's JS interop mechanism (invoke_method)
