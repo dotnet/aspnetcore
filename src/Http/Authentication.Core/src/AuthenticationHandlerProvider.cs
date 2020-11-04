@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Authentication
         public IAuthenticationSchemeProvider Schemes { get; }
 
         // handler instance cache, need to initialize once per request
-        private readonly Dictionary<string, IAuthenticationHandler> _handlerMap =
-            new Dictionary<string, IAuthenticationHandler>(StringComparer.Ordinal);
+        private readonly Dictionary<string, IAuthenticationHandler> _handlerMap = new Dictionary<string, IAuthenticationHandler>(StringComparer.Ordinal);
 
         /// <summary>
         /// Returns the handler instance that will be used.
@@ -71,7 +70,6 @@ namespace Microsoft.AspNetCore.Authentication
                 await handler.InitializeAsync(scheme, context);
                 _handlerMap[authenticationScheme] = handler;
             }
-
             return handler;
         }
     }

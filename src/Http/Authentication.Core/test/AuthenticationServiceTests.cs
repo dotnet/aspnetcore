@@ -136,25 +136,6 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         }
 
         [Fact]
-        public async Task CanSignInIfSchemeNotWithFactory()
-        {
-            var services = new ServiceCollection()
-                .AddOptions()
-                .AddAuthenticationCore(o =>
-            {
-                o.AddScheme<UberHandler>("uber", "whatever");
-                o.AddScheme<BaseHandler>("base", "whatever");
-                o.AddScheme<SignInHandler>("signin", "whatever");
-                o.AddScheme<SignOutHandler>("signout", "whatever");
-            }).BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = services;
-
-            await context.SignInAsync("uber", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
-
-        }
-
-        [Fact]
         public async Task CanOnlySignOutIfSupported()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -282,7 +263,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             await context.ForbidAsync();
         }
-        
+
         private class NoFactoryAuthenticationSchemeProvider : AuthenticationSchemeProvider
         {
             public NoFactoryAuthenticationSchemeProvider(IOptions<AuthenticationOptions> options) : base(options)
