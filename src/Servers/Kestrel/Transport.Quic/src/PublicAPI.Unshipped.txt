@@ -13,7 +13,7 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidi
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.QuicTransportOptions() -> void
-~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory.BindAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener>
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory.BindAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener>
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory.QuicTransportFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions> options) -> void
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.get -> string
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.set -> void
