@@ -11,18 +11,18 @@ namespace Microsoft.AspNetCore.Components
     {
         public const string ClientMarkerType = "webassembly";
 
-        public WebAssemblyComponentMarker(string? type, string? assembly, string? typeName, string? parameterDefinitions, string? parameterValues, string? prerenderId) =>
+        public WebAssemblyComponentMarker(string type, string assembly, string typeName, string parameterDefinitions, string parameterValues, string? prerenderId) =>
             (Type, Assembly, TypeName, ParameterDefinitions, ParameterValues, PrerenderId) = (type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId);
 
-        public string? Type { get; set; }
+        public string Type { get; set; }
 
-        public string? Assembly { get; set; }
+        public string Assembly { get; set; }
 
-        public string? TypeName { get; set; }
+        public string TypeName { get; set; }
 
-        public string? ParameterDefinitions { get; set; }
+        public string ParameterDefinitions { get; set; }
 
-        public string? ParameterValues { get; set; }
+        public string ParameterValues { get; set; }
 
         public string? PrerenderId { get; set; }
 
@@ -32,14 +32,19 @@ namespace Microsoft.AspNetCore.Components
         internal static WebAssemblyComponentMarker Prerendered(string assembly, string typeName, string parameterDefinitions, string parameterValues) =>
             new WebAssemblyComponentMarker(ClientMarkerType, assembly, typeName, parameterDefinitions, parameterValues, Guid.NewGuid().ToString("N"));
 
-        public WebAssemblyComponentMarker GetEndRecord()
+        public WebAssemblyEndComponentMarker GetEndRecord()
         {
             if (PrerenderId == null)
             {
                 throw new InvalidOperationException("Can't get an end record for non-prerendered components.");
             }
 
-            return new WebAssemblyComponentMarker(null, null, null, null, null, PrerenderId);
+            return new WebAssemblyEndComponentMarker { PrerenderId = PrerenderId };
         }
+    }
+
+    internal struct WebAssemblyEndComponentMarker
+    {
+        public string PrerenderId { get; set; }
     }
 }
