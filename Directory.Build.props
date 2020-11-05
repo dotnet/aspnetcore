@@ -93,11 +93,15 @@
   <!-- Warnings and errors -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+    <!-- For CI builds, ensure API docs are available. -->
+    <NoWarn Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
   </PropertyGroup>
 
   <!-- Source code settings -->
