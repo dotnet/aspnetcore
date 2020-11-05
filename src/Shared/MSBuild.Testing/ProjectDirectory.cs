@@ -141,7 +141,7 @@ $@"<Project>
 </Project>";
                 File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);
 
-                new List<string> { "Directory.Build.props", "Directory.Build.targets", "RazorTest.Introspection.targets", "blazor.webassembly.js" }
+                new List<string> { "Directory.Build.props", "Directory.Build.targets", "RazorTest.Introspection.targets", "blazor.webassembly.js", "GenerateFiles.Directory.Build.props" }
                     .ForEach(file =>
                     {
                         var source = Path.Combine(testAppsRoot, file);

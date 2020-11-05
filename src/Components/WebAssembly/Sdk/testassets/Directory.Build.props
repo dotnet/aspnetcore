@@ -8,7 +8,7 @@
       Condition="'$(ArtifactsBinDir)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
   </PropertyGroup>
   <Import Condition="'$(IsHelixJob)' != 'true'" Project="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props" />
-  <Import Condition="'$(IsHelixJob)' == 'true'" Project="GenerateFiles.Directory.Build.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\GenerateFiles.Directory.Build.props" />
 
   <PropertyGroup>
     <!--
