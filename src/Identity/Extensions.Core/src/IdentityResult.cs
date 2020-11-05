@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity
         /// An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/> instances containing errors
         /// that occurred during the identity operation.
         /// </summary>
-        /// <value>An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/>s.</value>
+        /// <value>An <see cref="IEnumerable{T}"/> of <see cref="IdentityError"/> instances.</value>
         public IEnumerable<IdentityError> Errors => _errors;
 
         /// <summary>
