@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25967")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27552")]
         public async Task UseSpa_KillsRds_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
