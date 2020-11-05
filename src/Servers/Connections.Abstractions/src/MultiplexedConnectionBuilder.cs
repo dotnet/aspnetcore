@@ -8,23 +8,33 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Connections.Experimental
 {
-    internal class MultiplexedConnectionBuilder : IMultiplexedConnectionBuilder
+    /// <summary>
+    /// A default implementation for <see cref="IMultiplexedConnectionBuilder"/>.
+    /// </summary>
+    public class MultiplexedConnectionBuilder : IMultiplexedConnectionBuilder
     {
         private readonly IList<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _components = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 
+        /// <inheritdoc />
         public IServiceProvider ApplicationServices { get; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="MultiplexedConnectionBuilder"/>.
+        /// </summary>
+        /// <param name="applicationServices">The application services <see cref="IServiceProvider"/>.</param>
         public MultiplexedConnectionBuilder(IServiceProvider applicationServices)
         {
             ApplicationServices = applicationServices;
         }
 
+        /// <inheritdoc />
         public IMultiplexedConnectionBuilder Use(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
         {
             _components.Add(middleware);
             return this;
         }
 
+        /// <inheritdoc />
         public MultiplexedConnectionDelegate Build()
         {
             MultiplexedConnectionDelegate app = features =>
