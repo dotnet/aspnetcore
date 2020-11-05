@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -11,17 +10,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger)
-            : base(memoryPool, pInProcessHandler, options, server, logger)
+        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, NativeSafeHandle pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger, bool useLatin1)
+            : base(memoryPool, pInProcessHandler, options, server, logger, useLatin1)
         {
             _application = application;
         }
 
-        public override async Task ProcessRequestAsync()
+        public override async Task<bool> ProcessRequestAsync()
         {
             var context = default(TContext);
             var success = true;
@@ -48,13 +49,24 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     success = false;
                 }
 
-                await CompleteResponseBodyAsync();
+                if (ResponsePipeWrapper != null)
+                {
+                    await ResponsePipeWrapper.CompleteAsync();
+                }
+
                 _streams.Stop();
 
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                 {
                     await FireOnStarting();
                     // Dispose
+                }
+
+                if (!success && HasResponseStarted && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+                {
+                    // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                    // Otherwise the default is Cancel = 0x8.
+                    SetResetCode(2);
                 }
 
                 if (!_requestAborted)
@@ -70,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Complete response writer and request reader pipe sides
-                _bodyOutput.Dispose();
+                _bodyOutput.Complete();
                 _bodyInputPipe?.Reader.Complete();
 
                 // Allow writes to drain
@@ -80,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
-                AsyncIO?.Dispose();
+                AsyncIO?.Complete();
 
                 if (_readBodyTask != null)
                 {
@@ -94,9 +106,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
-                // We're done with anything that touches the request or response, unblock the client.
-                PostCompletion(ConvertRequestCompletionResults(success));
-
                 if (_onCompleted != null)
                 {
                     await FireOnCompleted();
@@ -111,12 +120,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     ReportApplicationError(ex);
                 }
             }
-        }
-
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-        {
-            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            return success;
         }
     }
 }

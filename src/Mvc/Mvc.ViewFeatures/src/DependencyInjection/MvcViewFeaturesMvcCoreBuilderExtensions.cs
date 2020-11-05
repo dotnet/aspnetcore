@@ -24,8 +24,16 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds extension methods to <see cref="IMvcCoreBuilder"/>. This class cannot be inherited.
+    /// </summary>
     public static class MvcViewFeaturesMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Add view related services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddViews(this IMvcCoreBuilder builder)
         {
             if (builder == null)
@@ -69,6 +77,12 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
+        /// <summary>
+        /// Add view related services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The setup action for <see cref="MvcViewOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddViews(
             this IMvcCoreBuilder builder,
             Action<MvcViewOptions> setupAction)
@@ -119,6 +133,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="MvcViewOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The setup action.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder ConfigureViews(
             this IMvcCoreBuilder builder,
             Action<MvcViewOptions> setupAction)
@@ -176,6 +196,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Component services for Blazor server-side interop
             services.TryAddSingleton<ServerComponentSerializer>();
+
+            // Component services for Blazor webassembly interop
+            services.TryAddSingleton<WebAssemblyComponentSerializer>();
 
             //
             // View Components

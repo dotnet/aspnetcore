@@ -61,6 +61,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public bool AutomaticAuthentication { get; set; } = true;
 
+        /// <summary> 
+        /// Sets the display name shown to users on login pages. The default is null.
+        /// </summary> 
+        public string AuthenticationDisplayName { get; set; }
+
         internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {
             Debug.Assert(_urlGroup == null, "SetUrlGroupSecurity called more than once.");
@@ -102,12 +107,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IList<string> GenerateChallenges(AuthenticationSchemes authSchemes)
         {
-            IList<string> challenges = new List<string>();
-
             if (authSchemes == AuthenticationSchemes.None)
             {
-                return challenges;
+                return Array.Empty<string>();
             }
+
+            IList<string> challenges = new List<string>();
 
             // Order by strength.
             if ((authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)

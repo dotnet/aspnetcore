@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Linq;
@@ -129,6 +130,7 @@ namespace Identity.ExternalClaims.Pages.Account.Manage
         private string GenerateQrCodeUri(string email, string unformattedKey)
         {
             return string.Format(
+                CultureInfo.InvariantCulture,
                 AuthenicatorUriFormat,
                 _urlEncoder.Encode("Identity.ExternalClaims"),
                 _urlEncoder.Encode(email),

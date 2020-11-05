@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 minResponseDataRate: null,
                 "TestConnectionId",
                 _memoryPool,
-                new KestrelTrace(NullLogger.Instance));
+                new Core.Internal.ServiceContext());
 
             _responseHeaders = new HttpResponseHeaders();
             _responseHeaders.HeaderContentType = "application/json";

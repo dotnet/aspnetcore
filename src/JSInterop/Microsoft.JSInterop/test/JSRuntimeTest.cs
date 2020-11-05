@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -145,6 +146,7 @@ namespace Microsoft.JSInterop
                 ref reader);
             Assert.True(task.IsCompleted);
             var poco = task.Result;
+            Debug.Assert(poco != null);
             Assert.Equal(10, poco.Id);
             Assert.Equal("Test", poco.Name);
         }
@@ -167,6 +169,7 @@ namespace Microsoft.JSInterop
                 ref reader);
             Assert.True(task.IsCompleted);
             var poco = task.Result;
+            Debug.Assert(poco != null);
             Assert.Equal(10, poco.Id);
             Assert.Equal("Test", poco.Name);
         }
@@ -322,14 +325,14 @@ namespace Microsoft.JSInterop
 
         private class JSError
         {
-            public string Message { get; set; }
+            public string? Message { get; set; }
         }
 
         private class TestPoco
         {
             public int Id { get; set; }
 
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         class TestJSRuntime : JSRuntime
@@ -348,18 +351,18 @@ namespace Microsoft.JSInterop
             public class BeginInvokeAsyncArgs
             {
                 public long AsyncHandle { get; set; }
-                public string Identifier { get; set; }
-                public string ArgsJson { get; set; }
+                public string? Identifier { get; set; }
+                public string? ArgsJson { get; set; }
             }
 
             public class EndInvokeDotNetArgs
             {
-                public string CallId { get; set; }
+                public string? CallId { get; set; }
                 public bool Success { get; set; }
-                public object ResultOrError { get; set; }
+                public object? ResultOrError { get; set; }
             }
 
-            public Func<DotNetInvocationInfo, object> OnDotNetException { get; set; }
+            public Func<DotNetInvocationInfo, object>? OnDotNetException { get; set; }
 
             protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
             {
@@ -377,7 +380,7 @@ namespace Microsoft.JSInterop
                 });
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
                 {

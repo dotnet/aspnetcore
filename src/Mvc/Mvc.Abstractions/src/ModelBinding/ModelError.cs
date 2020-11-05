@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/>.</param>
         /// <param name="errorMessage">The error message.</param>
-        public ModelError(Exception exception, string errorMessage)
+        public ModelError(Exception exception, string? errorMessage)
             : this(errorMessage)
         {
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="errorMessage"/>.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
-        public ModelError(string errorMessage)
+        public ModelError(string? errorMessage)
         {
             ErrorMessage = errorMessage ?? string.Empty;
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="System.Exception"/> associated with this <see cref="ModelError"/> instance.
         /// </summary>
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <summary>
         /// Gets the error message associated with this <see cref="ModelError"/> instance.

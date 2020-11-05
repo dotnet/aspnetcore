@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -435,6 +436,67 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateMatcher(endpoints);
             var httpContext = CreateContext(path);
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, expected, ignoreValues: true);
+        }
+
+        // https://github.com/dotnet/aspnetcore/issues/16579
+        [Fact]
+        public virtual async Task Match_Regression_16579_Order1()
+        {
+            var endpoints = new RouteEndpoint[]
+            {
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/folder/{*path}",
+                    order: 0,
+                    defaults: new { controller = "File", action = "Folder", },
+                    requiredValues: new { controller = "File", }),
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/{action}/{filename}",
+                    order: 1,
+                    defaults: new { controller = "File", action = "Index", },
+                    requiredValues: new { controller = "File", action = "Index", }),
+            };
+
+            var expected = endpoints[0];
+
+            var matcher = CreateMatcher(endpoints);
+            var httpContext = CreateContext("/file/folder/abc/abc");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, expected, ignoreValues: true);
+        }
+
+        // https://github.com/dotnet/aspnetcore/issues/16579
+        [Fact]
+        public virtual async Task Match_Regression_16579_Order2()
+        {
+            var endpoints = new RouteEndpoint[]
+            {
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/{action}/{filename}",
+                    order: 0,
+                    defaults: new { controller = "File", action = "Index", },
+                    requiredValues: new { controller = "File", action = "Index", }),
+
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/folder/{*path}",
+                    order: 1,
+                    defaults: new { controller = "File", action = "Folder", },
+                    requiredValues: new { controller = "File", }),
+            };
+
+            var expected = endpoints[1];
+
+            var matcher = CreateMatcher(endpoints);
+            var httpContext = CreateContext("/file/folder/abc/abc");
 
             // Act
             await matcher.MatchAsync(httpContext);

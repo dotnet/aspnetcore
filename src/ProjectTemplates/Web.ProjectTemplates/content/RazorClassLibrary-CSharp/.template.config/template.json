@@ -33,6 +33,7 @@
           "exclude": [
             "_Imports.razor",
             "Component1.razor",
+            "Component1.razor.css",
             "ExampleJsInterop.cs",
             "wwwroot/**"
           ]
@@ -47,11 +48,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp5.0",
-          "description": "Target netcoreapp5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "defaultValue": "netcoreapp5.0"
+      "defaultValue": "net6.0"
     },
     "HostIdentifier": {
       "type": "bind",

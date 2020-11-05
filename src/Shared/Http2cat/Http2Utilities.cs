@@ -229,7 +229,6 @@ namespace Microsoft.AspNetCore.Http2Cat
         public Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
@@ -328,7 +327,6 @@ namespace Microsoft.AspNetCore.Http2Cat
         public Task SendHeadersWithPaddingAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var frame = new Http2Frame();
 
@@ -343,7 +341,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
             HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
-            padding.Fill(0);
+            padding.Clear();
 
             frame.PayloadLength = extendedHeaderLength + length + padLength;
 
@@ -369,7 +367,6 @@ namespace Microsoft.AspNetCore.Http2Cat
         public Task SendHeadersWithPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte priority, int streamDependency, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PRIORITY, streamId);
@@ -413,7 +410,6 @@ namespace Microsoft.AspNetCore.Http2Cat
         public Task SendHeadersWithPaddingAndPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, byte priority, int streamDependency, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, streamId);
@@ -431,7 +427,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
             HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
-            padding.Fill(0);
+            padding.Clear();
 
             frame.PayloadLength = extendedHeaderLength + length + padLength;
 
@@ -1026,12 +1022,13 @@ namespace Microsoft.AspNetCore.Http2Cat
 
         public void OnStaticIndexedHeader(int index)
         {
-            throw new NotImplementedException();
+            ref readonly var entry = ref H2StaticTable.Get(index - 1);
+            ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
-            throw new NotImplementedException();
+            ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
         }
 
         internal class Http2FrameWithPayload : Http2Frame

@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
@@ -225,6 +227,23 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
         }
 
+        [Theory]
+        [InlineData("/blog/value1", "value1")]
+        [InlineData("/blog/value1/foo%20bar", "value1/foo bar")]
+        public void CanMatchCatchAllParameterTemplate(string path, string expectedValue)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/blog/{*parameter}").Build();
+            var context = new RouteContext(path);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
+        }
+
         [Fact]
         public void CanMatchTemplateWithMultipleParameters()
         {
@@ -236,6 +255,29 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 ["some"] = "an",
                 ["route"] = "path"
+            };
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(expectedParameters, context.Parameters);
+        }
+
+
+        [Fact]
+        public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/{some}/awesome/{route}/with/{*catchAll}").Build();
+            var context = new RouteContext("/an/awesome/path/with/some/catch/all/stuff");
+
+            var expectedParameters = new Dictionary<string, object>
+            {
+                ["some"] = "an",
+                ["route"] = "path",
+                ["catchAll"] = "some/catch/all/stuff"
             };
 
             // Act
@@ -278,28 +320,117 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 // Make it easier to track down failing tests when using MemberData
                 throw new InvalidOperationException($"Failed to match template '{template}'.");
             }
-            Assert.Equal(context.Parameters, new Dictionary<string, object>
+            Assert.Equal(new Dictionary<string, object>
             {
                 { "value", convertedValue }
-            });
+            }, context.Parameters);
         }
 
         [Fact]
-        public void CanMatchSegmentWithMultipleConstraints()
+        public void CanMatchOptionalParameterWithoutConstraints()
         {
             // Arrange
-            var routeTable = new TestRouteTableBuilder().AddRoute("/{value:double:int}/").Build();
-            var context = new RouteContext("/15");
+            var template = "/optional/{value?}";
+            var contextUrl = "/optional/";
+            string convertedValue = null;
+
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
 
             // Act
             routeTable.Route(context);
 
             // Assert
-            Assert.NotNull(context.Handler);
-            Assert.Equal(context.Parameters, new Dictionary<string, object>
+            if (context.Handler == null)
             {
-                { "value", 15 } // Final constraint's convertedValue is used
-            });
+                // Make it easier to track down failing tests when using MemberData
+                throw new InvalidOperationException($"Failed to match template '{template}'.");
+            }
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "value", convertedValue }
+            }, context.Parameters);
+        }
+
+        public static IEnumerable<object[]> CanMatchOptionalParameterWithConstraintCases() => new object[][]
+{
+            new object[] { "/optional/{value:bool?}", "/optional/", null },
+            new object[] { "/optional/{value:datetime?}", "/optional/", null },
+            new object[] { "/optional/{value:decimal?}", "/optional/", null },
+};
+
+        [Theory]
+        [MemberData(nameof(CanMatchOptionalParameterWithConstraintCases))]
+        public void CanMatchOptionalParameterWithConstraint(string template, string contextUrl, object convertedValue)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            if (context.Handler == null)
+            {
+                // Make it easier to track down failing tests when using MemberData
+                throw new InvalidOperationException($"Failed to match template '{template}'.");
+            }
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "value", convertedValue }
+            }, context.Parameters);
+        }
+
+        [Fact]
+        public void CanMatchMultipleOptionalParameterWithConstraint()
+        {
+            // Arrange
+            var template = "/optional/{value:datetime?}/{value2:datetime?}";
+            var contextUrl = "/optional//";
+            object convertedValue = null;
+
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            if (context.Handler == null)
+            {
+                // Make it easier to track down failing tests when using MemberData
+                throw new InvalidOperationException($"Failed to match template '{template}'.");
+            }
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "value", convertedValue },
+                { "value2", convertedValue }
+            }, context.Parameters);
+        }
+
+        public static IEnumerable<object[]> CanMatchSegmentWithMultipleConstraintsCases() => new object[][]
+{
+            new object[] { "/{value:double:int}/", "/15", 15 },
+            new object[] { "/{value:double?:int?}/", "/", null },
+};
+
+        [Theory]
+        [MemberData(nameof(CanMatchSegmentWithMultipleConstraintsCases))]
+        public void CanMatchSegmentWithMultipleConstraints(string template, string contextUrl, object convertedValue)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "value", convertedValue }
+            }, context.Parameters);
         }
 
         [Fact]
@@ -317,6 +448,91 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
             // Assert
             Assert.NotNull(context.Handler);
+            Assert.Null(context.Parameters);
+        }
+
+        [Fact]
+        public void PrefersLiteralTemplateOverTemplateWithOptionalParameters()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/users/1", typeof(TestHandler1))
+                .AddRoute("/users/{id?}", typeof(TestHandler2))
+                .Build();
+            var context = new RouteContext("/users/1");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Null(context.Parameters);
+        }
+
+        [Fact]
+        public void PrefersOptionalParamsOverNonOptionalParams()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/users/{id}", typeof(TestHandler1))
+                .AddRoute("/users/{id?}", typeof(TestHandler2))
+                .Build();
+            var contextWithParam = new RouteContext("/users/1");
+            var contextWithoutParam = new RouteContext("/users/");
+
+            // Act
+            routeTable.Route(contextWithParam);
+            routeTable.Route(contextWithoutParam);
+
+            // Assert
+            Assert.NotNull(contextWithParam.Handler);
+            Assert.Equal(typeof(TestHandler1), contextWithParam.Handler);
+
+            Assert.NotNull(contextWithoutParam.Handler);
+            Assert.Equal(typeof(TestHandler2), contextWithoutParam.Handler);
+        }
+
+        [Fact]
+        public void PrefersOptionalParamsOverNonOptionalParamsReverseOrder()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/users/{id}", typeof(TestHandler1))
+                .AddRoute("/users/{id?}", typeof(TestHandler2))
+                .Build();
+            var contextWithParam = new RouteContext("/users/1");
+            var contextWithoutParam = new RouteContext("/users/");
+
+            // Act
+            routeTable.Route(contextWithParam);
+            routeTable.Route(contextWithoutParam);
+
+            // Assert
+            Assert.NotNull(contextWithParam.Handler);
+            Assert.Equal(typeof(TestHandler1), contextWithParam.Handler);
+
+            Assert.NotNull(contextWithoutParam.Handler);
+            Assert.Equal(typeof(TestHandler2), contextWithoutParam.Handler);
+        }
+
+
+        [Fact]
+        public void PrefersLiteralTemplateOverParameterizedTemplates()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/users/1/friends", typeof(TestHandler1))
+                .AddRoute("/users/{id}/{location}", typeof(TestHandler2))
+                .AddRoute("/users/1/{location}", typeof(TestHandler2))
+                .Build();
+            var context = new RouteContext("/users/1/friends");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(typeof(TestHandler1), context.Handler);
             Assert.Null(context.Parameters);
         }
 
@@ -351,6 +567,25 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 { "id", 456 }
             });
+        }
+
+        [Fact]
+        public void PrefersRoutesThatMatchMoreSegments()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/{anythingGoes}", typeof(TestHandler1))
+                .AddRoute("/users/{id?}", typeof(TestHandler2))
+                .Build();
+            var context = new RouteContext("/users/1");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(typeof(TestHandler2), context.Handler);
+            Assert.NotNull(context.Parameters);
         }
 
         [Fact]
@@ -396,7 +631,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal(17, routeTable.Routes.Length);
             for (var i = 0; i < 17; i++)
             {
-                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                var templateText = "r" + i.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
                 Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
             }
         }

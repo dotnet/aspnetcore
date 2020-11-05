@@ -24,21 +24,21 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var frameIndex = 0; frameIndex < framesLength; frameIndex++)
             {
                 ref var frame = ref framesArray[frameIndex];
-                switch (frame.FrameType)
+                switch (frame.FrameTypeField)
                 {
                     case RenderTreeFrameType.Element:
                         closestElementFrameIndex = frameIndex;
                         break;
                     case RenderTreeFrameType.Attribute:
-                        if (frame.AttributeEventHandlerId == eventHandlerId)
+                        if (frame.AttributeEventHandlerIdField == eventHandlerId)
                         {
-                            if (!string.IsNullOrEmpty(frame.AttributeEventUpdatesAttributeName))
+                            if (!string.IsNullOrEmpty(frame.AttributeEventUpdatesAttributeNameField))
                             {
                                 UpdateFrameToMatchClientState(
                                     renderTreeBuilder,
                                     framesArray,
                                     closestElementFrameIndex,
-                                    frame.AttributeEventUpdatesAttributeName,
+                                    frame.AttributeEventUpdatesAttributeNameField,
                                     newFieldValue);
                             }
 
@@ -55,27 +55,34 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             // Find the attribute frame
             ref var elementFrame = ref framesArray[elementFrameIndex];
-            var elementSubtreeEndIndexExcl = elementFrameIndex + elementFrame.ElementSubtreeLength;
+            var elementSubtreeEndIndexExcl = elementFrameIndex + elementFrame.ElementSubtreeLengthField;
             for (var attributeFrameIndex = elementFrameIndex + 1; attributeFrameIndex < elementSubtreeEndIndexExcl; attributeFrameIndex++)
             {
                 ref var attributeFrame = ref framesArray[attributeFrameIndex];
-                if (attributeFrame.FrameType != RenderTreeFrameType.Attribute)
+                if (attributeFrame.FrameTypeField != RenderTreeFrameType.Attribute)
                 {
                     // We're now looking at the descendants not attributes, so the search is over
                     break;
                 }
 
-                if (attributeFrame.AttributeName == attributeName)
+                if (attributeFrame.AttributeNameField == attributeName)
                 {
                     // Found an existing attribute we can update
-                    attributeFrame = attributeFrame.WithAttributeValue(attributeValue);
+                    attributeFrame.AttributeValueField = attributeValue;
                     return;
                 }
             }
 
             // If we get here, we didn't find the desired attribute, so we have to insert a new frame for it
             var insertAtIndex = elementFrameIndex + 1;
-            renderTreeBuilder.InsertAttributeExpensive(insertAtIndex, RenderTreeDiffBuilder.SystemAddedAttributeSequenceNumber, attributeName, attributeValue);
+            var didInsertFrame = renderTreeBuilder.InsertAttributeExpensive(insertAtIndex, RenderTreeDiffBuilder.SystemAddedAttributeSequenceNumber, attributeName, attributeValue);
+            if (!didInsertFrame)
+            {
+                // The builder decided to omit the new frame, e.g., because it's a false-valued bool
+                // In this case there's nothing else to update
+                return;
+            }
+
             framesArray = renderTreeBuilder.GetFrames().Array; // Refresh in case it mutated due to the expansion
 
             // Update subtree length for this and all ancestor containers
@@ -84,25 +91,25 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var otherFrameIndex = elementFrameIndex; otherFrameIndex >= 0; otherFrameIndex--)
             {
                 ref var otherFrame = ref framesArray[otherFrameIndex];
-                switch (otherFrame.FrameType)
+                switch (otherFrame.FrameTypeField)
                 {
                     case RenderTreeFrameType.Element:
                         {
-                            var otherFrameSubtreeLength = otherFrame.ElementSubtreeLength;
+                            var otherFrameSubtreeLength = otherFrame.ElementSubtreeLengthField;
                             var otherFrameEndIndexExcl = otherFrameIndex + otherFrameSubtreeLength;
                             if (otherFrameEndIndexExcl > elementFrameIndex) // i.e., contains the element we're inserting into
                             {
-                                otherFrame = otherFrame.WithElementSubtreeLength(otherFrameSubtreeLength + 1);
+                                otherFrame.ElementSubtreeLengthField = otherFrameSubtreeLength + 1;
                             }
                             break;
                         }
                     case RenderTreeFrameType.Region:
                         {
-                            var otherFrameSubtreeLength = otherFrame.RegionSubtreeLength;
+                            var otherFrameSubtreeLength = otherFrame.RegionSubtreeLengthField;
                             var otherFrameEndIndexExcl = otherFrameIndex + otherFrameSubtreeLength;
                             if (otherFrameEndIndexExcl > elementFrameIndex) // i.e., contains the element we're inserting into
                             {
-                                otherFrame = otherFrame.WithRegionSubtreeLength(otherFrameSubtreeLength + 1);
+                                otherFrame.RegionSubtreeLengthField = otherFrameSubtreeLength + 1;
                             }
                             break;
                         }

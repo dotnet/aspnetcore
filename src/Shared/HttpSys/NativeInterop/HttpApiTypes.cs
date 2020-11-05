@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpServerListenEndpointProperty,
             HttpServerChannelBindProperty,
             HttpServerProtectionLevelProperty,
+            HttpServerDelegationProperty = 16
         }
 
         // Currently only one request info type is supported but the enum is for future extensibility.
@@ -69,6 +70,28 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             IdleConnection,
             HeaderWait,
             MinSendRate,
+        }
+
+        internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID : uint
+        {
+            DelegateRequestReservedProperty,
+            DelegateRequestDelegateUrlProperty
+        }
+
+        internal enum HTTP_FEATURE_ID
+        {
+            HttpFeatureUnknown = 0,
+            HttpFeatureResponseTrailers = 1,
+            HttpFeatureApiTimings = 2,
+            HttpFeatureDelegateEx = 3,
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
+        {
+            internal HTTP_DELEGATE_REQUEST_PROPERTY_ID PropertyId;
+            internal uint PropertyInfoLength;
+            internal IntPtr PropertyInfo;
         }
 
         internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
@@ -651,6 +674,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             OpenExisting = 1,
             // The handle to the request queue created using this flag cannot be used to perform I/O operations. This flag can be set only when the request queue handle is created.
             Controller = 2,
+            Delegation = 8
         }
 
         internal static class HTTP_RESPONSE_HEADER_ID

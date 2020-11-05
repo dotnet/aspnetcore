@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Extension methods for the IIS Out-Of-Process.
+    /// </summary>
     public static class WebHostBuilderIISExtensions
     {
         // These are defined as ASPNETCORE_ environment variables by IIS's AspNetCoreModule.

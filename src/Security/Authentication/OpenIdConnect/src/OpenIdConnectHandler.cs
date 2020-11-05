@@ -36,10 +36,24 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
         private OpenIdConnectConfiguration _configuration;
 
+        /// <summary>
+        /// Gets the <see cref="HttpClient"/> used to communicate with the remote identity provider.
+        /// </summary>
         protected HttpClient Backchannel => Options.Backchannel;
 
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.
+        /// </summary>
         protected HtmlEncoder HtmlEncoder { get; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectHandler"/>.
+        /// </summary>
+        /// <param name="options">A monitor to observe changes to <see cref="OpenIdConnectOptions"/>.</param>
+        /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
@@ -56,8 +70,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             set { base.Events = value; }
         }
 
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OpenIdConnectEvents());
 
+        /// <inheritdoc />
         public override Task<bool> HandleRequestAsync()
         {
             if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
@@ -72,6 +88,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return base.HandleRequestAsync();
         }
 
+        /// <inheritdoc />
         protected virtual async Task<bool> HandleRemoteSignOutAsync()
         {
             OpenIdConnectMessage message = null;
@@ -375,8 +392,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 message.Parameters.Add(OAuthConstants.CodeChallengeKey, codeChallenge);
@@ -804,9 +820,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.RedeemingCodeForTokens();
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpointRequest.TokenEndpoint ?? _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
-
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
 
             var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
@@ -869,6 +885,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             Logger.RetrievingClaims();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
@@ -998,7 +1015,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             foreach (var nonceKey in Request.Cookies.Keys)
             {
-                if (nonceKey.StartsWith(Options.NonceCookie.Name))
+                if (nonceKey.StartsWith(Options.NonceCookie.Name, StringComparison.Ordinal))
                 {
                     try
                     {

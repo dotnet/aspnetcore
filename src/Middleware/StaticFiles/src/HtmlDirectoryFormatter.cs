@@ -63,12 +63,15 @@ namespace Microsoft.AspNetCore.StaticFiles
             var builder = new StringBuilder();
 
             builder.AppendFormat(
+                CultureInfo.InvariantCulture,
 @"<!DOCTYPE html>
 <html lang=""{0}"">", CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
 
-            builder.AppendFormat(@"
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+@"
 <head>
-  <title>{0} {1}</title>", HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value));
+  <title>{0} {1}</title>", HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value!));
 
             builder.Append(@"
   <style>
@@ -107,18 +110,23 @@ namespace Microsoft.AspNetCore.StaticFiles
 </head>
 <body>
   <section id=""main"">");
-            builder.AppendFormat(@"
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                @"
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
             string cumulativePath = "/";
-            foreach (var segment in requestPath.Value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var segment in requestPath.Value!.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 cumulativePath = cumulativePath + segment + "/";
-                builder.AppendFormat(@"<a href=""{0}"">{1}/</a>",
+                builder.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    @"<a href=""{0}"">{1}/</a>",
                     HtmlEncode(cumulativePath), HtmlEncode(segment));
             }
 
-            builder.AppendFormat(CultureInfo.CurrentUICulture,
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
   @"</h1></header>
     <table id=""index"" summary=""{0}"">
     <thead>
@@ -138,7 +146,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // to the table.
                 try
                 {
-                    builder.AppendFormat(@"
+                    builder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        @"
       <tr class=""directory"">
         <td class=""name""><a href=""./{0}/"">{0}/</a></td>
         <td></td>
@@ -172,7 +182,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // to the table.
                 try
                 {
-                    builder.AppendFormat(@"
+                    builder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        @"
       <tr class=""file"">
         <td class=""name""><a href=""./{0}"">{0}</a></td>
         <td class=""length"">{1}</td>

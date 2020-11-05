@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,6 +13,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private TimeSpan _delay;
         private TimeSpan _period;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="HealthCheckPublisherOptions"/>.
+        /// </summary>
         public HealthCheckPublisherOptions()
         {
             _delay = TimeSpan.FromSeconds(5);
@@ -72,7 +75,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// registered health checks - this is the default behavior. To run a subset of health checks,
         /// provide a function that filters the set of checks. The predicate will be evaluated each period.
         /// </remarks>
-        public Func<HealthCheckRegistration, bool> Predicate { get; set; }
+        public Func<HealthCheckRegistration, bool>? Predicate { get; set; }
 
         /// <summary>
         /// Gets or sets the timeout for executing the health checks an all <see cref="IHealthCheckPublisher"/> 

@@ -16,6 +16,6 @@ namespace Microsoft.Extensions.WebEncoders
         /// <remarks>
         /// If this property is null, then the encoders will use their default allow lists.
         /// </remarks>
-        public TextEncoderSettings TextEncoderSettings { get; set; }
+        public TextEncoderSettings? TextEncoderSettings { get; set; }
     }
 }

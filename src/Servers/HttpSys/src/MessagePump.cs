@@ -22,11 +22,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
 
-        private IHttpApplication<object> _application;
-
         private int _maxAccepts;
         private int _acceptorCounts;
-        private Action<object> _processRequest;
 
         private volatile int _stopping;
         private int _outstandingRequests;
@@ -51,22 +48,29 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (_options.Authentication.Schemes != AuthenticationSchemes.None)
             {
-                authentication.AddScheme(new AuthenticationScheme(HttpSysDefaults.AuthenticationScheme, displayName: null, handlerType: typeof(AuthenticationHandler)));
+                authentication.AddScheme(new AuthenticationScheme(HttpSysDefaults.AuthenticationScheme, displayName: _options.Authentication.AuthenticationDisplayName, handlerType: typeof(AuthenticationHandler)));
             }
 
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-            _processRequest = new Action<object>(ProcessRequestAsync);
+            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            {
+                var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
+                Features.Set<IServerDelegationFeature>(delegationProperty);
+            }
+
             _maxAccepts = _options.MaxAccepts;
         }
 
         internal HttpSysListener Listener { get; }
 
+        internal IHttpApplication<object> Application { get; set; }
+
         public IFeatureCollection Features { get; }
 
-        private bool Stopping => _stopping == 1;
+        internal bool Stopping => _stopping == 1;
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -115,11 +119,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // else // Attaching to an existing queue, don't add a default.
 
             // Can't call Start twice
-            Contract.Assert(_application == null);
+            Contract.Assert(Application == null);
 
             Contract.Assert(application != null);
 
-            _application = new ApplicationWrapper<TContext>(application);
+            Application = new ApplicationWrapper<TContext>(application);
 
             Listener.Start();
 
@@ -151,6 +155,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal int IncrementOutstandingRequest()
+        {
+            return Interlocked.Increment(ref _outstandingRequests);
+        }
+
+        internal int DecrementOutstandingRequest()
+        {
+            return Interlocked.Decrement(ref _outstandingRequests);
+        }
+
+        internal void SetShutdownSignal()
+        {
+            _shutdownSignal.TrySetResult(null);
+        }
+
         // The message pump.
         // When we start listening for the next request on one thread, we may need to be sure that the
         // completion continues on another thread as to not block the current request processing.
@@ -165,6 +184,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 try
                 {
                     requestContext = await Listener.AcceptAsync().SupressContext();
+                    // Assign the message pump to this request context
+                    requestContext.MessagePump = this;
                 }
                 catch (Exception exception)
                 {
@@ -181,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 try
                 {
-                    Task ignored = Task.Factory.StartNew(_processRequest, requestContext);
+                    ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
                 }
                 catch (Exception ex)
                 {
@@ -191,79 +212,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
-        }
-
-        private async void ProcessRequestAsync(object requestContextObj)
-        {
-            var requestContext = requestContextObj as RequestContext;
-            try
-            {
-                if (Stopping)
-                {
-                    SetFatalResponse(requestContext, 503);
-                    return;
-                }
-
-                object context = null;
-                Interlocked.Increment(ref _outstandingRequests);
-                try
-                {
-                    var featureContext = new FeatureContext(requestContext);
-                    context = _application.CreateContext(featureContext.Features);
-                    try
-                    {
-                        await _application.ProcessRequestAsync(context).SupressContext();
-                        await featureContext.CompleteAsync();
-                    }
-                    finally
-                    {
-                        await featureContext.OnCompleted();
-                    }
-                    _application.DisposeContext(context, null);
-                    requestContext.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
-                    _application.DisposeContext(context, ex);
-                    if (requestContext.Response.HasStarted)
-                    {
-                        // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
-                        // Otherwise the default is Cancel = 0x8.
-                        requestContext.SetResetCode(2);
-                        requestContext.Abort();
-                    }
-                    else
-                    {
-                        // We haven't sent a response yet, try to send a 500 Internal Server Error
-                        requestContext.Response.Headers.IsReadOnly = false;
-                        requestContext.Response.Trailers.IsReadOnly = false;
-                        requestContext.Response.Headers.Clear();
-                        requestContext.Response.Trailers.Clear();
-                        SetFatalResponse(requestContext, 500);
-                    }
-                }
-                finally
-                {
-                    if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
-                    {
-                        _logger.LogInformation(LoggerEventIds.RequestsDrained, "All requests drained.");
-                        _shutdownSignal.TrySetResult(0);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(LoggerEventIds.RequestError, ex, "ProcessRequestAsync");
-                requestContext.Abort();
-            }
-        }
-
-        private static void SetFatalResponse(RequestContext context, int status)
-        {
-            context.Response.StatusCode = status;
-            context.Response.ContentLength = 0;
-            context.Dispose();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

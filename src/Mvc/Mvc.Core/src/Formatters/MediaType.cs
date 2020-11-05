@@ -374,11 +374,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Get an encoding for a mediaType.
+        /// </summary>
+        /// <param name="mediaType">The mediaType.</param>
+        /// <returns>The encoding.</returns>
         public static Encoding GetEncoding(string mediaType)
         {
             return GetEncoding(new StringSegment(mediaType));
         }
 
+        /// <summary>
+        /// Get an encoding for a mediaType.
+        /// </summary>
+        /// <param name="mediaType">The mediaType.</param>
+        /// <returns>The encoding.</returns>
         public static Encoding GetEncoding(StringSegment mediaType)
         {
             var parsedMediaType = new MediaType(mediaType);

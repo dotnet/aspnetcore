@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // This is fairly complicated so that we maintain referential equality between items in
             // ActionModel.Attributes and ActionModel.Attributes[*].Attribute.
-            var applicableAttributes = new List<object>();
+            var applicableAttributes = new List<object>(routeAttributes.Length);
             foreach (var attribute in attributes)
             {
                 if (attribute is IRouteTemplateProvider)

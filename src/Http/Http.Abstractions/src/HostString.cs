@@ -65,6 +65,9 @@ namespace Microsoft.AspNetCore.Http
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns true if the host is set.
+        /// </summary>
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }
@@ -297,7 +300,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="obj">The <see cref="object"/> to compare against.</param>
         /// <returns><see langword="true" /> if they have the same value.</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {

@@ -258,7 +258,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class TestRemoteRenderer : RemoteRenderer
         {
             public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), new CircuitClientProxy(client, "connection"), NullLogger.Instance)
+                : base(
+                      serviceProvider,
+                      NullLoggerFactory.Instance,
+                      new CircuitOptions(),
+                      new CircuitClientProxy(client, "connection"),
+                      NullLogger.Instance,
+                      null)
             {
             }
 

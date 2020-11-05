@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// Route constraints are only applied when a value is bound from a URL's path. See
         /// <see cref="ApiParameterDescription.Source"/> for the data source considered.
         /// </remarks>
-        public IEnumerable<IRouteConstraint> Constraints { get; set; }
+        public IEnumerable<IRouteConstraint>? Constraints { get; set; }
 
         /// <summary>
         /// Gets or sets the default value for the parameter.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object? DefaultValue { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether not a parameter is considered optional by routing.

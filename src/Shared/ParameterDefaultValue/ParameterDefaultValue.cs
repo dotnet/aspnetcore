@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Reflection;
 
@@ -10,7 +12,7 @@ namespace Microsoft.Extensions.Internal
     {
         private static readonly Type _nullable = typeof(Nullable<>);
 
-        public static bool TryGetDefaultValue(ParameterInfo parameter, out object defaultValue)
+        public static bool TryGetDefaultValue(ParameterInfo parameter, out object? defaultValue)
         {
             bool hasDefaultValue;
             var tryToGetDefaultValue = true;

@@ -15,10 +15,10 @@ namespace Sockets.BindTests
     public class SocketTransportFactoryTests
     {
         [Fact]
-        public async Task ThrowsNotSupportedExceptionWhenBindingToFileHandleEndPoint()
+        public async Task ThrowsNotImplementedExceptionWhenBindingToUriEndPoint()
         {
             var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), Mock.Of<ILoggerFactory>());
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await socketTransportFactory.BindAsync(new FileHandleEndPoint(0, FileHandleType.Auto)));
+            await Assert.ThrowsAsync<NotImplementedException>(async () => await socketTransportFactory.BindAsync(new UriEndPoint(new Uri("http://127.0.0.1:5554"))));
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var claimsIdentity = (ClaimsIdentity)identity;
 
             // Act
-            var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { claimsIdentity })
+            var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { claimsIdentity })!
                                                               .ToArray();
             var claims = claimsIdentity.Claims.ToList();
             claims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));

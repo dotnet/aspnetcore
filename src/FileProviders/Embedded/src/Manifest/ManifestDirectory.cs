@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         private ManifestEntry[] CopyChildren()
         {
-            var list = new List<ManifestEntry>();
+            var list = new List<ManifestEntry>(Children.Count);
             for (int i = 0; i < Children.Count; i++)
             {
                 var child = Children[i];

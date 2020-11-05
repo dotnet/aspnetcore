@@ -98,6 +98,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 {
                     _reporter.Verbose(outputBuilder.ToString());
                     _reporter.Verbose(errorBuilder.ToString());
+                    _reporter.Error($"Exit code: {process.ExitCode}");
                     throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
                 }
 

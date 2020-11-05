@@ -37,8 +37,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
         private IUrlHelper _urlHelper;
 
+        /// <inheritdoc/>
         public virtual ViewContext ViewContext { get; set; }
 
+        /// <inheritdoc/>
         public string Layout { get; set; }
 
         /// <summary>
@@ -136,6 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <inheritdoc/>
         public abstract Task ExecuteAsync();
 
         /// <summary>
@@ -278,6 +281,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return content;
         }
 
+        /// <summary>
+        /// Puts a text writer on the stack.
+        /// </summary>
+        /// <param name="writer"></param>
         // Internal for unit testing.
         protected internal virtual void PushWriter(TextWriter writer)
         {
@@ -291,6 +298,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             viewContext.Writer = writer;
         }
 
+        /// <summary>
+        /// Return a text writer from the stack.
+        /// </summary>
+        /// <returns>The text writer.</returns>
         // Internal for unit testing.
         protected internal virtual TextWriter PopWriter()
         {
@@ -300,6 +311,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return writer;
         }
 
+        /// <summary>
+        /// Returns a href for the given content path.
+        /// </summary>
+        /// <param name="contentPath">The content path.</param>
+        /// <returns>The href for the contentPath.</returns>
         public virtual string Href(string contentPath)
         {
             if (contentPath == null)
@@ -438,6 +454,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins writing out an attribute.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="suffixOffset">The suffix offset.</param>
+        /// <param name="attributeValuesCount">The attribute values count.</param>
         public virtual void BeginWriteAttribute(
             string name,
             string prefix,
@@ -466,6 +491,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Writes out an attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void WriteAttributeValue(
             string prefix,
             int prefixOffset,
@@ -511,6 +545,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends writing an attribute.
+        /// </summary>
         public virtual void EndWriteAttribute()
         {
             if (!_attributeInfo.Suppressed)
@@ -519,6 +556,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
+        /// <param name="attributeName">The name of the attribute.</param>
+        /// <param name="attributeValuesCount">The number of attribute values.</param>
+        /// <param name="attributeValueStyle">The <see cref="HtmlAttributeValueStyle"/>.</param>
         public void BeginAddHtmlAttributeValues(
             TagHelperExecutionContext executionContext,
             string attributeName,
@@ -532,6 +576,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 attributeValueStyle);
         }
 
+        /// <summary>
+        /// Add an html attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void AddHtmlAttributeValue(
             string prefix,
             int prefixOffset,
@@ -587,6 +640,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
         public void EndAddHtmlAttributeValues(TagHelperExecutionContext executionContext)
         {
             if (!_tagHelperAttributeInfo.Suppressed)
@@ -681,8 +738,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             EndContext();
         }
 
+        /// <inheritdoc />
         public abstract void BeginContext(int position, int length, bool isLiteral);
 
+        /// <inheritdoc />
         public abstract void EndContext();
 
         private bool IsBoolFalseOrNullValue(string prefix, object value)
@@ -699,6 +758,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 (value is bool && (bool)value);
         }
 
+        /// <inheritdoc />
         public abstract void EnsureRenderedBodyOrSections();
 
         private struct AttributeInfo

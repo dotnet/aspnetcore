@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        string GetRequestCookie(HttpContext context, string key);
+        string? GetRequestCookie(HttpContext context, string key);
 
         /// <summary>
         /// Append the given cookie to the response.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options);
+        void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options);
 
         /// <summary>
         /// Append a delete cookie to the response.

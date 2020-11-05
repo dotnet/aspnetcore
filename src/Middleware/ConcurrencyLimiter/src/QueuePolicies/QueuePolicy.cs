@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private readonly int _maxTotalRequest;
         private readonly SemaphoreSlim _serverSemaphore;
 
-        private object _totalRequestsLock = new object();
+        private int _totalRequests;
 
-        public int TotalRequests { get; private set; }
+        public int TotalRequests => _totalRequests;
 
         public QueuePolicy(IOptions<QueuePolicyOptions> options)
         {
@@ -44,14 +44,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             // a return value of 'true' indicates that the request may proceed
             // _serverSemaphore.Release is *not* called in this method, it is called externally when requests leave the server
 
-            lock (_totalRequestsLock)
-            {
-                if (TotalRequests >= _maxTotalRequest)
-                {
-                    return new ValueTask<bool>(false);
-                }
+            int totalRequests = Interlocked.Increment(ref _totalRequests);
 
-                TotalRequests++;
+            if (totalRequests > _maxTotalRequest)
+            {
+                Interlocked.Decrement(ref _totalRequests);
+                return new ValueTask<bool>(false);
             }
 
             Task task = _serverSemaphore.WaitAsync();
@@ -67,10 +65,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             _serverSemaphore.Release();
 
-            lock (_totalRequestsLock)
-            {
-                TotalRequests--;
-            }
+            Interlocked.Decrement(ref _totalRequests);
         }
 
         public void Dispose()

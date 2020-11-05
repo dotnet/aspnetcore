@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         private T InstantiateComponent<T>() where T: IComponent
-            => _renderer.InstantiateComponent<T>();
+            => (T)_renderer.InstantiateComponent<T>();
 
         class HasPropertiesWithoutInjectAttribute : TestComponent
         {

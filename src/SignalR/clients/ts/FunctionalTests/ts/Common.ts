@@ -9,11 +9,12 @@ import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
 import { Platform } from "@microsoft/signalr/dist/esm/Utils";
 import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;
-
+export let DEFAULT_TIMEOUT_INTERVAL: number = 40 * 1000;
 export let ENDPOINT_BASE_URL: string = "";
 export let ENDPOINT_BASE_HTTPS_URL: string = "";
+
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = DEFAULT_TIMEOUT_INTERVAL;
 
 if (typeof window !== "undefined" && (window as any).__karma__) {
     const args = (window as any).__karma__.config.args as string[];
@@ -59,6 +60,7 @@ console.log(`Using SignalR HTTPS Server: '${ENDPOINT_BASE_HTTPS_URL}'`);
 console.log(`Jasmine DEFAULT_TIMEOUT_INTERVAL: ${jasmine.DEFAULT_TIMEOUT_INTERVAL}`);
 
 export const ECHOENDPOINT_URL = ENDPOINT_BASE_URL + "/echo";
+export const HTTPS_ECHOENDPOINT_URL = ENDPOINT_BASE_HTTPS_URL + "/echo";
 
 export function getHttpTransportTypes(): HttpTransportType[] {
     const transportTypes = [];
@@ -130,3 +132,14 @@ export function eachHttpClient(action: (transport: HttpClient) => void) {
         return action(t);
     });
 }
+
+// Run test in Node or Chrome, but not on macOS
+export const shouldRunHttpsTests =
+    // Need to have an HTTPS URL
+    !!ENDPOINT_BASE_HTTPS_URL &&
+
+    // Run on Node, unless macOS
+    (process && process.platform !== "darwin") &&
+
+    // Only run under Chrome browser
+    (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1);

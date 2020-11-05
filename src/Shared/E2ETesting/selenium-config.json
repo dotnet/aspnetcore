@@ -1,6 +1,8 @@
 {
   "drivers": {
-    "chrome": {}
+    "chrome": {
+      "version" : "85.0.4183.87"
+    }
   },
-  "ignoreExtraDrivers": true  
+  "ignoreExtraDrivers": true
 }

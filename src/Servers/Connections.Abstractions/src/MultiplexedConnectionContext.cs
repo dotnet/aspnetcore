@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections.Experimental
 {
     /// <summary>
     /// Encapsulates all information about a multiplexed connection.
     /// </summary>
-    public abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
+    internal abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
     {
         /// <summary>
         /// Asynchronously accept an incoming stream on the connection.
@@ -26,6 +26,6 @@ namespace Microsoft.AspNetCore.Connections
         /// <param name="features"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default);
+        public abstract ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default);
     }
 }

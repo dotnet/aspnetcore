@@ -23,8 +23,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = logger;
         }
 
-        [Fact]
-        [QuarantinedTest]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036;(Debian.9.Arm64)Ubuntu.1804.Armarch@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
@@ -36,14 +36,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
-            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code", StringComparison.Ordinal));
 
             var processIdentifier2 = await _app.GetProcessIdentifier();
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact]
-        [QuarantinedTest]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();

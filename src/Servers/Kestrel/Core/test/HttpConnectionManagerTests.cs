@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceContext = new TestServiceContext();
             var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
             mock.Setup(m => m.ConnectionId).Returns(connectionId);
-            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, _ => Task.CompletedTask, mock.Object, Mock.Of<IKestrelTrace>());
-
-            httpConnectionManager.AddConnection(0, httpConnection);
+            var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
+            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, Mock.Of<IKestrelTrace>());
+            transportConnectionManager.AddConnection(0, httpConnection);
 
             var connectionCount = 0;
             httpConnectionManager.Walk(_ => connectionCount++);

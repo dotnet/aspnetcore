@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         {
             if (context.User != null)
             {
-                if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName)))
+                if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName, StringComparison.Ordinal)))
                 {
                     context.Succeed(requirement);
                 }
@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"{nameof(NameAuthorizationRequirement)}:Requires a user identity with Name equal to {RequiredName}";

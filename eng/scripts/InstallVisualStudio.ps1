@@ -111,14 +111,13 @@ if (Test-path $InstallPath) {
 $arguments += `
     '--productId', $productId, `
     '--installPath', "`"$InstallPath`"", `
-    '--in', "`"$responseFile`"", `
-    '--norestart'
+    '--in', "`"$responseFile`""
 
 if ($Passive) {
-    $arguments += '--passive'
+    $arguments += '--passive', '--norestart'
 }
 if ($Quiet) {
-    $arguments += '--quiet', '--wait'
+    $arguments += '--quiet', '--wait', '--norestart'
 }
 
 Write-Host

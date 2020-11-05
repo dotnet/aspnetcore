@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new ServerComponentDeserializer(
                 _ephemeralDataProtectionProvider,
                 NullLogger<ServerComponentDeserializer>.Instance,
-                new ServerComponentTypeCache(),
+                new RootComponentTypeCache(),
                 new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
         }
 

@@ -1,19 +1,38 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// Cache for <see cref="IClientModelValidator"/>s.
+    /// </summary>
     public class ClientValidatorCache
     {
         private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
 
+        /// <summary>
+        /// Gets the <see cref="IClientModelValidator"/> for the metadata from the cache, using the validatorProvider to create when needed.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> being validated.</param>
+        /// <param name="validatorProvider">The <see cref="IClientModelValidatorProvider"/> which will be used to create validators when needed.</param>
+        /// <returns>The list of <see cref="IClientModelValidator"/>s.</returns>
         public IReadOnlyList<IClientModelValidator> GetValidators(ModelMetadata metadata, IClientModelValidatorProvider validatorProvider)
         {
+            if (metadata.MetadataKind == ModelMetadataKind.Property &&
+                metadata.ContainerMetadata?.BoundConstructor != null &&
+                metadata.ContainerMetadata.BoundConstructorPropertyMapping.TryGetValue(metadata, out var parameter))
+            {
+                // "metadata" typically points to properties. When working with record types, we want to read validation details from the
+                // constructor parameter instead. So let's switch it out.
+                metadata = parameter;
+            }
+
             if (_cacheEntries.TryGetValue(metadata, out var entry))
             {
                 return GetValidatorsFromEntry(entry, metadata, validatorProvider);
@@ -107,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             var validators = new IClientModelValidator[count];
             var clientValidatorIndex = 0;
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 var validator = items[i].Validator;
                 if (validator != null)

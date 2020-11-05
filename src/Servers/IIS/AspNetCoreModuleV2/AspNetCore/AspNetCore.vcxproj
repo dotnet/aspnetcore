@@ -303,8 +303,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild" Condition="'$(Platform)' == 'x64'">
     <!-- Drop a file in the artifacts directory containing the ANCM version number -->
+    <!-- Only write on x64 build to avoid both x64 and x86 writing to same place. -->
     <ItemGroup>
       <VersionFileContents Include="$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)" />
       <VersionFileContents Include="$(SourceRevisionId)" />

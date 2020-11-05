@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
         {
         }
 
-        public HeaderDictionary(Dictionary<string, StringValues> store)
+        public HeaderDictionary(Dictionary<string, StringValues>? store)
         {
             Store = store;
         }
@@ -35,8 +36,9 @@ namespace Microsoft.AspNetCore.Http
             EnsureStore(capacity);
         }
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
+        [MemberNotNull(nameof(Store))]
         private void EnsureStore(int capacity)
         {
             if (Store == null)
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         StringValues IDictionary<string, StringValues>.this[string key]
         {
-            get { return Store[key]; }
+            get { return this[key]; }
             set
             {
                 ThrowIfReadOnly();

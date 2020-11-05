@@ -1,13 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
+    /// <summary>
+    /// Health check context. Provides health check registrations to <see cref="IHealthCheck.CheckHealthAsync(HealthCheckContext, System.Threading.CancellationToken)"/>.
+    /// </summary>
     public sealed class HealthCheckContext
     {
         /// <summary>
         /// Gets or sets the <see cref="HealthCheckRegistration"/> of the currently executing <see cref="IHealthCheck"/>.
         /// </summary>
-        public HealthCheckRegistration Registration { get; set; }
+        // This allows null values for convenience during unit testing. This is expected to be non-null when within application code.
+        public HealthCheckRegistration Registration { get; set; } = default!;
     }
 }

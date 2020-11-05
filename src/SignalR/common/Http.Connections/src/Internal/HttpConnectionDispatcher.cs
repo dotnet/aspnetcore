@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -196,7 +199,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
-                var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 if (!connection.TryActivateLongPollingConnection(
                         connectionDelegate, context, options.LongPolling.PollTimeout,
@@ -254,7 +257,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     // Artificial task queue
                     // This will cause incoming polls to wait until the previous poll has finished updating internal state info
-                    currentRequestTcs.TrySetResult(null);
+                    currentRequestTcs.TrySetResult();
                 }
             }
         }
@@ -537,8 +540,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 var existing = connection.HttpContext;
                 if (existing == null)
                 {
-                    var httpContext = CloneHttpContext(context);
-                    connection.HttpContext = httpContext;
+                    CloneHttpContext(context, connection);
                 }
                 else
                 {
@@ -578,7 +580,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
             {
                 var skipFirstIdentity = false;
-                if (oldContext.User is WindowsPrincipal)
+                if (OperatingSystem.IsWindows() && oldContext.User is WindowsPrincipal)
                 {
                     // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
                     // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
@@ -606,7 +608,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private static HttpContext CloneHttpContext(HttpContext context)
+        private static void CloneHttpContext(HttpContext context, HttpConnectionContext connection)
         {
             // The reason we're copying the base features instead of the HttpContext properties is
             // so that we can get all of the logic built into DefaultHttpContext to extract higher level
@@ -660,14 +662,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             CloneUser(newHttpContext, context);
 
-            // Making request services function property could be tricky and expensive as it would require
-            // DI scope per connection. It would also mean that services resolved in middleware leading up to here
-            // wouldn't be the same instance (but maybe that's fine). For now, we just return an empty service provider
-            newHttpContext.RequestServices = EmptyServiceProvider.Instance;
+            connection.ServiceScope = context.RequestServices.CreateScope();
+            newHttpContext.RequestServices = connection.ServiceScope.ServiceProvider;
 
             // REVIEW: This extends the lifetime of anything that got put into HttpContext.Items
             newHttpContext.Items = new Dictionary<object, object>(context.Items);
-            return newHttpContext;
+
+            connection.HttpContext = newHttpContext;
         }
 
         private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context)

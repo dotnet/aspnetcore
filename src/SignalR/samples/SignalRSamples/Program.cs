@@ -3,9 +3,11 @@
 
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SignalRSamples.Hubs;
 
@@ -13,36 +15,40 @@ namespace SignalRSamples
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
 
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
-                .ConfigureLogging(factory =>
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    factory.AddConsole();
-                })
-                .UseKestrel(options =>
-                {
-                    // Default port
-                    options.ListenLocalhost(5000);
-
-                    // Hub bound to TCP end point
-                    options.Listen(IPAddress.Any, 9001, builder =>
+                    webHostBuilder
+                    .UseConfiguration(config)
+                    .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
+                    .ConfigureLogging((c, factory) =>
                     {
-                        builder.UseHub<Chat>();
-                    });
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+                        factory.AddConfiguration(c.Configuration.GetSection("Logging"));
+                        factory.AddConsole();
+                    })
+                    .UseKestrel(options =>
+                    {
+                        // Default port
+                        options.ListenLocalhost(5000);
 
-            host.Run();
+                        // Hub bound to TCP end point
+                        options.Listen(IPAddress.Any, 9001, builder =>
+                        {
+                            builder.UseHub<Chat>();
+                        });
+                    })
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
+
+            return host.RunAsync();
         }
     }
 }

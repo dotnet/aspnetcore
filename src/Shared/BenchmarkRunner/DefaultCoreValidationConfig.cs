@@ -12,9 +12,9 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCoreValidationConfig()
         {
-            Add(ConsoleLogger.Default);
+            AddLogger(ConsoleLogger.Default);
 
-            Add(Job.Dry.With(InProcessNoEmitToolchain.Instance));
+            AddJob(Job.Dry.WithToolchain(InProcessNoEmitToolchain.Instance));
         }
     }
 }

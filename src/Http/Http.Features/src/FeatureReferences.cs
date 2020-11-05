@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Features
         // be able to pass ref values that "dot through" the TCache struct memory, 
         // if it was a Property then that getter would return a copy of the memory
         // preventing the use of "ref"
-        public TCache Cache;
+        public TCache? Cache;
 
         // Careful with modifications to the Fetch method; it is carefully constructed for inlining
         // See: https://github.com/aspnet/HttpAbstractions/pull/704
@@ -59,26 +59,26 @@ namespace Microsoft.AspNetCore.Http.Features
         //
         // Generally Fetch is called at a ratio > x4 of UpdateCached so this is a large gain
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TFeature Fetch<TFeature, TState>(
-            ref TFeature cached,
+        public TFeature? Fetch<TFeature, TState>(
+            ref TFeature? cached,
             TState state,
-            Func<TState, TFeature> factory) where TFeature : class
+            Func<TState, TFeature?> factory) where TFeature : class?
         {
             var flush = false;
             var revision = Collection?.Revision ?? ContextDisposed();
             if (Revision != revision)
             {
                 // Clear cached value to force call to UpdateCached
-                cached = null;
+                cached = null!;
                 // Collection changed, clear whole feature cache
                 flush = true;
             }
 
-            return cached ?? UpdateCached(ref cached, state, factory, revision, flush);
+            return cached ?? UpdateCached(ref cached!, state, factory, revision, flush);
         }
 
         // Update and cache clearing logic, when the fast-path in Fetch isn't applicable
-        private TFeature UpdateCached<TFeature, TState>(ref TFeature cached, TState state, Func<TState, TFeature> factory, int revision, bool flush) where TFeature : class
+        private TFeature? UpdateCached<TFeature, TState>(ref TFeature? cached, TState state, Func<TState, TFeature?> factory, int revision, bool flush) where TFeature : class?
         {
             if (flush)
             {
@@ -106,8 +106,8 @@ namespace Microsoft.AspNetCore.Http.Features
             return cached;
         }
 
-        public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory)
-            where TFeature : class => Fetch(ref cached, Collection, factory);
+        public TFeature? Fetch<TFeature>(ref TFeature? cached, Func<IFeatureCollection, TFeature?> factory)
+            where TFeature : class? => Fetch(ref cached, Collection, factory);
 
         private static int ContextDisposed()
         {

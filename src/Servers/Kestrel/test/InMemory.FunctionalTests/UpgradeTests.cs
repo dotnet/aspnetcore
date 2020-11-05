@@ -3,14 +3,16 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -112,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task UpgradeCannotBeCalledMultipleTimes()
         {
-            var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var upgradeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
@@ -260,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RejectsUpgradeWhenLimitReached()
         {
             const int limit = 10;
-            var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var upgradeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.ConnectionManager = new ConnectionManager(serviceContext.Log, ResourceCounter.Quota(limit));
 
@@ -310,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task DoesNotThrowOnFin()
         {
-            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
@@ -320,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 try
                 {
                     await duplexStream.CopyToAsync(Stream.Null);
-                    appCompletedTcs.SetResult(null);
+                    appCompletedTcs.SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -341,6 +343,84 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await appCompletedTcs.Task.DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotThrowGivenCanceledReadResult()
+        {
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async context =>
+            {
+                try
+                {
+                    var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                    var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                    // https://github.com/dotnet/aspnetcore/issues/26482
+                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                    connectionTransportFeature.Transport.Input.CancelPendingRead();
+
+                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync() 
+                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                    appCompletedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    appCompletedTcs.SetException(ex);
+                    throw;
+                }
+            },
+            new TestServiceContext(LoggerFactory));
+
+            using (var connection = server.CreateConnection())
+            {
+                await connection.SendEmptyGetWithUpgrade();
+                await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                    "Connection: Upgrade",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            await appCompletedTcs.Task.DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task DoesNotCloseConnectionWithout101Response()
+        {
+            var requestCount = 0;
+
+            await using (var server = new TestServer(async context =>
+            {
+                if (requestCount++ > 0)
+                {
+                    await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                }
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
             }
         }
     }

@@ -15,15 +15,13 @@
              Targets="GetReferencesProvided"
              BuildInParallel="true"
              SkipNonexistentTargets="true"
-             SkipNonexistentProjects="true" >
-      <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
+             SkipNonexistentProjects="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider" />
     </MSBuild>
 
     <ItemGroup>
       <_SharedFrameworkAndPackageRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'true')->Distinct())" />
       <_SharedFrameworkRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'false')->Distinct())" />
-      <_ProjectReferenceProviderWithRefAssembly Include="@(_ProjectReferenceProvider->HasMetadata('ReferenceAssemblyProjectFileRelativePath'))" />
-      <_ProjectReferenceProvider Remove="@(_ProjectReferenceProviderWithRefAssembly)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -35,8 +33,7 @@
 -->
 <Project>
   <ItemGroup>
-    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
-    @(_ProjectReferenceProviderWithRefAssembly->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" RefProjectPath="%24(RepoRoot)%(ReferenceAssemblyProjectFileRelativePath)" />', '%0A    ')
+    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" />', '%0A    ')
   </ItemGroup>
 </Project>
 ]]></ProjectListContent>
@@ -75,14 +72,6 @@
 
     <WriteLinesToFile File="$(SharedFxDepList)" Lines="$(SharedFxDepListContent)" Overwrite="true" />
     <Message Importance="High" Text="Generated $(SharedFxDepList)" />
-  </Target>
-
-  <Target Name="GenerateReferenceSources">
-      <MSBuild
-          Projects="@(ProjectToBuild)"
-          Targets="GenerateReferenceSource"
-          SkipNonexistentTargets="true"
-          SkipNonexistentProjects="true" />
   </Target>
 
 </Project>

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private string _connectionId;
         private const int MinAllocBufferSize = 4096;
         private volatile Exception _shutdownReason;
-        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _shutdownLock = new object();
 
         public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             {
                 state.CancelConnectionClosedToken();
 
-                state._waitForConnectionClosedTcs.TrySetResult(null);
+                state._waitForConnectionClosedTcs.TrySetResult();
             },
             this,
             preferLocal: false);

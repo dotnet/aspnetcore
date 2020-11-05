@@ -61,12 +61,16 @@
   <!-- TODO: https://github.com/dotnet/aspnetcore/issues/6304. Harvest shared frameworks from a project reference -->
   <Target Name="ExtractIntermediateSharedFx" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
+      <SharedFrameworkArm64HarvestRootPath Condition="'$(SharedFrameworkArm64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkArm64HarvestRootPath>
       <SharedFrameworkX64HarvestRootPath Condition="'$(SharedFrameworkX64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX64HarvestRootPath>
       <SharedFrameworkX86HarvestRootPath Condition="'$(SharedFrameworkX86HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX86HarvestRootPath>
+      <IntermediateArm64SharedFxZip>$(SharedFrameworkArm64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-arm64.zip</IntermediateArm64SharedFxZip>
       <IntermediateX64SharedFxZip>$(SharedFrameworkX64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x64.zip</IntermediateX64SharedFxZip>
       <IntermediateX86SharedFxZip>$(SharedFrameworkX86HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip</IntermediateX86SharedFxZip>
     </PropertyGroup>
 
+    <Unzip Condition="'$(Platform)' == 'arm64'"
+           SourceFiles="$(IntermediateArm64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
     <Unzip Condition="'$(Platform)' == 'x64'"
            SourceFiles="$(IntermediateX64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
     <Unzip Condition="'$(Platform)' == 'x86'"
@@ -76,7 +80,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <!-- Everything built in this project _except_ the final package & MSI are shipping assets. -->
+    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+    <_GeneratedPackageVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(_GeneratedPackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
@@ -84,11 +92,6 @@
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
-
-      <!-- Everything built in this project _except_ the final package are shipping assets. -->
-      <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
-      <_GeneratedPackageVersion
-          Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     </PropertyGroup>
 
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^

@@ -118,7 +118,7 @@ export class LoginComponent implements OnInit {
     // It's important that we do a replace here so that when the user hits the back arrow on the
     // browser they get sent back to where it was on the app instead of to an endpoint on this
     // component.
-    const redirectUrl = `${window.location.origin}${apiAuthorizationPath}`;
+    const redirectUrl = `${window.location.origin}/${apiAuthorizationPath}`;
     window.location.replace(redirectUrl);
   }
 }

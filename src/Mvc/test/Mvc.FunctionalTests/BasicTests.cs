@@ -3,13 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
-using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -266,6 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var json = "{\"id\":9000,\"FullName\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",
@@ -288,6 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var json = "{\"id\":9000,\"full_name\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",
@@ -625,6 +630,30 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("OnGetTestName", content);
+        }
+
+        [Fact]
+        public async Task BindPropertiesAppliesValidation()
+        {
+            // Act
+            var response = await Client.GetAsync("BindPropertiesWithValidation/Action?Password=Test&ConfirmPassword=different");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+
+            Assert.Collection(
+                problem.Errors.OrderBy(e => e.Key),
+                kvp =>
+                {
+                    Assert.Equal("ConfirmPassword", kvp.Key);
+                    Assert.Equal("Password and confirm password do not match.", Assert.Single(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal("UserName", kvp.Key);
+                    Assert.Equal("User name is required.", Assert.Single(kvp.Value));
+                });
         }
 
         [Fact]

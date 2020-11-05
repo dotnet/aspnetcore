@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Http
@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Http
         /// </param>
         public Endpoint(
             RequestDelegate requestDelegate,
-            EndpointMetadataCollection metadata,
-            string displayName)
+            EndpointMetadataCollection? metadata,
+            string? displayName)
         {
             // All are allowed to be null
             RequestDelegate = requestDelegate;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the informational display name of this endpoint.
         /// </summary>
-        public string DisplayName { get; }
+        public string? DisplayName { get; }
 
         /// <summary>
         /// Gets the collection of metadata associated with this endpoint.
@@ -44,6 +44,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public RequestDelegate RequestDelegate { get; }
 
-        public override string ToString() => DisplayName ?? base.ToString();
+        /// <summary>
+        /// Returns a string representation of the endpoint.
+        /// </summary>
+        public override string? ToString() => DisplayName ?? base.ToString();
     }
 }

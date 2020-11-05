@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FormMultipartSection"/></param>
         /// <param name="header">An already parsed content disposition header</param>
-        public FormMultipartSection(MultipartSection section, ContentDispositionHeaderValue header)
+        public FormMultipartSection(MultipartSection section, ContentDispositionHeaderValue? header)
         {
             if (header == null || !header.IsFormDisposition())
             {

@@ -16,6 +16,9 @@
             <?elseif $(var.Platform)=x64?>
             <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
             <?define DotNetHome=DOTNETHOME_X64?>
+            <?elseif $(var.Platform)=arm64?>
+            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?define DotNetHome=DOTNETHOME_ARM64?>
             <?endif?>
 
             <MsiPackage Id="AspNetCoreSharedFramework_$(var.Platform)"

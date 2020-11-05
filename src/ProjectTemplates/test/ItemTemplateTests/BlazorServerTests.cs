@@ -23,7 +23,6 @@ namespace Templates.Items.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        [QuarantinedTest]
         public async Task BlazorServerItemTemplate()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorcomponentitem", Output);

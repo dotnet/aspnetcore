@@ -9,7 +9,10 @@ using System.Reflection;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.CsProj;
+using BenchmarkDotNet.Toolchains.DotNetCli;
 
 namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 {
@@ -26,7 +29,7 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 
             AssignConfiguration(ref args);
             var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly)
-                .Run(args, ManualConfig.CreateEmpty());
+                .Run(args, GetConfig());
 
             foreach (var summary in summaries)
             {
@@ -57,6 +60,24 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
             return 0;
         }
 
+        private static IConfig GetConfig()
+        {
+#if NET5_0 || NET6_0
+            return ManualConfig.CreateEmpty()
+                .AddJob(Job.Default
+                    .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings
+                    (
+                        // not using "net6.0", a workaround for https://github.com/dotnet/BenchmarkDotNet/pull/1479
+                        targetFrameworkMoniker: "netcoreapp5.0",
+                        runtimeFrameworkVersion: default,
+                        name: ".NET Core 5.0"
+                    )))
+                    .AsDefault());
+#else
+            return ManualConfig.CreateEmpty();
+#endif
+        }
+
         private static int Fail(object o, string message)
         {
             _standardOutput?.WriteLine(_standardOutputText.ToString());
@@ -76,7 +97,7 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
                 args = argsList.ToArray();
                 return;
             }
-            
+
             var index = argsList.IndexOf("--config");
             if (index >= 0 && index < argsList.Count -1)
             {

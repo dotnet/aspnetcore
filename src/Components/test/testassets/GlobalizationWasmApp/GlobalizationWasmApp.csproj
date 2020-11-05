@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+
+    <!-- Resx generation on Resources.resx only -->
+    <GenerateResxSource>false</GenerateResxSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.Extensions.Localization" />
+  </ItemGroup>
+
+</Project>

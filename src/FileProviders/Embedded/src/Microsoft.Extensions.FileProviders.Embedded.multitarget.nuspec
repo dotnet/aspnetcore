@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NETCoreApp5.0">
+      <group targetFramework=".net6.0">
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$AbstractionsPackageVersion$" exclude="Build,Analyzers" />
       </group>
       <group targetFramework=".NETStandard2.0">
@@ -14,7 +14,7 @@
 
   <files>
     $CommonFileElements$
-    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" exclude="$OutputPath$**\ref\$AssemblyName$.dll" />
     <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\" />
     <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\" />
     <file src="build\**\*" target="build\" />

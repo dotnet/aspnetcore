@@ -175,7 +175,7 @@ class HtmlUI {
       true
     );
     this.runButton.style.display = areAllIdle ? 'block' : 'none';
-    this.stopButton.style.display = areAllIdle ? 'none' : 'block';;
+    this.stopButton.style.display = areAllIdle ? 'none' : 'block';
   }
 
   get globalRunOptions() {

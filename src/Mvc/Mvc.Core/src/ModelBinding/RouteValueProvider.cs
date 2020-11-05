@@ -56,6 +56,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Culture = culture;
         }
 
+        /// <summary>
+        /// The prefix container.
+        /// </summary>
         protected PrefixContainer PrefixContainer
         {
             get
@@ -69,6 +72,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// The culture to use.
+        /// </summary>
         protected CultureInfo Culture { get; }
 
         /// <inheritdoc />

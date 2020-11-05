@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.
@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +20,6 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-  </ItemGroup>
-
-  <ItemGroup Label="Shared Source">
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -20,9 +21,11 @@ namespace Microsoft.AspNetCore.Testing
     /// </summary>
     public static class HttpClientSlim
     {
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static async Task<string> GetStringAsync(string requestUri, bool validateCertificate = true)
             => await GetStringAsync(new Uri(requestUri), validateCertificate).ConfigureAwait(false);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static async Task<string> GetStringAsync(Uri requestUri, bool validateCertificate = true)
         {
             return await RetryRequest(async () =>
@@ -61,9 +64,11 @@ namespace Microsoft.AspNetCore.Testing
             return authority;
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static async Task<string> PostAsync(string requestUri, HttpContent content, bool validateCertificate = true)
             => await PostAsync(new Uri(requestUri), content, validateCertificate).ConfigureAwait(false);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static async Task<string> PostAsync(Uri requestUri, HttpContent content, bool validateCertificate = true)
         {
             return await RetryRequest(async () =>
@@ -139,7 +144,7 @@ namespace Microsoft.AspNetCore.Testing
                 throw new InvalidDataException($"No StatusCode found in '{response}'");
             }
 
-            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
+            return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
         }
 
         private static async Task<Stream> GetStream(Uri requestUri, bool validateCertificate)
@@ -153,7 +158,7 @@ namespace Microsoft.AspNetCore.Testing
                     validateCertificate ? null : (RemoteCertificateValidationCallback)((a, b, c, d) => true));
 
                 await sslStream.AuthenticateAsClientAsync(requestUri.Host, clientCertificates: null,
-                    enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                    enabledSslProtocols: SslProtocols.None,
                     checkCertificateRevocation: validateCertificate).ConfigureAwait(false);
                 return sslStream;
             }

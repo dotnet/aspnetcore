@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 namespace System.Net.Http.HPack
 {
@@ -25,7 +24,7 @@ namespace System.Net.Http.HPack
 
         public int MaxSize => _maxSize;
 
-        public HeaderField this[int index]
+        public ref readonly HeaderField this[int index]
         {
             get
             {
@@ -42,7 +41,7 @@ namespace System.Net.Http.HPack
                     index += _buffer.Length;
                 }
 
-                return _buffer[index];
+                return ref _buffer[index];
             }
         }
 

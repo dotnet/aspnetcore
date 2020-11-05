@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Hosting
                         catch (Exception ex)
                         {
                             throw new Exception(string.Format(
+                                CultureInfo.InvariantCulture,
                                 "Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.",
                                 parameterInfo.ParameterType.FullName,
                                 parameterInfo.Name,

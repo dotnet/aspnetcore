@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
 
         public ApplicationBuilder(IServiceProvider serviceProvider)
         {
-            Properties = new Dictionary<string, object>(StringComparer.Ordinal);
+            Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
             ApplicationServices = serviceProvider;
         }
 
@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Builder
 
         private ApplicationBuilder(ApplicationBuilder builder)
         {
-            Properties = new CopyOnWriteDictionary<string, object>(builder.Properties, StringComparer.Ordinal);
+            Properties = new CopyOnWriteDictionary<string, object?>(builder.Properties, StringComparer.Ordinal);
         }
 
         public IServiceProvider ApplicationServices
         {
             get
             {
-                return GetProperty<IServiceProvider>(ApplicationServicesKey);
+                return GetProperty<IServiceProvider>(ApplicationServicesKey)!;
             }
             set
             {
@@ -51,16 +51,15 @@ namespace Microsoft.AspNetCore.Builder
         {
             get
             {
-                return GetProperty<IFeatureCollection>(ServerFeaturesKey);
+                return GetProperty<IFeatureCollection>(ServerFeaturesKey)!;
             }
         }
 
-        public IDictionary<string, object> Properties { get; }
+        public IDictionary<string, object?> Properties { get; }
 
-        private T GetProperty<T>(string key)
+        private T? GetProperty<T>(string key)
         {
-            object value;
-            return Properties.TryGetValue(key, out value) ? (T)value : default(T);
+            return Properties.TryGetValue(key, out var value) ? (T)value : default(T);
         }
 
         private void SetProperty<T>(string key, T value)
@@ -90,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder
                 if (endpointRequestDelegate != null)
                 {
                     var message =
-                        $"The request reached the end of the pipeline without executing the endpoint: '{endpoint.DisplayName}'. " +
+                        $"The request reached the end of the pipeline without executing the endpoint: '{endpoint!.DisplayName}'. " +
                         $"Please register the EndpointMiddleware using '{nameof(IApplicationBuilder)}.UseEndpoints(...)' if using " +
                         $"routing.";
                     throw new InvalidOperationException(message);

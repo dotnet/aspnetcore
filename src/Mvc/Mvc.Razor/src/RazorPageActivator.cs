@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             public override int GetHashCode()
             {
-                var hashCodeCombiner = HashCodeCombiner.Start();
+                var hashCodeCombiner = new HashCode();
                 hashCodeCombiner.Add(PageType);
                 if (ProvidedModelType != null)
                 {
                     hashCodeCombiner.Add(ProvidedModelType);
                 }
 
-                return hashCodeCombiner.CombinedHash;
+                return hashCodeCombiner.ToHashCode();
             }
         }
     }

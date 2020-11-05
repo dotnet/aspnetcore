@@ -10,48 +10,23 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class AsyncAcceptContext : IAsyncResult, IDisposable
+    internal unsafe class AsyncAcceptContext : TaskCompletionSource<RequestContext>, IDisposable
     {
         internal static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(IOWaitCallback);
 
-        private TaskCompletionSource<RequestContext> _tcs;
-        private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
 
         internal AsyncAcceptContext(HttpSysListener server)
         {
-            _server = server;
-            _tcs = new TaskCompletionSource<RequestContext>();
+            Server = server;
             AllocateNativeRequest();
         }
 
-        internal Task<RequestContext> Task
-        {
-            get
-            {
-                return _tcs.Task;
-            }
-        }
-
-        private TaskCompletionSource<RequestContext> Tcs
-        {
-            get
-            {
-                return _tcs;
-            }
-        }
-
-        internal HttpSysListener Server
-        {
-            get
-            {
-                return _server;
-            }
-        }
+        internal HttpSysListener Server { get; }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by callback")]
-        private static void IOCompleted(AsyncAcceptContext asyncResult, uint errorCode, uint numBytes)
+        private static void IOCompleted(AsyncAcceptContext asyncContext, uint errorCode, uint numBytes)
         {
             bool complete = false;
             try
@@ -59,28 +34,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    asyncResult.Tcs.TrySetException(new HttpSysException((int)errorCode));
+                    asyncContext.TrySetException(new HttpSysException((int)errorCode));
                     complete = true;
                 }
                 else
                 {
-                    HttpSysListener server = asyncResult.Server;
+                    HttpSysListener server = asyncContext.Server;
                     if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                     {
                         // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
                         // points to it we need to hook up our authentication handling code here.
                         try
                         {
-                            if (server.ValidateRequest(asyncResult._nativeRequestContext) && server.ValidateAuth(asyncResult._nativeRequestContext))
+                            if (server.ValidateRequest(asyncContext._nativeRequestContext) && server.ValidateAuth(asyncContext._nativeRequestContext))
                             {
-                                RequestContext requestContext = new RequestContext(server, asyncResult._nativeRequestContext);
-                                asyncResult.Tcs.TrySetResult(requestContext);
+                                RequestContext requestContext = new RequestContext(server, asyncContext._nativeRequestContext);
+                                asyncContext.TrySetResult(requestContext);
                                 complete = true;
                             }
                         }
                         catch (Exception)
                         {
-                            server.SendError(asyncResult._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
+                            server.SendError(asyncContext._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
                             throw;
                         }
                         finally
@@ -88,30 +63,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             // The request has been handed to the user, which means this code can't reuse the blob.  Reset it here.
                             if (complete)
                             {
-                                asyncResult._nativeRequestContext = null;
+                                asyncContext._nativeRequestContext = null;
                             }
                             else
                             {
-                                asyncResult.AllocateNativeRequest(size: asyncResult._nativeRequestContext.Size);
+                                asyncContext.AllocateNativeRequest(size: asyncContext._nativeRequestContext.Size);
                             }
                         }
                     }
                     else
                     {
                         //  (uint)backingBuffer.Length - AlignmentPadding
-                       asyncResult.AllocateNativeRequest(numBytes, asyncResult._nativeRequestContext.RequestId);
+                        asyncContext.AllocateNativeRequest(numBytes, asyncContext._nativeRequestContext.RequestId);
                     }
 
                     // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
                     if (!complete)
                     {
-                        uint statusCode = asyncResult.QueueBeginGetContext();
+                        uint statusCode = asyncContext.QueueBeginGetContext();
                         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                             statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
                         {
                             // someother bad error, possible(?) return values are:
                             // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                            asyncResult.Tcs.TrySetException(new HttpSysException((int)statusCode));
+                            asyncContext.TrySetException(new HttpSysException((int)statusCode));
                             complete = true;
                         }
                     }
@@ -123,14 +98,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 if (complete)
                 {
-                    asyncResult.Dispose();
+                    asyncContext.Dispose();
                 }
             }
             catch (Exception exception)
             {
                 // Logged by caller
-                asyncResult.Tcs.TrySetException(exception);
-                asyncResult.Dispose();
+                asyncContext.TrySetException(exception);
+                asyncContext.Dispose();
             }
         }
 
@@ -152,7 +127,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
                     _nativeRequestContext.RequestId,
-                    (uint)HttpApiTypes.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
+                    // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
+                    // if the request sends header+body in a single TCP packet 
+                    (uint)HttpApiTypes.HTTP_FLAGS.NONE,
                     _nativeRequestContext.NativeRequest,
                     _nativeRequestContext.Size,
                     &bytesTransferred,
@@ -197,26 +174,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // nativeRequest
             _nativeRequestContext = new NativeRequestContext(nativeOverlapped, Server.MemoryPool, size, requestId);
-        }
-
-        public object AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
         }
 
         public void Dispose()

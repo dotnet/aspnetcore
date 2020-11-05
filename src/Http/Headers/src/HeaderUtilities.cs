@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -19,8 +20,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static void SetQuality(IList<NameValueHeaderValue> parameters, double? value)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (value.HasValue)
             {
@@ -54,17 +53,14 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
+        internal static double? GetQuality(IList<NameValueHeaderValue>? parameters)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (qualityParameter != null)
             {
                 // Note that the RFC requires decimal '.' regardless of the culture. I.e. using ',' as decimal
                 // separator is considered invalid (even if the current culture would allow it).
-                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out var length))
-
+                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out _))
                 {
                     return qualityValue;
                 }
@@ -81,16 +77,16 @@ namespace Microsoft.Net.Http.Headers
 
             if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}.", value));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}'.", value));
             }
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y)
         {
             return AreEqualCollections(x, y, null);
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y, IEqualityComparer<T> comparer)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y, IEqualityComparer<T>? comparer)
         {
             if (x == null)
             {
@@ -157,7 +153,6 @@ namespace Microsoft.Net.Http.Headers
             bool skipEmptyValues,
             out bool separatorFound)
         {
-            Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.
 
             separatorFound = false;
@@ -234,7 +229,7 @@ namespace Microsoft.Net.Http.Headers
         /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
-        public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
+        public static bool TryParseSeconds(StringValues headerValues, string targetValue, [NotNullWhen(true)] out TimeSpan? value)
         {
             if (StringValues.IsNullOrEmpty(headerValues) || string.IsNullOrEmpty(targetValue))
             {
@@ -603,7 +598,7 @@ namespace Microsoft.Net.Http.Headers
                 });
             }
 
-            return dateTime.ToString("r");
+            return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
         public static StringSegment RemoveQuotes(StringSegment input)
@@ -708,7 +703,8 @@ namespace Microsoft.Net.Http.Headers
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
             // 2 for quotes
-            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
+            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
+            {
                 // Helps to elide the bounds check for span[0]
                 span[span.Length - 1] = span[0] = '\"';
 

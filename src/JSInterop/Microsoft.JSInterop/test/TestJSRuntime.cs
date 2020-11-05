@@ -8,7 +8,7 @@ namespace Microsoft.JSInterop
 {
     internal class TestJSRuntime : JSRuntime
     {
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             throw new NotImplementedException();
         }

@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using FormatterWebSite.Controllers;
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
@@ -22,16 +25,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\"><SampleInt>"
-                + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
+                + sampleInputInt + "</SampleInt></DummyClass>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
+            Assert.Equal(sampleInputInt.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
         }
 
         [Theory]
@@ -167,6 +168,34 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     var value = Assert.IsType<JArray>(p.Value);
                     Assert.Equal("The DerivedProperty field is required.", value.First);
                 });
+        }
+
+        [Fact]
+        public async Task BodyIsRequiredByDefault()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultBody)}", value: null);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+            Assert.Collection(
+                problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+                });
+        }
+
+        [Fact]
+        public async Task OptionalFromBodyWorks()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.OptionalBody)}", value: null);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
     }
 }

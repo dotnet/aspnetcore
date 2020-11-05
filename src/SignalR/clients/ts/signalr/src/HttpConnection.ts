@@ -14,7 +14,7 @@ import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
 const enum ConnectionState {
-    Connecting = "Connecting ",
+    Connecting = "Connecting",
     Connected = "Connected",
     Disconnected = "Disconnected",
     Disconnecting = "Disconnecting",
@@ -38,16 +38,6 @@ export interface IAvailableTransport {
 }
 
 const MAX_REDIRECTS = 100;
-
-let WebSocketModule: any = null;
-let EventSourceModule: any = null;
-if (Platform.isNode && typeof require !== "undefined") {
-    // In order to ignore the dynamic require in webpack builds we need to do this magic
-    // @ts-ignore: TS doesn't know about these names
-    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    WebSocketModule = requireFunc("ws");
-    EventSourceModule = requireFunc("eventsource");
-}
 
 /** @private */
 export class HttpConnection implements IConnection {
@@ -88,19 +78,30 @@ export class HttpConnection implements IConnection {
             throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
         }
 
+        let webSocketModule: any = null;
+        let eventSourceModule: any = null;
+
+        if (Platform.isNode && typeof require !== "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+            webSocketModule = requireFunc("ws");
+            eventSourceModule = requireFunc("eventsource");
+        }
+
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
         } else if (Platform.isNode && !options.WebSocket) {
-            if (WebSocketModule) {
-                options.WebSocket = WebSocketModule;
+            if (webSocketModule) {
+                options.WebSocket = webSocketModule;
             }
         }
 
         if (!Platform.isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
         } else if (Platform.isNode && !options.EventSource) {
-            if (typeof EventSourceModule !== "undefined") {
-                options.EventSource = EventSourceModule;
+            if (typeof eventSourceModule !== "undefined") {
+                options.EventSource = eventSourceModule;
             }
         }
 
@@ -314,7 +315,7 @@ export class HttpConnection implements IConnection {
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
-                headers,
+                headers: { ...headers, ...this.options.headers },
                 withCredentials: this.options.withCredentials,
             });
 
@@ -402,14 +403,14 @@ export class HttpConnection implements IConnection {
                 if (!this.options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
+                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket, this.options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this.options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!);
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!, this.options.headers || {});
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!);
+                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!, this.options.headers || {});
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

@@ -7,7 +7,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -17,10 +19,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
+        internal static readonly HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
         internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 
-        internal ListenOptions(IPEndPoint endPoint)
+        internal ListenOptions(EndPoint endPoint)
         {
             EndPoint = endPoint;
         }
@@ -40,7 +44,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
-        internal EndPoint EndPoint { get; set; }
+        /// <summary>
+        /// Gets the <see cref="EndPoint"/>.
+        /// </summary>
+        public EndPoint EndPoint { get; internal set; }
+
+        // For comparing bound endpoints to changed config during endpoint config reload.
+        internal EndpointConfig EndpointConfig { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
@@ -71,23 +81,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The protocols enabled on this endpoint.
         /// </summary>
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
-        public HttpProtocols Protocols { get; set; } = HttpProtocols.Http1AndHttp2;
+        public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
 
+        /// <summary>
+        /// Gets the application <see cref="IServiceProvider"/>.
+        /// </summary>
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 
         internal string Scheme
         {
             get
             {
-                if (IsHttp)
-                {
-                    return IsTls ? "https" : "http";
-                }
-                return "tcp";
+                return IsTls ? HttpProtocol.SchemeHttps : HttpProtocol.SchemeHttp;
             }
         }
-
-        internal bool IsHttp { get; set; } = true;
 
         internal bool IsTls { get; set; }
 
@@ -109,6 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
+        /// <inheritdoc />
         public override string ToString() => GetDisplayName();
 
         /// <summary>
@@ -130,6 +138,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return this;
         }
 
+        /// <summary>
+        /// Builds the <see cref="ConnectionDelegate"/>.
+        /// </summary>
+        /// <returns>The <see cref="ConnectionDelegate"/>.</returns>
         public ConnectionDelegate Build()
         {
             ConnectionDelegate app = context =>

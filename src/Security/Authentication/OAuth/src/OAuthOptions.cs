@@ -14,13 +14,16 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     /// </summary>
     public class OAuthOptions : RemoteAuthenticationOptions
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="OAuthOptions"/>.
+        /// </summary>
         public OAuthOptions()
         {
             Events = new OAuthEvents();
         }
 
         /// <summary>
-        /// Check that the options are valid.  Should throw an exception if things are not ok.
+        /// Check that the options are valid. Should throw an exception if things are not ok.
         /// </summary>
         public override void Validate()
         {
@@ -75,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets or sets the URI the middleware will access to obtain the user information.
         /// This value is not used in the default implementation, it is for use in custom implementations of
-        /// IOAuthAuthenticationEvents.Authenticated or OAuthAuthenticationHandler.CreateTicketAsync.
+        /// <see cref="OAuthEvents.OnCreatingTicket" />.
         /// </summary>
         public string UserInformationEndpoint { get; set; }
 

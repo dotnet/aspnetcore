@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private static string DateTimeOffsetToFilenameSafeString(DateTimeOffset dateTime)
         {
             // similar to the XML format for dates, but with punctuation stripped
-            return dateTime.UtcDateTime.ToString("yyyyMMddTHHmmssFFFFFFFZ");
+            return dateTime.UtcDateTime.ToString("yyyyMMddTHHmmssFFFFFFFZ", CultureInfo.InvariantCulture);
         }
 
         public IReadOnlyCollection<IKey> GetAllKeys()
@@ -500,6 +501,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     if (OSVersionUtil.IsWindows())
                     {
+                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
+
                         // If the user profile is available, we can protect using DPAPI.
                         // Probe to see if protecting to local user is available, and use it as the default if so.
                         encryptor = new DpapiXmlEncryptor(
@@ -523,10 +526,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     RegistryKey regKeyStorageKey = null;
                     if (OSVersionUtil.IsWindows())
                     {
+                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
                         regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
                     }
                     if (regKeyStorageKey != null)
                     {
+                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
+                        regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
+
                         // If the user profile isn't available, we can protect using DPAPI (to machine).
                         encryptor = new DpapiXmlEncryptor(protectToLocalMachine: true, loggerFactory: _loggerFactory);
                         repository = new RegistryXmlRepository(regKeyStorageKey, _loggerFactory);

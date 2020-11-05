@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public Func<CertificateValidatedContext, Task> OnCertificateValidated { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
+        /// Invoked before a challenge is sent back to the caller.
+        /// </summary>
+        public Func<CertificateChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
+
+        /// <summary>
         /// Invoked when a certificate fails authentication.
         /// </summary>
         /// <param name="context"></param>
@@ -41,5 +46,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <param name="context"></param>
         /// <returns></returns>
         public virtual Task CertificateValidated(CertificateValidatedContext context) => OnCertificateValidated(context);
+
+        /// <summary>
+        /// Invoked before a challenge is sent back to the caller.
+        /// </summary>
+        public virtual Task Challenge(CertificateChallengeContext context) => OnChallenge(context);
     }
 }

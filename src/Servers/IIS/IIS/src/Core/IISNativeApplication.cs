@@ -8,21 +8,34 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class IISNativeApplication
     {
-        private readonly IntPtr _nativeApplication;
+        private readonly NativeSafeHandle _nativeApplication;
+        private readonly object _sync = new object();
 
-        public IISNativeApplication(IntPtr nativeApplication)
+        public IISNativeApplication(NativeSafeHandle nativeApplication)
         {
             _nativeApplication = nativeApplication;
         }
 
         public void StopIncomingRequests()
         {
-            NativeMethods.HttpStopIncomingRequests(_nativeApplication);
+            lock (_sync)
+            {
+                if (!_nativeApplication.IsInvalid)
+                {
+                    NativeMethods.HttpStopIncomingRequests(_nativeApplication);
+                }
+            }
         }
 
         public void StopCallsIntoManaged()
         {
-            NativeMethods.HttpStopCallsIntoManaged(_nativeApplication);
+            lock (_sync)
+            {
+                if (!_nativeApplication.IsInvalid)
+                {
+                    NativeMethods.HttpStopCallsIntoManaged(_nativeApplication);
+                }
+            }
         }
 
         public void RegisterCallbacks(
@@ -47,7 +60,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
+            lock (_sync)
+            {
+                GC.SuppressFinalize(this);
+
+                // Don't need to await here because pinvokes should never been called after disposing the safe handle.
+                _nativeApplication.Dispose();
+            }
         }
 
         ~IISNativeApplication()

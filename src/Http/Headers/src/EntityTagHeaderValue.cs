@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<EntityTagHeaderValue> MultipleValueParser
             = new GenericHeaderParser<EntityTagHeaderValue>(true, GetEntityTagLength);
 
-        private static EntityTagHeaderValue AnyType;
+        private static EntityTagHeaderValue? AnyType;
 
         private StringSegment _tag;
         private bool _isWeak;
@@ -103,7 +104,7 @@ namespace Microsoft.Net.Http.Headers
         /// <c>true</c> if the strength and tag of the two values match,
         /// <c>false</c> if the other value is null, is not an <see cref="EntityTagHeaderValue"/>, or if there is a mismatch of strength or tag between the two values.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as EntityTagHeaderValue;
 
@@ -131,7 +132,7 @@ namespace Microsoft.Net.Http.Headers
         /// <c>true</c> if the <see cref="EntityTagHeaderValue"/> match for the given comparison type,
         /// <c>false</c> if the other value is null or the comparison failed.
         /// </returns>
-        public bool Compare(EntityTagHeaderValue other, bool useStrongComparison)
+        public bool Compare(EntityTagHeaderValue? other, bool useStrongComparison)
         {
             if (other == null)
             {
@@ -151,36 +152,36 @@ namespace Microsoft.Net.Http.Headers
         public static EntityTagHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out EntityTagHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out EntityTagHeaderValue parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<EntityTagHeaderValue> ParseList(IList<string> inputs)
+        public static IList<EntityTagHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<EntityTagHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<EntityTagHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<EntityTagHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<EntityTagHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        internal static int GetEntityTagLength(StringSegment input, int startIndex, out EntityTagHeaderValue parsedValue)
+        internal static int GetEntityTagLength(StringSegment input, int startIndex, out EntityTagHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 

@@ -45,7 +45,7 @@ Remove-Item -Force -Recurse $tempDir -ErrorAction Ignore | out-null
 mkdir $tempDir -ea Ignore | out-null
 mkdir $installDir -ea Ignore | out-null
 Write-Host "Starting download of JDK ${JdkVersion}"
-Invoke-WebRequest -UseBasicParsing -Uri "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" -OutFile "$tempDir/jdk.zip"
+& $PSScriptRoot\Download.ps1 "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" $tempDir/jdk.zip
 Write-Host "Done downloading JDK ${JdkVersion}"
 
 Add-Type -assembly "System.IO.Compression.FileSystem"

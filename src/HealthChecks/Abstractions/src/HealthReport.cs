@@ -17,9 +17,23 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="entries">A <see cref="IReadOnlyDictionary{TKey, T}"/> containing the results from each health check.</param>
         /// <param name="totalDuration">A value indicating the time the health check service took to execute.</param>
         public HealthReport(IReadOnlyDictionary<string, HealthReportEntry> entries, TimeSpan totalDuration)
+            : this(
+                entries,
+                CalculateAggregateStatus(entries?.Values ?? throw new ArgumentNullException(nameof(entries))),
+                totalDuration)
+        {
+        }
+
+        /// <summary>
+        /// Create a new <see cref="HealthReport"/> from the specified results.
+        /// </summary>
+        /// <param name="entries">A <see cref="IReadOnlyDictionary{TKey, T}"/> containing the results from each health check.</param>
+        /// <param name="status">A <see cref="HealthStatus"/> representing the aggregate status of all the health checks.</param>
+        /// <param name="totalDuration">A value indicating the time the health check service took to execute.</param>
+        public HealthReport(IReadOnlyDictionary<string, HealthReportEntry> entries, HealthStatus status, TimeSpan totalDuration)
         {
             Entries = entries;
-            Status = CalculateAggregateStatus(entries.Values);
+            Status = status;
             TotalDuration = totalDuration;
         }
 
@@ -43,7 +57,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// </summary>
         public TimeSpan TotalDuration { get; }
 
-        private HealthStatus CalculateAggregateStatus(IEnumerable<HealthReportEntry> entries)
+        private static HealthStatus CalculateAggregateStatus(IEnumerable<HealthReportEntry> entries)
         {
             // This is basically a Min() check, but we know the possible range, so we don't need to walk the whole list
             var currentValue = HealthStatus.Healthy;

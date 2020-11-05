@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Specifies the form field's new value.
         /// </summary>
-        public object FieldValue { get; set; }
+        public object FieldValue { get; set; } = default!;
     }
 }

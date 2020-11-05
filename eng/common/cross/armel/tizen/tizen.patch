@@ -7,12 +7,3 @@ diff -u -r a/usr/lib/libc.so b/usr/lib/libc.so
  OUTPUT_FORMAT(elf32-littlearm)
 -GROUP ( /lib/libc.so.6 /usr/lib/libc_nonshared.a  AS_NEEDED ( /lib/ld-linux.so.3 ) )
 +GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld-linux.so.3 ) )
-diff -u -r a/usr/lib/libpthread.so b/usr/lib/libpthread.so
---- a/usr/lib/libpthread.so	2016-12-30 23:00:19.408951841 +0900
-+++ b/usr/lib/libpthread.so	2016-12-30 23:00:39.068951801 +0900
-@@ -2,4 +2,4 @@
-    Use the shared library, but some functions are only in
-    the static library, so try that secondarily.  */
- OUTPUT_FORMAT(elf32-littlearm)
--GROUP ( /lib/libpthread.so.0 /usr/lib/libpthread_nonshared.a )
-+GROUP ( libpthread.so.0 libpthread_nonshared.a )

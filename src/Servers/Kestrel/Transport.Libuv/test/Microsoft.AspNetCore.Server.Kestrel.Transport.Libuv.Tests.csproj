@@ -4,6 +4,9 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <!-- https://github.com/dotnet/aspnetcore/issues/22114 -->
+    <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixAlpine>true</SkipHelixAlpine>
   </PropertyGroup>
 
   <ItemGroup>

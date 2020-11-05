@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public interface IItemsFeature
     {
-        IDictionary<object, object> Items { get; set; }
+        IDictionary<object, object?> Items { get; set; }
     }
 }

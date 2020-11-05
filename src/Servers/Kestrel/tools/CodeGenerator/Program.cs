@@ -75,12 +75,11 @@ namespace CodeGenerator
             if (!string.Equals(content, existingContent))
             {
                 File.WriteAllText(path, content);
+                Console.WriteLine($"{path} updated.");
             }
-
-            var existingHttp2Connection = File.Exists(path) ? File.ReadAllText(path) : "";
-            if (!string.Equals(content, existingHttp2Connection))
+            else
             {
-                File.WriteAllText(path, content);
+                Console.WriteLine($"{path} already up to date.");
             }
         }
     }

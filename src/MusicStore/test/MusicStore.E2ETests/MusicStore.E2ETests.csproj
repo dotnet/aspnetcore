@@ -10,8 +10,6 @@
     <SkipTests>true</SkipTests>
     <!-- https://github.com/dotnet/aspnetcore/issues/8343 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

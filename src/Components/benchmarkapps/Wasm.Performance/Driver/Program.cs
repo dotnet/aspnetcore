@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -15,127 +16,249 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DevHostServerProgram = Microsoft.AspNetCore.Blazor.DevServer.Server.Program;
+using OpenQA.Selenium;
+using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Wasm.Performance.Driver
 {
     public class Program
     {
-        static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
-        static TaskCompletionSource<List<BenchmarkResult>> benchmarkResult = new TaskCompletionSource<List<BenchmarkResult>>();
+        internal static TaskCompletionSource<BenchmarkResult> BenchmarkResultTask;
 
         public static async Task<int> Main(string[] args)
         {
-            var seleniumPort = 4444;
+            // This cancellation token manages the timeout for the stress run.
+            // By default the driver executes and reports a single Benchmark run. For stress runs,
+            // we'll pass in the duration to execute the runs in seconds. This will cause this driver
+            // to repeat executions for the duration specified.
+            var stressRunCancellation = CancellationToken.None;
+            var isStressRun = false;
             if (args.Length > 0)
             {
-                if (!int.TryParse(args[0], out seleniumPort))
+                if (!int.TryParse(args[0], out var stressRunSeconds))
                 {
-                    Console.Error.WriteLine("Usage Driver <selenium-port>");
+                    Console.Error.WriteLine("Usage Driver <stress-run-duration-seconds>");
                     return 1;
+                }
+
+                if (stressRunSeconds < 0)
+                {
+                    Console.Error.WriteLine("Stress run duration must be a positive integer.");
+                    return 1;
+                }
+                else if (stressRunSeconds > 0)
+                {
+                    isStressRun = true;
+
+                    var stressRunDuration = TimeSpan.FromSeconds(stressRunSeconds);
+                    Console.WriteLine($"Stress run duration: {stressRunDuration}.");
+                    stressRunCancellation = new CancellationTokenSource(stressRunDuration).Token;
                 }
             }
 
             // This write is required for the benchmarking infrastructure.
             Console.WriteLine("Application started.");
 
-            var cancellationToken = new CancellationTokenSource(Timeout);
-            cancellationToken.Token.Register(() => benchmarkResult.TrySetException(new TimeoutException($"Timed out after {Timeout}")));
-
-            using var browser = await Selenium.CreateBrowser(seleniumPort, cancellationToken.Token);
+            using var browser = await Selenium.CreateBrowser(default, captureBrowserMemory: isStressRun);
             using var testApp = StartTestApp();
             using var benchmarkReceiver = StartBenchmarkResultReceiver();
-
             var testAppUrl = GetListeningUrl(testApp);
-            var receiverUrl = GetListeningUrl(benchmarkReceiver);
+            if (isStressRun)
+            {
+                testAppUrl += "/stress.html";
+            }
 
+            var receiverUrl = GetListeningUrl(benchmarkReceiver);
             Console.WriteLine($"Test app listening at {testAppUrl}.");
+
+            var firstRun = true;
+            var timeForEachRun = TimeSpan.FromMinutes(3);
 
             var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
             browser.Url = launchUrl;
             browser.Navigate();
 
-            var results = await benchmarkResult.Task;
-            FormatAsBenchmarksOutput(results);
+            do
+            {
+                BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
+                using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
+                using var registration = runCancellationToken.Token.Register(() =>
+                {
+                    string exceptionMessage = $"Timed out after {timeForEachRun}.";
+                    try
+                    {
+                        var innerHtml = browser.FindElement(By.CssSelector(":first-child")).GetAttribute("innerHTML");
+                        exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
+                    }
+                    catch
+                    {
+                        // Do nothing;
+                    }
+                    BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
+                });
+
+                var results = await BenchmarkResultTask.Task;
+
+                FormatAsBenchmarksOutput(results,
+                    includeMetadata: firstRun,
+                    isStressRun: isStressRun);
+
+                if (!isStressRun)
+                {
+                    PrettyPrint(results);
+                }
+
+                firstRun = false;
+            } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
 
             Console.WriteLine("Done executing benchmark");
             return 0;
         }
 
-        internal static void SetBenchmarkResult(List<BenchmarkResult> result)
-        {
-            benchmarkResult.TrySetResult(result);
-        }
-
-        private static void FormatAsBenchmarksOutput(List<BenchmarkResult> results)
+        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult, bool includeMetadata, bool isStressRun)
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
-            foreach (var result in results)
+
+
+            if (benchmarkResult.DownloadSize != null)
             {
                 output.Metadata.Add(new BenchmarkMetadata
                 {
                     Source = "BlazorWasm",
-                    Name = result.Name,
-                    ShortDescription = $"{result.Name} Duration",
-                    LongDescription = $"{result.Name} Duration",
+                    Name = "blazorwasm/download-size",
+                    ShortDescription = "Download size (KB)",
+                    LongDescription = "Download size (KB)",
+                    Format = "n2",
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/download-size",
+                    Value = ((float)benchmarkResult.DownloadSize) / 1024,
+                });
+            }
+
+            if (benchmarkResult.WasmMemory != null)
+            {
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/wasm-memory",
+                    ShortDescription = "Memory (KB)",
+                    LongDescription = "WASM reported memory (KB)",
+                    Format = "n2",
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/wasm-memory",
+                    Value = ((float)benchmarkResult.WasmMemory) / 1024,
+                });
+
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/js-usedjsheapsize",
+                    ShortDescription = "UsedJSHeapSize",
+                    LongDescription = "JS used heap size"
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/js-usedjsheapsize",
+                    Value = benchmarkResult.UsedJSHeapSize,
+                });
+
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/js-totaljsheapsize",
+                    ShortDescription = "TotalJSHeapSize",
+                    LongDescription = "JS total heap size"
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/js-totaljsheapsize",
+                    Value = benchmarkResult.TotalJSHeapSize,
+                });
+            }
+
+            // Information about the build that this was produced from
+            output.Metadata.Add(new BenchmarkMetadata
+            {
+                Source = "BlazorWasm",
+                Name = "blazorwasm/commit",
+                ShortDescription = "Commit Hash",
+            });
+
+            output.Measurements.Add(new BenchmarkMeasurement
+            {
+                Timestamp = DateTime.UtcNow,
+                Name = "blazorwasm/commit",
+                Value = typeof(Program).Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(f => f.Key == "CommitHash")
+                    ?.Value,
+            });
+
+            foreach (var result in benchmarkResult.ScenarioResults)
+            {
+                var scenarioName = result.Descriptor.Name;
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = scenarioName,
+                    ShortDescription = result.Name,
+                    LongDescription = result.Descriptor.Description,
                     Format = "n2"
                 });
 
                 output.Measurements.Add(new BenchmarkMeasurement
                 {
                     Timestamp = DateTime.UtcNow,
-                    Name = result.Name,
+                    Name = scenarioName,
                     Value = result.Duration,
                 });
             }
 
-            // Statistics about publish sizes
-            output.Metadata.Add(new BenchmarkMetadata
+            if (!includeMetadata)
             {
-                Source = "BlazorWasm",
-                Name = "Publish size",
-                ShortDescription = "Publish size (KB)",
-                LongDescription = "Publish size (KB)",
-                Format = "n2",
-            });
+                output.Metadata.Clear();
+            }
 
-            var testAssembly = typeof(TestApp.Startup).Assembly;
-            var testAssemblyLocation = new FileInfo(testAssembly.Location);
-            var testApp = new DirectoryInfo(Path.Combine(
-                testAssemblyLocation.Directory.FullName,
-                testAssembly.GetName().Name));
-
-            output.Measurements.Add(new BenchmarkMeasurement
+            if (isStressRun)
             {
-                Timestamp = DateTime.UtcNow,
-                Name = "Publish size",
-                Value = GetDirectorySize(testApp) / 1024,
-            });
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "$$Delimiter$$",
+                });
+            }
 
-            output.Metadata.Add(new BenchmarkMetadata
+            var builder = new StringBuilder();
+            builder.AppendLine("#StartJobStatistics");
+            builder.AppendLine(JsonSerializer.Serialize(output));
+            builder.AppendLine("#EndJobStatistics");
+
+            Console.WriteLine(builder);
+        }
+
+        static void PrettyPrint(BenchmarkResult benchmarkResult)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Download size: {(benchmarkResult.DownloadSize / 1024)}kb.");
+            Console.WriteLine("| Name | Description | Duration | NumExecutions | ");
+            Console.WriteLine("--------------------------");
+            foreach (var result in benchmarkResult.ScenarioResults)
             {
-                Source = "BlazorWasm",
-                Name = "Publish size (compressed)",
-                ShortDescription = "Publish size  compressed app (KB)",
-                LongDescription = "Publish size - compressed app (KB)",
-                Format = "n2",
-            });
-
-            var gzip = new FileInfo(Path.Combine(
-                testAssemblyLocation.Directory.FullName,
-                $"{testAssembly.GetName().Name}.gzip"));
-
-            output.Measurements.Add(new BenchmarkMeasurement
-            {
-                Timestamp = DateTime.UtcNow,
-                Name = "Publish size (compressed)",
-                Value = (gzip.Exists ? gzip.Length : 0) / 1024,
-            });
-
-            Console.WriteLine("#StartJobStatistics");
-            Console.WriteLine(JsonSerializer.Serialize(output));
-            Console.WriteLine("#EndJobStatistics");
+                Console.WriteLine($"| {result.Descriptor.Name} | {result.Name} | {result.Duration} | {result.NumExecutions} |");
+            }
         }
 
         static IHost StartTestApp()
@@ -143,7 +266,13 @@ namespace Wasm.Performance.Driver
             var args = new[]
             {
                 "--urls", "http://127.0.0.1:0",
-                "--applicationpath", typeof(TestApp.Startup).Assembly.Location,
+                "--applicationpath", typeof(TestApp.Program).Assembly.Location,
+#if DEBUG
+                "--contentroot",
+                Path.GetFullPath(typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .First(f => f.Key == "TestAppLocatiion")
+                    .Value)
+#endif
             };
 
             var host = DevHostServerProgram.BuildWebHost(args);
@@ -185,9 +314,9 @@ namespace Wasm.Performance.Driver
                 isDone.Set();
             });
 
-            if (!isDone.WaitOne(Timeout))
+            if (!isDone.WaitOne(TimeSpan.FromSeconds(30)))
             {
-                throw new TimeoutException("Timed out waiting for: " + action);
+                throw new TimeoutException("Timed out waiting to start the host");
             }
 
             if (edi != null)
@@ -203,30 +332,6 @@ namespace Wasm.Performance.Driver
                 .Get<IServerAddressesFeature>()
                 .Addresses
                 .First();
-        }
-
-        static long GetDirectorySize(DirectoryInfo directory)
-        {
-            // This can happen if you run the app without publishing it.
-            if (!directory.Exists)
-            {
-                return 0;
-            }
-
-            long size = 0;
-            foreach (var item in directory.EnumerateFileSystemInfos())
-            {
-                if (item is FileInfo fileInfo)
-                {
-                    size += fileInfo.Length;
-                }
-                else if (item is DirectoryInfo directoryInfo)
-                {
-                    size += GetDirectorySize(directoryInfo);
-                }
-            }
-
-            return size;
         }
     }
 }

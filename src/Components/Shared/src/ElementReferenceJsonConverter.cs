@@ -11,6 +11,13 @@ namespace Microsoft.AspNetCore.Components
     {
         private static readonly JsonEncodedText IdProperty = JsonEncodedText.Encode("__internalId");
 
+        private readonly ElementReferenceContext _elementReferenceContext;
+
+        public ElementReferenceJsonConverter(ElementReferenceContext elementReferenceContext)
+        {
+            _elementReferenceContext = elementReferenceContext;
+        }
+
         public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             string id = null;
@@ -39,7 +46,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new JsonException("__internalId is required.");
             }
 
-            return new ElementReference(id);
+            return new ElementReference(id, _elementReferenceContext);
         }
 
         public override void Write(Utf8JsonWriter writer, ElementReference value, JsonSerializerOptions options)

@@ -15,30 +15,18 @@ plugins {
     id 'maven'
 }
 
-apply plugin: "java-library"
-apply plugin: "com.diffplug.gradle.spotless"
-apply plugin: 'org.junit.platform.gradle.plugin'
+allprojects {
+    apply plugin: "java-library"
+    apply plugin: "com.diffplug.gradle.spotless"
 
-group 'com.microsoft.signalr'
+    // If we're run from outside MSBuild, just assign a bogus dev version.
+    version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
-// If we're run from outside MSBuild, just assign a bogus dev version.
-version project.findProperty('packageVersion') ?: "99.99.99-dev"
+    sourceCompatibility = 1.8
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
-    testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-    api 'io.reactivex.rxjava2:rxjava:2.2.3'
-    implementation 'org.slf4j:slf4j-api:1.7.25'
+    repositories {
+        mavenCentral()
+    }
 }
 
 spotless {
@@ -46,7 +34,7 @@ spotless {
         licenseHeader '// Copyright (c) .NET Foundation. All rights reserved.\n' +
                 '// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\n\n' // License header
 
-        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''   // A sequence of package names
 
         replace      'Not enough space after if', 'if(', 'if ('
         replace      'Not enough space after else', 'else{', 'else {'
@@ -65,72 +53,3 @@ spotless {
         removeUnusedImports() // removes any unused imports
     }
 }
-
-junitPlatform {
-    reportsDir file('test-results')
-}
-
-task sourceJar(type: Jar) {
-    classifier "sources"
-    from sourceSets.main.allJava
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier "javadoc"
-    from javadoc.destinationDir
-}
-
-task generatePOM {
-    pom {
-        project {
-            inceptionYear '2018'
-            description 'ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/dotnet/aspnetcore'
-            name groupId + ':' + artifactId
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
-                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
-                url 'http://github.com/dotnet/aspnetcore/tree/master'
-            }
-            developers {
-                developer {
-                    id 'microsoft'
-                    name 'Microsoft'
-                }
-            }
-        }
-    }.writeTo("${buildDir}/libs/signalr-${project.version}.pom")
-}
-
-task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
-
-task generateVersionClass {
-    inputs.property "version", project.version
-    outputs.dir "$buildDir/generated"
-    doFirst {
-        def versionFile = file("$buildDir/../src/main/java/com/microsoft/signalr/Version.java")
-        versionFile.parentFile.mkdirs()
-        versionFile.text =
-                """
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-package com.microsoft.signalr;
-
-class Version {
-    public static String getDetailedVersion() {
-        return "$project.version";
-    }
-}
-"""
-    }
-}
-
-compileJava.dependsOn generateVersionClass

@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return httpContext;
         }
 
-        private static ActionContext GetActionContext()
+        protected static ActionContext GetActionContext()
         {
             return new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
         }

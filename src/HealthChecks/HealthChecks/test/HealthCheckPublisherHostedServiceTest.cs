@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+
+#nullable enable
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
@@ -76,9 +78,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task StartAsync_WithPublishers_StartsTimer_RunsPublishers()
         {
             // Arrange
-            var unblock0 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock0 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -121,7 +123,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task StopAsync_CancelsExecution()
         {
             // Arrange
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -145,7 +147,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 await service.StopAsync(); // Trigger cancellation
 
                 // Assert
-                await AssertCancelledAsync(publishers[0].Entries[0].cancellationToken);
+                await AssertCanceledAsync(publishers[0].Entries[0].cancellationToken);
                 Assert.False(service.IsTimerRunning);
                 Assert.True(service.IsStopping);
 
@@ -167,7 +169,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var sink = new TestSink();
 
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -225,9 +227,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task RunAsync_WaitsForCompletion_Multiple()
         {
             // Arrange
-            var unblock0 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock0 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -274,22 +276,18 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task RunAsync_PublishersCanTimeout()
         {
             // Arrange
             var sink = new TestSink();
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
                 new TestPublisher() { Wait = unblock.Task, },
             };
 
-            var service = CreateService(publishers, sink: sink, configure: (options) =>
-            {
-                options.Timeout = TimeSpan.FromMilliseconds(50);
-            });
+            var service = CreateService(publishers, sink: sink);
 
             try
             {
@@ -300,7 +298,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
                 await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
-                await AssertCancelledAsync(publishers[0].Entries[0].cancellationToken);
+                service.CancelToken();
+
+                await AssertCanceledAsync(publishers[0].Entries[0].cancellationToken);
 
                 unblock.SetResult(null);
 
@@ -442,8 +442,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private HealthCheckPublisherHostedService CreateService(
             IHealthCheckPublisher[] publishers,
-            Action<HealthCheckPublisherOptions> configure = null,
-            TestSink sink = null)
+            Action<HealthCheckPublisherOptions>? configure = null,
+            TestSink? sink = null)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddOptions();
@@ -483,27 +483,27 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             return services.GetServices<IHostedService>().OfType< HealthCheckPublisherHostedService>().Single();
         }
 
-        private static async Task AssertCancelledAsync(CancellationToken cancellationToken)
+        private static async Task AssertCanceledAsync(CancellationToken cancellationToken)
         {
             await Assert.ThrowsAsync<TaskCanceledException>(() => Task.Delay(TimeSpan.FromSeconds(10), cancellationToken));
         }
 
         private class TestPublisher : IHealthCheckPublisher
         {
-            private TaskCompletionSource<object> _started;
+            private TaskCompletionSource<object?> _started;
 
             public TestPublisher()
             {
-                _started = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _started = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
             public List<(HealthReport report, CancellationToken cancellationToken)> Entries { get; } = new List<(HealthReport report, CancellationToken cancellationToken)>();
 
-            public Exception Exception { get; set; }
+            public Exception? Exception { get; set; }
 
             public Task Started => _started.Task;
 
-            public Task Wait { get; set; }
+            public Task? Wait { get; set; }
 
             public async Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
             {

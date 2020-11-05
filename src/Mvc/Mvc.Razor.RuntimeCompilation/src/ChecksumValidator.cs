@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             for (var i = 0; i < bytes.Length; i++)
             {
-                var text = bytes[i].ToString("x2");
+                var text = bytes[i].ToString("x2", CultureInfo.InvariantCulture);
                 if (checksum[i * 2] != text[0] || checksum[i * 2 + 1] != text[1])
                 {
                     return false;

@@ -5,10 +5,9 @@
       Components for performing health checks using EntityFrameworkCore.
     </Description>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
-    <IsPackable>true</IsPackable>
     <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
   </PropertyGroup>
 

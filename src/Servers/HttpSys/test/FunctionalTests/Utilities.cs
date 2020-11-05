@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }, app);
         }
 
-        internal static IWebHost CreateDynamicHost(AuthenticationSchemes authType, bool allowAnonymous, out string root, RequestDelegate app)
+        internal static IHost CreateDynamicHost(AuthenticationSchemes authType, bool allowAnonymous, out string root, RequestDelegate app)
         {
             return CreateDynamicHost(string.Empty, out root, out var baseAddress, options =>
             {
@@ -75,22 +77,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }, app);
         }
 
-        internal static IWebHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        internal static IHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             return CreateDynamicHost(string.Empty, out var root, out baseAddress, configureOptions, app);
         }
 
-        internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        internal static IHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-            var builder = new WebHostBuilder()
-                .UseHttpSys(options =>
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.UrlPrefixes.Add(prefix);
-                    configureOptions(options);
-                })
-                .Configure(appBuilder => appBuilder.Run(app));
+                    webHostBuilder
+                        .UseHttpSys(options =>
+                        {
+                            options.UrlPrefixes.Add(prefix);
+                            configureOptions(options);
+                        })
+                        .Configure(appBuilder => appBuilder.Run(app));
+                });
 
             var host = builder.Build();
 
@@ -165,5 +171,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
 
         internal static Task<T> WithTimeout<T>(this Task<T> task) => task.TimeoutAfter(DefaultTimeout);
+
+        internal static bool? CanHaveBody(this HttpRequest request)
+        {
+            return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+        }
     }
 }

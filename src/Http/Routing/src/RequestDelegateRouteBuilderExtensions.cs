@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Provides extension methods for adding new handlers to a <see cref="IRouteBuilder"/>.
+    /// </summary>
     public static class RequestDelegateRouteBuilderExtensions
     {
         /// <summary>
@@ -259,7 +262,7 @@ namespace Microsoft.AspNetCore.Routing
                 new RouteHandler(handler),
                 template,
                 defaults: null,
-                constraints: new RouteValueDictionary(new { httpMethod = new HttpMethodRouteConstraint(verb) }),
+                constraints: new RouteValueDictionary(new { httpMethod = new HttpMethodRouteConstraint(verb) })!,
                 dataTokens: null,
                 inlineConstraintResolver: GetConstraintResolver(builder));
 

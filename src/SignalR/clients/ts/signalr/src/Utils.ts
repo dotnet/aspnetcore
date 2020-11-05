@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
@@ -16,6 +17,11 @@ export class Arg {
     public static isRequired(val: any, name: string): void {
         if (val === null || val === undefined) {
             throw new Error(`The '${name}' argument is required.`);
+        }
+    }
+    public static isNotEmpty(val: string, name: string): void {
+        if (!val || val.match(/^\s*$/)) {
+            throw new Error(`The '${name}' argument should not be empty.`);
         }
     }
 
@@ -85,7 +91,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
-                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean): Promise<void> {
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
     let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
@@ -104,7 +110,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers,
+        headers: { ...headers, ...defaultHeaders},
         responseType,
         withCredentials,
     });

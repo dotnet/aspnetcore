@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.ObjectPool
 {
-    public abstract class PooledObjectPolicy<T> : IPooledObjectPolicy<T>
+    public abstract class PooledObjectPolicy<T> : IPooledObjectPolicy<T> where T : notnull
     {
         public abstract T Create();
 

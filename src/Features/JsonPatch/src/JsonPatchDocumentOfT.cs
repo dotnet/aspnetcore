@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "add",
-                GetPath(path, position.ToString()),
+                GetPath(path, position.ToString(CultureInfo.InvariantCulture)),
                 from: null,
                 value: value));
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "remove",
-                GetPath(path, position.ToString()),
+                GetPath(path, position.ToString(CultureInfo.InvariantCulture)),
                 from: null));
 
             return this;
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "replace",
-                GetPath(path, position.ToString()),
+                GetPath(path, position.ToString(CultureInfo.InvariantCulture)),
                 from: null,
                 value: value));
 
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "test",
-                GetPath(path, position.ToString()),
+                GetPath(path, position.ToString(CultureInfo.InvariantCulture)),
                 from: null,
                 value: value));
 
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Operations.Add(new Operation<TModel>(
                 "move",
                 GetPath(path, null),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path, positionTo.ToString()),
+                GetPath(path, positionTo.ToString(CultureInfo.InvariantCulture)),
                 GetPath(from, null)));
 
             return this;
@@ -436,8 +436,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path, positionTo.ToString()),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(path, positionTo.ToString(CultureInfo.InvariantCulture)),
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Operations.Add(new Operation<TModel>(
                 "move",
                 GetPath(path, "-"),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Operations.Add(new Operation<TModel>(
                 "copy",
                 GetPath(path, null),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path, positionTo.ToString()),
+                GetPath(path, positionTo.ToString(CultureInfo.InvariantCulture)),
                 GetPath(from, null)));
 
             return this;
@@ -620,8 +620,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path, positionTo.ToString()),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(path, positionTo.ToString(CultureInfo.InvariantCulture)),
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Operations.Add(new Operation<TModel>(
                 "copy",
                 GetPath(path, "-"),
-                GetPath(from, positionFrom.ToString())));
+                GetPath(from, positionFrom.ToString(CultureInfo.InvariantCulture))));
 
             return this;
         }
@@ -857,15 +857,6 @@ namespace Microsoft.AspNetCore.JsonPatch
             }
 
             return null;
-        }
-
-        private static bool ContinueWithSubPath(ExpressionType expressionType)
-        {
-            return (expressionType == ExpressionType.ArrayIndex
-                || expressionType == ExpressionType.Call
-                || expressionType == ExpressionType.Convert
-                || expressionType == ExpressionType.MemberAccess);
-
         }
 
         // Evaluates the value of the key or index which may be an int or a string,

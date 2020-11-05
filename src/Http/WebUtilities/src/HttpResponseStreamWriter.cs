@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -144,13 +145,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var written = CopyToCharBuffer(value);
-                
+
                 remaining -= written;
                 value = value.Slice(written);
             };
         }
 
-        public override void Write(string value)
+        public override void Write(string? value)
         {
             if (_disposed)
             {
@@ -257,21 +258,20 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override Task WriteAsync(string value)
+        public override Task WriteAsync(string? value)
         {
             if (_disposed)
             {
                 return GetObjectDisposedTask();
             }
 
-            var count = value?.Length ?? 0;
-            if (count == 0)
+            if (string.IsNullOrEmpty(value))
             {
                 return Task.CompletedTask;
             }
 
             var remaining = _charBufferSize - _charBufferCount;
-            if (remaining >= count)
+            if (remaining >= value.Length)
             {
                 // Enough room in buffer, no need to go async
                 CopyToCharBuffer(value);
@@ -302,6 +302,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
             if (_disposed)
@@ -346,7 +347,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var written = CopyToCharBuffer(value.Span);
-                
+
                 remaining -= written;
                 value = value.Slice(written);
             };

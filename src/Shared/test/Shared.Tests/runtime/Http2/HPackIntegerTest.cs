@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
 using System.Net.Http.HPack;
@@ -56,12 +55,13 @@ namespace System.Net.Http.Unit.Tests.HPack
         public void IntegerEncoderDecoderRoundtrips()
         {
             IntegerDecoder decoder = new IntegerDecoder();
+            Span<byte> integerBytes = stackalloc byte[5];
 
             for (int i = 0; i < 2048; ++i)
             {
                 for (int prefixLength = 1; prefixLength <= 8; ++prefixLength)
                 {
-                    Span<byte> integerBytes = stackalloc byte[5];
+                    integerBytes.Clear();
                     Assert.True(IntegerEncoder.Encode(i, prefixLength, integerBytes, out int length));
 
                     bool decodeResult = decoder.BeginTryDecode(integerBytes[0], prefixLength, out int intResult);

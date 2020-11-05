@@ -31,8 +31,7 @@ $installerFilename = "SqlLocalDB.msi"
 $installerPath = "$intermedateDir\$installerFilename"
 Write-Host ""
 Write-Host "Downloading '$installerFilename' to '$installerPath'."
-Invoke-WebRequest -OutFile $installerPath -UseBasicParsing `
-    -Uri 'https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SqlLocalDB.msi'
+& $PSScriptRoot\Download.ps1 'https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SqlLocalDB.msi' $installerPath
 
 # Install LocalDB.
 $arguments = '/package', "`"$installerPath`"", '/NoRestart', '/Passive', `

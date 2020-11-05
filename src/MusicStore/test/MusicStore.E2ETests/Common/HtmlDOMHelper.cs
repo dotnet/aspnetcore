@@ -42,7 +42,7 @@ namespace E2ETests
 
             foreach (XmlAttribute attribute in htmlDocument.DocumentElement.Attributes)
             {
-                if (string.Compare(attribute.Name, "action", true) == 0 && attribute.Value.EndsWith(actionLocation, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(attribute.Name, "action", StringComparison.OrdinalIgnoreCase) && attribute.Value.EndsWith(actionLocation, StringComparison.OrdinalIgnoreCase))
                 {
                     foreach (XmlNode input in htmlDocument.GetElementsByTagName("input"))
                     {

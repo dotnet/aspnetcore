@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Html.Test
             var builder = new TestHtmlContentBuilder();
 
             // Act
-            builder.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", DateTime.Parse("01/02/2015"));
+            builder.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", new DateTime(2015, 02, 01));
 
             // Assert
             Assert.Equal(

@@ -8,10 +8,13 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// Static class for url helper extension methods.
+    /// </summary>
     public static class UrlHelperExtensions
     {
         /// <summary>
-        /// Generates a URL with an absolute path for an action method.
+        /// Generates a URL with a path for an action method.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <returns>The generated URL.</returns>
@@ -32,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
@@ -67,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> and <paramref name="controller"/> names.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>, and
         /// <paramref name="protocol"/> to use. See the remarks section for important security information.
         /// </summary>
@@ -138,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, and <paramref name="host"/> name.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are

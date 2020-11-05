@@ -3,8 +3,10 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Extensions
 {
@@ -21,6 +23,12 @@ namespace Microsoft.AspNetCore.Http.Extensions
         public QueryBuilder(IEnumerable<KeyValuePair<string, string>> parameters)
         {
             _params = new List<KeyValuePair<string, string>>(parameters);
+        }
+
+        public QueryBuilder(IEnumerable<KeyValuePair<string, StringValues>> parameters)
+            : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)))
+        {
+
         }
 
         public void Add(string key, IEnumerable<string> values)

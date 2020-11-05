@@ -145,9 +145,9 @@ namespace TestSite
                     }
 
                     return 0;
+#if !FORWARDCOMPAT
                 case "ThrowInStartupGenericHost":
                     {
-#if !FORWARDCOMPAT
                         var host = new HostBuilder().ConfigureWebHost((c) =>
                         {
                             c.ConfigureLogging((_, factory) =>
@@ -161,9 +161,26 @@ namespace TestSite
                                    
 
                         host.Build().Run();
-#endif
+                        return 0;
                     }
-                    return 0;
+                case "AddLatin1":
+                    {
+                        AppContext.SetSwitch("Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders", isEnabled: true);
+                        var host = new HostBuilder().ConfigureWebHost((c) =>
+                        {
+                            c.ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .UseStartup<Startup>();
+                        });
+
+                        host.Build().Run();
+                        return 0;
+                    }
+#endif
                 default:
                     return StartServer();
 

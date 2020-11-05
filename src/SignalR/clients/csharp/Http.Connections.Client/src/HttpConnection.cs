@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -150,6 +152,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
+            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
+            {
+                throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
+            }
+
             _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
             _logScope = new ConnectionLogScope();
 
@@ -172,6 +179,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
             return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
@@ -187,6 +195,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
@@ -205,7 +214,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 return;
             }
 
-            await _connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync(cancellationToken);
             try
             {
                 CheckDisposed();
@@ -365,6 +374,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         continue;
                     }
 
+                    if (transportType == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
+                    {
+                        Log.ServerSentEventsNotSupportedByBrowser(_logger);
+                        transportExceptions.Add(new TransportFailedException("ServerSentEvents", "The transport is not supported in the browser."));
+                        continue;
+                    }
+
                     try
                     {
                         if ((transportType & _httpConnectionOptions.Transports) == 0)
@@ -424,7 +440,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // Get a connection ID from the server
                 Log.EstablishingConnection(logger, url);
                 var urlBuilder = new UriBuilder(url);
-                if (!urlBuilder.Path.EndsWith("/"))
+                if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
                 {
                     urlBuilder.Path += "/";
                 }
@@ -511,34 +527,50 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             var httpClientHandler = new HttpClientHandler();
             HttpMessageHandler httpMessageHandler = httpClientHandler;
 
+            var isBrowser = OperatingSystem.IsBrowser();
+
             if (_httpConnectionOptions != null)
             {
-                if (_httpConnectionOptions.Proxy != null)
+                if (!isBrowser)
                 {
-                    httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
-                }
+                    // Configure options that do not work in the browser inside this if-block
+                    if (_httpConnectionOptions.Proxy != null)
+                    {
+                        httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
+                    }
 
-                // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
-                // if the user has configured those options
-                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
-                if (_httpConnectionOptions.Cookies.Count > 0)
-                {
-                    httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
-                }
-                // https://github.com/aspnet/SignalR/issues/2232
-                var clientCertificates = _httpConnectionOptions.ClientCertificates;
-                if (clientCertificates?.Count > 0)
-                {
-                    httpClientHandler.ClientCertificates.AddRange(clientCertificates);
-                }
+                    try
+                    {
+                        // On supported platforms, we need to pass the cookie container to the http client
+                        // so that we can capture any cookies from the negotiate response and give them to WebSockets.
+                        httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
+                    }
+                    // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
+                    // Also WASM doesn't support some settings in the browser
+                    catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
+                    {
+                        Log.CookiesNotSupported(_logger);
+                    }
 
-                if (_httpConnectionOptions.UseDefaultCredentials != null)
-                {
-                    httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
-                }
-                if (_httpConnectionOptions.Credentials != null)
-                {
-                    httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    // Only access HttpClientHandler.ClientCertificates
+                    // if the user has configured those options
+                    // https://github.com/aspnet/SignalR/issues/2232
+
+                    var clientCertificates = _httpConnectionOptions.ClientCertificates;
+                    if (clientCertificates?.Count > 0)
+                    {
+                        httpClientHandler.ClientCertificates.AddRange(clientCertificates);
+                    }
+
+                    if (_httpConnectionOptions.UseDefaultCredentials != null)
+                    {
+                        httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
+                    }
+
+                    if (_httpConnectionOptions.Credentials != null)
+                    {
+                        httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    }
                 }
 
                 httpMessageHandler = httpClientHandler;
@@ -619,7 +651,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else

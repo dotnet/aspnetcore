@@ -37,7 +37,13 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
             }
 
             // Act & assert
+#if NET461
+            TestProvider<ManagedPbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
+#elif NETCOREAPP
             TestProvider<NetCorePbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
+#else
+#error Update target frameworks
+#endif
         }
 
         [Fact]
@@ -47,7 +53,13 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
             byte[] salt = Encoding.UTF8.GetBytes("salt");
             const string expectedDerivedKeyBase64 = "Sc+V/c3fiZq5Z5qH3iavAiojTsW97FAp2eBNmCQAwCNzA8hfhFFYyQLIMK65qPnBFHOHXQPwAxNQNhaEAH9hzfiaNBSRJpF9V4rpl02d5ZpI6cZbsQFF7TJW7XJzQVpYoPDgJlg0xVmYLhn1E9qMtUVUuXsBjOOdd7K1M+ZI00c=";
 
+#if NET461
+            RunTest_WithLongPassword_Impl<ManagedPbkdf2Provider>(salt, expectedDerivedKeyBase64);
+#elif NETCOREAPP
             RunTest_WithLongPassword_Impl<NetCorePbkdf2Provider>(salt, expectedDerivedKeyBase64);
+#else
+#error Update target frameworks
+#endif
         }
 
         [Fact]
@@ -55,7 +67,14 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
         {
             // salt longer than 8 bytes
             var salt = Encoding.UTF8.GetBytes("abcdefghijkl");
+
+#if NET461
+            RunTest_WithLongPassword_Impl<ManagedPbkdf2Provider>(salt, "NGJtFzYUaaSxu+3ZsMeZO5d/qPJDUYW4caLkFlaY0cLSYdh1PN4+nHUVp4pUUubJWu3UeXNMnHKNDfnn8GMfnDVrAGTv1lldszsvUJ0JQ6p4+daQEYBc//Tj/ejuB3luwW0IinyE7U/ViOQKbfi5pCZFMQ0FFx9I+eXRlyT+I74=");
+#elif NETCOREAPP
             RunTest_WithLongPassword_Impl<NetCorePbkdf2Provider>(salt, "NGJtFzYUaaSxu+3ZsMeZO5d/qPJDUYW4caLkFlaY0cLSYdh1PN4+nHUVp4pUUubJWu3UeXNMnHKNDfnn8GMfnDVrAGTv1lldszsvUJ0JQ6p4+daQEYBc//Tj/ejuB3luwW0IinyE7U/ViOQKbfi5pCZFMQ0FFx9I+eXRlyT+I74=");
+#else
+#error Update target frameworks
+#endif
         }
 
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where

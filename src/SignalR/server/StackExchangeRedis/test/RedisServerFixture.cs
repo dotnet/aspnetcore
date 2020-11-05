@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
-    public class RedisServerFixture<TStartup> : IAsyncLifetime, IDisposable
+    public class RedisServerFixture<TStartup> : IAsyncLifetime
         where TStartup : class
     {
         public InProcessTestServer<TStartup> FirstServer { get; private set; }
@@ -37,13 +36,24 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             Docker.Default.Start(_logger);
         }
 
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
-            return Task.CompletedTask;
+            if (Docker.Default != null)
+            {
+                await FirstServer.DisposeAsync();
+                await SecondServer.DisposeAsync();
+                Docker.Default.Stop(_logger);
+                _logToken.Dispose();
+            }
         }
 
         public async Task InitializeAsync()
         {
+            if (Docker.Default == null)
+            {
+                return;
+            }
+
             FirstServer = await StartServer();
             SecondServer = await StartServer();
         }
@@ -58,17 +68,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             {
                 _logger.LogError(ex, "Server failed to start.");
                 throw;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (Docker.Default != null)
-            {
-                FirstServer.Dispose();
-                SecondServer.Dispose();
-                Docker.Default.Stop(_logger);
-                _logToken.Dispose();
             }
         }
     }

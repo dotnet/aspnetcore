@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -23,7 +23,42 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             X509KeyStorageFlags.DefaultKeySet);
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        public void Configure_NoOpsWhenConfigurationIsEmpty()
+        {
+            var expectedKeyPath = Path.Combine(Directory.GetCurrentDirectory(), "./testkey.json");
+            try
+            {
+                // Arrange
+                var configuration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                    }).Build();
+
+                var configureSigningCredentials = new ConfigureSigningCredentials(
+                    configuration,
+                    new TestLogger<ConfigureSigningCredentials>());
+
+                var options = new ApiAuthorizationOptions();
+
+                // Act
+                configureSigningCredentials.Configure(options);
+
+                // Assert
+                Assert.NotNull(options);
+                Assert.False(File.Exists(expectedKeyPath));
+                Assert.Null(options.SigningCredential);
+            }
+            finally
+            {
+                if (File.Exists(expectedKeyPath))
+                {
+                    File.Delete(expectedKeyPath);
+                }
+            }
+        }
+
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         public void Configure_AddsDevelopmentKeyFromConfiguration()
         {
@@ -64,7 +99,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
         public void Configure_LoadsPfxCertificateCredentialFromConfiguration()
         {
             // Arrange
@@ -94,7 +129,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
         public void Configure_LoadsCertificateStoreCertificateCredentialFromConfiguration()
         {
             try

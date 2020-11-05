@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -32,9 +35,12 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 return null;
             }
 
+            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
+        [SupportedOSPlatform("windows")]
         internal GcmAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
             ISecret secret,
             CngGcmAuthenticatedEncryptorConfiguration configuration)
@@ -50,6 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));
         }
 
+        [SupportedOSPlatform("windows")]
         private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
             // basic argument checking

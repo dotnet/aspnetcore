@@ -424,7 +424,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         {
             var project = CreateBasicProject(withOpenApi: false);
 
-            var app = GetApplication(realHttp: true);
+            var app = GetApplication();
             var url = BrokenUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
@@ -445,35 +445,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
 
             var jsonFile = Path.Combine(_tempDir.Root, expectedJsonName);
             Assert.False(File.Exists(jsonFile));
-        }
-
-        [Fact]
-        public void OpenApi_Add_URL_ActualResponse()
-        {
-            var project = CreateBasicProject(withOpenApi: false);
-
-            var app = GetApplication(realHttp: true);
-            var url = ActualUrl;
-            var run = app.Execute(new[] { "add", "url", url });
-
-            AssertNoErrors(run);
-
-            app = GetApplication(realHttp: true);
-            run = app.Execute(new[] { "add", "url", url });
-
-            AssertNoErrors(run);
-
-            // csproj contents
-            var csproj = new FileInfo(project.Project.Path);
-            using var csprojStream = csproj.OpenRead();
-            using var reader = new StreamReader(csprojStream);
-            var content = reader.ReadToEnd();
-            var escapedPkgRef = Regex.Escape("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"");
-            Assert.Single(Regex.Matches(content, escapedPkgRef));
-            var escapedApiRef = Regex.Escape($"SourceUrl=\"{url}\"");
-            Assert.Single(Regex.Matches(content, escapedApiRef));
-            Assert.Contains(
-$@"<OpenApiReference Include=""api-with-examples.yaml"" SourceUrl=""{ActualUrl}"" />", content);
         }
     }
 }

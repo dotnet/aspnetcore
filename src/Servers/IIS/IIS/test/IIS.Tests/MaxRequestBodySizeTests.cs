@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
 namespace IIS.Tests
 {
@@ -24,6 +25,7 @@ namespace IIS.Tests
             var globalMaxRequestBodySize = 0x100000000;
 
             BadHttpRequestException exception = null;
+
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -60,6 +62,7 @@ namespace IIS.Tests
             var perRequestMaxRequestBodySize = 0x100;
 
             BadHttpRequestException exception = null;
+
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -71,6 +74,7 @@ namespace IIS.Tests
 
                         await ctx.Request.Body.ReadAsync(new byte[2000]);
                     }
+
                     catch (BadHttpRequestException ex)
                     {
                         exception = ex;
@@ -266,6 +270,7 @@ namespace IIS.Tests
             var maxRequestSize = 0x1000;
 
             BadHttpRequestException exception = null;
+
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -307,13 +312,14 @@ namespace IIS.Tests
         {
             BadHttpRequestException requestRejectedEx1 = null;
             BadHttpRequestException requestRejectedEx2 = null;
+
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
                     var buffer = new byte[1];
-                    requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
+                    requestRejectedEx1 = await Assert.ThrowsAnyAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
-                    requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
+                    requestRejectedEx2 = await Assert.ThrowsAnyAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
                     throw requestRejectedEx2;
                 }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))

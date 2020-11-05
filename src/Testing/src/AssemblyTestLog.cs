@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var maxPathString = Environment.GetEnvironmentVariable(MaxPathLengthEnvironmentVariableName);
             var defaultMaxPath = 245;
-            return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString);
+            return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString, CultureInfo.InvariantCulture);
         }
 
         private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, Assembly assembly, IServiceProvider serviceProvider)
@@ -52,9 +54,11 @@ namespace Microsoft.AspNetCore.Testing
             _serviceProvider = serviceProvider;
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) =>
             StartTestLog(output, className, out loggerFactory, LogLevel.Debug, testName);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null) =>
             StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, out var _, testName);
 
@@ -71,7 +75,7 @@ namespace Microsoft.AspNetCore.Testing
             var scope = logger.BeginScope("Test: {testName}", testName);
 
             _globalLogger.LogInformation("Starting test {testName}", testName);
-            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s"));
+            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s", CultureInfo.InvariantCulture));
 
             return new Disposable(() =>
             {
@@ -84,15 +88,19 @@ namespace Microsoft.AspNetCore.Testing
             });
         }
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerFactory(output, className, LogLevel.Trace, testName, logStart);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerServices(output, className, minLogLevel, out var _, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
             => CreateLoggerServices(output, className, minLogLevel, out normalizedTestName, out var _, testName, logStart);
 
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
         {
             normalizedTestName = string.Empty;
@@ -207,7 +215,7 @@ namespace Microsoft.AspNetCore.Testing
             logger.LogInformation("Global Test Logging initialized at {logStart}. "
                 + "Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property "
                 + "or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.",
-                logStart.ToString("s"));
+                logStart.ToString("s", CultureInfo.InvariantCulture));
             return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
@@ -285,8 +293,8 @@ namespace Microsoft.AspNetCore.Testing
                     propertyFactory.CreateProperty(
                         "TimestampOffset",
                         _logStart.HasValue
-                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"
-                            : DateTimeOffset.UtcNow.ToString("s")));
+                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3", CultureInfo.InvariantCulture)}s"
+                            : DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture)));
         }
 
         private class Disposable : IDisposable
