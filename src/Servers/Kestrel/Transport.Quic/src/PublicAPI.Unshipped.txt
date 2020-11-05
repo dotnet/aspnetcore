@@ -1,5 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions
+Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.set -> void
@@ -12,6 +13,8 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOpt
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.QuicTransportOptions() -> void
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory.BindAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener>
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory.QuicTransportFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions> options) -> void
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.get -> string
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.set -> void
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2

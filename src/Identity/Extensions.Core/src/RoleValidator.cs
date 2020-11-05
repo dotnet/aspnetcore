@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity
     public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     {
         /// <summary>
-        /// Creates a new instance of <see cref="RoleValidator{TRole}"/>/
+        /// Creates a new instance of <see cref="RoleValidator{TRole}"/>.
         /// </summary>
         /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         public RoleValidator(IdentityErrorDescriber errors = null)
