@@ -12,7 +12,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>

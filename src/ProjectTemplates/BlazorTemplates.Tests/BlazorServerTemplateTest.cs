@@ -88,7 +88,7 @@ namespace Templates.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27376")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
