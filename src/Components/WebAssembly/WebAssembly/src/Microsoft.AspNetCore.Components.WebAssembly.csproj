@@ -6,6 +6,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

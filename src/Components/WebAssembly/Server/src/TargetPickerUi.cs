@@ -226,17 +226,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var jsonResponse = await httpClient.GetStringAsync($"{_browserHost}/json");
-            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
+            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
         }
 
-        class BrowserTab
-        {
-            public string Id { get; set; }
-            public string Type { get; set; }
-            public string Url { get; set; }
-            public string Title { get; set; }
-            public string DevtoolsFrontendUrl { get; set; }
-            public string WebSocketDebuggerUrl { get; set; }
-        }
+        record BrowserTab
+        (
+            string Id,
+            string Type,
+            string Url,
+            string Title,
+            string DevtoolsFrontendUrl,
+            string WebSocketDebuggerUrl
+        );
     }
 }

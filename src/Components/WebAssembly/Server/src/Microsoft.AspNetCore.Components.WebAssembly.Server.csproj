@@ -8,6 +8,7 @@
     <!-- We're deliberately bundling assemblies as content files. Suppress the warning. -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
