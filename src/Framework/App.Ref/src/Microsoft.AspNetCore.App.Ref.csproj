@@ -165,7 +165,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Outputs="$(ReferencePackageOverridesPath">
     <ItemGroup>
       <!-- Use package version for non-Extensions references. -->
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetVersion)')"
           Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND

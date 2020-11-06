@@ -196,7 +196,7 @@ and are generated based on the last package release.
 
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
-      <Version>$(%(VersionName)PackageVersion)</Version>
+      <Version>$(%(VersionName)Version)</Version>
     </LatestPackageReference>
 
     <!--
