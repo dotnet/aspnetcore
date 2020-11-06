@@ -496,8 +496,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
             => PreventDefault_CanBlockNavigation("internal", "target");
 
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        public void PreventDefault_CanBlockNavigation_ForExternalNavigation_PreventDefaultAncestor()
+            => PreventDefault_CanBlockNavigation("external", "ancestor");
+
         [Theory]
-        [InlineData("external", "ancestor")]
         [InlineData("external", "target")]
         [InlineData("external", "descendant")]
         [InlineData("internal", "ancestor")]
