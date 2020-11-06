@@ -63,6 +63,8 @@ Microsoft.Extensions.DependencyInjection.JwtBearerExtensions
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Authority.set -> void
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.BackchannelHttpHandler.get -> System.Net.Http.HttpMessageHandler
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.BackchannelHttpHandler.set -> void
+~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Backchannel.get -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Backchannel.set -> void
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Challenge.get -> string
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Challenge.set -> void
 ~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Configuration.get -> Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration
