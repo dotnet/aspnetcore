@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task UserStorePublicNullCheckTest()
         {
-            Assert.Throws<ArgumentNullException>("context", () => new UserStore(null));
+            Assert.Throws<ArgumentNullException>("contextProvider", () => new UserStore(null));
             var context = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options);
             var dbContextProvider = new SampleDbContextProvider(context);
 

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task RoleStorePublicNullCheckTest()
         {
-            Assert.Throws<ArgumentNullException>("context", () => new RoleStore<IdentityRole>(null));
+            Assert.Throws<ArgumentNullException>("contextProvider", () => new RoleStore<IdentityRole>(null));
 
             var dbContextProvider = new SampleDbContextProvider(InMemoryContext.Create(_fixture.Connection));
             var store = new RoleStore<IdentityRole>(dbContextProvider);
