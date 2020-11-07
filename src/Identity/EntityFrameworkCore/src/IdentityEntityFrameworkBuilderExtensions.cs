@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,16 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
             where TContext : DbContext
         {
-            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
+            var services = builder.Services;
+
+            var identityDbContextOptions = new IdentityDbContextOptions<TContext>();
+            services.TryAddSingleton<IIdentityDbContextOptions>(identityDbContextOptions);
+
+
+            services.TryAddScoped<IIdentityDbContextProvider, IdentityDbContextProvider>();
+
+
+            AddStores(services, builder.UserType, builder.RoleType, identityDbContextOptions.DbContextType);
             return builder;
         }
 
@@ -52,38 +62,40 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (identityContext == null)
                 {
                     // If its a custom DbContext, we can only add the default POCOs
-                    userStoreType = typeof(UserStore<,,,>).MakeGenericType(userType, roleType, contextType, keyType);
-                    roleStoreType = typeof(RoleStore<,,>).MakeGenericType(roleType, contextType, keyType);
+                    userStoreType = typeof(UserStore<,,>).MakeGenericType(userType, roleType, keyType);
+                    roleStoreType = typeof(RoleStore<,,>).MakeGenericType(roleType, keyType);
                 }
                 else
                 {
-                    userStoreType = typeof(UserStore<,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
+                    userStoreType = typeof(UserStore<,,,,,,,>).MakeGenericType(userType, roleType,
                         identityContext.GenericTypeArguments[2],
                         identityContext.GenericTypeArguments[3],
                         identityContext.GenericTypeArguments[4],
                         identityContext.GenericTypeArguments[5],
                         identityContext.GenericTypeArguments[7],
                         identityContext.GenericTypeArguments[6]);
-                    roleStoreType = typeof(RoleStore<,,,,>).MakeGenericType(roleType, contextType,
+                    roleStoreType = typeof(RoleStore<,,,,>).MakeGenericType(roleType,
                         identityContext.GenericTypeArguments[2],
                         identityContext.GenericTypeArguments[4],
                         identityContext.GenericTypeArguments[6]);
                 }
+
                 services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
                 services.TryAddScoped(typeof(IRoleStore<>).MakeGenericType(roleType), roleStoreType);
             }
             else
-            {   // No Roles
+            {
+                // No Roles
                 Type userStoreType = null;
                 var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
                 if (identityContext == null)
                 {
                     // If its a custom DbContext, we can only add the default POCOs
-                    userStoreType = typeof(UserOnlyStore<,,>).MakeGenericType(userType, contextType, keyType);
+                    userStoreType = typeof(UserOnlyStore<,>).MakeGenericType(userType, keyType);
                 }
                 else
                 {
-                    userStoreType = typeof(UserOnlyStore<,,,,,>).MakeGenericType(userType, contextType,
+                    userStoreType = typeof(UserOnlyStore<,,,,>).MakeGenericType(userType,
                         identityContext.GenericTypeArguments[1],
                         identityContext.GenericTypeArguments[2],
                         identityContext.GenericTypeArguments[3],
@@ -91,7 +103,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
                 services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
             }
-
         }
 
         private static TypeInfo FindGenericBaseType(Type currentType, Type genericBaseType)
