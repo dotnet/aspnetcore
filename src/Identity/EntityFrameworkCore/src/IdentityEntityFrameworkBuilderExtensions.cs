@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     // If its a custom DbContext, we can only add the default POCOs
                     userStoreType = typeof(UserStore<,,>).MakeGenericType(userType, roleType, keyType);
-                    roleStoreType = typeof(RoleStore<,,>).MakeGenericType(roleType, keyType);
+                    roleStoreType = typeof(RoleStore<,>).MakeGenericType(roleType, keyType);
                 }
                 else
                 {
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         identityContext.GenericTypeArguments[5],
                         identityContext.GenericTypeArguments[7],
                         identityContext.GenericTypeArguments[6]);
-                    roleStoreType = typeof(RoleStore<,,,,>).MakeGenericType(roleType,
+                    roleStoreType = typeof(RoleStore<,,,>).MakeGenericType(roleType,
                         identityContext.GenericTypeArguments[2],
                         identityContext.GenericTypeArguments[4],
                         identityContext.GenericTypeArguments[6]);
