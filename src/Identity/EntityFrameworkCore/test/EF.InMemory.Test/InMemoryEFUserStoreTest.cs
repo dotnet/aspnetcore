@@ -24,12 +24,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
+            var dbContextProvider = new SampleDbContextProvider((InMemoryContext)context);
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser>(dbContextProvider));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            var store = new RoleStore<IdentityRole, InMemoryContext>((InMemoryContext)context);
+            var dbContextProvider = new SampleDbContextProvider((InMemoryContext)context);
+            var store = new RoleStore<IdentityRole>(dbContextProvider);
             services.AddSingleton<IRoleStore<IdentityRole>>(store);
         }
 

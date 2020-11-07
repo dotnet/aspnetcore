@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
@@ -33,24 +35,26 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
         }
 
-        public class ApplicationUserStore : UserStore<GuidUser, GuidRole, TestDbContext, Guid>
+        public class ApplicationUserStore : UserStore<GuidUser, GuidRole, Guid>
         {
-            public ApplicationUserStore(TestDbContext context) : base(context) { }
+            public ApplicationUserStore(IIdentityDbContextProvider dbContextProvider) : base(dbContextProvider) { }
         }
 
-        public class ApplicationRoleStore : RoleStore<GuidRole, TestDbContext, Guid>
+        public class ApplicationRoleStore : RoleStore<GuidRole, Guid>
         {
-            public ApplicationRoleStore(TestDbContext context) : base(context) { }
+            public ApplicationRoleStore(IIdentityDbContextProvider dbContextProvider) : base(dbContextProvider) { }
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<GuidUser>>(new ApplicationUserStore((TestDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((TestDbContext)context);
+            services.AddSingleton<IUserStore<GuidUser>>(new ApplicationUserStore(dbContextProvider));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IRoleStore<GuidRole>>(new ApplicationRoleStore((TestDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((TestDbContext)context);
+            services.AddSingleton<IRoleStore<GuidRole>>(new ApplicationRoleStore(dbContextProvider));
         }
 
         [Fact]

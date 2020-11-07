@@ -6,10 +6,12 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
@@ -56,18 +58,23 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((IdentityDbContext)context);
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole>(dbContextProvider));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((IdentityDbContext)context);
+            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole>(dbContextProvider));
         }
 
         [Fact]
         public async Task SqlUserStoreMethodsThrowWhenDisposedTest()
         {
-            var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+            var context = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options);
+            var dbContextProvider = new SampleDbContextProvider(context);
+
+            var store = new UserStore(dbContextProvider);
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -101,7 +108,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public async Task UserStorePublicNullCheckTest()
         {
             Assert.Throws<ArgumentNullException>("context", () => new UserStore(null));
-            var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+            var context = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options);
+            var dbContextProvider = new SampleDbContextProvider(context);
+
+            var store = new UserStore(dbContextProvider);
+
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));

@@ -7,12 +7,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
@@ -58,7 +60,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             SetupAddIdentity(services);
         }
 
-        public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> {
+        public class TestDbContext : IdentityDbContext<TUser, TRole, TKey>
+        {
             public TestDbContext(DbContextOptions options) : base(options) { }
         }
 
@@ -107,12 +110,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<TUser>>(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((TestDbContext)context);
+            services.AddSingleton<IUserStore<TUser>>(new UserStore<TUser, TRole, TKey>(dbContextProvider));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
+            var dbContextProvider = new SampleDbContextProvider((TestDbContext)context);
+            services.AddSingleton<IRoleStore<TRole>>(new RoleStore<TRole, TKey>(dbContextProvider));
         }
 
         protected override void SetUserPasswordHash(TUser user, string hashedPassword)
