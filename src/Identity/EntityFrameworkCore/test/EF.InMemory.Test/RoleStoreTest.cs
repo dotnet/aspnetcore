@@ -3,8 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
@@ -31,8 +33,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         {
             var services = TestIdentityFactory.CreateTestServices();
             services.AddEntityFrameworkSqlite();
-            services.AddSingleton(InMemoryContext.Create(_fixture.Connection));
-            services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
+
+            var dbContextProvider = new SampleDbContextProvider(InMemoryContext.Create(_fixture.Connection));
+            services.AddSingleton<IIdentityDbContextProvider>(dbContextProvider);
+
+            services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole>>();
             services.AddSingleton<RoleManager<IdentityRole>>();
             var provider = services.BuildServiceProvider();
             var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -43,7 +48,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task RoleStoreMethodsThrowWhenDisposedTest()
         {
-            var store = new RoleStore<IdentityRole>(InMemoryContext.Create(_fixture.Connection));
+            var dbContextProvider = new SampleDbContextProvider(InMemoryContext.Create(_fixture.Connection));
+            var store = new RoleStore<IdentityRole>(dbContextProvider);
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByNameAsync(null));
@@ -59,7 +65,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public async Task RoleStorePublicNullCheckTest()
         {
             Assert.Throws<ArgumentNullException>("context", () => new RoleStore<IdentityRole>(null));
-            var store = new RoleStore<IdentityRole>(InMemoryContext.Create(_fixture.Connection));
+
+            var dbContextProvider = new SampleDbContextProvider(InMemoryContext.Create(_fixture.Connection));
+            var store = new RoleStore<IdentityRole>(dbContextProvider);
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.SetRoleNameAsync(null, null));
