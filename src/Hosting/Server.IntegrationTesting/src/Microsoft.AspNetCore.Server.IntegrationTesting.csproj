@@ -6,9 +6,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

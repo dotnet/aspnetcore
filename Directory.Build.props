@@ -130,7 +130,7 @@
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
-      Archives and installers using this prefix are intended for internal-use only.
+      Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
       into their own installers.
     -->
