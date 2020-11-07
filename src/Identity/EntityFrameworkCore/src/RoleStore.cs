@@ -85,15 +85,16 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole, TContext, TKey, TUserRole, TRoleClaim}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="contextProvider">The <see cref="DbContext"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
-        public RoleStore(TContext context, IdentityErrorDescriber describer = null)
+        public RoleStore(IIdentityDbContextProvider contextProvider, IdentityErrorDescriber describer = null)
         {
-            if (context == null)
+            if (contextProvider == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(contextProvider));
             }
-            Context = context;
+
+            ContextProvider = contextProvider;
             ErrorDescriber = describer ?? new IdentityErrorDescriber();
         }
 
@@ -101,9 +102,20 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
 
         /// <summary>
+        /// The database context provider for this store.
+        /// </summary>
+        public virtual IIdentityDbContextProvider ContextProvider { get; private set; }
+
+        /// <summary>
         /// Gets the database context for this store.
         /// </summary>
-        public virtual TContext Context { get; private set; }
+        public virtual DbContext Context
+        {
+            get
+            {
+                return this.ContextProvider.GetDbContext();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="IdentityErrorDescriber"/> for any error that occurred with the current operation.

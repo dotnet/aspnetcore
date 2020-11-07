@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
@@ -15,62 +16,43 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Creates a new instance of a persistence store for the specified user type.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    public class UserOnlyStore<TUser> : UserOnlyStore<TUser, DbContext, string> where TUser : IdentityUser<string>, new()
+    public class UserOnlyStore<TUser> : UserOnlyStore<TUser, string>
+        where TUser : IdentityUser<string>, new()
     {
         /// <summary>
         /// Constructs a new instance of <see cref="UserOnlyStore{TUser}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
-        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
-        public UserOnlyStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+        /// <param name="contextProvider">The database context provider for this store.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
+        public UserOnlyStore(IIdentityDbContextProvider contextProvider, IdentityErrorDescriber describer = null) : base(contextProvider, describer) { }
     }
 
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-    public class UserOnlyStore<TUser, TContext> : UserOnlyStore<TUser, TContext, string>
-        where TUser : IdentityUser<string>
-        where TContext : DbContext
-    {
-        /// <summary>
-        /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext}"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
-        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
-        public UserOnlyStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
-    }
-
-    /// <summary>
-    /// Represents a new instance of a persistence store for the specified user and role types.
-    /// </summary>
-    /// <typeparam name="TUser">The type representing a user.</typeparam>
-    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
-    public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
+    public class UserOnlyStore<TUser, TKey> : UserOnlyStore<TUser, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
         where TUser : IdentityUser<TKey>
-        where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
         /// <summary>
-        /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext, TKey}"/>.
+        /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TKey}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
-        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
-        public UserOnlyStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+        /// <param name="contextProvider">The database context provider for this store.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
+        public UserOnlyStore(IIdentityDbContextProvider contextProvider, IdentityErrorDescriber describer = null) : base(contextProvider, describer) { }
     }
 
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
-    public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken> :
+    public class UserOnlyStore<TUser, TKey, TUserClaim, TUserLogin, TUserToken> :
         UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
         IUserLoginStore<TUser>,
         IUserClaimStore<TUser>,
@@ -86,7 +68,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserTwoFactorRecoveryCodeStore<TUser>,
         IProtectedUserStore<TUser>
         where TUser : IdentityUser<TKey>
-        where TContext : DbContext
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()
         where TUserLogin : IdentityUserLogin<TKey>, new()
@@ -95,21 +76,33 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Creates a new instance of the store.
         /// </summary>
-        /// <param name="context">The context used to access the store.</param>
+        /// <param name="contextProvider">The database context provider for this store.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
-        public UserOnlyStore(TContext context, IdentityErrorDescriber describer = null) : base(describer ?? new IdentityErrorDescriber())
+        public UserOnlyStore(IIdentityDbContextProvider contextProvider, IdentityErrorDescriber describer = null) : base(describer ?? new IdentityErrorDescriber())
         {
-            if (context == null)
+            if (contextProvider == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(contextProvider));
             }
-            Context = context;
+
+            ContextProvider = contextProvider;
         }
+
+        /// <summary>
+        /// The database context provider for this store.
+        /// </summary>
+        public virtual IIdentityDbContextProvider ContextProvider { get; private set; }
 
         /// <summary>
         /// Gets the database context for this store.
         /// </summary>
-        public virtual TContext Context { get; private set; }
+        public virtual DbContext Context
+        {
+            get
+            {
+                return this.ContextProvider.GetDbContext();
+            }
+        }
 
         /// <summary>
         /// DbSet of users.
