@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <summary>
     /// Identity stores the database context provider.
     /// </summary>
-    public interface IIdentityDbContextProvider : IDisposable
+    public interface IIdentityDbContextProvider
     {
         /// <summary>
         /// Gets the database context of identity store.
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <summary>
     /// Identity stores the database context provider default implementation.
     /// </summary>
-    public class IdentityDbContextProvider : IIdentityDbContextProvider
+    public class IdentityDbContextProvider : IIdentityDbContextProvider, IDisposable
     {
         /// <summary>
         /// The scope container
@@ -71,6 +71,26 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 this._instance.Value?.Dispose();
             }
+        }
+    }
+
+    /// <summary>
+    /// The simplest identity store database context provider
+    /// </summary>
+    public class SampleDbContextProvider : IIdentityDbContextProvider
+    {
+        readonly DbContext _dbContext;
+
+        /// <inheritdoc/>
+        public SampleDbContextProvider(DbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        /// <inheritdoc/>
+        public DbContext GetDbContext()
+        {
+            return _dbContext;
         }
     }
 }
