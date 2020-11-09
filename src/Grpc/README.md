@@ -18,3 +18,7 @@ Run `build.sh` or `build.cmd` in this directory.
 ### Test
 
 Because `grpc-dotnet` is an external project, its packages use the installed runtime. The tests are run with a runtime built from the latest source code in CI builds.
+
+## More Information
+
+For more information, see the [ASP.NET Core README](../../README.md).
