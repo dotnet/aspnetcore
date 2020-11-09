@@ -13,7 +13,7 @@ The purpose of these tests is to ensure gRPC runs correctly against the latest c
 
 ### Build
 
-Run `build.sh` or `build.cmd`.
+Run `build.sh` or `build.cmd` in this directory.
 
 ### Test
 
