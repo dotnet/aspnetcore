@@ -1,17 +1,53 @@
 # Blazor
 
-**Build modern, interactive web-based UIs with C# and Razor.**
+Blazor is a framework for building modern, interactive web-based UIs with C# and Razor. For more information on using Blazor to build apps, check out [the official docs](https://blazor.net).
 
-This folder contains the underlying *components* programming model that powers both server-side and client-side [Blazor](#blazor) applications.
+## Description
 
-Blazor is a component based web UI framework. Blazor apps can run client-side in browser on WebAssembly or server-side as part of an ASP.NET Core app. Blazor is a full single-page application (SPA) framework inspired by the latest JavaScript SPA frameworks, featuring support for offline/PWA applications, app size trimming, and browser-based debugging.
+This folder contains the component model shared between the WebAssembly and Server hosting models for Blazor.
 
-Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies.
+The following contains a description of each sub-directory in the `Components` directory.
 
-[![Gitter](https://badges.gitter.im/aspnet/blazor.svg)](https://gitter.im/aspnet/blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+- `Analyzers`: Contains a collection of Rosyln analyzers for Blazor components
+- `Authorization`: Contains source files associated with auth-related components and services in Blazor
+- `Components`: Contains the implementation for the Blazor component model
+- `Forms`: Contains source files for Form components in Blazor
+- `Ignitor`: Contains source files for inspecting Blazor apps
+- `Samples`: Contains a collection of sample apps in Blazor
+- `Server`: Contains the implementation for Blazor Server-specific components
+- `Shared`: Contains a collection of shared constants and helper methods/classes
+- `Web`: Contains source files for handling DOM events, forms, and other components
+- `Web.JS`: Contains the source files for Blazor's client-side JavaScript
+- `WebAssembly`: Contains the implementation for WebAssembly-specific components
 
-You can learn more about Blazor at https://blazor.net.
+## Development Setup
 
-## Getting Started
+### Build
 
-To get started with Blazor and build your first web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
+This project takes a dependency on MVC and SignalR packages. In order to build this project and its dependencies, run the following command inside this directory.
+
+```powershell
+> ./build.cmd
+```
+
+Or on MacOS or Linux:
+
+```bash
+$ ./build.sh
+```
+
+### Test
+
+This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have Selenium installed on your machine.
+
+The E2E tests are located in the top-level `tests` folder in this directory. The E2E tests consists of a top-level `TestServer` which instantiates different app servers for specific scenarios:
+
+- Standalone Blazor WASM
+- Hosted Blazor WASM
+- Blazor Server
+- Blazor Server with pre-rendering
+
+Each app server mounts the same `BasicTestApp` application under each scenario.
+
+Project-specific tests are located in each project under the `tests` directory and can be run with `dotnet test`.
+
