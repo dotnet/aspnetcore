@@ -439,23 +439,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             dataLength = 0;
                         }
 
+                        if (_minResponseDataRate != null)
+                        {
+                            _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
+                        }
+
                         // Don't call TimeFlushUnsynchronizedAsync() since we time this write while also accounting for
                         // flow control induced backpressure below.
                         writeTask = _flusher.FlushAsync();
                     }
                     else if (firstWrite)
                     {
+                        if (_minResponseDataRate != null)
+                        {
+                            _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
+                        }
+
                         // If we're facing flow control induced backpressure on the first write for a given stream's response body,
                         // we make sure to flush the response headers immediately.
                         writeTask = _flusher.FlushAsync();
                     }
 
                     firstWrite = false;
-
-                    if (_minResponseDataRate != null)
-                    {
-                        _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
-                    }
 
                     _unflushedBytes = 0;
                 }
