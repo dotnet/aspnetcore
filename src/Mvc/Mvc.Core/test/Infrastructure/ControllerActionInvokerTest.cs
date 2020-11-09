@@ -469,6 +469,52 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
+        public async Task InvokeAction_InvokesActionFilter_WithActionResult_FromActionFilter()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            ActionExecutedContext actionExecutedContext1 = null;
+            ActionExecutingContext actionExecutingContext1 = null;
+
+
+            var actionFilter1 = new Mock<IActionFilter>(MockBehavior.Strict);
+            actionFilter1.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            actionFilter1
+                .Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>()))
+                .Callback<ActionExecutingContext>(c => actionExecutingContext1 = c)
+                .Verifiable();
+            actionFilter1
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => actionExecutedContext1 = c)
+                .Verifiable();
+
+            var actionFilter2 = new Mock<IActionFilter>(MockBehavior.Strict);
+            actionFilter2
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => c.Result = result.Object)
+                .Verifiable();
+
+            var invoker = CreateInvoker(new IFilterMetadata[]
+            {
+                actionFilter1.Object,
+                actionFilter2.Object,
+            });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Same(actionExecutingContext1.Result, result.Object);
+            Assert.Same(actionExecutedContext1.Result, result.Object);
+            Assert.Same(actionExecutingContext1.Result, actionExecutingContext1.Result);
+        }
+
+        [Fact]
         public async Task InvokeAction_InvokesActionFilter_WithExceptionThrownByActionFilter()
         {
             // Arrange
