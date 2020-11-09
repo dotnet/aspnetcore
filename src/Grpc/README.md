@@ -17,4 +17,4 @@ Run `build.sh` or `build.cmd`.
 
 ### Test
 
-Because `grpc-dotnet` is an external project its packages use the installed runtime. When the CI build runs the tests are run using a runtime built from the latest source code.
+Because `grpc-dotnet` is an external project, its packages use the installed runtime. The tests are run with a runtime built from the latest source code in CI builds.
