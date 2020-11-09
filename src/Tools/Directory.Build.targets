@@ -1,9 +1,19 @@
 <Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
-
-  <PropertyGroup>
-    <UseLatestPackageReferences Condition=" '$(PackAsTool)' == 'true' ">true</UseLatestPackageReferences>
+  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
+    <!-- Microsoft tool packages are required to target both x64 and x86. -->
+    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' ">win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- None of the tool projects are project reference providers. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <!--
+      Target the default version of .NET Core in tool projects to maximize the compatible environments. Must be set
+      before importing root Directory.Build.targets.
+    -->
+    <TargetLatestDotNetRuntime Condition=" '$(IsServicingBuild)' == 'true' ">false</TargetLatestDotNetRuntime>
+    <!-- Tool projects publish before packing. Packages should contain the latest bits. -->
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
   <Target Name="CleanPublishDir" AfterTargets="CoreClean">
     <RemoveDir Directories="$(PublishDir)" />
