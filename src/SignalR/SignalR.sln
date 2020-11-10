@@ -147,6 +147,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Metadata", "..\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj", "{2E107FBB-2387-4A9F-A2CA-EFDF2E4DD64D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Json50.Tests", "common\SignalR.Common\test-json\Microsoft.AspNetCore.SignalR.Json50.Tests.csproj", "{BFE22265-03E2-4967-B1C8-93216324D42D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -405,6 +407,10 @@ Global
 		{2E107FBB-2387-4A9F-A2CA-EFDF2E4DD64D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E107FBB-2387-4A9F-A2CA-EFDF2E4DD64D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E107FBB-2387-4A9F-A2CA-EFDF2E4DD64D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFE22265-03E2-4967-B1C8-93216324D42D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE22265-03E2-4967-B1C8-93216324D42D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE22265-03E2-4967-B1C8-93216324D42D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE22265-03E2-4967-B1C8-93216324D42D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -475,6 +481,7 @@ Global
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1} = {EDE8E45E-A5D0-4F0E-B72C-7CC14146C60A}
 		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0} = {9FCD621E-E710-4991-B45C-1BABC977BEEC}
 		{2E107FBB-2387-4A9F-A2CA-EFDF2E4DD64D} = {EDE8E45E-A5D0-4F0E-B72C-7CC14146C60A}
+		{BFE22265-03E2-4967-B1C8-93216324D42D} = {9FCD621E-E710-4991-B45C-1BABC977BEEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}
