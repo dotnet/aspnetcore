@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" />
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json50.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
   </ItemGroup>
 
