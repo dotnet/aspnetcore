@@ -91,10 +91,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             {
                                 _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
-							else if (_actionExecutedContext != null && _actionExecutedContext.Result != null)
-							{
-								_actionExecutingContext.Result = _actionExecutedContext.Result;
-							}
+                            else if (_actionExecutedContext != null && _actionExecutedContext.Result != null)
+                            {
+                                _actionExecutingContext.Result = _actionExecutedContext.Result;
+                            }
 
                             state = current.FilterAsync;
                             goto case State.ActionAsyncBegin;
@@ -105,10 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             {
                                 _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
-							else if (_actionExecutedContext != null && _actionExecutedContext.Result != null)
-							{
-								_actionExecutingContext.Result = _actionExecutedContext.Result;
-							}
+                            else if (_actionExecutedContext != null && _actionExecutedContext.Result != null)
+                            {
+                                _actionExecutingContext.Result = _actionExecutedContext.Result;
+                            }
 
                             state = current.Filter;
                             goto case State.ActionSyncBegin;
