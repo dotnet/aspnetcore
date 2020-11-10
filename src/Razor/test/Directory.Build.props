@@ -6,6 +6,6 @@
       Projects in this folder don't follow the usual naming conventions for test assets. Marking as such
       though the projects directly w/in this folder are more like test infrastructure.
     -->
-    <IsTestAssetProject>false</IsTestAssetProject>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 </Project>
