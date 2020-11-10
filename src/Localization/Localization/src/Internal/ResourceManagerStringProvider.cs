@@ -72,8 +72,7 @@ namespace Microsoft.Extensions.Localization
                 }
 
                 var names = new List<string>();
-
-                foreach (KeyValuePair<object, object?>? entry in resourceSet)
+                foreach (DictionaryEntry? entry in resourceSet)
                 {
                     if (entry?.Key is string key)
                     {
