@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Text.Json" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json50.Tests" Key="" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" Key="" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
@@ -16,6 +17,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json50.Tests" Key="" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" Key="" />
   </ItemGroup>
 </Project>
