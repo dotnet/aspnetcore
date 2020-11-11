@@ -23,7 +23,10 @@
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <VersionPrefix>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <!-- TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats. -->
+    <!--
+      TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats.
+      It's also used in root Directory.Build.targets to determine the version of the last-built targeting pack.
+    -->
     <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>
     <!-- Targeting packs do not produce patch versions in servicing builds. No API changes are allowed in patches. -->
     <TargetingPackVersionPrefix Condition="'$(IsTargetingPackBuilding)' != 'true'">$(AspNetCoreMajorMinorVersion).0</TargetingPackVersionPrefix>
