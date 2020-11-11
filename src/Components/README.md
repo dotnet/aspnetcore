@@ -31,17 +31,7 @@ The following contains a description of each sub-directory in the `Components` d
 
 ### Build
 
-In order to build this project and its dependencies, run the following command inside this directory.
-
-```powershell
-> ./build.cmd
-```
-
-Or on MacOS or Linux:
-
-```bash
-$ ./build.sh
-```
+To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 ### Test
 
@@ -56,7 +46,7 @@ The E2E tests are located in the top-level `tests` folder in this directory. The
 
 Each app server mounts the same `BasicTestApp` application under each scenario.
 
-Project-specific tests are located in each project under the `tests` directory and can be run with `dotnet test`.
+To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 ## More Information
 
