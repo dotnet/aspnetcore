@@ -84,6 +84,7 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.ClientId.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.ClientId.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.DefaultScopes.get -> System.Collections.Generic.IList<string>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.ExtraQueryParams.get -> System.Collections.Generic.IDictionary<string, string>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.MetadataUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.MetadataUrl.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.PostLogoutRedirectUri.get -> string

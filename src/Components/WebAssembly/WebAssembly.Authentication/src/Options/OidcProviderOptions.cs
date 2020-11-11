@@ -57,5 +57,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// </summary>
         [JsonPropertyName("response_mode")]
         public string ResponseMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the extra query parameters to use on the authorization flow. 
+        /// </summary>
+        public IDictionary<string, string> ExtraQueryParams { get; } = new Dictionary<string, string>();
     }
 }

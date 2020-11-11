@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
@@ -280,6 +281,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             Assert.Null(provider.Authority);
             Assert.Null(provider.ClientId);
             Assert.Equal(new[] { "openid", "profile" }, provider.DefaultScopes);
+            Assert.Equal(new Dictionary<string, string>(), provider.ExtraQueryParams);
             Assert.Equal("https://www.example.com/base/authentication/login-callback", provider.RedirectUri);
             Assert.Equal("https://www.example.com/base/authentication/logout-callback", provider.PostLogoutRedirectUri);
         }
@@ -308,6 +310,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 options.ProviderOptions.Authority = "p";
                 options.ProviderOptions.ClientId = "q";
                 options.ProviderOptions.DefaultScopes.Clear();
+                options.ProviderOptions.ExtraQueryParams.Add("r", "s");
                 options.ProviderOptions.RedirectUri = "https://www.example.com/base/custom-login";
                 options.ProviderOptions.PostLogoutRedirectUri = "https://www.example.com/base/custom-logout";
             });
@@ -340,6 +343,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             Assert.Equal("p", provider.Authority);
             Assert.Equal("q", provider.ClientId);
             Assert.Equal(Array.Empty<string>(), provider.DefaultScopes);
+            Assert.Equal(new Dictionary<string, string>() { { "r", "s" } }, provider.ExtraQueryParams);
             Assert.Equal("https://www.example.com/base/custom-login", provider.RedirectUri);
             Assert.Equal("https://www.example.com/base/custom-logout", provider.PostLogoutRedirectUri);
         }
