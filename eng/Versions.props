@@ -65,10 +65,10 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion>6.0.0-alpha.1.20560.10</VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion>
     <MicrosoftWin32RegistryPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsCachingAbstractionsPackageVersion>

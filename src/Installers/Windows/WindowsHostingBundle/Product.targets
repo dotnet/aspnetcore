@@ -28,10 +28,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
+      <RemoteAsset Include="Runtime/$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
+      <RemoteAsset Include="Runtime/$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
