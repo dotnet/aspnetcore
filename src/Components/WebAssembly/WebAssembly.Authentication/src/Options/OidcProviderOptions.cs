@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <remarks>
         /// These parameters are for the IdP and not for the application. Using those parameters in the application in any way on the login callback will likely introduce security issues as they should be treated as untrusted input.
         /// </remarks>
+        [JsonPropertyName("extraQueryParams")]
         public IDictionary<string, string> AdditionalProviderParameters { get; } = new Dictionary<string, string>();
     }
 }
