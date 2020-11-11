@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
 
-        public CachedResponseBody Body { get; set; }
+        public CachedResponseBody Body { get; set; } = default!;
     }
 }

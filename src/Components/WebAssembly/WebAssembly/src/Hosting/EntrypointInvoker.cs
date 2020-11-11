@@ -50,14 +50,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // For "async Task Main", the C# compiler generates a method called "<Main>"
             // that is marked as the assembly entrypoint. Detect this case, and instead of
             // calling "<Whatever>", call the sibling "Whatever".
-            if (metadataEntrypointMethodBase.IsSpecialName)
+            if (metadataEntrypointMethodBase!.IsSpecialName)
             {
                 var origName = metadataEntrypointMethodBase.Name;
                 var origNameLength = origName.Length;
                 if (origNameLength > 2)
                 {
                     var candidateMethodName = origName.Substring(1, origNameLength - 2);
-                    var candidateMethod = metadataEntrypointMethodBase.DeclaringType.GetMethod(
+                    var candidateMethod = metadataEntrypointMethodBase.DeclaringType!.GetMethod(
                         candidateMethodName,
                         BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                         null,

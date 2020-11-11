@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             _diagnostics = diagnosticSource;
             if (string.IsNullOrEmpty(middlewareName))
             {
-                middlewareName = next.Target.GetType().FullName;
+                middlewareName = next.Target!.GetType().FullName!;
             }
             _middlewareName = middlewareName;
         }

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class AsyncIOEngine : IAsyncIOEngine
     {
-        private readonly object _contextSync;
+        private readonly IISHttpContext _context;
         private readonly NativeSafeHandle _handler;
 
         private bool _stopped;
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         private AsyncWriteOperation _cachedAsyncWriteOperation;
         private AsyncFlushOperation _cachedAsyncFlushOperation;
 
-        public AsyncIOEngine(object contextSync, NativeSafeHandle handler)
+        public AsyncIOEngine(IISHttpContext context, NativeSafeHandle handler)
         {
-            _contextSync = contextSync;
+            _context = context;
             _handler = handler;
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private void Run(AsyncIOOperation ioOperation)
         {
-            lock (_contextSync)
+            lock (_context._contextLock)
             {
                 if (_stopped)
                 {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             AsyncIOOperation.AsyncContinuation continuation;
             AsyncIOOperation.AsyncContinuation? nextContinuation = null;
 
-            lock (_contextSync)
+            lock (_context._contextLock)
             {
                 Debug.Assert(_runningOperation != null);
 
@@ -138,10 +138,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public void Complete()
         {
-            lock (_contextSync)
+            lock (_context._contextLock)
             {
                 _stopped = true;
-                NativeMethods.HttpTryCancelIO(_handler);
+
+                // Should only call CancelIO if the client hasn't disconnected
+                if (!_context.ClientDisconnected)
+                {
+                    NativeMethods.HttpTryCancelIO(_handler);
+                }
             }
         }
 

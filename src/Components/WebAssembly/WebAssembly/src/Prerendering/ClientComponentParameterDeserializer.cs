@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components
 
         public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
         {
-            var parametersDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var parametersDictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             if (parameterValues.Count != parametersDefinitions.Count)
             {
@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Components
 
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
-            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
         }
 
         public IList<object> GetParameterValues(string parameterValues)
         {
-            return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
         }
     }
 }

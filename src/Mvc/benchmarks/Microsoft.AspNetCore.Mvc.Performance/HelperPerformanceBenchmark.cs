@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,6 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         {
         }
 
-        protected override object Model => _rand.Next().ToString();
+        protected override object Model => _rand.Next().ToString(CultureInfo.InvariantCulture);
     }
 }

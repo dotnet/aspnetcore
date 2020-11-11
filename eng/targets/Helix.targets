@@ -42,11 +42,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(RepoRoot)eng\common\dotnet-install-scripts\*">
-      <TargetPath>eng\common\dotnet-install-scripts\%(Filename)%(Extension)</TargetPath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </ContentWithTargetPath>
   </ItemGroup>
 
   <!--
@@ -97,6 +92,7 @@
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>

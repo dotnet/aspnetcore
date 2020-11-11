@@ -47,19 +47,19 @@ namespace Microsoft.AspNetCore.Owin
             _context = context;
             _entries = new Dictionary<string, FeatureMap>()
             {
-                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, () => string.Empty, (feature, value) => feature.Protocol = Convert.ToString(value)) },
-                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, () => string.Empty, (feature, value) => feature.Scheme = Convert.ToString(value)) },
-                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, () => string.Empty, (feature, value) => feature.Method = Convert.ToString(value)) },
-                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, () => string.Empty, (feature, value) => feature.PathBase = Convert.ToString(value)) },
-                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, () => string.Empty, (feature, value) => feature.Path = Convert.ToString(value)) },
+                { OwinConstants.RequestProtocol, new FeatureMap<IHttpRequestFeature>(feature => feature.Protocol, () => string.Empty, (feature, value) => feature.Protocol = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestScheme, new FeatureMap<IHttpRequestFeature>(feature => feature.Scheme, () => string.Empty, (feature, value) => feature.Scheme = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestMethod, new FeatureMap<IHttpRequestFeature>(feature => feature.Method, () => string.Empty, (feature, value) => feature.Method = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestPathBase, new FeatureMap<IHttpRequestFeature>(feature => feature.PathBase, () => string.Empty, (feature, value) => feature.PathBase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.RequestPath, new FeatureMap<IHttpRequestFeature>(feature => feature.Path, () => string.Empty, (feature, value) => feature.Path = Convert.ToString(value, CultureInfo.InvariantCulture)) },
                 { OwinConstants.RequestQueryString, new FeatureMap<IHttpRequestFeature>(feature => Utilities.RemoveQuestionMark(feature.QueryString), () => string.Empty,
-                    (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value))) },
+                    (feature, value) => feature.QueryString = Utilities.AddQuestionMark(Convert.ToString(value, CultureInfo.InvariantCulture))) },
                 { OwinConstants.RequestHeaders, new FeatureMap<IHttpRequestFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
                 { OwinConstants.RequestBody, new FeatureMap<IHttpRequestFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
                 { OwinConstants.RequestUser, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User, () => null, (feature, value) => feature.User = (ClaimsPrincipal)value) },
 
-                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
-                { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value)) },
+                { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
+                { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value, CultureInfo.InvariantCulture)) },
                 { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
                 { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseBodyFeature>(feature => feature.Stream, () => Stream.Null, (feature, value) => context.Response.Body = (Stream)value) }, // DefaultHttpResponse.Body.Set has built in logic to handle replacing the feature.
                 { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(
@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Owin
                     (feature, value) => feature.RemotePort = Convert.ToInt32(value, CultureInfo.InvariantCulture)) },
 
                 { OwinConstants.CommonKeys.LocalIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.LocalIpAddress.ToString(),
-                    (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value))) },
+                    (feature, value) => feature.LocalIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
                 { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(),
-                    (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value))) },
+                    (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value, CultureInfo.InvariantCulture))) },
 
                 { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpResponseBodyFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
 
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Owin
             {
                 object value;
                 return _entries.Where(pair => pair.Value.TryGet(_context, out value))
-                    .Select(pair => pair.Key).Concat(_context.Items.Keys.Select(key => Convert.ToString(key))).ToList();
+                    .Select(pair => pair.Key).Concat(_context.Items.Keys.Select(key => Convert.ToString(key, CultureInfo.InvariantCulture))).ToList();
             }
         }
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Owin
             }
             foreach (var entryPair in _context.Items)
             {
-                yield return new KeyValuePair<string, object>(Convert.ToString(entryPair.Key), entryPair.Value);
+                yield return new KeyValuePair<string, object>(Convert.ToString(entryPair.Key, CultureInfo.InvariantCulture), entryPair.Value);
             }
         }
 

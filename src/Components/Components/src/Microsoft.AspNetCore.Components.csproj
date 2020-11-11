@@ -6,7 +6,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +27,7 @@
   <ItemGroup>
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" InNuspecFile="true" />
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" InNuspecFile="true" />
-    <SuppressBaselineReference Include="Microsoft.JSInterop" Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' " />
+    <SuppressBaselineReference Include="Microsoft.JSInterop" Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' " />
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">

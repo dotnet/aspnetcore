@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             directory = EnsureTrailingSlash(directory);
 
             var alreadyWatched = _watchers
-                .Where(d => directory.StartsWith(d.Key))
+                .Where(d => directory.StartsWith(d.Key, StringComparison.Ordinal))
                 .Any();
 
             if (alreadyWatched)
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             var redundantWatchers = _watchers
-                .Where(d => d.Key.StartsWith(directory))
+                .Where(d => d.Key.StartsWith(directory, StringComparison.Ordinal))
                 .Select(d => d.Key)
                 .ToList();
 

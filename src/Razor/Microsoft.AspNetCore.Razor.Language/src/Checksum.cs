@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             for (var i = 0; i < bytes.Length; i++)
             {
                 // The x2 format means lowercase hex, where each byte is a 2-character string.
-                result.Append(bytes[i].ToString("x2"));
+                result.Append(bytes[i].ToString("x2", CultureInfo.InvariantCulture));
             }
 
             return result.ToString();

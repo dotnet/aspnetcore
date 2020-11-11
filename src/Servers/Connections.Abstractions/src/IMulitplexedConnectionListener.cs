@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// <summary>
     /// Defines an interface that represents a listener bound to a specific <see cref="EndPoint"/>.
     /// </summary>
-    internal interface IMultiplexedConnectionListener : IAsyncDisposable
+    public interface IMultiplexedConnectionListener : IAsyncDisposable
     {
         /// <summary>
         /// The endpoint that was bound. This may differ from the requested endpoint, such as when the caller requested that any free port be selected.

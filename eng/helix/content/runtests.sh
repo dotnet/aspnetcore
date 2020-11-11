@@ -31,15 +31,16 @@ YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
 . eng/common/tools.sh
-echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true"
-InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
-  exit_code=$?
-  Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
-  ExitWithExitCode $exit_code
-}
-echo
 
 if [[ -z "${10:-}" ]]; then
+    echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true"
+    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
+      exit_code=$?
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
+      ExitWithExitCode $exit_code
+    }
+    echo
+
     echo "InstallDotNet $DOTNET_ROOT $dotnet_runtime_version '' dotnet true"
     InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true || {
       exit_code=$?
@@ -47,6 +48,14 @@ if [[ -z "${10:-}" ]]; then
       ExitWithExitCode $exit_code
     }
 else
+    echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
+    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
+      exit_code=$?
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
+      ExitWithExitCode $exit_code
+    }
+    echo
+
     echo "InstallDotNet $DOTNET_ROOT $dotnet_runtime_version '' dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
     InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
       exit_code=$?

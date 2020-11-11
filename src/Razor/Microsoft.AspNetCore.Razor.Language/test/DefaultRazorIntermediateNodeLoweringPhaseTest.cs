@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Testing;
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var options = RazorParserOptions.Create(builder =>
             {
                 builder.Directives.Add(codeBlockDirective);
-                builder.Directives.Add(razorBlockDirective); 
+                builder.Directives.Add(razorBlockDirective);
             });
             var importSource = TestRazorSourceDocument.Create(
 @"@code ""code block"" { }
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var documentNode = codeDocument.GetDocumentIntermediateNode();
             var diagnostic = Assert.Single(documentNode.Diagnostics);
             Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -286,12 +287,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 diagnostic =>
                 {
                     Assert.Equal(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
-                        diagnostic.GetMessage());
+                        diagnostic.GetMessage(CultureInfo.CurrentCulture));
                 },
                 diagnostic =>
                 {
                     Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.",
-                        diagnostic.GetMessage());
+                        diagnostic.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
     }

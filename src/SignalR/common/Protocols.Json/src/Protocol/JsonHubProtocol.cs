@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, message.Result, message.Result.GetType(), _payloadSerializerOptions);
                 }
             }
         }
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
             else
             {
-                JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+                JsonSerializer.Serialize(writer, message.Item, message.Item.GetType(), _payloadSerializerOptions);
             }
         }
 
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, argument, argument.GetType(), _payloadSerializerOptions);
                 }
             }
             writer.WriteEndArray();

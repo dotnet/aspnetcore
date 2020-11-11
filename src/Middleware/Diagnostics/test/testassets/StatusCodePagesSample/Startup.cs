@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -36,7 +37,7 @@ namespace StatusCodePagesSample
                 var requestedStatusCode = context.Request.Query["statuscode"];
                 if (!string.IsNullOrEmpty(requestedStatusCode))
                 {
-                    context.Response.StatusCode = int.Parse(requestedStatusCode);
+                    context.Response.StatusCode = int.Parse(requestedStatusCode, CultureInfo.InvariantCulture);
 
                     // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
                     // if the query contains a disableStatusCodePages=true parameter.
@@ -87,14 +88,16 @@ namespace StatusCodePagesSample
                     HtmlEncoder.Default.Encode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
 
                 var space = string.Concat(Enumerable.Repeat("&nbsp;", 12));
-                builder.AppendFormat("<br><b>{0}{1}{2}</b><br>", "Status Code", space, "Status Code Pages");
+                builder.AppendFormat(CultureInfo.InvariantCulture, "<br><b>{0}{1}{2}</b><br>", "Status Code", space, "Status Code Pages");
                 for (int statusCode = 400; statusCode < 600; statusCode++)
                 {
-                    builder.AppendFormat("{0}{1}{2}{3}<br>",
+                    builder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        "{0}{1}{2}{3}<br>",
                         statusCode,
                         space + space,
-                        string.Format("<a href=\"?statuscode={0}\">[Enabled]</a>{1}", statusCode, space),
-                        string.Format("<a href=\"?statuscode={0}&disableStatusCodePages=true\">[Disabled]</a>{1}", statusCode, space));
+                        string.Format(CultureInfo.InvariantCulture,"<a href=\"?statuscode={0}\">[Enabled]</a>{1}", statusCode, space),
+                        string.Format(CultureInfo.InvariantCulture,"<a href=\"?statuscode={0}&disableStatusCodePages=true\">[Disabled]</a>{1}", statusCode, space));
                 }
 
                 builder.AppendLine("</body></html>");

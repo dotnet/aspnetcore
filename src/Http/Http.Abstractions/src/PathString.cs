@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
@@ -20,8 +21,6 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public static readonly PathString Empty = new PathString(string.Empty);
 
-        private readonly string? _value;
-
         /// <summary>
         /// Initialize the path string with a given value. This value must be in unescaped format. Use
         /// PathString.FromUriComponent(value) if you have a path value which is in an escaped format.
@@ -33,23 +32,21 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
             }
-            _value = value;
+            Value = value;
         }
 
         /// <summary>
         /// The unescaped path value
         /// </summary>
-        public string? Value
-        {
-            get { return _value; }
-        }
+        public string? Value { get; }
 
         /// <summary>
         /// True if the path is not empty
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue
         {
-            get { return !string.IsNullOrEmpty(_value); }
+            get { return !string.IsNullOrEmpty(Value); }
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
                 return string.Empty;
             }
 
-            var value = _value!;
+            var value = Value;
             var i = 0;
             for (; i < value.Length; i++)
             {
@@ -359,7 +356,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return true;
             }
-            return string.Equals(_value, other._value, comparisonType);
+            return string.Equals(Value, other.Value, comparisonType);
         }
 
         /// <summary>
@@ -382,7 +379,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The hash code</returns>
         public override int GetHashCode()
         {
-            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value!) : 0);
+            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(Value) : 0);
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 ParseEventArgsJson(eventDescriptor.EventHandlerId, eventDescriptor.EventArgsType, eventArgsJson));
         }
 
-        private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
         {
             BrowserRendererId = browserRendererId;
             EventHandlerId = eventHandlerId;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public ulong EventHandlerId { get; }
 
-        public EventFieldInfo EventFieldInfo { get; }
+        public EventFieldInfo? EventFieldInfo { get; }
 
         public EventArgs EventArgs { get; }
 
@@ -79,11 +79,12 @@ namespace Microsoft.AspNetCore.Components.Web
             {
                 throw new InvalidOperationException($"There was an error parsing the event arguments. EventId: '{eventHandlerId}'.", e);
             }
+
         }
 
-        private static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options);
+        static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
 
-        private static EventFieldInfo InterpretEventFieldInfo(EventFieldInfo fieldInfo)
+        private static EventFieldInfo? InterpretEventFieldInfo(EventFieldInfo? fieldInfo)
         {
             // The incoming field value can be either a bool or a string, but since the .NET property
             // type is 'object', it will deserialize initially as a JsonElement
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Web
                         return new EventFieldInfo
                         {
                             ComponentId = fieldInfo.ComponentId,
-                            FieldValue = attributeValueJsonElement.GetString()
+                            FieldValue = attributeValueJsonElement.GetString()!
                         };
                 }
             }
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Web
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)
         {
             var changeArgs = Deserialize<ChangeEventArgs>(eventArgsJson);
-            var jsonElement = (JsonElement)changeArgs.Value;
+            var jsonElement = (JsonElement)changeArgs.Value!;
             switch (jsonElement.ValueKind)
             {
                 case JsonValueKind.Null:

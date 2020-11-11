@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-            var numAsStr = number.ToString();
+            var numAsStr = number.ToString(CultureInfo.InvariantCulture);
             var expected = Encoding.ASCII.GetBytes(numAsStr);
             AssertExtensions.Equal(expected, reader.Buffer.Slice(0, numAsStr.Length).ToArray());
         }
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-            var numAsString = ulong.MaxValue.ToString();
+            var numAsString = ulong.MaxValue.ToString(CultureInfo.InvariantCulture);
             var written = reader.Buffer.Slice(spacer.Length, numAsString.Length);
             Assert.False(written.IsSingleSegment, "The buffer should cross spans");
             AssertExtensions.Equal(Encoding.ASCII.GetBytes(numAsString), written.ToArray());

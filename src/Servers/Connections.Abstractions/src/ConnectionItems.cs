@@ -6,18 +6,31 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Connections
 {
+    /// <summary>
+    /// The items associated with a given connection.
+    /// </summary>
     public class ConnectionItems : IDictionary<object, object?>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ConnectionItems"/>.
+        /// </summary>
         public ConnectionItems()
             : this(new Dictionary<object, object?>())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ConnectionItems"/> with <paramref name="items"/>.
+        /// </summary>
+        /// <param name="items">The items for the connection.</param>
         public ConnectionItems(IDictionary<object, object?> items)
         {
             Items = items;
         }
 
+        /// <summary>
+        /// Gets or sets the items for the connection.
+        /// </summary>
         public IDictionary<object, object?> Items { get; }
 
         // Replace the indexer with one that returns null for missing values

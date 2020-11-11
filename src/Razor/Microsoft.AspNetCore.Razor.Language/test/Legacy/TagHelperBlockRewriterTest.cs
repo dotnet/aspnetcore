@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
@@ -274,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 b.Name = "@onclick";
                                 b.Metadata.Add(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
                             });
- 
+
                     })
                     .AddMetadata(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind)
                     .Build(),
@@ -600,7 +601,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -612,7 +613,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -624,7 +625,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p class=\"{0}\" style='{0}'>Hello World</p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -636,7 +637,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p class=\"{0}\" style='{0}'>Hello World</p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -648,7 +649,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p class=\"{0}\">Hello</p> <p style='{0}'>World</p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -660,7 +661,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p class=\"{0}\">Hello</p> <p style='{0}'>World</p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -672,7 +673,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p class=\"{0}\" style='{0}'>Hello World <strong class=\"{0}\">inside of strong tag</strong></p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -684,7 +685,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p>{0}</p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -696,7 +697,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p>{0}</p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -708,7 +709,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p>Hello World {0}</p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -720,7 +721,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p>Hello World {0}</p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -732,7 +733,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p>{0}</p> <p>{0}</p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -744,7 +745,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p>{0}</p> <p>{0}</p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -756,7 +757,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var dateTimeNowString = "@DateTime.Now";
             var currentFormattedString = "<p>Hello {0}<strong>inside of {0} strong tag</strong></p>";
-            var document = string.Format(currentFormattedString, dateTimeNowString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, dateTimeNowString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");
@@ -768,7 +769,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var doWhileString = "@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);";
             var currentFormattedString = "<p>Hello {0}<strong>inside of {0} strong tag</strong></p>";
-            var document = string.Format(currentFormattedString, doWhileString);
+            var document = string.Format(CultureInfo.InvariantCulture, currentFormattedString, doWhileString);
 
             // Act & Assert
             RunParseTreeRewriterTest(document, "p");

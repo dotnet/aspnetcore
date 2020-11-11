@@ -3,12 +3,12 @@
   <PropertyGroup>
     <Description>Provides scale-out support for ASP.NET Core SignalR using a Redis server and the StackExchange.Redis client.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         /// <inheritdoc />
-        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
         {
             // Be sure we only run one event handler at once. Although they couldn't run
             // simultaneously anyway (there's only one thread), they could run nested on
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             try
             {
                 await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                taskCompletionSource.SetResult(null);
+                taskCompletionSource.SetResult();
             }
             catch (Exception ex)
             {
@@ -187,16 +187,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         readonly struct IncomingEventInfo
         {
             public readonly ulong EventHandlerId;
-            public readonly EventFieldInfo EventFieldInfo;
+            public readonly EventFieldInfo? EventFieldInfo;
             public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource<object> TaskCompletionSource;
+            public readonly TaskCompletionSource TaskCompletionSource;
 
-            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
-                TaskCompletionSource = new TaskCompletionSource<object>();
+                TaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 

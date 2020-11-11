@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27375")]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
