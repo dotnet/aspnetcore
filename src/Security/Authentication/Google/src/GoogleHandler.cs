@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLower(), (bool?)null);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);

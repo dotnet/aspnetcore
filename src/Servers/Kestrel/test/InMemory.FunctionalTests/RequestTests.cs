@@ -1783,7 +1783,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(m => m.LogLevel >= LogLevel.Warning));
+            Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
         }
 
         [Fact]

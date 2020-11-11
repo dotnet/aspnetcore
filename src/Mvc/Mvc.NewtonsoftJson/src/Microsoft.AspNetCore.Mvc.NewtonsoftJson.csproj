@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;aspnetcoremvc;json</PackageTags>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);JSONNET</DefineConstants>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

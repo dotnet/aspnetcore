@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,9 +36,9 @@ namespace BasicWebSite.Formatters
 
             var builder = new StringBuilder();
             builder.AppendLine("BEGIN:VCARD");
-            builder.AppendFormat("FN:{0}", contact.Name);
+            builder.AppendFormat(CultureInfo.InvariantCulture, "FN:{0}", contact.Name);
             builder.AppendLine();
-            builder.AppendFormat("GENDER:{0}", (contact.Gender == GenderType.Male) ? "M" : "F");
+            builder.AppendFormat(CultureInfo.InvariantCulture, "GENDER:{0}", (contact.Gender == GenderType.Male) ? "M" : "F");
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 

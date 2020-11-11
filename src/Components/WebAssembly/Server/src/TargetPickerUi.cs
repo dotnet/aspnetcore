@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            IgnoreNullValues = true
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         private string _browserHost;
@@ -225,17 +226,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var jsonResponse = await httpClient.GetStringAsync($"{_browserHost}/json");
-            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
+            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
         }
 
-        class BrowserTab
-        {
-            public string Id { get; set; }
-            public string Type { get; set; }
-            public string Url { get; set; }
-            public string Title { get; set; }
-            public string DevtoolsFrontendUrl { get; set; }
-            public string WebSocketDebuggerUrl { get; set; }
-        }
+        record BrowserTab
+        (
+            string Id,
+            string Type,
+            string Url,
+            string Title,
+            string DevtoolsFrontendUrl,
+            string WebSocketDebuggerUrl
+        );
     }
 }

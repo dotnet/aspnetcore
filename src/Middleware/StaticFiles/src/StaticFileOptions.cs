@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Used to map files to content-types.
         /// </summary>
-        public IContentTypeProvider ContentTypeProvider { get; set; }
+        public IContentTypeProvider ContentTypeProvider { get; set; } = default!;
 
         /// <summary>
         /// The default content type for a request if the ContentTypeProvider cannot determine one.
         /// None is provided by default, so the client must determine the format themselves.
         /// http://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7
         /// </summary>
-        public string DefaultContentType { get; set; }
+        public string? DefaultContentType { get; set; }
 
         /// <summary>
         /// If the file is not a recognized content-type should it be served?

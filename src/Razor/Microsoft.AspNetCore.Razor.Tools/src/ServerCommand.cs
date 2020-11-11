@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             if (keepAlive.HasValue)
             {
-                KeepAlive.Values.Add(keepAlive.Value.ToString());
+                KeepAlive.Values.Add(keepAlive.Value.ToString(CultureInfo.InvariantCulture));
             }
         }
 

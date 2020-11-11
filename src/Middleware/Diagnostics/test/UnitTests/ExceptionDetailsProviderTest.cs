@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -279,7 +280,7 @@ namespace Microsoft.Extensions.Internal
         {
             var start = fromLine;
             var count = toLine - fromLine + 1;
-            return Enumerable.Range(start, count).Select(i => string.Format("Line{0}", i));
+            return Enumerable.Range(start, count).Select(i => string.Format(CultureInfo.InvariantCulture, "Line{0}", i));
         }
 
         private class TestFileProvider : IFileProvider

@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     }
                     catch
                     {
-                        _pipeReader.AdvanceTo(buffer.Start);
+                        _pipeReader.AdvanceTo(buffer.Start, buffer.End);
                         throw;
                     }
                 }

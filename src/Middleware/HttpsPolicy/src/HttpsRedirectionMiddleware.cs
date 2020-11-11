@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         private readonly Lazy<int> _httpsPort;
         private readonly int _statusCode;
 
-        private readonly IServerAddressesFeature _serverAddressesFeature;
+        private readonly IServerAddressesFeature? _serverAddressesFeature;
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
 

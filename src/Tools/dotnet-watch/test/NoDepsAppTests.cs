@@ -36,14 +36,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
-            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code", StringComparison.Ordinal));
 
             var processIdentifier2 = await _app.GetProcessIdentifier();
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();

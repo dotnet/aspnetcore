@@ -18,21 +18,21 @@ namespace Microsoft.JSInterop.WebAssembly
         {
             ThrowIfDisposed();
 
-            return _jsRuntime.InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null, Id);
+            return _jsRuntime.InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, Id);
         }
 
         public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
         {
             ThrowIfDisposed();
 
-            return _jsRuntime.InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null, Id);
+            return _jsRuntime.InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, Id);
         }
 
         public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
         {
             ThrowIfDisposed();
 
-            return _jsRuntime.InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null, Id);
+            return _jsRuntime.InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, Id);
         }
 
         public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)

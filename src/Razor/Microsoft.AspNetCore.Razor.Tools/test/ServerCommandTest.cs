@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                     {
                         var lines = reader.ReadToEnd().Split(Environment.NewLine);
-                        Assert.Equal(new[] { expectedProcessId.ToString(), "rzc", expectedRzcPath, pipeName }, lines);
+                        Assert.Equal(new[] { expectedProcessId.ToString(CultureInfo.InvariantCulture), "rzc", expectedRzcPath, pipeName }, lines);
                     }
                 }
 

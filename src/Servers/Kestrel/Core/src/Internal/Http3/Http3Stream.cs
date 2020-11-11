@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                         if (result.IsCompleted)
                         {
-                            OnEndStreamReceived();
+                            await OnEndStreamReceived();
                             return;
                         }
                     }
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
 
-                Input.Complete();
+                await Input.CompleteAsync();
 
                 await RequestBodyPipe.Writer.CompleteAsync();
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _frameWriter.Complete();
+                    await _frameWriter.CompleteAsync();
                 }
                 catch
                 {
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private void OnEndStreamReceived()
+        private ValueTask OnEndStreamReceived()
         {
             if (InputRemaining.HasValue)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             OnTrailersComplete();
-            RequestBodyPipe.Writer.Complete();
+            return RequestBodyPipe.Writer.CompleteAsync();
         }
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)

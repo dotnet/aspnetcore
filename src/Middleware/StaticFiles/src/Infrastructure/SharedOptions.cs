@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
             get { return _requestPath; }
             set
             {
-                if (value.HasValue && value.Value.EndsWith("/", StringComparison.Ordinal))
+                if (value.HasValue && value.Value!.EndsWith("/", StringComparison.Ordinal))
                 {
                     throw new ArgumentException("Request path must not end in a slash");
                 }
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         /// <summary>
         /// The file system used to locate resources
         /// </summary>
-        public IFileProvider FileProvider { get; set; }
+        public IFileProvider FileProvider { get; set; } = default!;
 
         /// <summary>
         /// Indicates whether to redirect to add a trailing slash at the end of path. Relative resource links may require this.

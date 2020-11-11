@@ -190,6 +190,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(Encoding.UTF8.GetBytes(content), readResult.Buffer.ToArray());
         }
 
+        [Fact]
+        public async Task ReadFormAsync_ValueLengthLimitExceededAcrossBufferBoundary_Throw()
+        {
+            Pipe bodyPipe = new Pipe();
+
+            var content1 = "foo=1&baz=1234567890";
+            var content2 = "1";
+
+            await bodyPipe.Writer.WriteAsync(Encoding.UTF8.GetBytes(content1));
+            await bodyPipe.Writer.FlushAsync();
+
+            var readTask = Assert.ThrowsAsync<InvalidDataException>(
+                () => ReadFormAsync(new FormPipeReader(bodyPipe.Reader) { ValueLengthLimit = 10 }));
+
+            await bodyPipe.Writer.WriteAsync(Encoding.UTF8.GetBytes(content2));
+            bodyPipe.Writer.Complete();
+
+            var exception = await readTask;
+            Assert.Equal("Form value length limit 10 exceeded.", exception.Message);
+
+            // The body pipe is still readable and has not advanced.
+            var readResult = await bodyPipe.Reader.ReadAsync();
+            Assert.Equal(Encoding.UTF8.GetBytes("baz=12345678901"), readResult.Buffer.ToArray());
+        }
+
         // https://en.wikipedia.org/wiki/Percent-encoding
         [Theory]
         [InlineData("++=hello", "  ", "hello")]

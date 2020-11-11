@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
@@ -28,23 +29,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     if (counter >= expectedSymbols.Length)
                     {
-                        output.AppendLine(string.Format("F: Expected: << Nothing >>; Actual: {0}", current));
+                        output.AppendLine(string.Format(CultureInfo.InvariantCulture, "F: Expected: << Nothing >>; Actual: {0}", current));
                         success = false;
                     }
                     else if (ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
                     {
-                        output.AppendLine(string.Format("P: Ignored |{0}|", current));
+                        output.AppendLine(string.Format(CultureInfo.InvariantCulture, "P: Ignored |{0}|", current));
                     }
                     else
                     {
                         if (!expectedSymbols[counter].IsEquivalentTo(current))
                         {
-                            output.AppendLine(string.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
+                            output.AppendLine(string.Format(CultureInfo.InvariantCulture, "F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
                             success = false;
                         }
                         else
                         {
-                            output.AppendLine(string.Format("P: Expected: {0}", expectedSymbols[counter]));
+                            output.AppendLine(string.Format(CultureInfo.InvariantCulture, "P: Expected: {0}", expectedSymbols[counter]));
                         }
                         counter++;
                     }
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     success = false;
                     for (; counter < expectedSymbols.Length; counter++)
                     {
-                        output.AppendLine(string.Format("F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
+                        output.AppendLine(string.Format(CultureInfo.InvariantCulture, "F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
                     }
                 }
             }
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("PARSER_TRACE")]
         private static void WriteTraceLine(string format, params object[] args)
         {
-            Trace.WriteLine(string.Format(format, args));
+            Trace.WriteLine(string.Format(CultureInfo.InvariantCulture, format, args));
         }
     }
 }

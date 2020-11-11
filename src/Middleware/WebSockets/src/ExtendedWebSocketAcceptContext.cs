@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.WebSockets
     public class ExtendedWebSocketAcceptContext : WebSocketAcceptContext
     {
         /// <inheritdoc />
-        public override string SubProtocol { get; set; }
+        public override string? SubProtocol { get; set; }
 
         /// <summary>
         /// This property is obsolete and has no effect.

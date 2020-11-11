@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             try
             {
-                UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix));
+                UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix), logger);
             }
             catch
             {

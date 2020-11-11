@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             HasStartedConsumingRequestBody = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
-            AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _requestNativeHandle);
+            AsyncIO = new WebSocketsAsyncIOEngine(this, _requestNativeHandle);
 
             await InitializeResponse(flushHeaders: true);
 

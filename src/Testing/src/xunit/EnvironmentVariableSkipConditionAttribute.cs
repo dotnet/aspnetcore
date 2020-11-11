@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Testing
             get
             {
                 _currentValue = _environmentVariable.Get(_variableName);
-                var hasMatched = _values.Any(value => string.Compare(value, _currentValue, ignoreCase: true) == 0);
+                var hasMatched = _values.Any(value => string.Equals(value, _currentValue, StringComparison.OrdinalIgnoreCase));
 
                 if (RunOnMatch)
                 {

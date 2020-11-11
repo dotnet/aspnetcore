@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +37,7 @@ namespace MusicStore.Controllers
         {
             // Retrieve Genre genre and its Associated associated Albums albums from database
             var genreModel = await DbContext.Genres
-                .Include(g => g.Albums)	
+                .Include(g => g.Albums)
                 .Where(g => g.Name == genre)
                 .FirstOrDefaultAsync();
 
@@ -52,7 +53,7 @@ namespace MusicStore.Controllers
             [FromServices] IMemoryCache cache,
             int id)
         {
-            var cacheKey = string.Format("album_{0}", id);
+            var cacheKey = string.Format(CultureInfo.InvariantCulture, "album_{0}", id);
             Album album;
             if (!cache.TryGetValue(cacheKey, out album))
             {
