@@ -12,7 +12,7 @@ The following contains a description of each sub-directory in the `Components` d
 - `Authorization`: Contains source files associated with auth-related components and services in Blazor
 - `Components`: Contains the implementation for the Blazor component model
 - `Forms`: Contains source files for Form components in Blazor
-- `Ignitor`: Contains source files for inspecting Blazor apps
+- `Ignitor`: A library for testing Blazor Server apps
 - `Samples`: Contains a collection of sample apps in Blazor
 - `Server`: Contains the implementation for Blazor Server-specific components
 - `Shared`: Contains a collection of shared constants and helper methods/classes
@@ -50,4 +50,3 @@ The E2E tests are located in the top-level `tests` folder in this directory. The
 Each app server mounts the same `BasicTestApp` application under each scenario.
 
 Project-specific tests are located in each project under the `tests` directory and can be run with `dotnet test`.
-
