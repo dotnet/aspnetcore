@@ -19,12 +19,19 @@ The following contains a description of each sub-directory in the `Components` d
 - `Web`: Contains source files for handling DOM events, forms, and other components
 - `Web.JS`: Contains the source files for Blazor's client-side JavaScript
 - `WebAssembly`: Contains the implementation for WebAssembly-specific components
+  - `Authentication.Msal`: Contains the implementation for MSAL (Microsoft Authentication Library) auth in WASM applications
+  - `DevServer`: Contains the implementation for the Blazor dev server
+  - `JSInterop`: Contains the implementation for methods that allow invoking JS from .NET code
+  - `Sdk`: Contains the MSBuild definitions for the Blazor WASM SDK
+  - `Server`: Contains the implementation for WASM-specific extension methods and the launch logic for the debugging proxy
+  - `WebAssembly`: Contains WebAssembly-specific implementations of the renderer, HostBuilder, etc.
+  - `WebAssembly.Authentication`: Contains the WASM-specific implementations
 
 ## Development Setup
 
 ### Build
 
-This project takes a dependency on MVC and SignalR packages. In order to build this project and its dependencies, run the following command inside this directory.
+In order to build this project and its dependencies, run the following command inside this directory.
 
 ```powershell
 > ./build.cmd
@@ -50,3 +57,7 @@ The E2E tests are located in the top-level `tests` folder in this directory. The
 Each app server mounts the same `BasicTestApp` application under each scenario.
 
 Project-specific tests are located in each project under the `tests` directory and can be run with `dotnet test`.
+
+## More Information
+
+For more information, see the [ASP.NET Core README](../../README.md).
