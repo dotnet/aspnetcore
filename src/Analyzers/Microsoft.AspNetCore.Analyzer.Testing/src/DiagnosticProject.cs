@@ -81,18 +81,17 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                     if (File.Exists(dll))
                     {
                         assemblies.Add(dll);
-                        return true;
+                        continue;
                     }
 
                     dll = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(assembly));
                     if (File.Exists(dll))
                     {
                         assemblies.Add(dll);
-                        return true;
                     }
                 }
 
-                return false;
+                return assemblies.Count > 0;
             }
         }
     }
