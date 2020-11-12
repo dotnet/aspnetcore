@@ -31,6 +31,17 @@
       Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') AND ! $(AddPublicApiAnalyzers) ">
     <Warning Text="Public API baseline files ignored." />
   </Target>
+  <Target Name="_RemovePublicApiAnalyzer" BeforeTargets="RazorCoreCompile">
+    <ItemGroup>
+      <_PublicAPIAnalyzers Include="@(Analyzer->WithMetadataValue('NuGetPackageId','Microsoft.CodeAnalysis.PublicApiAnalyzers'))" />
+      <Analyzer Remove="@(_PublicAPIAnalyzers)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_RestorePublicApiAnalyzer" AfterTargets="RazorCoreCompile">
+    <ItemGroup>
+      <Analyzer Include="@(_PublicAPIAnalyzers)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
