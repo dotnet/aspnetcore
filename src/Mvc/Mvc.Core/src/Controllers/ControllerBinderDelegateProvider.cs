@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             var parameterBindingInfo = GetParameterBindingInfo(
                 modelBinderFactory,
                 modelMetadataProvider,
-                actionDescriptor,
-                mvcOptions);
+                actionDescriptor);
+
             var propertyBindingInfo = GetPropertyBindingInfo(modelBinderFactory, modelMetadataProvider, actionDescriptor);
 
             if (parameterBindingInfo == null && propertyBindingInfo == null)
@@ -55,9 +55,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 return null;
             }
 
-            return Bind;
+            if (propertyBindingInfo == null)
+            {
+                return async (controllerContext, controller, arguments) =>
+                {
+                    var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(controllerContext, controllerContext.ValueProviderFactories);
+                    if (!success)
+                    {
+                        return;
+                    }
 
-            async Task Bind(ControllerContext controllerContext, object controller, Dictionary<string, object> arguments)
+                    await BindArguments(valueProvider, controllerContext, arguments);
+                };
+            }
+
+            return async (controllerContext, controller, arguments) =>
             {
                 var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(controllerContext, controllerContext.ValueProviderFactories);
                 if (!success)
@@ -65,6 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     return;
                 }
 
+                await BindArguments(valueProvider, controllerContext, arguments);
+                await BindProperties(valueProvider, controllerContext, controller, arguments);
+            };
+
+            async Task BindArguments(IValueProvider valueProvider, ControllerContext controllerContext, Dictionary<string, object> arguments)
+            {
                 var parameters = actionDescriptor.Parameters;
 
                 for (var i = 0; i < parameters.Count; i++)
@@ -92,7 +110,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                         arguments[parameter.Name] = result.Model;
                     }
                 }
+            }
 
+            async Task BindProperties(IValueProvider valueProvider, ControllerContext controllerContext, object controller, Dictionary<string, object> arguments)
+            {
                 var properties = actionDescriptor.BoundProperties;
                 for (var i = 0; i < properties.Count; i++)
                 {
@@ -125,8 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         private static BinderItem[] GetParameterBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
-            ControllerActionDescriptor actionDescriptor,
-            MvcOptions mvcOptions)
+            ControllerActionDescriptor actionDescriptor)
         {
             var parameters = actionDescriptor.Parameters;
             if (parameters.Count == 0)

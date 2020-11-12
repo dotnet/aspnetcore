@@ -55,6 +55,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             var propertiesToActivate = GetPropertiesToActivate(controllerType);
+
+            if (propertiesToActivate.Length == 0)
+            {
+                return null;
+            }
+
             void Activate(ControllerContext controllerContext, object controller)
             {
                 for (var i = 0; i < propertiesToActivate.Length; i++)

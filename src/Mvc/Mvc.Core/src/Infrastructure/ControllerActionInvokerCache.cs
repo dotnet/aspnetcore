@@ -61,42 +61,34 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        public ControllerActionInvokerCacheEntry GetCachedEntry(ControllerActionDescriptor actionDescriptor)
+        public ControllerActionInvokerCacheEntry CreateEntry(ControllerActionDescriptor actionDescriptor)
         {
-            var cache = CurrentCache;
+            var parameterDefaultValues = ParameterDefaultValues
+                .GetParameterDefaultValues(actionDescriptor.MethodInfo);
 
-            if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
-            {
-                var parameterDefaultValues = ParameterDefaultValues
-                    .GetParameterDefaultValues(actionDescriptor.MethodInfo);
+            var objectMethodExecutor = ObjectMethodExecutor.Create(
+                actionDescriptor.MethodInfo,
+                actionDescriptor.ControllerTypeInfo,
+                parameterDefaultValues);
 
-                var objectMethodExecutor = ObjectMethodExecutor.Create(
-                    actionDescriptor.MethodInfo,
-                    actionDescriptor.ControllerTypeInfo,
-                    parameterDefaultValues);
+            var controllerFactory = _controllerFactoryProvider.CreateControllerFactory(actionDescriptor);
+            var controllerReleaser = _controllerFactoryProvider.CreateControllerReleaser(actionDescriptor);
+            var propertyBinderFactory = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                _parameterBinder,
+                _modelBinderFactory,
+                _modelMetadataProvider,
+                actionDescriptor,
+                _mvcOptions);
 
-                var controllerFactory = _controllerFactoryProvider.CreateControllerFactory(actionDescriptor);
-                var controllerReleaser = _controllerFactoryProvider.CreateControllerReleaser(actionDescriptor);
-                var propertyBinderFactory = ControllerBinderDelegateProvider.CreateBinderDelegate(
-                    _parameterBinder,
-                    _modelBinderFactory,
-                    _modelMetadataProvider,
-                    actionDescriptor,
-                    _mvcOptions);
+            var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
-                var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
-
-                cacheEntry = new ControllerActionInvokerCacheEntry(
-                    Array.Empty<FilterItem>(),
-                    controllerFactory,
-                    controllerReleaser,
-                    propertyBinderFactory,
-                    objectMethodExecutor,
-                    actionMethodExecutor);
-                cacheEntry = cache.Entries.GetOrAdd(actionDescriptor, cacheEntry);
-            }
-
-            return cacheEntry;
+            return new ControllerActionInvokerCacheEntry(
+                Array.Empty<FilterItem>(),
+                controllerFactory,
+                controllerReleaser,
+                propertyBinderFactory,
+                objectMethodExecutor,
+                actionMethodExecutor);
         }
 
         public (ControllerActionInvokerCacheEntry cacheEntry, IFilterMetadata[] filters) GetCachedResult(ControllerContext controllerContext)

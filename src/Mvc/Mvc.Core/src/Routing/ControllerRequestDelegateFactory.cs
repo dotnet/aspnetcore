@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Super happy path (well assuming nobody cares about filters :O)
             if (actionDescriptor is ControllerActionDescriptor ca && ca.FilterDescriptors.Any(a => a.Filter is IApiBehaviorMetadata) && dataTokens == null)
             {
-                var entry = _controllerActionInvokerCache.GetCachedEntry(ca);
+                var entry = _controllerActionInvokerCache.CreateEntry(ca);
 
                 return async context =>
                 {
@@ -66,8 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     {
                         Dictionary<string, object> arguments = null;
 
-                        if (actionDescriptor.BoundProperties.Count > 0 ||
-                            actionDescriptor.Parameters.Count > 0)
+                        if (entry.ControllerBinderDelegate != null)
                         {
                             // Allocation :(
                             arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -65,6 +65,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
             var controllerActivator = _activatorProvider.CreateActivator(descriptor);
             var propertyActivators = GetPropertiesToActivate(descriptor);
+
+            if (propertyActivators == null)
+            {
+                return controllerActivator;
+            }
+
             object CreateController(ControllerContext controllerContext)
             {
                 var controller = controllerActivator(controllerContext);
@@ -106,14 +112,24 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
         private Action<ControllerContext, object>[] GetPropertiesToActivate(ControllerActionDescriptor actionDescriptor)
         {
-            var propertyActivators = new Action<ControllerContext, object>[_propertyActivators.Length];
+            List<Action<ControllerContext, object>> propertyActivators = null;
+
             for (var i = 0; i < _propertyActivators.Length; i++)
             {
                 var activatorProvider = _propertyActivators[i];
-                propertyActivators[i] = activatorProvider.GetActivatorDelegate(actionDescriptor);
+                var activator = activatorProvider.GetActivatorDelegate(actionDescriptor);
+                if (activator != null)
+                {
+                    if (propertyActivators == null)
+                    {
+                        propertyActivators = new List<Action<ControllerContext, object>>(_propertyActivators.Length);
+                    }
+
+                    propertyActivators.Add(activator);
+                }
             }
 
-            return propertyActivators;
+            return propertyActivators?.ToArray();
         }
     }
 }
