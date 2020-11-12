@@ -13,22 +13,18 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     /// Helper class that handles the HTML injection into
     /// a string or byte array.
     /// </summary>
-    public class WebSocketScriptInjection
+    public static class WebSocketScriptInjection
     {
         private const string BodyMarker = "</body>";
+        internal const string WebSocketScriptUrl = "/_aspnetcore-dev-tools/browser-refresh.js";
 
-        private readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
-        private readonly byte[] _scriptInjectionBytes;
+        private static readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
 
-        public static WebSocketScriptInjection Instance { get; } = new WebSocketScriptInjection(
-            GetWebSocketClientJavaScript(Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT")));
+        internal static string InjectedScript { get; } = $"<script src=\"{WebSocketScriptUrl}\"></script>";
 
-        public WebSocketScriptInjection(string clientScript)
-        {
-            _scriptInjectionBytes = Encoding.UTF8.GetBytes(clientScript);
-        }
+        private static readonly byte[] _injectedScriptBytes = Encoding.UTF8.GetBytes(InjectedScript);
 
-        public bool TryInjectLiveReloadScript(Stream baseStream, ReadOnlySpan<byte> buffer)
+        public static bool TryInjectLiveReloadScript(Stream baseStream, ReadOnlySpan<byte> buffer)
         {
             var index = buffer.LastIndexOf(_bodyBytes);
             if (index == -1)
@@ -44,14 +40,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
 
             // Write the injected script
-            baseStream.Write(_scriptInjectionBytes);
+            baseStream.Write(_injectedScriptBytes);
 
             // Write the rest of the buffer/HTML doc
             baseStream.Write(buffer);
             return true;
         }
 
-        public async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) 
+        public static async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) 
         {
             var index = buffer.Span.LastIndexOf(_bodyBytes);
             if (index == -1)
@@ -67,20 +63,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
 
             // Write the injected script
-            await baseStream.WriteAsync(_scriptInjectionBytes, cancellationToken);
+            await baseStream.WriteAsync(_injectedScriptBytes, cancellationToken);
 
             // Write the rest of the buffer/HTML doc
             await baseStream.WriteAsync(buffer, cancellationToken);
             return true;
         }
 
-        internal static string GetWebSocketClientJavaScript(string? hostString)
-        {
-            var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.WebSocketScriptInjection.js";
-            using var reader = new StreamReader(typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!);
-            var script = reader.ReadToEnd().Replace("{{hostString}}", hostString);
-
-            return $"<script>{script}</script>";
-        }
     }
 }
