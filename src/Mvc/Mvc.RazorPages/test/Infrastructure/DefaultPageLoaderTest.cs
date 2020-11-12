@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             var provider2 = new Mock<IPageApplicationModelProvider>();
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var descriptor = new PageActionDescriptor();
             var compilerProvider = GetCompilerProvider();
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             provider1.SetupGet(p => p.Order).Returns(10);
@@ -241,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -296,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
 
