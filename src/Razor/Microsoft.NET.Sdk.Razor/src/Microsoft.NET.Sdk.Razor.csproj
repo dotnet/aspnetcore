@@ -7,7 +7,6 @@
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <Serviceable>true</Serviceable>
     <SdkOutputPath>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</SdkOutputPath>
-    <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks since they need to be backwards compatible. -->
 
     <!-- Allow assemblies outside of lib in the package -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
@@ -15,6 +14,8 @@
     <NoWarn>$(NoWarn);NU5129</NoWarn>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- No need to track public APIs of these MSBuild tasks. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
 
     <IsShipping>false</IsShipping>
   </PropertyGroup>
