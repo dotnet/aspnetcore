@@ -30,33 +30,15 @@ The following contains a description of the sub-directories.
 
 ### Build
 
-By default the build will try to build Java and Typescript projects. If you don't want to include those you can pass "-NoBuildJava" and "-NoBuildNodeJS" respectively to skip them. Or "--no-build-java" and "--no-build-nodejs" on MacOS or Linux.
+By default the build will try to build Java and Typescript projects. If you don't want to include those you can pass "-NoBuildJava" and "-NoBuildNodeJS" respectively to the `build` command to skip them. Or "--no-build-java" and "--no-build-nodejs" on MacOS or Linux.
 
-In order to build this project and its dependencies, run the following command inside this directory.
-
-```powershell
-> ./build.cmd
-```
-
-Or on MacOS or Linux:
-
-```bash
-$ ./build.sh
-```
+To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 ### Test
 
-You can run all tests including TypeScript and Java by running the following from this directory. This will require having "java" and "npm" on your path.
+This project's tests require having "java" and "npm" on your path.
 
-```powershell
-> ./build.cmd -t
-```
-
-Or on MacOS or Linux:
-
-```bash
-$ ./build.sh -t
-```
+To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 You can also run project specific tests by running `dotnet test` in the `tests` directory next to the `src` directory of the project.
 
