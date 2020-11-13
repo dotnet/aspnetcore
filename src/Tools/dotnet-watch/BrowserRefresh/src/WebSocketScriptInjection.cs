@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     public static class WebSocketScriptInjection
     {
         private const string BodyMarker = "</body>";
-        internal const string WebSocketScriptUrl = "/_aspnetcore-dev-tools/browser-refresh.js";
+        internal const string WebSocketScriptUrl = "/_framework/aspnetcore-browser-refresh.js";
 
         private static readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             return true;
         }
 
-        public static async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) 
+        public static async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var index = buffer.Span.LastIndexOf(_bodyBytes);
             if (index == -1)
