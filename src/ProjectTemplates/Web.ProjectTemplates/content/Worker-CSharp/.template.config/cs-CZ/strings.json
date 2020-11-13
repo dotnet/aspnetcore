@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "Služba pracovního procesu",
-    "description": "Šablona prázdného projektu pro vytvoření služby pracovního procesu"
+    "name": "Worker Service",
+    "description": "Šablona prázdného projektu pro vytvoření služby Worker Service"
   }
 }

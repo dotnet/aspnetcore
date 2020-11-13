@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Visit the route for the lazy-loaded assembly
             SetUrlViaPushState("/WithLazyAssembly");
 
-            var button = app.FindElement(By.Id("use-package-button"));
+            var button = Browser.Exists(By.Id("use-package-button"));
 
             // Now we should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -100,15 +100,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Now the assembly has been loaded
             Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
 
-            var button = app.FindElement(By.Id("go-to-lazy-route"));
+            var button = Browser.Exists(By.Id("go-to-lazy-route"));
             button.Click();
 
             // Navigating the lazy-loaded route should show its content
-            var renderedElement = app.FindElement(By.Id("lazy-page"));
+            var renderedElement = Browser.Exists(By.Id("lazy-page"));
             Assert.True(renderedElement.Displayed);
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void ThrowsErrorForUnavailableAssemblies()
         {
             // Navigate to a page with lazy loaded assemblies for the first time
@@ -121,6 +121,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
 
             AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
+        }
+
+        [Fact]
+        public void CanLazyLoadViaLinkChange()
+        {
+            // Navigate to a page without any lazy-loaded dependencies
+            SetUrlViaPushState("/");
+            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
+
+            // We start off with no lazy assemblies loaded
+            Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+            Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
+
+            // Click the first link and verify that it worked as expected
+            var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
+            lazyAssemblyLink.Click();
+            var pkgButton = Browser.Exists(By.Id("use-package-button"));
+            Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+            pkgButton.Click();
+
+            // Navigate to the next page and verify that it loaded its assembly
+            var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
+            lazyRoutesLink.Click();
+            Browser.Exists(By.Id("lazy-load-msg"));
+            Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
+
+            // Interact with that assembly to ensure it was loaded properly
+            var button = Browser.Exists(By.Id("go-to-lazy-route"));
+            button.Click();
+
+            // Navigating the lazy-loaded route should show its content
+            var renderedElement = Browser.Exists(By.Id("lazy-page"));
+            Assert.True(renderedElement.Displayed);
         }
 
         private string SetUrlViaPushState(string relativeUri)

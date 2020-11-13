@@ -15,10 +15,14 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class DatabaseDeveloperPageExceptionFilterServiceExtensions
     {
         /// <summary>
-        /// Add response caching services.
+        /// In combination with UseDeveloperExceptionPage, this captures database-related exceptions that can be resolved by using Entity Framework migrations.
+        /// When these exceptions occur, an HTML response with details about possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// This should only be enabled in the Development environment. 
+        /// </remarks>
         public static IServiceCollection AddDatabaseDeveloperPageExceptionFilter(this IServiceCollection services)
         {
             if (services == null)

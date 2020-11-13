@@ -90,6 +90,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
@@ -195,7 +196,7 @@ and are generated based on the last package release.
 
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
-      <Version>$(%(VersionName)PackageVersion)</Version>
+      <Version>$(%(VersionName)Version)</Version>
     </LatestPackageReference>
 
     <!--

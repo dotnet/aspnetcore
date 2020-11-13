@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Contains the options used by HttpSys.
+    /// </summary>
     public class HttpSysOptions
     {
         private const uint MaximumRequestQueueNameLength = 260;
@@ -26,6 +29,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
         private string _requestQueueName;
 
+        /// <summary>
+        /// Initializes a new <see cref="HttpSysOptions"/>.
+        /// </summary>
         public HttpSysOptions()
         {
         }

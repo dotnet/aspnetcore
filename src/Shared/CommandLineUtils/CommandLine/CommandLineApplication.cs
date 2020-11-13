@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -114,7 +115,9 @@ namespace Microsoft.Extensions.CommandLineUtils
             var lastArg = Arguments.LastOrDefault();
             if (lastArg != null && lastArg.MultipleValues)
             {
-                var message = string.Format("The last argument '{0}' accepts multiple values. No more argument can be added.",
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    "The last argument '{0}' accepts multiple values. No more argument can be added.",
                     lastArg.Name);
                 throw new InvalidOperationException(message);
             }
@@ -150,11 +153,11 @@ namespace Microsoft.Extensions.CommandLineUtils
                     string[] longOption = null;
                     string[] shortOption = null;
 
-                    if (arg.StartsWith("--"))
+                    if (arg.StartsWith("--", StringComparison.Ordinal))
                     {
                         longOption = arg.Substring(2).Split(new[] { ':', '=' }, 2);
                     }
-                    else if (arg.StartsWith("-"))
+                    else if (arg.StartsWith("-", StringComparison.Ordinal))
                     {
                         shortOption = arg.Substring(1).Split(new[] { ':', '=' }, 2);
                     }
@@ -416,7 +419,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             if (OptionHelp != null)
             {
-                Out.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
+                Out.WriteLine(string.Format(CultureInfo.CurrentCulture, "Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
             }
         }
 
@@ -436,7 +439,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             var headerBuilder = new StringBuilder("Usage:");
             for (var cmd = this; cmd != null; cmd = cmd.Parent)
             {
-                headerBuilder.Insert(6, string.Format(" {0}", cmd.Name));
+                headerBuilder.Insert(6, string.Format(CultureInfo.InvariantCulture, " {0}", cmd.Name));
             }
 
             CommandLineApplication target;
@@ -451,7 +454,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 
                 if (target != null)
                 {
-                    headerBuilder.AppendFormat(" {0}", commandName);
+                    headerBuilder.AppendFormat(CultureInfo.InvariantCulture, " {0}", commandName);
                 }
                 else
                 {
@@ -473,10 +476,10 @@ namespace Microsoft.Extensions.CommandLineUtils
                 argumentsBuilder.AppendLine();
                 argumentsBuilder.AppendLine("Arguments:");
                 var maxArgLen = arguments.Max(a => a.Name.Length);
-                var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxArgLen + 2);
+                var outputFormat = string.Format(CultureInfo.InvariantCulture, "  {{0, -{0}}}{{1}}", maxArgLen + 2);
                 foreach (var arg in arguments)
                 {
-                    argumentsBuilder.AppendFormat(outputFormat, arg.Name, arg.Description);
+                    argumentsBuilder.AppendFormat(CultureInfo.InvariantCulture, outputFormat, arg.Name, arg.Description);
                     argumentsBuilder.AppendLine();
                 }
             }
@@ -489,10 +492,10 @@ namespace Microsoft.Extensions.CommandLineUtils
                 optionsBuilder.AppendLine();
                 optionsBuilder.AppendLine("Options:");
                 var maxOptLen = options.Max(o => o.Template.Length);
-                var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxOptLen + 2);
+                var outputFormat = string.Format(CultureInfo.InvariantCulture, "  {{0, -{0}}}{{1}}", maxOptLen + 2);
                 foreach (var opt in options)
                 {
-                    optionsBuilder.AppendFormat(outputFormat, opt.Template, opt.Description);
+                    optionsBuilder.AppendFormat(CultureInfo.InvariantCulture, outputFormat, opt.Template, opt.Description);
                     optionsBuilder.AppendLine();
                 }
             }
@@ -505,17 +508,17 @@ namespace Microsoft.Extensions.CommandLineUtils
                 commandsBuilder.AppendLine();
                 commandsBuilder.AppendLine("Commands:");
                 var maxCmdLen = commands.Max(c => c.Name.Length);
-                var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxCmdLen + 2);
+                var outputFormat = string.Format(CultureInfo.InvariantCulture, "  {{0, -{0}}}{{1}}", maxCmdLen + 2);
                 foreach (var cmd in commands.OrderBy(c => c.Name))
                 {
-                    commandsBuilder.AppendFormat(outputFormat, cmd.Name, cmd.Description);
+                    commandsBuilder.AppendFormat(CultureInfo.InvariantCulture, outputFormat, cmd.Name, cmd.Description);
                     commandsBuilder.AppendLine();
                 }
 
                 if (OptionHelp != null)
                 {
                     commandsBuilder.AppendLine();
-                    commandsBuilder.AppendFormat($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
+                    commandsBuilder.Append($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
                     commandsBuilder.AppendLine();
                 }
             }
@@ -552,7 +555,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         public string GetFullNameAndVersion()
         {
-            return ShortVersionGetter == null ? FullName : string.Format("{0} {1}", FullName, ShortVersionGetter());
+            return ShortVersionGetter == null ? FullName : string.Format(CultureInfo.InvariantCulture, "{0} {1}", FullName, ShortVersionGetter());
         }
 
         public void ShowRootCommandFullNameAndVersion()

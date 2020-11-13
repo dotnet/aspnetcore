@@ -31,8 +31,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
-    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
+    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -42,11 +42,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.map</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
     <!-- Optimize the framework using the crossgen tool -->
-    <CrossgenOutput Condition="'$(Configuration)' != 'Debug'">true</CrossgenOutput>
+    <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen profiling symbols (.ni.pdb or .map files). -->
     <GenerateCrossgenProfilingSymbols>true</GenerateCrossgenProfilingSymbols>
-    <GenerateCrossgenProfilingSymbols Condition=" '$(CrossgenOutput)' == 'false' OR '$(TargetOsName)' == 'osx'">false</GenerateCrossgenProfilingSymbols>
+    <GenerateCrossgenProfilingSymbols Condition=" '$(CrossgenOutput)' != 'true' OR '$(TargetOsName)' == 'osx' ">false</GenerateCrossgenProfilingSymbols>
 
     <!-- Always generated, even though output type == Library -->
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -109,9 +109,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
-    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
-    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
-
     <NativePlatform>$(TargetArchitecture)</NativePlatform>
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
   </PropertyGroup>
@@ -155,6 +152,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
+
+    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(SharedFxLayoutTargetDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
@@ -531,11 +531,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveSharedFrameworkContent"
           BeforeTargets="_GetPackageFiles"
           Condition="'$(ManifestsPackagePath)' != ''">
+
+    <ItemGroup>
+      <SharedFxContent Condition="'%(SharedFxContent.Extension)' == '.dll'">
+        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
+        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' != 'true'">$(ManagedAssetsPackagePath)</PackagePath>
+      </SharedFxContent>
+    </ItemGroup>
+
     <RepoTasks.CreateFrameworkListFile
       Files="@(SharedFxContent)"
       TargetFile="$(FrameworkListOutputPath)"
-      ManagedRoot="$(ManagedAssetsPackagePath)"
-      NativeRoot="$(NativeAssetsPackagePath)"
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>

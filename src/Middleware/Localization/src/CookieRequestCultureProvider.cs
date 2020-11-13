@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Localization
             var potentialCultureName = parts[0];
             var potentialUICultureName = parts[1];
 
-            if (!potentialCultureName.StartsWith(_culturePrefix) || !potentialUICultureName.StartsWith(_uiCulturePrefix))
+            if (!potentialCultureName.StartsWith(_culturePrefix, StringComparison.Ordinal) || !
+                potentialUICultureName.StartsWith(_uiCulturePrefix, StringComparison.Ordinal))
             {
                 return null;
             }

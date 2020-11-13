@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 "/p:RunningAsTest=true",
 
                 $"/p:MicrosoftNETCoreAppRuntimeVersion={BuildVariables.MicrosoftNETCoreAppRuntimeVersion}",
-                $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
+                $"/p:MicrosoftNetCompilersToolsetVersion={BuildVariables.MicrosoftNetCompilersToolsetVersion}",
                 $"/p:RazorSdkDirectoryRoot={BuildVariables.RazorSdkDirectoryRoot}",
                 $"/p:BlazorWebAssemblySdkDirectoryRoot={BuildVariables.BlazorWebAssemblySdkDirectoryRoot}",
                 $"/p:RepoRoot={BuildVariables.RepoRoot}",
@@ -212,108 +212,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
                 if (!process.HasExited)
                 {
-                    await CollectDumps(process, timeout, diagnostics);
-
                     // This is a timeout.
                     process.Kill();
                 }
 
                 throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
-            }
-
-            static async Task CollectDumps(Process process, TimeSpan? timeout, StringBuilder diagnostics)
-            {
-                var procDumpProcess = await CaptureDump(process, timeout, diagnostics);
-                var allDotNetProcesses = Process.GetProcessesByName("dotnet");
-
-                var allDotNetChildProcessCandidates = allDotNetProcesses
-                    .Where(p => p.StartTime >= process.StartTime && p.Id != process.Id);
-
-                if (!allDotNetChildProcessCandidates.Any())
-                {
-                    diagnostics.AppendLine("Couldn't find any candidate child process.");
-                    foreach (var dotnetProcess in allDotNetProcesses)
-                    {
-                        diagnostics.AppendLine($"Found dotnet process with PID {dotnetProcess.Id} and start time {dotnetProcess.StartTime}.");
-                    }
-                }
-
-                foreach (var childProcess in allDotNetChildProcessCandidates)
-                {
-                    diagnostics.AppendLine($"Found child process candidate '{childProcess.Id}'.");
-                }
-
-                var childrenProcessDumpProcesses = await Task.WhenAll(allDotNetChildProcessCandidates.Select(d => CaptureDump(d, timeout, diagnostics)));
-                foreach (var childProcess in childrenProcessDumpProcesses)
-                {
-                    if (childProcess != null && childProcess.HasExited)
-                    {
-                        diagnostics.AppendLine($"ProcDump failed to run for child dotnet process candidate '{process.Id}'.");
-                        childProcess.Kill();
-                    }
-                }
-
-                if (procDumpProcess != null && procDumpProcess.HasExited)
-                {
-                    diagnostics.AppendLine($"ProcDump failed to run for '{process.Id}'.");
-                    procDumpProcess.Kill();
-                }
-            }
-
-            static async Task<Process> CaptureDump(Process process, TimeSpan? timeout, StringBuilder diagnostics)
-            {
-                var metadataAttributes = Assembly.GetExecutingAssembly()
-                    .GetCustomAttributes<AssemblyMetadataAttribute>();
-
-                var procDumpPath = metadataAttributes
-                    .SingleOrDefault(ama => ama.Key == "ProcDumpToolPath")?.Value;
-
-                if (string.IsNullOrEmpty(procDumpPath))
-                {
-                    diagnostics.AppendLine("ProcDumpPath not defined.");
-                    return null;
-                }
-                var procDumpExePath = Path.Combine(procDumpPath, "procdump.exe");
-                if (!File.Exists(procDumpExePath))
-                {
-                    diagnostics.AppendLine($"Can't find procdump.exe in '{procDumpPath}'.");
-                    return null;
-                }
-
-                var dumpDirectory = metadataAttributes
-                    .SingleOrDefault(ama => ama.Key == "ArtifactsLogDir")?.Value;
-
-                if (string.IsNullOrEmpty(dumpDirectory))
-                {
-                    diagnostics.AppendLine("ArtifactsLogDir not defined.");
-                    return null;
-                }
-
-                if (!Directory.Exists(dumpDirectory))
-                {
-                    diagnostics.AppendLine($"'{dumpDirectory}' does not exist.");
-                    return null;
-                }
-
-                var procDumpPattern = Path.Combine(dumpDirectory, "HangingProcess_PROCESSNAME_PID_YYMMDD_HHMMSS.dmp");
-                var procDumpStartInfo = new ProcessStartInfo(
-                    procDumpExePath,
-                    $"-accepteula -ma {process.Id} {procDumpPattern}")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                var procDumpProcess = Process.Start(procDumpStartInfo);
-                var tcs = new TaskCompletionSource<object>();
-
-                procDumpProcess.Exited += (s, a) => tcs.TrySetResult(null);
-                procDumpProcess.EnableRaisingEvents = true;
-
-                await Task.WhenAny(tcs.Task, Task.Delay(timeout ?? TimeSpan.FromSeconds(30)));
-                return procDumpProcess;
             }
         }
 

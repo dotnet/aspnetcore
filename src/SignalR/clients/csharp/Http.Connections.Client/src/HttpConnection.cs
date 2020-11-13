@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // Get a connection ID from the server
                 Log.EstablishingConnection(logger, url);
                 var urlBuilder = new UriBuilder(url);
-                if (!urlBuilder.Path.EndsWith("/"))
+                if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
                 {
                     urlBuilder.Path += "/";
                 }
@@ -545,9 +545,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         // so that we can capture any cookies from the negotiate response and give them to WebSockets.
                         httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                     }
+                    // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
+                    // Also WASM doesn't support some settings in the browser
                     catch (Exception ex) when (ex is NotSupportedException || ex is NotImplementedException)
                     {
-                        // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException or NotSupportedException
                         Log.CookiesNotSupported(_logger);
                     }
 

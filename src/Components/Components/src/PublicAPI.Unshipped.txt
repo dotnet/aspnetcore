@@ -1,3 +1,4 @@
+﻿#nullable enable
 Microsoft.AspNetCore.Components.BindConverter
 Microsoft.AspNetCore.Components.BindElementAttribute
 Microsoft.AspNetCore.Components.BindElementAttribute.BindElementAttribute(string! element, string? suffix, string! valueAttribute, string! changeAttribute) -> void
@@ -46,12 +47,12 @@ Microsoft.AspNetCore.Components.EventCallback
 Microsoft.AspNetCore.Components.EventCallback.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallback.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback.InvokeAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(object! arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallback<TValue>
 Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallback<TValue>.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue? arg) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallbackFactory
 Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, Microsoft.AspNetCore.Components.EventCallback callback) -> Microsoft.AspNetCore.Components.EventCallback
 Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Action! callback) -> Microsoft.AspNetCore.Components.EventCallback
@@ -145,7 +146,7 @@ Microsoft.AspNetCore.Components.ParameterView.Enumerator
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.Current.get -> Microsoft.AspNetCore.Components.ParameterValue
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Components.ParameterView.GetEnumerator() -> Microsoft.AspNetCore.Components.ParameterView.Enumerator
-Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName) -> TValue
+Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName) -> TValue?
 Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName, TValue defaultValue) -> TValue
 Microsoft.AspNetCore.Components.ParameterView.SetParameterProperties(object! target) -> void
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
@@ -190,30 +191,13 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateMarkup = 8 -
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateText = 5 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventHandlerId.get -> ulong
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, string? value) -> void
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int sequence, System.Action<object!>! componentReferenceCaptureAction) -> void
-Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext!>
-Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.set -> void
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventUpdatesAttributeName.get -> string
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeName.get -> string
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeValue.get -> object
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.Component.get -> Microsoft.AspNetCore.Components.IComponent
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentId.get -> int
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentKey.get -> object
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureAction.get -> System.Action<object>
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureParentFrameIndex.get -> int
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentSubtreeLength.get -> int
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentType.get -> System.Type
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementKey.get -> object
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementName.get -> string
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureAction.get -> System.Action<Microsoft.AspNetCore.Components.ElementReference>
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureId.get -> string
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementSubtreeLength.get -> int
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.FrameType.get -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.MarkupContent.get -> string
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.RegionSubtreeLength.get -> int
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.Sequence.get -> int
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Attribute = 3 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Component = 4 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
@@ -227,6 +211,7 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Micro
 Microsoft.AspNetCore.Components.RenderTree.Renderer
 Microsoft.AspNetCore.Components.RenderTree.Renderer.AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent! component) -> int
 Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose() -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
 Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.set -> void
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(int componentId) -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>
@@ -243,7 +228,9 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int seq
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, System.MulticastDelegate? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, bool value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, object? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, string? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int sequence, string! name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int sequence, System.Action<object!>! componentReferenceCaptureAction) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment? fragment) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, object? textContent) -> void
@@ -303,6 +290,8 @@ Microsoft.AspNetCore.Components.Routing.Router.Navigating.get -> Microsoft.AspNe
 Microsoft.AspNetCore.Components.Routing.Router.Navigating.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFound.get -> Microsoft.AspNetCore.Components.RenderFragment!
 Microsoft.AspNetCore.Components.Routing.Router.NotFound.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext!>
+Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.Router() -> void
 Microsoft.AspNetCore.Components.Routing.Router.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 abstract Microsoft.AspNetCore.Components.Dispatcher.CheckAccess() -> bool
@@ -315,7 +304,6 @@ abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispatcher.get -> M
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.HandleException(System.Exception! exception) -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.MarkupString.ToString() -> string!
-~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string
 readonly Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Array -> T[]!
 readonly Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Count -> int
 readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff.ComponentId -> int
@@ -407,7 +395,7 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.C
 static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<System.EventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
 static Microsoft.AspNetCore.Components.MarkupString.explicit operator Microsoft.AspNetCore.Components.MarkupString(string! value) -> Microsoft.AspNetCore.Components.MarkupString
 static Microsoft.AspNetCore.Components.ParameterView.Empty.get -> Microsoft.AspNetCore.Components.ParameterView
-static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
+static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 static readonly Microsoft.AspNetCore.Components.EventCallback.Empty -> Microsoft.AspNetCore.Components.EventCallback
 static readonly Microsoft.AspNetCore.Components.EventCallback.Factory -> Microsoft.AspNetCore.Components.EventCallbackFactory!
 static readonly Microsoft.AspNetCore.Components.EventCallback<TValue>.Empty -> Microsoft.AspNetCore.Components.EventCallback<TValue>
@@ -423,7 +411,21 @@ virtual Microsoft.AspNetCore.Components.ComponentBase.SetParametersAsync(Microso
 virtual Microsoft.AspNetCore.Components.ComponentBase.ShouldRender() -> bool
 virtual Microsoft.AspNetCore.Components.NavigationManager.EnsureInitialized() -> void
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
-virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ProcessPendingRender() -> void
 virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventUpdatesAttributeName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeValue.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.Component.get -> Microsoft.AspNetCore.Components.IComponent
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentKey.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureAction.get -> System.Action<object>
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentType.get -> System.Type
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementKey.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureAction.get -> System.Action<Microsoft.AspNetCore.Components.ElementReference>
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureId.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.MarkupContent.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
+~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string

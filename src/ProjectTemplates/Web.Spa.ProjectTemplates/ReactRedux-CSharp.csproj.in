@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsVersion}" />
   </ItemGroup>
 
   <ItemGroup>

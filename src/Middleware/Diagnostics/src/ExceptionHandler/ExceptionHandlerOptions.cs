@@ -24,5 +24,14 @@ namespace Microsoft.AspNetCore.Builder
         /// explicitly provided, the subsequent middleware pipeline will be used by default.
         /// </summary>
         public RequestDelegate? ExceptionHandler { get; set; }
+
+        /// <summary>
+        /// This value controls whether the <see cref="ExceptionHandlerMiddleware" /> should
+        /// consider a response with a 404 status code to be a valid result of executing the
+        /// <see cref="ExceptionHandler"/>. The default value is false and the middleware will
+        /// consider 404 status codes to be an error on the server and will therefore rethrow
+        /// the original exception.
+        /// </summary>
+        public bool AllowStatusCode404Response { get; set; }
     }
 }

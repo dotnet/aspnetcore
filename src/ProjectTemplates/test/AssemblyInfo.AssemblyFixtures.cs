@@ -4,9 +4,6 @@
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
-using Xunit;
 
-[assembly: TestFramework("Microsoft.AspNetCore.E2ETesting.XunitTestFrameworkWithAssemblyFixture", "ProjectTemplates.Tests")]
-
-[assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(ProjectFactoryFixture))]
-[assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(SeleniumStandaloneServer))]
+[assembly: AssemblyFixture(typeof(ProjectFactoryFixture))]
+[assembly: AssemblyFixture(typeof(SeleniumStandaloneServer))]

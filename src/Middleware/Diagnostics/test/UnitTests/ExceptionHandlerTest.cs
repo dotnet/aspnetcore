@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24146")]
         public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
         {
             var expectedResponseBody = "New response body";
@@ -538,6 +537,60 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
 
             Assert.Contains(sink.Writes, w =>
+                w.LogLevel == LogLevel.Warning
+                && w.EventId == 4
+                && w.Message == "No exception handler was found, rethrowing original exception.");
+        }
+
+        [Fact]
+        public async Task ExceptionHandler_CanReturn404Responses_WhenAllowed()
+        {
+            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.Configure<ExceptionHandlerOptions>(options =>
+                        {
+                            options.AllowStatusCode404Response = true;
+                            options.ExceptionHandler = httpContext =>
+                            {
+                                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                                return Task.CompletedTask;
+                            };
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler();
+
+                        app.Map("/throw", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                throw new InvalidOperationException("Something bad happened.");
+                            });
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("throw");
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+            }
+
+            Assert.DoesNotContain(sink.Writes, w =>
                 w.LogLevel == LogLevel.Warning
                 && w.EventId == 4
                 && w.Message == "No exception handler was found, rethrowing original exception.");

@@ -1,0 +1,44 @@
+<Project>
+  <PropertyGroup>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 5.0. -->
+    <KnownAppHostPack
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
+      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
+      />
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
+      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
+      />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Use the same NETCore shared framework as repo built against. -->
+    <KnownFrameworkReference
+      Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
+
+    <!-- Use the just-built ASP.NET Core shared framework. -->
+    <KnownFrameworkReference
+      Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
+      RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+      Version="${MicrosoftNetCompilersToolsetVersion}"
+      PrivateAssets="all"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+</Project>

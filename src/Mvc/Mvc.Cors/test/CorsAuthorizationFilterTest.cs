@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 {
                     var headers = response1.Headers;
                     headers[CorsConstants.AccessControlMaxAge] =
-                        result1.PreflightMaxAge.Value.TotalSeconds.ToString();
+                        result1.PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
                     headers[CorsConstants.AccessControlAllowOrigin] = result1.AllowedOrigin;
                     if (result1.SupportsCredentials)
                     {

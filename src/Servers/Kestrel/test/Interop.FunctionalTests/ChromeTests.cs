@@ -64,7 +64,7 @@ namespace Interop.FunctionalTests
         }
 
         [ConditionalTheory(Skip = "Disabling while debugging. https://github.com/dotnet/aspnetcore-internal/issues/1363")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
         [InlineData("", "Interop HTTP/2 GET")]
         [InlineData("?TestMethod=POST", "Interop HTTP/2 POST")]

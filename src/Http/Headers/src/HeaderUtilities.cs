@@ -598,7 +598,7 @@ namespace Microsoft.Net.Http.Headers
                 });
             }
 
-            return dateTime.ToString("r");
+            return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
         public static StringSegment RemoveQuotes(StringSegment input)

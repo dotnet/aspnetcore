@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -319,7 +320,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private string DebuggerToString()
         {
-            return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
+            return string.Format(CultureInfo.InvariantCulture, "{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
         }
 
         private readonly struct BufferValue

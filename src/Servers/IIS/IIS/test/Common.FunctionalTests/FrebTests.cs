@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2570")]
         [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFrebDisconnect()
@@ -137,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
             var folderPath = Helpers.GetFrebFolder(LogFolderPath, result);
-            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).ToList();
+            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml", StringComparison.Ordinal)).ToList();
             var frebEvents = new List<FrebLogItem>();
 
             result.Logger.LogInformation($"Number of freb files available {xmlFiles.Count}.");

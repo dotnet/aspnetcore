@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27155")]
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);

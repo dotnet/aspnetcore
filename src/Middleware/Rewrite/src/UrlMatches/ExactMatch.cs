@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches
 {
@@ -17,8 +19,8 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
 
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
-            var pathMatch = string.Compare(pattern, _stringMatch, _ignoreCase);
-            var success = ((pathMatch == 0) != Negate);
+            var pathMatch = string.Equals(pattern, _stringMatch, _ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            var success = pathMatch != Negate;
             if (success)
             {
                 return new MatchResults { Success = success, BackReferences = new BackReferenceCollection(pattern) };

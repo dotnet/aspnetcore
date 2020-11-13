@@ -88,7 +88,7 @@ namespace Templates.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27376")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -190,7 +190,6 @@ namespace Templates.Test
         }
 
         [Theory]
-        [QuarantinedTest]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
@@ -198,7 +197,7 @@ namespace Templates.Test
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
         public async Task BlazorServerTemplat_IdentityWeb_BuildAndPublish(string auth, string[] args)
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
 
             var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));

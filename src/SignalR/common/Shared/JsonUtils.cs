@@ -47,18 +47,6 @@ namespace Microsoft.AspNetCore.Internal
             return (JObject)token;
         }
 
-        public static T GetOptionalProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None, T defaultValue = default)
-        {
-            var prop = json[property];
-
-            if (prop == null)
-            {
-                return defaultValue;
-            }
-
-            return GetValue<T>(property, expectedType, prop);
-        }
-
         public static T GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
         {
             var prop = json[property];

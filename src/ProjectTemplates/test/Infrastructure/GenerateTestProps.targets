@@ -6,15 +6,16 @@
     <PropertyGroup>
       <PropsProperties>
         RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
-        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
-        MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
-        MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
-        MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
-        MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
+        MicrosoftNETCorePlatformsVersion=$(MicrosoftNETCorePlatformsVersion);
+        MicrosoftNETSdkRazorVersion=$(MicrosoftNETSdkRazorVersion);
+        MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim());
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
         RepoRoot=$(RepoRoot);
         Configuration=$(Configuration);
         ArtifactsBinDir=$(ArtifactsBinDir);

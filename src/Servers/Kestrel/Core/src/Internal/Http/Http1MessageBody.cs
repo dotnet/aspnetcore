@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [StackTraceHidden]
-        private void ThrowIfReaderCompleted()
+        protected void ThrowIfReaderCompleted()
         {
             if (_readerCompleted)
             {

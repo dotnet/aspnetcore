@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -1122,7 +1123,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             var actionDescriptor = new ControllerActionDescriptor()
             {
-                ActionName = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
+                ActionName = string.Format(CultureInfo.InvariantCulture, "Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
                 Parameters = new List<ParameterDescriptor>(),
             };
 

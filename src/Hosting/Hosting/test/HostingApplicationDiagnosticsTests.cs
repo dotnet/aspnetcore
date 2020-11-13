@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
             {
-                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn");
+                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal);
             }), (s, o, arg3) =>
             {
                 if (s == "Microsoft.AspNetCore.Hosting.HttpRequestIn")
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
             {
-                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn");
+                eventsFired |= pair.Key.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal);
             }), (s, o, arg3) =>
             {
                 if (s == "Microsoft.AspNetCore.Hosting.HttpRequestIn")
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
                 s =>
                 {
-                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn", StringComparison.Ordinal))
                     {
                         return true;
                     }

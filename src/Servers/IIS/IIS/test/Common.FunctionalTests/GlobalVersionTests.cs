@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         .OfType<XElement>()
                         .Where(element =>
                             element.Name == "add" &&
-                            element.Attribute("name")?.Value.StartsWith("AspNetCoreModule") == true &&
+                            element.Attribute("name")?.Value.StartsWith("AspNetCoreModule", StringComparison.Ordinal) == true &&
                             element.Attribute("image") != null);
 
                     var sourceDirectory = new DirectoryInfo(Path.GetDirectoryName(moduleNodes.First().Attribute("image").Value));

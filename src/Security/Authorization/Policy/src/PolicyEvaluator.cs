@@ -10,6 +10,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authorization.Policy
 {
+    /// <summary>
+    /// Default implementation for <see cref="IPolicyEvaluator"/>.
+    /// </summary>
     public class PolicyEvaluator : IPolicyEvaluator
     {
         private readonly IAuthorizationService _authorization;
