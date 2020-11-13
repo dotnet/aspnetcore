@@ -1,0 +1,21 @@
+# Html.Abstractions
+
+This project contains types for manipulating HTML content.
+
+## Description
+
+This project contains interfaces and abstractions used in MVC to support writing and modifying HTML content. For a full list of the types defined in this class, see [the namespace documentation](https://docs.microsoft.com//dotnet/api/microsoft.aspnetcore.html).
+
+## Development Setup
+
+### Build
+
+To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#building-a-subset-of-the-code).
+
+### Test
+
+To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
+
+## More Information
+
+For more information, see the [ASP.NET Core README](../../README.md).
