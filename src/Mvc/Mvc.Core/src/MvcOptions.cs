@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -136,6 +137,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// synchronously write to the HTTP response body.
         /// </summary>
         public bool SuppressOutputFormatterBuffering { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag that determines if MVC should use action invoker extensibility. This will allow
+        /// custom <see cref="IActionInvokerFactory"/> and <see cref="IActionInvokerProvider"/> execute during the request pipeline.
+        /// </summary>
+        /// <remarks>This only applies when <see cref="EnableEndpointRouting"/> is true.</remarks>
+        public bool EnableActionInvokers { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further

@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private readonly DiagnosticListener _diagnosticListener;
         private readonly IActionResultTypeMapper _mapper;
         private readonly IActionContextAccessor _actionContextAccessor;
+        private readonly bool _enableActionInvokers;
 
         public ControllerRequestDelegateFactory(
             ControllerActionInvokerCache controllerActionInvokerCache,
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
             _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
+            _enableActionInvokers = optionsAccessor.Value.EnableActionInvokers;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _diagnosticListener = diagnosticListener;
             _mapper = mapper;
@@ -51,7 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
         {
-            if (actionDescriptor is ControllerActionDescriptor)
+            // Fallback to action invoker extensibility so that invokers can override any default behaviors
+            if (!_enableActionInvokers && actionDescriptor is ControllerActionDescriptor)
             {
                 return context =>
                 {
