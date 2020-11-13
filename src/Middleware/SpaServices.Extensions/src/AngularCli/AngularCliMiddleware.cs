@@ -137,10 +137,5 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 }
             }
         }
-
-        class AngularCliServerInfo
-        {
-            public int Port { get; set; }
-        }
     }
 }
