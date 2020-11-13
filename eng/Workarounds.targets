@@ -11,7 +11,7 @@
       Update="Microsoft.NETCore.App"
       Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
-      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" />
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
   </ItemGroup>
 
   <!--
@@ -38,7 +38,7 @@
 
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup>

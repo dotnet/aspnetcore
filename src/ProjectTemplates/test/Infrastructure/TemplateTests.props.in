@@ -13,13 +13,13 @@
       Update="Microsoft.NETCore.App"
       DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="${MicrosoftNetCompilersToolsetPackageVersion}"
+      Version="${MicrosoftNetCompilersToolsetVersion}"
       PrivateAssets="all"
       IsImplicitlyDefined="true" />
   </ItemGroup>
