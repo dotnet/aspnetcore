@@ -1,13 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.WebHost
-Microsoft.Extensions.Hosting.GenericHostBuilderExtensions
-static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder(string![]! args) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.WebHost.CreateDefaultBuilder<TStartup>(string![]! args) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.WebHost.Start(Microsoft.AspNetCore.Http.RequestDelegate! app) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.AspNetCore.WebHost.Start(System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder!>! routeBuilder) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.AspNetCore.WebHost.Start(string! url, Microsoft.AspNetCore.Http.RequestDelegate! app) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.AspNetCore.WebHost.Start(string! url, System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder!>! routeBuilder) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.AspNetCore.WebHost.StartWith(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! app) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.AspNetCore.WebHost.StartWith(string! url, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! app) -> Microsoft.AspNetCore.Hosting.IWebHost!
-static Microsoft.Extensions.Hosting.GenericHostBuilderExtensions.ConfigureWebHostDefaults(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!

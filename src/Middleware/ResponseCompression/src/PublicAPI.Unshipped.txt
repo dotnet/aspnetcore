@@ -1,31 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ResponseCompressionBuilderExtensions
-Microsoft.AspNetCore.Builder.ResponseCompressionServicesExtensions
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.SupportsFlush.get -> bool
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.BrotliCompressionProviderOptions() -> void
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
-Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.Level.set -> void
-Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection
-Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection.CompressionProviderCollection() -> void
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider.SupportsFlush.get -> bool
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.GzipCompressionProviderOptions() -> void
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
-Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.Level.set -> void
-Microsoft.AspNetCore.ResponseCompression.ICompressionProvider
-Microsoft.AspNetCore.ResponseCompression.ICompressionProvider.SupportsFlush.get -> bool
-Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.ResponseCompressionDefaults() -> void
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionMiddleware
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.EnableForHttps.get -> bool
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.EnableForHttps.set -> void
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.ResponseCompressionOptions() -> void
-Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider
 ~Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.BrotliCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions!>! options) -> void
 Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
 Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.EncodingName.get -> string!
