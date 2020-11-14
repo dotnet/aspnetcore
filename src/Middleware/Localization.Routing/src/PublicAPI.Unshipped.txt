@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider
-Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider.RouteDataRequestCultureProvider() -> void
 Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider.RouteDataStringKey.get -> string!
 Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider.RouteDataStringKey.set -> void
 Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider.UIRouteDataStringKey.get -> string!
