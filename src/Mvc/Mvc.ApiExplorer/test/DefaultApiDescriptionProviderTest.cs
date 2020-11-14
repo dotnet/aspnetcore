@@ -1398,7 +1398,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         public void GetApiDescription_ParameterDescription_ComplexDTO()
         {
             // Arrange
-            var action = CreateActionDescriptor(nameof(AcceptsProductChangeDTO));
+            var action = CreateActionDescriptor(nameof(AcceptsOrderDTO));
             var parameterDescriptor = action.Parameters.Single();
 
             // Act
@@ -1407,22 +1407,22 @@ namespace Microsoft.AspNetCore.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
-
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
+            
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
-            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
-            Assert.Same(BindingSource.Body, product.Source);
-            Assert.Equal(typeof(Product), product.Type);
+            var quantity = Assert.Single(description.ParameterDescriptions, p => p.Name == "Quantity");
+            Assert.Same(BindingSource.ModelBinding, quantity.Source);
+            Assert.Equal(typeof(int), quantity.Type);
 
-            var userId = Assert.Single(description.ParameterDescriptions, p => p.Name == "UserId");
-            Assert.Same(BindingSource.Header, userId.Source);
-            Assert.Equal(typeof(string), userId.Type);
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
+            Assert.Same(BindingSource.Query, productId.Source);
+            Assert.Equal(typeof(int), productId.Type);
 
-            var comments = Assert.Single(description.ParameterDescriptions, p => p.Name == "Comments");
-            Assert.Same(BindingSource.ModelBinding, comments.Source);
-            Assert.Equal(typeof(string), comments.Type);
+            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
+            Assert.Same(BindingSource.Query, price.Source);
+            Assert.Equal(typeof(decimal), price.Type);
         }
 
         // The method under test uses an attribute on the parameter to set a 'default' source
@@ -1471,7 +1471,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
@@ -1479,11 +1479,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Same(BindingSource.ModelBinding, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
-            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
-            Assert.Same(BindingSource.ModelBinding, productId.Source);
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
+            Assert.Same(BindingSource.Query, productId.Source);
             Assert.Equal(typeof(int), productId.Type);
 
-            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
+            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
             Assert.Same(BindingSource.Query, price.Source);
             Assert.Equal(typeof(decimal), price.Type);
         }
@@ -1503,7 +1503,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
@@ -1511,11 +1511,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Same(BindingSource.Query, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
-            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
             Assert.Same(BindingSource.Query, productId.Source);
             Assert.Equal(typeof(int), productId.Type);
 
-            var productPrice = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
+            var productPrice = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
             Assert.Same(BindingSource.Query, productPrice.Source);
             Assert.Equal(typeof(decimal), productPrice.Type);
         }
@@ -1749,9 +1749,9 @@ namespace Microsoft.AspNetCore.Mvc.Description
         public void ProcessIsRequired_SetsFalse_IfEmptyBodyBehaviorIsAllowedInBindingInfo()
         {
             // Arrange
-            var description = new ApiParameterDescription 
-            { 
-                Source = BindingSource.Body, 
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Body,
                 BindingInfo = new BindingInfo
                 {
                     EmptyBodyBehavior = EmptyBodyBehavior.Allow,
@@ -1850,7 +1850,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = new ApiParameterDescription
             {
                 Source = BindingSource.Path,
-                RouteInfo = new ApiParameterRouteInfo {  DefaultValue = defaultValue },
+                RouteInfo = new ApiParameterRouteInfo { DefaultValue = defaultValue },
                 ParameterDescriptor = new ControllerParameterDescriptor
                 {
                     ParameterInfo = parameterInfo,
@@ -2236,11 +2236,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void AcceptsMultipleProperties([FromQuery]MultipleProperties model)
+        private void AcceptsMultipleProperties([FromQuery] MultipleProperties model)
         {
         }
 
-        private void AcceptsMultiplePropertiesNested([FromQuery]MultiplePropertiesContainer model)
+        private void AcceptsMultiplePropertiesNested([FromQuery] MultiplePropertiesContainer model)
         {
         }
 
@@ -2341,11 +2341,12 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
         private class OrderDTO
         {
-            [FromRoute]
+            [FromRoute(Name = "id")]
             public int Id { get; set; }
 
             public int Quantity { get; set; }
 
+            [FromQuery(Name = "product")]
             public OrderProductDTO Product { get; set; }
         }
 
@@ -2353,7 +2354,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             public int Id { get; set; }
 
-            [FromQuery]
+            [FromQuery(Name = "price")]
             public decimal Price { get; set; }
         }
 
