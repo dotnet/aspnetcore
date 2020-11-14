@@ -1,34 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ApplicationBuilderExtensions
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.ApplyCurrentCultureToResponseHeaders.get -> bool
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.ApplyCurrentCultureToResponseHeaders.set -> void
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentCultures.get -> bool
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentCultures.set -> void
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentUICultures.get -> bool
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentUICultures.set -> void
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.RequestLocalizationOptions() -> void
-Microsoft.AspNetCore.Builder.RequestLocalizationOptionsExtensions
-Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider
-Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider.AcceptLanguageHeaderRequestCultureProvider() -> void
-Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider.MaximumAcceptLanguageHeaderValuesToTry.get -> int
-Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider.MaximumAcceptLanguageHeaderValuesToTry.set -> void
-Microsoft.AspNetCore.Localization.CookieRequestCultureProvider
-Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.CookieRequestCultureProvider() -> void
-Microsoft.AspNetCore.Localization.CustomRequestCultureProvider
-Microsoft.AspNetCore.Localization.IRequestCultureFeature
-Microsoft.AspNetCore.Localization.IRequestCultureProvider
-Microsoft.AspNetCore.Localization.ProviderCultureResult
-Microsoft.AspNetCore.Localization.ProviderCultureResult.ProviderCultureResult(Microsoft.Extensions.Primitives.StringSegment culture) -> void
-Microsoft.AspNetCore.Localization.ProviderCultureResult.ProviderCultureResult(Microsoft.Extensions.Primitives.StringSegment culture, Microsoft.Extensions.Primitives.StringSegment uiCulture) -> void
-Microsoft.AspNetCore.Localization.QueryStringRequestCultureProvider
-Microsoft.AspNetCore.Localization.QueryStringRequestCultureProvider.QueryStringRequestCultureProvider() -> void
-Microsoft.AspNetCore.Localization.RequestCulture
-Microsoft.AspNetCore.Localization.RequestCultureFeature
-Microsoft.AspNetCore.Localization.RequestCultureProvider
-Microsoft.AspNetCore.Localization.RequestCultureProvider.RequestCultureProvider() -> void
-Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware
-Microsoft.Extensions.DependencyInjection.RequestLocalizationServiceCollectionExtensions
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.AddSupportedCultures(params string![]! cultures) -> Microsoft.AspNetCore.Builder.RequestLocalizationOptions!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.AddSupportedUICultures(params string![]! uiCultures) -> Microsoft.AspNetCore.Builder.RequestLocalizationOptions!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.DefaultRequestCulture.get -> Microsoft.AspNetCore.Localization.RequestCulture!

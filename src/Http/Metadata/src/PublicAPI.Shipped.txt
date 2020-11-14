@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Authorization.IAllowAnonymous
+Microsoft.AspNetCore.Authorization.IAuthorizeData
+Microsoft.AspNetCore.Authorization.IAuthorizeData.AuthenticationSchemes.get -> string?
+Microsoft.AspNetCore.Authorization.IAuthorizeData.AuthenticationSchemes.set -> void
+Microsoft.AspNetCore.Authorization.IAuthorizeData.Policy.get -> string?
+Microsoft.AspNetCore.Authorization.IAuthorizeData.Policy.set -> void
+Microsoft.AspNetCore.Authorization.IAuthorizeData.Roles.get -> string?
+Microsoft.AspNetCore.Authorization.IAuthorizeData.Roles.set -> void

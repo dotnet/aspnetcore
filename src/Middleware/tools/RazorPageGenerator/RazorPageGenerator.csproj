@@ -6,9 +6,10 @@
     <AssemblyName>dotnet-razorpagegenerator</AssemblyName>
     <PackageId>RazorPageGenerator</PackageId>
     <OutputType>Exe</OutputType>
-    <EnableApiCheck>false</EnableApiCheck>
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <!-- No need to track public APIs of this tool. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

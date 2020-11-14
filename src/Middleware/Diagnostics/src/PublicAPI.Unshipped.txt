@@ -1,38 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions
-Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions
-Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.DeveloperExceptionPageOptions() -> void
-Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.SourceCodeLineCount.get -> int
-Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.SourceCodeLineCount.set -> void
-Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.AllowStatusCode404Response.get -> bool
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.AllowStatusCode404Response.set -> void
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlerOptions() -> void
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.set -> void
-Microsoft.AspNetCore.Builder.StatusCodePagesExtensions
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions.StatusCodePagesOptions() -> void
-Microsoft.AspNetCore.Builder.WelcomePageExtensions
-Microsoft.AspNetCore.Builder.WelcomePageOptions
-Microsoft.AspNetCore.Builder.WelcomePageOptions.Path.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.Builder.WelcomePageOptions.Path.set -> void
-Microsoft.AspNetCore.Builder.WelcomePageOptions.WelcomePageOptions() -> void
-Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.ExceptionHandlerFeature() -> void
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware
-Microsoft.AspNetCore.Diagnostics.StatusCodeContext
-Microsoft.AspNetCore.Diagnostics.StatusCodePagesFeature
-Microsoft.AspNetCore.Diagnostics.StatusCodePagesFeature.Enabled.get -> bool
-Microsoft.AspNetCore.Diagnostics.StatusCodePagesFeature.Enabled.set -> void
-Microsoft.AspNetCore.Diagnostics.StatusCodePagesFeature.StatusCodePagesFeature() -> void
-Microsoft.AspNetCore.Diagnostics.StatusCodePagesMiddleware
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.StatusCodeReExecuteFeature() -> void
-Microsoft.AspNetCore.Diagnostics.WelcomePageMiddleware
-Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions
 Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider?
 Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions.FileProvider.set -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandler.get -> Microsoft.AspNetCore.Http.RequestDelegate?
