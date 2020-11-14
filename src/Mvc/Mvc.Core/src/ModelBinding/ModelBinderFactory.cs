@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -199,13 +199,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             return _cache.TryGetValue(new Key(metadata, cacheToken), out binder);
-        }
-
-        private static IServiceProvider GetDefaultServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            return services.BuildServiceProvider();
         }
 
         private class DefaultModelBinderProviderContext : ModelBinderProviderContext
