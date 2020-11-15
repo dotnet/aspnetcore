@@ -1,4 +1,0 @@
-#nullable enable
-Program
-Program.Program() -> void
-static Program.Main() -> void
