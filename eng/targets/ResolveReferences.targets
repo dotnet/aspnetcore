@@ -259,7 +259,7 @@
   <ItemGroup
       Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"
-        Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
+        Version="$(MicrosoftExtensionsInternalTransportVersion)"
         IsImplicitlyDefined="true"
         IncludeAssets="Compile"
         PrivateAssets="All"

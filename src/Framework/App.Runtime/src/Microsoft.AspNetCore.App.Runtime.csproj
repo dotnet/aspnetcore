@@ -31,8 +31,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
-    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
+    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->

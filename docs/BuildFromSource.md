@@ -107,7 +107,7 @@ You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is requ
 
 `curl` and `wget` are command line tools that can be used to download files from an HTTP server. Either utility will need to be installed in order to complete the setup. Typically, these will be included on your machine by default.
 
-If netier utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
+If neither utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
 
 ##### Git
 

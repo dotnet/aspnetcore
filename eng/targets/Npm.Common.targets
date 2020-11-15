@@ -122,8 +122,8 @@
         <PackageId>$(PackageId)</PackageId>
         <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
         <VersionSuffix>$(VersionSuffix)</VersionSuffix>
-        <!-- Fill in the item though variable names like "@microsoft/signalrPackageVersion" are likely invalid. -->
-        <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
+        <!-- Fill in the item though variable names like "@microsoft/signalrVersion" are likely invalid. -->
+        <VersionVariableName>$(PackageId.Replace('.',''))dVersion</VersionVariableName>
       </_ProjectPathWithVersion>
     </ItemGroup>
   </Target>

@@ -9,11 +9,11 @@
   <!--#if (OrganizationalAuth || IndividualB2CAuth || EnableOpenAPI) -->
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion}" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCorePackageVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerVersion}" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion}" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCoreVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
   <!--#endif -->
 
