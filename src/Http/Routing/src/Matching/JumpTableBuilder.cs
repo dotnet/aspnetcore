@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 fallback = new DictionaryJumpTable(defaultDestination, exitDestination, pathEntries);
             }
 
-            // Skip the ILEmitTrieJumpTable if the IL is going to be interpreted
+            // Use the ILEmitTrieJumpTable if the IL is going to be compiled (not interpreted)
             if (RuntimeFeature.IsDynamicCodeCompiled)
             {
                 return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
