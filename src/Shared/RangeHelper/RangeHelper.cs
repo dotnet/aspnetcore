@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             // Perf: Check for a single entry before parsing it
-            if (rawRangeHeader.Count > 1 || rawRangeHeader[0].IndexOf(',') >= 0)
+            if (rawRangeHeader.Count > 1 || rawRangeHeader[0].Contains(','))
             {
                 logger.LogDebug("Multiple ranges are not supported.");
 

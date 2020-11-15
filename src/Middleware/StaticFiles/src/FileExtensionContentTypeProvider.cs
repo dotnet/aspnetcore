@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 return null;
             }
 
-            return path.Substring(index);
+            return path[index..];
         }
     }
 }
