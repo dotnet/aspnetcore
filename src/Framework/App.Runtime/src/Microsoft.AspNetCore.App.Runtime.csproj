@@ -32,8 +32,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
-    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
+    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
