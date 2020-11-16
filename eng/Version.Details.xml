@@ -177,7 +177,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bfc49945c0bedeffe01bb5d6f3c217dad207d0d8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Internal.Transport" Version="5.0.0-rtm.520519.4" Pinned="true">
+    <Dependency Name="Microsoft.Extensions.Internal.Transport" Version="5.0.0-rtm.50519.4" Pinned="true">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
