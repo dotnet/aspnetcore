@@ -4,7 +4,7 @@ Data Protection APIs for protecting and unprotecting data. You can find document
 
 ## Description
 
-The following contains a description of each sub-directory in the `Components` directory.
+The following contains a description of each sub-directory in the `DataProtection` directory.
 
 - `Abstractions`: Contains the source files for the main DataProtection interfaces like IDataProtector and IDataProtectionProvider
 - `Cryptography.Internal`: Contains the source files for cryptography infrastucture, applications and libraries should not reference this package directly.
