@@ -1,1 +1,23 @@
 #nullable enable
+Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.Backlog.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.Backlog.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.IOQueueCount.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.IOQueueCount.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxReadBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxReadBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxWriteBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxWriteBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.NoDelay.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.NoDelay.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.SocketTransportOptions() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.UnsafePreferInlineScheduling.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.UnsafePreferInlineScheduling.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.WaitForDataBeforeAllocatingBuffer.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.WaitForDataBeforeAllocatingBuffer.set -> void
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener>
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder

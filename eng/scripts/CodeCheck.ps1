@@ -110,7 +110,7 @@ try {
         else {
             $varName = $dep.Name -replace '\.',''
             $varName = $varName -replace '\-',''
-            $varName = "${varName}PackageVersion"
+            $varName = "${varName}Version"
 
             $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
             $actualVersion = $versionVar.InnerText

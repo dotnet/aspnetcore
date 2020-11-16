@@ -9,7 +9,6 @@
     <!-- This is not a package, it is part of Razor SDK. -->
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
-    <EnableApiCheck>false</EnableApiCheck>
 
     <!-- Don't produce rzc.exe -->
     <UseAppHost>false</UseAppHost>

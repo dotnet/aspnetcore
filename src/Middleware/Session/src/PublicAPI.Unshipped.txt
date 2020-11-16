@@ -1,22 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions
-Microsoft.AspNetCore.Builder.SessionOptions
-Microsoft.AspNetCore.Builder.SessionOptions.IOTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Builder.SessionOptions.IOTimeout.set -> void
-Microsoft.AspNetCore.Builder.SessionOptions.IdleTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Builder.SessionOptions.IdleTimeout.set -> void
-Microsoft.AspNetCore.Builder.SessionOptions.SessionOptions() -> void
-Microsoft.AspNetCore.Session.DistributedSession
-Microsoft.AspNetCore.Session.DistributedSession.Clear() -> void
-Microsoft.AspNetCore.Session.DistributedSession.IsAvailable.get -> bool
 Microsoft.AspNetCore.Session.DistributedSession.TryGetValue(string! key, out byte[]? value) -> bool
-Microsoft.AspNetCore.Session.DistributedSessionStore
-Microsoft.AspNetCore.Session.ISessionStore
-Microsoft.AspNetCore.Session.SessionDefaults
-Microsoft.AspNetCore.Session.SessionFeature
-Microsoft.AspNetCore.Session.SessionFeature.SessionFeature() -> void
-Microsoft.AspNetCore.Session.SessionMiddleware
-Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions
 Microsoft.AspNetCore.Builder.SessionOptions.Cookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Builder.SessionOptions.Cookie.set -> void
 Microsoft.AspNetCore.Session.DistributedSession.CommitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

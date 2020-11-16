@@ -1,24 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.HstsBuilderExtensions
-Microsoft.AspNetCore.Builder.HstsServicesExtensions
-Microsoft.AspNetCore.Builder.HttpsPolicyBuilderExtensions
-Microsoft.AspNetCore.Builder.HttpsRedirectionServicesExtensions
-Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.HstsOptions() -> void
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.IncludeSubDomains.get -> bool
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.IncludeSubDomains.set -> void
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.MaxAge.get -> System.TimeSpan
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.MaxAge.set -> void
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.Preload.get -> bool
-Microsoft.AspNetCore.HttpsPolicy.HstsOptions.Preload.set -> void
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.HttpsPort.get -> int?
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.HttpsPort.set -> void
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.HttpsRedirectionOptions() -> void
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.RedirectStatusCode.get -> int
-Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionOptions.RedirectStatusCode.set -> void
 ~Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.HstsMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions!>! options) -> void
 ~Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.HstsMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!

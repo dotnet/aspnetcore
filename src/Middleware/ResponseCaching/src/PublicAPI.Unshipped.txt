@@ -1,17 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ResponseCachingExtensions
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.ResponseCachingFeature() -> void
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingMiddleware
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.MaximumBodySize.get -> long
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.MaximumBodySize.set -> void
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.ResponseCachingOptions() -> void
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.SizeLimit.get -> long
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.SizeLimit.set -> void
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.UseCaseSensitivePaths.get -> bool
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.UseCaseSensitivePaths.set -> void
-Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.VaryByQueryKeys.get -> string![]?
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.VaryByQueryKeys.set -> void
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!

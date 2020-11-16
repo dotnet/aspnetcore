@@ -1,1 +1,33 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.AntiforgeryOptions() -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.Cookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.Cookie.set -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.FormFieldName.get -> string!
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.FormFieldName.set -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.HeaderName.get -> string?
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.HeaderName.set -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressXFrameOptionsHeader.get -> bool
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressXFrameOptionsHeader.set -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.AntiforgeryTokenSet(string? requestToken, string? cookieToken, string! formFieldName, string? headerName) -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.CookieToken.get -> string?
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.FormFieldName.get -> string!
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.HeaderName.get -> string?
+Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.RequestToken.get -> string?
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message) -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message, System.Exception? innerException) -> void
+Microsoft.AspNetCore.Antiforgery.IAntiforgery
+Microsoft.AspNetCore.Antiforgery.IAntiforgery.GetAndStoreTokens(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet!
+Microsoft.AspNetCore.Antiforgery.IAntiforgery.GetTokens(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet!
+Microsoft.AspNetCore.Antiforgery.IAntiforgery.IsRequestValidAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Antiforgery.IAntiforgery.SetCookieTokenAndHeader(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.Antiforgery.IAntiforgery.ValidateRequestAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryAdditionalDataProvider
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryAdditionalDataProvider.GetAdditionalData(Microsoft.AspNetCore.Http.HttpContext! context) -> string!
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryAdditionalDataProvider.ValidateAdditionalData(Microsoft.AspNetCore.Http.HttpContext! context, string! additionalData) -> bool
+Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddAntiforgery(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddAntiforgery(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static readonly Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.DefaultCookiePrefix -> string!
