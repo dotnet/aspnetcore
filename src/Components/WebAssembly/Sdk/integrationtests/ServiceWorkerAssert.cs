@@ -12,11 +12,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class ServiceWorkerAssert
     {
-        internal static void VerifyServiceWorkerFiles(MSBuildResult result, string outputDirectory, string serviceWorkerPath, string serviceWorkerContent, string assetsManifestPath)
+        internal static void VerifyServiceWorkerFiles(MSBuildResult result,
+            string outputDirectory,
+            string serviceWorkerPath,
+            string serviceWorkerContent,
+            string assetsManifestPath,
+            string staticWebAssetsBasePath = "")
         {
             // Check the expected files are there
-            var serviceWorkerResolvedPath = Assert.FileExists(result, outputDirectory, serviceWorkerPath);
-            var assetsManifestResolvedPath = Assert.FileExists(result, outputDirectory, assetsManifestPath);
+            var serviceWorkerResolvedPath = Assert.FileExists(result, outputDirectory, staticWebAssetsBasePath, serviceWorkerPath);
+            var assetsManifestResolvedPath = Assert.FileExists(result, outputDirectory, staticWebAssetsBasePath, assetsManifestPath);
 
             // Check the service worker contains the expected content (which comes from the PublishedContent file)
             Assert.FileContains(result, serviceWorkerResolvedPath, serviceWorkerContent);
@@ -36,8 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // We don't list compressed files in the SWAM, as these are transparent to the client,
                 // nor do we list the service worker itself or its assets manifest, as these don't need to be fetched in the same way
                 if (IsCompressedFile(relativePath)
-                    || string.Equals(relativePath, serviceWorkerPath, StringComparison.Ordinal)
-                    || string.Equals(relativePath, assetsManifestPath, StringComparison.Ordinal))
+                    || string.Equals(relativePath, Path.Combine(staticWebAssetsBasePath, serviceWorkerPath), StringComparison.Ordinal)
+                    || string.Equals(relativePath, Path.Combine(staticWebAssetsBasePath, assetsManifestPath), StringComparison.Ordinal))
                 {
                     continue;
                 }
