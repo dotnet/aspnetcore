@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     /// <remarks>
     /// Users should not need to instantiate this class.
     /// </remarks>
-    internal class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
+    [Obsolete("The ThrowingWasUpgradedWriteOnlyStream is obsolete and will be removed in a future release.")]
+    public class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
     {
         ///<inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
