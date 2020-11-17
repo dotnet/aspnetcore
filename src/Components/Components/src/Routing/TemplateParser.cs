@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 {
                     var nextSegment = templateSegments[j];
 
-                    if (currentSegment.IsOptional && !nextSegment.IsOptional)
+                    if (currentSegment.IsOptional && !nextSegment.IsOptional && !nextSegment.IsCatchAll)
                     {
                         throw new InvalidOperationException($"Invalid template '{template}'. Non-optional parameters or literal routes cannot appear after optional parameters.");
                     }

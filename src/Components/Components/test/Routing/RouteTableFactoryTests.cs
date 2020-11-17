@@ -455,6 +455,36 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Null(values);
         }
 
+        [Theory]
+        [InlineData("/{parameter?}/{*catchAll}", "/", null, null)]
+        [InlineData("/{parameter?}/{*catchAll}", "/parameter", "parameter", null)]
+        [InlineData("/{parameter?}/{*catchAll}", "/value/1", "value", "1")]
+        [InlineData("/{parameter?}/{*catchAll}", "/value/1/2/3/4/5", "value", "1/2/3/4/5")]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/", null, null)]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/parameter", "parameter", null)]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/value/1", "value", "1")]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/value/1/2/3/4/5", "value", "1/2/3/4/5")]
+        public void OptionalParameterPlusCatchAllRoute(string template, string path, string parameterValue, string catchAllValue)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.True(context.Parameters.TryGetValue("parameter", out var parameter));
+            Assert.True(context.Parameters.TryGetValue("catchAll", out var catchAll));
+            Assert.Equal(parameterValue, parameter);
+            Assert.Equal(catchAllValue, catchAll);
+        }
+
         [Fact]
         public void CanMatchCatchAllParametersWithConstraints_NotMatchingRoute()
         {
