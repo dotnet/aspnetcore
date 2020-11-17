@@ -1,2 +1,3 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Testing.QuarantinedTestAttribute.QuarantinedTestAttribute(string reason = null) -> void
 ~Microsoft.AspNetCore.Testing.QuarantinedTestAttribute.QuarantinedTestAttribute(string reason) -> void

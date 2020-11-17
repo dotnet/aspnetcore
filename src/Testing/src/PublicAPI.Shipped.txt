@@ -184,6 +184,7 @@ virtual Microsoft.AspNetCore.Testing.LoggedTestBase.Dispose() -> void
 ~Microsoft.AspNetCore.Testing.OSSkipConditionAttribute.OSSkipConditionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, params string[] versions) -> void
 ~Microsoft.AspNetCore.Testing.OSSkipConditionAttribute.SkipReason.get -> string
 ~Microsoft.AspNetCore.Testing.OSSkipConditionAttribute.SkipReason.set -> void
+~Microsoft.AspNetCore.Testing.QuarantinedTestAttribute.QuarantinedTestAttribute(string reason = null) -> void
 ~Microsoft.AspNetCore.Testing.QuarantinedTestAttribute.Reason.get -> string
 ~Microsoft.AspNetCore.Testing.QuarantinedTestTraitDiscoverer.GetTraits(Xunit.Abstractions.IAttributeInfo traitAttribute) -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>
 ~Microsoft.AspNetCore.Testing.ReplaceCultureAttribute.Culture.get -> System.Globalization.CultureInfo
