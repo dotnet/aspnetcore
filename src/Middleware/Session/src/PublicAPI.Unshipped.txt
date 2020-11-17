@@ -1,4 +1,27 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Builder.SessionOptions.Cookie.get -> Microsoft.AspNetCore.Http.CookieBuilder
+*REMOVED*~Microsoft.AspNetCore.Builder.SessionOptions.Cookie.set -> void
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.CommitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.DistributedSession(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool isNewSessionKey) -> void
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.Id.get -> string
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.Keys.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.LoadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.Remove(string key) -> void
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.Set(string key, byte[] value) -> void
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSession.TryGetValue(string key, out byte[] value) -> bool
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSessionStore.Create(string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, bool isNewSessionKey) -> Microsoft.AspNetCore.Http.ISession
+*REMOVED*~Microsoft.AspNetCore.Session.DistributedSessionStore.DistributedSessionStore(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
+*REMOVED*~Microsoft.AspNetCore.Session.ISessionStore.Create(string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, bool isNewSessionKey) -> Microsoft.AspNetCore.Http.ISession
+*REMOVED*~Microsoft.AspNetCore.Session.SessionFeature.Session.get -> Microsoft.AspNetCore.Http.ISession
+*REMOVED*~Microsoft.AspNetCore.Session.SessionFeature.Session.set -> void
+*REMOVED*~Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Session.SessionMiddleware.SessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.AspNetCore.Session.ISessionStore sessionStore, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions> options) -> void
+*REMOVED*~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.SessionOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+*REMOVED*~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.SessionOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+*REMOVED*~static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookieName -> string
+*REMOVED*~static readonly Microsoft.AspNetCore.Session.SessionDefaults.CookiePath -> string
 Microsoft.AspNetCore.Session.DistributedSession.TryGetValue(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Builder.SessionOptions.Cookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Builder.SessionOptions.Cookie.set -> void

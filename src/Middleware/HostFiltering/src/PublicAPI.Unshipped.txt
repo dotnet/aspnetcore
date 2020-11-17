@@ -1,4 +1,10 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware.HostFilteringMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware> logger, Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions> optionsMonitor) -> void
+*REMOVED*~Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.HostFiltering.HostFilteringOptions.AllowedHosts.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.AspNetCore.HostFiltering.HostFilteringOptions.AllowedHosts.set -> void
+*REMOVED*~static Microsoft.AspNetCore.Builder.HostFilteringBuilderExtensions.UseHostFiltering(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*~static Microsoft.AspNetCore.Builder.HostFilteringServicesExtensions.AddHostFiltering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions> configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware.HostFilteringMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware!>! logger, Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions!>! optionsMonitor) -> void
 Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.HostFiltering.HostFilteringOptions.AllowedHosts.get -> System.Collections.Generic.IList<string!>!

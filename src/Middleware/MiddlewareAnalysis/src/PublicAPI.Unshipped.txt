@@ -1,4 +1,16 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.AnalysisBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder inner) -> void
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.get -> System.IServiceProvider
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.set -> void
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Build() -> Microsoft.AspNetCore.Http.RequestDelegate
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.New() -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Properties.get -> System.Collections.Generic.IDictionary<string, object>
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ServerFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate, Microsoft.AspNetCore.Http.RequestDelegate> middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisMiddleware.AnalysisMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, System.Diagnostics.DiagnosticSource diagnosticSource, string middlewareName) -> void
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisStartupFilter.Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next) -> System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>
+*REMOVED*~static Microsoft.Extensions.DependencyInjection.AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.AnalysisBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder! inner) -> void
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.set -> void

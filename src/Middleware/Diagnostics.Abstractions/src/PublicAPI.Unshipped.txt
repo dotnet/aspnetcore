@@ -1,4 +1,28 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages) -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages, string failureSummary) -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompiledContent.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.FailureSummary.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.Messages.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage>
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.SourceFileContent.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.CompilationFailure.SourceFilePath.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.DiagnosticMessage(string message, string formattedMessage, string filePath, int startLine, int startColumn, int endLine, int endColumn) -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.FormattedMessage.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.Message.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.SourceFilePath.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.ErrorContext.ErrorContext(Microsoft.AspNetCore.Http.HttpContext httpContext, System.Exception exception) -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.ErrorContext.Exception.get -> System.Exception
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.ErrorContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.ICompilationException.CompilationFailures.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.CompilationFailure>
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter.HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Error.get -> System.Exception
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string
+*REMOVED*~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void
 Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string? sourceFilePath, string? sourceFileContent, string? compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage!>? messages) -> void
 Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string? sourceFilePath, string? sourceFileContent, string? compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage?>? messages, string? failureSummary) -> void
 Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompiledContent.get -> string?
