@@ -11,7 +11,7 @@ The following contains a description of each sub-directory in the `DataProtectio
 - `Cryptography.KeyDerivation`: Contains the source files related to key derivation, i.e. PBKDF2
 - `DataProtection`: Contains the main implementation of DataProtection for ASP.NET Core to protect and unprotect data.
 - `EntityFrameworkCore`: Contains the implementation for storing data using EntityFrameworkCore
-- `Extensions`: Contains a additional apis via extension methods.
+- `Extensions`: Contains additional apis via extension methods.
 - `StackExchangeRedis`: Contains the implementation for storing data using StackExchangeREdis
 - `samples`: Contains a collection of sample apps
 - `shared`: Contains a collection of shared constants and helper methods/classes
