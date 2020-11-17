@@ -105,7 +105,6 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-alpha.1.20565.4</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0-alpha.1.20565.4</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-alpha.1.20565.4</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftExtensionsInternalTransportVersion>6.0.0-alpha.1.20565.4</MicrosoftExtensionsInternalTransportVersion>
     <SystemComponentModelAnnotationsVersion>6.0.0-alpha.1.20565.4</SystemComponentModelAnnotationsVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-alpha.1.20565.4</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-alpha.1.20565.4</SystemDiagnosticsEventLogVersion>
@@ -142,7 +141,7 @@
     <MicrosoftEntityFrameworkCoreVersion>6.0.0-alpha.1.20566.5</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-alpha.1.20566.5</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.20552.5</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.20561.5</MicrosoftDotNetBuildTasksInstallersVersion>
   </PropertyGroup>
   <!--
 
