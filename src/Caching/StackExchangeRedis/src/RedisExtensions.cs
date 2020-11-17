@@ -9,17 +9,10 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
     internal static class RedisExtensions
     {
-        private const string HmGetScript = (@"return redis.call('HMGET', KEYS[1], unpack(ARGV))");
-
         internal static RedisValue[] HashMemberGet(this IDatabase cache, string key, params string[] members)
         {
-            var result = cache.ScriptEvaluate(
-                HmGetScript,
-                new RedisKey[] { key },
-                GetRedisMembers(members));
-
             // TODO: Error checking?
-            return (RedisValue[])result;
+            return cache.HashGet(key, GetRedisMembers(members));
         }
 
         internal static async Task<RedisValue[]> HashMemberGetAsync(
@@ -27,13 +20,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             string key,
             params string[] members)
         {
-            var result = await cache.ScriptEvaluateAsync(
-                HmGetScript,
-                new RedisKey[] { key },
-                GetRedisMembers(members)).ConfigureAwait(false);
-
             // TODO: Error checking?
-            return (RedisValue[])result;
+            return await cache.HashGetAsync(key, GetRedisMembers(members)).ConfigureAwait(false);
         }
 
         private static RedisValue[] GetRedisMembers(params string[] members)
