@@ -65,7 +65,6 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppInternalVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppInternalVersion>
     <MicrosoftNETCoreAppRefVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRefVersion>
     <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRuntimewinx64Version>
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreBrowserDebugHostTransportVersion>
