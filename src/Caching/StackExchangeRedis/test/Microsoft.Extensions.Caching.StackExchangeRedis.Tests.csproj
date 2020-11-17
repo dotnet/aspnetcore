@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>
+      The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. This package integrates IHttpClientFactory with the Polly library, to add transient-fault-handling and resiliency through fluent policies such as Retry, Circuit Breaker, Timeout, Bulkhead Isolation, and Fallback.
+    </Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;httpclient</PackageTags>
+
+    <!-- Don't use Microsoft.Extensions.Http.Polly as a namespace, that introduces ambiguities with 'Polly' -->
+    <RootNamespace>Microsoft.Extensions.Http</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Polly.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="Polly.Extensions.Http" />
+    <Reference Include="Polly" />
+  </ItemGroup>
+
+</Project>
