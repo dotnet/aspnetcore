@@ -724,12 +724,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AllPublishItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <!-- .Views.dll and .Views.pdb were part of the single file bundle in 3.1 apps. Lets keep this unchanged. -->
+        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
       <AllPublishItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
     </ItemGroup>
 
