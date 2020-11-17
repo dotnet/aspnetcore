@@ -64,6 +64,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// <param name="baseHandler"></param>
         /// <returns></returns>
         public HttpClient CreateHttpClient(HttpMessageHandler baseHandler) =>
-            new(new LoggingHandler(_loggerFactory, baseHandler)) { BaseAddress = new Uri(ApplicationBaseUri) };
+            new HttpClient(new LoggingHandler(_loggerFactory, baseHandler)) { BaseAddress = new Uri(ApplicationBaseUri) };
     }
 }
