@@ -198,9 +198,6 @@
   <data name="BadRequest_UnrecognizedHTTPVersion" xml:space="preserve">
     <value>Unrecognized HTTP version: '{detail}'</value>
   </data>
-  <data name="BadRequest_UpgradeRequestCannotHavePayload" xml:space="preserve">
-    <value>Requests with 'Connection: Upgrade' cannot have content in the request body.</value>
-  </data>
   <data name="FallbackToIPv4Any" xml:space="preserve">
     <value>Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.</value>
   </data>
