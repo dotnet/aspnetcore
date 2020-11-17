@@ -4,7 +4,7 @@ Contains packages that provide reference assembles, default sets APIs for buildi
 
 ## Description
 
-The following contains a description of each sub-directory in the `DataProtection` directory.
+The following contains a description of each sub-directory in the `Framework` directory.
 
 - `App.Ref.Internal`: Empty project for identifying the non-stable version of AspNetCore at the time the targeting pack was  last built
 - `App.Ref`: Contains reference assemblies, documentation, and other design-time assets
