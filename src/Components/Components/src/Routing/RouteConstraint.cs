@@ -51,9 +51,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Creates a structured RouteConstraint object given a string that contains
         /// the route constraint. A constraint is the place after the colon in a
         /// parameter definition, for example `{age:int?}`.
-        ///
-        /// If the constraint denotes an optional, this method will return an
-        /// <see cref="OptionalTypeRouteConstraint{T}" /> which handles the appropriate checks.
         /// </summary>
         /// <param name="constraint">String representation of the constraint</param>
         /// <returns>Type-specific RouteConstraint object</returns>
@@ -63,47 +60,25 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 case "bool":
                     return new TypeRouteConstraint<bool>(bool.TryParse);
-                case "bool?":
-                    return new OptionalTypeRouteConstraint<bool>(bool.TryParse);
                 case "datetime":
                     return new TypeRouteConstraint<DateTime>((string str, out DateTime result)
-                        => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result));
-                case "datetime?":
-                    return new OptionalTypeRouteConstraint<DateTime>((string str, out DateTime result)
                         => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result));
                 case "decimal":
                     return new TypeRouteConstraint<decimal>((string str, out decimal result)
                         => decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
-                case "decimal?":
-                    return new OptionalTypeRouteConstraint<decimal>((string str, out decimal result)
-                        => decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "double":
                     return new TypeRouteConstraint<double>((string str, out double result)
-                        => double.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
-                case "double?":
-                    return new OptionalTypeRouteConstraint<double>((string str, out double result)
                         => double.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "float":
                     return new TypeRouteConstraint<float>((string str, out float result)
                         => float.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
-                case "float?":
-                    return new OptionalTypeRouteConstraint<float>((string str, out float result)
-                        => float.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "guid":
                     return new TypeRouteConstraint<Guid>(Guid.TryParse);
-                case "guid?":
-                    return new OptionalTypeRouteConstraint<Guid>(Guid.TryParse);
                 case "int":
                     return new TypeRouteConstraint<int>((string str, out int result)
                         => int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
-                case "int?":
-                    return new OptionalTypeRouteConstraint<int>((string str, out int result)
-                        => int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 case "long":
                     return new TypeRouteConstraint<long>((string str, out long result)
-                        => long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
-                case "long?":
-                    return new OptionalTypeRouteConstraint<long>((string str, out long result)
                         => long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 default:
                     return null;
