@@ -251,6 +251,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                                 AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
 
                                 await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+
+                                // Resume reading frames after aborting this HTTP/2 stream.
+                                // This is important because additional frames could be
+                                // in the current buffer. We don't want to delay reading
+                                // them until the next incoming read/heartbeat.
                             }
                         }
 
