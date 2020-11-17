@@ -1,8 +1,0 @@
-﻿<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
-
-  <PropertyGroup Condition="'$(IsShipping)' == 'true'">
-    <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)AspNet.Extensions.ruleset</CodeAnalysisRuleset>
-  </PropertyGroup>
-
-</Project>

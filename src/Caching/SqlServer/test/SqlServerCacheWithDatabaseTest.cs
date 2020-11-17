@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
@@ -629,7 +630,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public async Task GetCacheItem_IsCaseSensitive()
         {
             // Arrange
-            var key = Guid.NewGuid().ToString().ToLower(); // lower case
+            var key = Guid.NewGuid().ToString().ToLower(CultureInfo.InvariantCulture); // lower case
             var cache = GetSqlServerCache();
             await cache.SetAsync(
                 key,
@@ -637,7 +638,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(relative: TimeSpan.FromHours(1)));
 
             // Act
-            var value = await cache.GetAsync(key.ToUpper()); // key made upper case
+            var value = await cache.GetAsync(key.ToUpper(CultureInfo.InvariantCulture)); // key made upper case
 
             // Assert
             Assert.Null(value);
@@ -648,7 +649,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public async Task GetCacheItem_DoesNotTrimTrailingSpaces()
         {
             // Arrange
-            var key = string.Format("  {0}  ", Guid.NewGuid()); // with trailing spaces
+            var key = string.Format(CultureInfo.InvariantCulture, "  {0}  ", Guid.NewGuid()); // with trailing spaces
             var cache = GetSqlServerCache();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             await cache.SetAsync(
@@ -746,7 +747,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     {
                         Id = key,
                         Value = (byte[])reader[1],
-                        ExpiresAtTime = DateTimeOffset.Parse(reader[2].ToString())
+                        ExpiresAtTime = DateTimeOffset.Parse(reader[2].ToString(), CultureInfo.InvariantCulture)
                     };
 
                     if (!await reader.IsDBNullAsync(3))
@@ -756,7 +757,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
                     if (!await reader.IsDBNullAsync(4))
                     {
-                        cacheItemInfo.AbsoluteExpiration = DateTimeOffset.Parse(reader[4].ToString());
+                        cacheItemInfo.AbsoluteExpiration = DateTimeOffset.Parse(reader[4].ToString(), CultureInfo.InvariantCulture);
                     }
 
                     return cacheItemInfo;

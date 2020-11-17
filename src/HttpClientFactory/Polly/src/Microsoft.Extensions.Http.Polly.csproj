@@ -11,6 +11,7 @@
 
     <!-- Don't use Microsoft.Extensions.Http.Polly as a namespace, that introduces ambiguities with 'Polly' -->
     <RootNamespace>Microsoft.Extensions.Http</RootNamespace>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>

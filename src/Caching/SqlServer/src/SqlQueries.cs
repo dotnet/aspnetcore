@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Caching.SqlServer
@@ -58,15 +59,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public SqlQueries(string schemaName, string tableName)
         {
             var tableNameWithSchema = string.Format(
+                CultureInfo.InvariantCulture,
                 "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
 
             // when retrieving an item, we do an UPDATE first and then a SELECT
-            GetCacheItem = string.Format(UpdateCacheItemFormat + GetCacheItemFormat, tableNameWithSchema);
-            GetCacheItemWithoutValue = string.Format(UpdateCacheItemFormat, tableNameWithSchema);
-            DeleteCacheItem = string.Format(DeleteCacheItemFormat, tableNameWithSchema);
-            DeleteExpiredCacheItems = string.Format(DeleteExpiredCacheItemsFormat, tableNameWithSchema);
-            SetCacheItem = string.Format(SetCacheItemFormat, tableNameWithSchema);
-            TableInfo = string.Format(TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
+            GetCacheItem = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat + GetCacheItemFormat, tableNameWithSchema);
+            GetCacheItemWithoutValue = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat, tableNameWithSchema);
+            DeleteCacheItem = string.Format(CultureInfo.InvariantCulture, DeleteCacheItemFormat, tableNameWithSchema);
+            DeleteExpiredCacheItems = string.Format(CultureInfo.InvariantCulture, DeleteExpiredCacheItemsFormat, tableNameWithSchema);
+            SetCacheItem = string.Format(CultureInfo.InvariantCulture, SetCacheItemFormat, tableNameWithSchema);
+            TableInfo = string.Format(CultureInfo.InvariantCulture, TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
         }
 
         public string TableInfo { get; }
