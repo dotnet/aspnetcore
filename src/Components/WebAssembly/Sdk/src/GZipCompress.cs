@@ -32,26 +32,26 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
             System.Threading.Tasks.Parallel.For(0, FilesToCompress.Length, i =>
             {
                 var file = FilesToCompress[i];
-                var inputPath = file.ItemSpec;
+                var inputFullPath = file.GetMetadata("FullPath");
                 var relativePath = file.GetMetadata("RelativePath");
                 var outputRelativePath = Path.Combine(
                     OutputDirectory,
-                    BrotliCompress.CalculateTargetPath(relativePath, ".gz"));
+                    BrotliCompress.CalculateTargetPath(inputFullPath, ".gz"));
 
                 var outputItem = new TaskItem(outputRelativePath);
                 outputItem.SetMetadata("RelativePath", relativePath + ".gz");
                 CompressedFiles[i] = outputItem;
 
-                if (File.Exists(outputRelativePath) && File.GetLastWriteTimeUtc(inputPath) < File.GetLastWriteTimeUtc(outputRelativePath))
+                if (File.Exists(outputRelativePath) && File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputRelativePath))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
-                    Log.LogMessage(MessageImportance.Low, $"Skipping '{inputPath}' because '{outputRelativePath}' is newer than '{inputPath}'.");
+                    Log.LogMessage(MessageImportance.Low, $"Skipping '{file.ItemSpec}' because '{outputRelativePath}' is newer than '{file.ItemSpec}'.");
                     return;
                 }
 
                 try
                 {
-                    using var sourceStream = File.OpenRead(inputPath);
+                    using var sourceStream = File.OpenRead(file.ItemSpec);
                     using var fileStream = File.Create(outputRelativePath);
                     using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
 
