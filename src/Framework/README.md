@@ -6,7 +6,7 @@ Contains packages that provide reference assembles, default sets APIs for buildi
 
 The following contains a description of each sub-directory in the `Framework` directory.
 
-- `App.Ref.Internal`: Empty project for identifying the non-stable version of AspNetCore at the time the targeting pack was last built
+- `App.Ref.Internal`: Empty project for identifying the non-stable version of AspNetCore at the time the targeting pack was last built. This package does not ship internally.
 - `App.Ref`: Contains reference assemblies, documentation, and other design-time assets
 - `App.Runtime`: Provides a default set of APIs for building ASP.NET Core applications, and assets used for self-contained deployments.
 
