@@ -75,22 +75,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x86' ">
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.AspNetCore.Authentication.AzureAD.UI-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Authentication.AzureADB2C.UI-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Certificate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' ">
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
