@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             return logLevel != LogLevel.None;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
         }
 
-        private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
         {
             lock (_logBuilder)
             {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
         }
 
-        private void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        private void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
         {
             logBuilder.Append(GetLogLevelString(logLevel));
             logBuilder.Append(_loglevelPadding);
