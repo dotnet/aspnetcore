@@ -147,22 +147,6 @@ namespace Microsoft.AspNetCore.Components
             if (currentResult == 0)
             {
                 currentResult = xTemplate.Segments.Length.CompareTo(yTemplate.Segments.Length);
-
-                // We need to deal with the special case of detecting ambiguous routes where a route specifies a parameter and
-                // another route specifies an optional parameter. There are no precedence rules between optional and non-optional
-                // parameters in routing, so we need to error in that case.
-                // For example are ambiguous:
-                // '/{parameter}' and '/{other?}'
-                // '/{parameter}/{id?}' and '/{other?}/{something?}'
-                // In contrast, these are not ambiguous because precedence applies in this case
-                // '/{parameter:int}' and '/{other?}'
-                // '/{parameter}/{id?}' and '/{other}/{*rest}'
-                // '/literal' and {param?}
-                if ((currentResult == -1 && AllRemainingSegmentsAreOptionalParameters(yTemplate, minSegments + 1)) ||
-                   (currentResult == 1 && AllRemainingSegmentsAreOptionalParameters(xTemplate, minSegments + 1)))
-                {
-                    currentResult = 0;
-                }
             }
 
             if (currentResult == 0)
@@ -174,21 +158,6 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return currentResult;
-
-            static bool AllRemainingSegmentsAreOptionalParameters(RouteTemplate template, int firstRemainingSegmentIndex)
-            {
-                for (var i = firstRemainingSegmentIndex; i < template.Segments.Length; i++)
-                {
-                    var segment = template.Segments[i];
-                    if (!segment.IsOptional)
-                    {
-                        return false;
-                    }
-                }
-
-                // There was at least one optional segment
-                return firstRemainingSegmentIndex < template.Segments.Length;
-            }
         }
 
         private static int GetRank(TemplateSegment xSegment)

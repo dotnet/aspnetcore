@@ -757,6 +757,61 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 .Build());
         }
 
+        [Theory]
+        [InlineData("{parameter}", "{parameter?}")]
+        [InlineData("{parameter:int}", "{parameter:bool?}")]
+        public void ThrowsForAmbiguousRoutes(string first, string second)
+        {
+            // Arrange, act & assert
+            var exception = Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(first, typeof(TestHandler1))
+                .AddRoute(second, typeof(TestHandler2))
+                .Build());
+
+            exception.Message.Contains("The following routes are ambiguous");
+        }
+
+        // It's important the precedence is inverted here to also validate that
+        // the precedence is correct in these cases
+        [Theory]
+        [InlineData("{optional?}", "/")]
+        [InlineData("{optional?}", "literal")]
+        [InlineData("{optional?}", "{optional:int?}")]
+        [InlineData("{*catchAll:int}", "{optional?}")]
+        [InlineData("{*catchAll}", "{optional?}")]
+        [InlineData("literal/{optional?}", "/")]
+        [InlineData("literal/{optional?}", "literal")]
+        [InlineData("literal/{optional?}", "literal/{optional:int?}")]
+        [InlineData("literal/{*catchAll:int}", "literal/{optional?}")]
+        [InlineData("literal/{*catchAll}", "literal/{optional?}")]
+        [InlineData("{param}/{optional?}", "/")]
+        [InlineData("{param}/{optional?}", "{param}")]
+        [InlineData("{param}/{optional?}", "{param}/{optional:int?}")]
+        [InlineData("{param}/{*catchAll:int}", "{param}/{optional?}")]
+        [InlineData("{param}/{*catchAll}", "{param}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "/")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "{param1?}/{param2?}/{param3?}/{optional:int?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "{param1?}/{param2?}/{param3:int?}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3:int?}/{optional?}", "{param1?}/{param2?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{*catchAll:int}", "{param1?}/{param2?}/{param3?}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{*catchAll}", "{param1?}/{param2?}/{param3?}/{optional?}")]
+        public void DoesNotThrowForNonAmbiguousRoutes(string first, string second)
+        {
+            // Arrange
+            var builder = new TestRouteTableBuilder()
+                .AddRoute(first, typeof(TestHandler1))
+                .AddRoute(second, typeof(TestHandler2));
+
+            var expectedOrder = new[] { second, first };
+
+            // Act
+            var table = builder.Build();
+
+            // Assert
+            var tableTemplates = table.Routes.Select(p => p.Template.TemplateText).ToArray();
+            Assert.Equal(expectedOrder, tableTemplates);
+        }
+
         [Fact]
         public void ThrowsForLiteralWithQuestionMark()
         {
