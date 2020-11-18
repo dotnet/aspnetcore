@@ -14,11 +14,11 @@ The following contains a description of each sub-directory in the `Framework` di
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source,  follow the instructions [on building a subset of the code](../../BuildFromSource.md#building-a-subset-of-the-code).
 
 ### Test
 
-To run the tests for this project, [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
+To run the tests for this project, [run the tests on the command line](../../BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 ## More Information
 
