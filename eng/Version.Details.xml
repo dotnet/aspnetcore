@@ -11,35 +11,35 @@
   <ProductDependencies>
     <Dependency Name="dotnet-ef" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>94667b802c43b709a8a2fe2dcf7eb6864e6dbe93</Sha>
+      <Sha>da1c05fda5c858b8e171ee6c1b2269135e683a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
