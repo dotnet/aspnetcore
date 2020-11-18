@@ -456,6 +456,74 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Theory]
+        [InlineData("", 0)]
+        [InlineData("1", 1)]
+        [InlineData("1/2", 2)]
+        [InlineData("1/2/3", 3)]
+        public void MultipleOptionalParameters(string path, int segments)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("{param1?}/{param2?}/{param3?}")
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            for (int i = 1; i <= segments; i++)
+            {
+                // Segments present in the path have the corresponding value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Equal(i.ToString(), value);
+            }
+            for (int i = segments + 1; i <= 3; i++)
+            {
+                // Segments omitted in the path have the default null value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Null(value);
+            }
+        }
+
+        [Theory]
+        [InlineData("prefix/", 0)]
+        [InlineData("prefix/1", 1)]
+        [InlineData("prefix/1/2", 2)]
+        [InlineData("prefix/1/2/3", 3)]
+        public void MultipleOptionalParametersWithPrefix(string path, int segments)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("prefix/{param1?}/{param2?}/{param3?}")
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            for (int i = 1; i <= segments; i++)
+            {
+                // Segments present in the path have the corresponding value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Equal(i.ToString(), value);
+            }
+            for (int i = segments + 1; i <= 3; i++)
+            {
+                // Segments omitted in the path have the default null value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Null(value);
+            }
+        }
+
+        [Theory]
         [InlineData("/{parameter?}/{*catchAll}", "/", null, null)]
         [InlineData("/{parameter?}/{*catchAll}", "/parameter", "parameter", null)]
         [InlineData("/{parameter?}/{*catchAll}", "/value/1", "value", "1")]
@@ -654,6 +722,47 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
                 .AddRoute("/users/{id}", typeof(TestHandler1))
                 .AddRoute("/users/{id?}", typeof(TestHandler2))
+                .Build());
+        }
+
+        [Theory]
+        [InlineData("{*catchall}/literal")]
+        [InlineData("{*catchall}/{parameter}")]
+        [InlineData("{*catchall}/{parameter?}")]
+        [InlineData("{*catchall}/{*other}")]
+        [InlineData("prefix/{*catchall}/literal")]
+        [InlineData("prefix/{*catchall}/{parameter}")]
+        [InlineData("prefix/{*catchall}/{parameter?}")]
+        [InlineData("prefix/{*catchall}/{*other}")]
+        public void ThrowsWhenCatchAllIsNotTheLastSegment(string template)
+        {
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build());
+        }
+
+        [Theory]
+        [InlineData("{optional?}/literal")]
+        [InlineData("{optional?}/{parameter}")]
+        [InlineData("{optional?}/{parameter:int}")]
+        [InlineData("prefix/{optional?}/literal")]
+        [InlineData("prefix/{optional?}/{parameter}")]
+        [InlineData("prefix/{optional?}/{parameter:int}")]
+        public void ThrowsForOptionalParametersFollowedByNonOptionalParameters(string template)
+        {
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build());
+        }
+
+        [Fact]
+        public void ThrowsForLiteralWithQuestionMark()
+        {
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute("literal?")
                 .Build());
         }
 

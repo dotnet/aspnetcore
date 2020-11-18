@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Components.Routing
                         throw new InvalidOperationException(
                             $"Invalid template '{template}'. Missing '{{' in parameter segment '{segment}'.");
                     }
+                    if (segment[^1] == '?')
+                    {
+                        throw new InvalidOperationException(
+                            $"Invalid template '{template}'. '?' is not allowed in literal segment '{segment}'.");
+                    }
                     templateSegments[i] = new TemplateSegment(originalTemplate, segment, isParameter: false);
                 }
                 else

@@ -148,8 +148,18 @@ namespace Microsoft.AspNetCore.Components
             {
                 currentResult = xTemplate.Segments.Length.CompareTo(yTemplate.Segments.Length);
 
-                if ((currentResult == -1 && HasRemainingOptionalSegments(yTemplate, minSegments + 1)) ||
-                   (currentResult == 1 && HasRemainingOptionalSegments(xTemplate, minSegments + 1)))
+                // We need to deal with the special case of detecting ambiguous routes where a route specifies a parameter and
+                // another route specifies an optional parameter. There are no precedence rules between optional and non-optional
+                // parameters in routing, so we need to error in that case.
+                // For example are ambiguous:
+                // '/{parameter}' and '/{other?}'
+                // '/{parameter}/{id?}' and '/{other?}/{something?}'
+                // In contrast, these are not ambiguous because precedence applies in this case
+                // '/{parameter:int}' and '/{other?}'
+                // '/{parameter}/{id?}' and '/{other}/{*rest}'
+                // '/literal' and {param?}
+                if ((currentResult == -1 && AllRemainingSegmentsAreOptionalParameters(yTemplate, minSegments + 1)) ||
+                   (currentResult == 1 && AllRemainingSegmentsAreOptionalParameters(xTemplate, minSegments + 1)))
                 {
                     currentResult = 0;
                 }
@@ -165,7 +175,7 @@ namespace Microsoft.AspNetCore.Components
 
             return currentResult;
 
-            static bool HasRemainingOptionalSegments(RouteTemplate template, int firstRemainingSegmentIndex)
+            static bool AllRemainingSegmentsAreOptionalParameters(RouteTemplate template, int firstRemainingSegmentIndex)
             {
                 for (var i = firstRemainingSegmentIndex; i < template.Segments.Length; i++)
                 {
@@ -186,7 +196,7 @@ namespace Microsoft.AspNetCore.Components
             return xSegment switch
             {
                 // Literal
-                { IsParameter: false, Constraints: { Length: 0 } } => 0,
+                { IsParameter: false } => 0,
                 // Parameter with constraints
                 { IsParameter: true, IsCatchAll: false, Constraints: { Length: > 0 } } => 1,
                 // Parameter without constraints
@@ -196,7 +206,7 @@ namespace Microsoft.AspNetCore.Components
                 // Catch all parameter without constraints
                 { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => 4,
                 // The segment is not correct
-                _ => throw new InvalidOperationException("Unknown segment")
+                _ => throw new InvalidOperationException($"Unknown segment definition '{xSegment}.")
             };
         }
 
