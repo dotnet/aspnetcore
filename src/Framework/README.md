@@ -18,7 +18,7 @@ To build this specific project from source,  follow the instructions [on buildin
 
 ### Test
 
-To run the tests for this project, [run the tests on the command line](../../BuildFromSource.md#running-tests-on-command-line) in this directory.
+To run the tests for this project, [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 ## More Information
 
