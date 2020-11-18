@@ -1,12 +1,12 @@
 # Framework
 
-Contains packages that provide reference assembles, default sets APIs for building ASP.NET Core applications, and assets used for self-contained deployments.
+Contains packages that bundle reference and implementation assembles for Microsoft.AspNetCore.App.Runtime shared framework and for use in targeting pack installers.
 
 ## Description
 
 The following contains a description of each sub-directory in the `Framework` directory.
 
-- `App.Ref.Internal`: Empty project for identifying the non-stable version of AspNetCore at the time the targeting pack was last built. This package does not ship internally.
+- `App.Ref.Internal`: Empty project for identifying the non-stable version of AspNetCore at the time the targeting pack was last built. This package does not ship and is for internal use.
 - `App.Ref`: Contains reference assemblies, documentation, and other design-time assets
 - `App.Runtime`: Provides a default set of APIs for building ASP.NET Core applications, and assets used for self-contained deployments.
 
@@ -14,7 +14,7 @@ The following contains a description of each sub-directory in the `Framework` di
 
 ### Build
 
-To build this specific project from source,  follow the instructions [on building a subset of the code](../../BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source,  follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 ### Test
 
