@@ -1,8 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-
-  <PropertyGroup>
-    <WarningsNotAsErrors>xUnit1026:$(WarningsNotAsErrors)</WarningsNotAsErrors>
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)AzureAD.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-</Project>
