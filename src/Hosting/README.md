@@ -8,13 +8,13 @@ Documentation for Hosting can be found in [ASP.NET Core Web Host](https://docs.m
 
 The following contains a description of the sub-directories.
 
-`Abstractions`: Contains the main Hosting and Startup interfaces.
-`Hosting`: Contains the default implementations for GenericHost, WebHost, and Startup.
-`Server.Abstractions`: Contains the interfaces for Server implementations.
-`Server.IntegrationTesting`: Contains classes to help deploy servers for testing across the repo.
-`TestHost`: Contains a server implementation for in-memory testing against a server.
-`WindowsServices`: Contains methods to run an application as a Windows service.
-`samples`: Contains a few sample apps that show examples of using hosting.
+- `Abstractions`: Contains the main Hosting and Startup interfaces.
+- `Hosting`: Contains the default implementations for GenericHost, WebHost, and Startup.
+- `Server.Abstractions`: Contains the interfaces for Server implementations.
+- `Server.IntegrationTesting`: Contains classes to help deploy servers for testing across the repo.
+- `TestHost`: Contains a server implementation for in-memory testing against a server.
+- `WindowsServices`: Contains methods to run an application as a Windows service.
+- `samples`: Contains a few sample apps that show examples of using hosting.
 
 ## Development Setup
 
