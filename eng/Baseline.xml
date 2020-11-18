@@ -20,8 +20,6 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-arm64" Version="5.0.0" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="5.0.0" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-x86" Version="5.0.0" />
-  <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="5.0.0" />
-  <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="5.0.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Certificate" Version="5.0.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Facebook" Version="5.0.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Google" Version="5.0.0" />
