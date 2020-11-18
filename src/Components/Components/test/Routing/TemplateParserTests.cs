@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var ex = Assert.Throws<InvalidOperationException>(
                 () => TemplateParser.ParseTemplate("{p1}/literal/{p1}"));
 
-            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter 'Microsoft.AspNetCore.Components.Routing.TemplateSegment' appears multiple times.";
+            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter '{p1}' appears multiple times.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }
