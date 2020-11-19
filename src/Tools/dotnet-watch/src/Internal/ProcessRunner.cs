@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     if (!_process.HasExited)
                     {
                         _reporter.Verbose($"Killing process {_process.Id}");
-                        _process.KillTree();
+                        _process.KillTreeNoPgrep();
                     }
                 }
                 catch (Exception ex)
