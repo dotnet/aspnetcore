@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Internal
         {
             if (_process != null && !_process.HasExited)
             {
-                _process.KillTreeNoPgrep();
+                _process.KillTree();
             }
 
             _process.CancelOutputRead();
