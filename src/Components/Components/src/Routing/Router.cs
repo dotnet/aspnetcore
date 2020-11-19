@@ -79,12 +79,14 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets a flag to indicate whether route matching should prefer exact matches
         /// over wildcards.
-        ///
-        /// All applications should explicitly set this to true. The option to set it to false
-        /// (or leave unset, which defaults to false) is only provided for backward compatibility.
-        ///
-        /// In .NET 6, this option will be removed and the router will always prefer exact matches.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Important: all applications should explicitly set this to true. The option to set it to false
+        /// (or leave unset, which defaults to false) is only provided for backward compatibility.
+        /// In .NET 6, this option will be removed and the router will always prefer exact matches.
+        /// </para>
+        /// </remarks>
         [Parameter] public bool PreferExactMatches { get; set; }
 
         private IRouteTable Routes { get; set; }
