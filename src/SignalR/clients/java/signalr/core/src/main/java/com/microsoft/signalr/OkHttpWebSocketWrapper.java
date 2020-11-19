@@ -153,12 +153,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
                 // If the start task hasn't completed yet, then we need to complete it
                 // exceptionally.
                 if (!startSubject.hasComplete()) {
-                    String errorMessage = "There was an error starting the WebSocket transport. ";
-                    if (t != null) {
-                        startSubject.onError(new RuntimeException(errorMessage + t.getMessage()));
-                    } else {
-                        startSubject.onError(new RuntimeException(errorMessage));
-                    }
+                    startSubject.onError(new RuntimeException("There was an error starting the WebSocket transport.", t));
                 }
             } finally {
                 stateLock.unlock();
