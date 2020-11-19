@@ -7,6 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+// Avoid referencing the whole Microsoft.AspNetCore.Components.Routing namespace to
+// avoid the risk of accidentally relying on the non-legacy types in the legacy fork
+using RouteContext = Microsoft.AspNetCore.Components.Routing.RouteContext;
+
 namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
     [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
@@ -25,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 
         public Type Handler { get; }
 
-        internal void Match(Routing.RouteContext context)
+        internal void Match(RouteContext context)
         {
             string? catchAllValue = null;
 
