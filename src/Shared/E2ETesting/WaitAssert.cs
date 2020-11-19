@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
-using OpenQA.Selenium.DevTools.Page;
+using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
