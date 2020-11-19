@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,13 +20,15 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouterTest
     {
         private readonly Router _router;
+        private readonly TestNavigationManager _navigationManager;
         private readonly TestRenderer _renderer;
 
         public RouterTest()
         {
             var services = new ServiceCollection();
+            _navigationManager = new TestNavigationManager();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<NavigationManager, TestNavigationManager>();
+            services.AddSingleton<NavigationManager>(_navigationManager);
             services.AddSingleton<INavigationInterception, TestNavigationInterception>();
             var serviceProvider = services.BuildServiceProvider();
 
@@ -31,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             _renderer.ShouldHandleExceptions = true;
             _router = (Router)_renderer.InstantiateComponent<Router>();
             _router.AppAssembly = Assembly.GetExecutingAssembly();
-            _router.Found = routeData => (builder) => builder.AddContent(0, "Rendering route...");
+            _router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
             _renderer.AssignRootComponentId(_router);
         }
 
@@ -177,12 +182,65 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             await feb;
         }
 
+        [Fact]
+        public async Task UsesLegacyRouteMatchingByDefault()
+        {
+            // Arrange
+            // Legacy routing prefers {*someWildcard} over any other pattern than has more segments,
+            // even if the other pattern is an exact match
+            _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/a/b", false);
+            var parameters = new Dictionary<string, object>
+            {
+                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
+            };
+
+            // Act
+            await _renderer.Dispatcher.InvokeAsync(() =>
+                _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+            // Assert
+            var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
+            Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
+            Assert.Equal($"Rendering route matching {typeof(MatchAnythingComponent)}", renderedFrame.TextContent);
+        }
+
+        [Fact]
+        public async Task UsesCurrentRouteMatchingIfSpecified()
+        {
+            // Arrange
+            // Current routing prefers exactly-matched patterns over {*someWildcard}, no matter
+            // how many segments are in the exact match
+            _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/a/b", false);
+            var parameters = new Dictionary<string, object>
+            {
+                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
+                { nameof(Router.PreferExactMatches), true },
+            };
+
+            // Act
+            await _renderer.Dispatcher.InvokeAsync(() =>
+                _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+            // Assert
+            var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
+            Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
+            Assert.Equal($"Rendering route matching {typeof(MultiSegmentRouteComponent)}", renderedFrame.TextContent);
+        }
+
         internal class TestNavigationManager : NavigationManager
         {
             public TestNavigationManager() =>
                 Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/jan");
 
             protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotImplementedException();
+
+            public void NotifyLocationChanged(string uri, bool intercepted)
+            {
+                Uri = uri;
+                NotifyLocationChanged(intercepted);
+            }
         }
 
         internal sealed class TestNavigationInterception : INavigationInterception
@@ -200,5 +258,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
         [Route("jan")]
         public class JanComponent : ComponentBase { }
+
+        [Route("{*matchAnything}")]
+        public class MatchAnythingComponent : ComponentBase { }
+
+        [Route("a/b")]
+        public class MultiSegmentRouteComponent : ComponentBase { }
     }
 }
