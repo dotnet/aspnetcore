@@ -7,7 +7,7 @@ using RouteContext = Microsoft.AspNetCore.Components.Routing.RouteContext;
 
 namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
-    internal class LegacyRouteTable
+    internal class LegacyRouteTable : Routing.IRouteTable
     {
         public LegacyRouteTable(LegacyRouteEntry[] routes)
         {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 
         public LegacyRouteEntry[] Routes { get; }
 
-        internal void Route(RouteContext routeContext)
+        public void Route(RouteContext routeContext)
         {
             for (var i = 0; i < Routes.Length; i++)
             {
