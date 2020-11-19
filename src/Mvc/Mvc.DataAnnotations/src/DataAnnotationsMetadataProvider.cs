@@ -183,15 +183,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             // IsEnum et cetera
             var underlyingType = Nullable.GetUnderlyingType(context.Key.ModelType) ?? context.Key.ModelType;
-            var underlyingTypeInfo = underlyingType.GetTypeInfo();
 
-            if (underlyingTypeInfo.IsEnum)
+            if (underlyingType.IsEnum)
             {
                 // IsEnum
                 displayMetadata.IsEnum = true;
 
                 // IsFlagsEnum
-                displayMetadata.IsFlagsEnum = underlyingTypeInfo.IsDefined(typeof(FlagsAttribute), inherit: false);
+                displayMetadata.IsFlagsEnum = underlyingType.IsDefined(typeof(FlagsAttribute), inherit: false);
 
                 // EnumDisplayNamesAndValues and EnumNamesAndValues
                 //

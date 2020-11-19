@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             {
                 actualType = typeToSerialize.GetElementType();
             }
-            else if (typeToSerialize.GetTypeInfo().IsGenericType)
+            else if (typeToSerialize.IsGenericType)
             {
                 if (ClosedGenericMatcher.ExtractGenericInterface(typeToSerialize, typeof(IList<>)) != null)
                 {
@@ -240,10 +240,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static bool IsSimpleType(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-
-            return typeInfo.IsPrimitive ||
-                typeInfo.IsEnum ||
+            return type.IsPrimitive ||
+                type.IsEnum ||
                 type.Equals(typeof(decimal)) ||
                 type.Equals(typeof(string)) ||
                 type.Equals(typeof(DateTime)) ||

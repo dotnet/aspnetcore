@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Owin
         private bool SupportsInterface(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+            if (key.IsAssignableFrom(GetType()))
             {
                 // Check for conditional features
                 if (key == typeof(ITlsConnectionFeature))

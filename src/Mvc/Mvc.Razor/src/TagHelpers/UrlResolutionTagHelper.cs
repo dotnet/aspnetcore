@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                         nameof(IUrlHelper.Content),
                         "removeTagHelper",
                         typeof(UrlResolutionTagHelper).FullName,
-                        typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
+                        typeof(UrlResolutionTagHelper).Assembly.GetName().Name));
             }
 
             resolvedUrl = new EncodeFirstSegmentContent(

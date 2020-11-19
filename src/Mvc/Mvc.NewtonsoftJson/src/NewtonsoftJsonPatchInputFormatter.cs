@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var modelTypeInfo = context.ModelType.GetTypeInfo();
-            if (!typeof(IJsonPatchDocument).GetTypeInfo().IsAssignableFrom(modelTypeInfo) ||
-                !modelTypeInfo.IsGenericType)
+            var modelType = context.ModelType;
+            if (!typeof(IJsonPatchDocument).IsAssignableFrom(modelType) ||
+                !modelType.IsGenericType)
             {
                 return false;
             }

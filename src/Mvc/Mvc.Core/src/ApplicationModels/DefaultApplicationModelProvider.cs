@@ -682,11 +682,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Find where the method was originally declared
             var baseMethodInfo = methodInfo.GetBaseDefinition();
-            var declaringTypeInfo = baseMethodInfo.DeclaringType.GetTypeInfo();
+            var declaringType = baseMethodInfo.DeclaringType;
 
             return
-                (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(declaringTypeInfo) &&
-                 declaringTypeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == baseMethodInfo);
+                (typeof(IDisposable).IsAssignableFrom(declaringType) &&
+                 declaringType.GetInterfaceMap(typeof(IDisposable)).TargetMethods[0] == baseMethodInfo);
         }
 
         private bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)

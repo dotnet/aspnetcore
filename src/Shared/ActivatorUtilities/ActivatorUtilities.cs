@@ -47,13 +47,11 @@ namespace Microsoft.Extensions.Internal
 
             ConstructorMatcher bestMatcher = default;
 
-            if (!instanceType.GetTypeInfo().IsAbstract)
+            if (!instanceType.IsAbstract)
             {
-                foreach (var constructor in instanceType
-                    .GetTypeInfo()
-                    .DeclaredConstructors)
+                foreach (var constructor in instanceType.GetConstructors())
                 {
-                    if (!constructor.IsStatic && constructor.IsPublic)
+                    if (!constructor.IsStatic)
                     {
                         var matcher = new ConstructorMatcher(constructor);
                         var isPreferred = constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false);
@@ -237,9 +235,9 @@ namespace Microsoft.Extensions.Internal
             ref ConstructorInfo matchingConstructor,
             ref int?[] parameterMap)
         {
-            foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
+            foreach (var constructor in instanceType.GetConstructors())
             {
-                if (constructor.IsStatic || !constructor.IsPublic)
+                if (constructor.IsStatic)
                 {
                     continue;
                 }
@@ -267,9 +265,9 @@ namespace Microsoft.Extensions.Internal
             ref int?[] parameterMap)
         {
             var seenPreferred = false;
-            foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
+            foreach (var constructor in instanceType.GetConstructors())
             {
-                if (constructor.IsStatic || !constructor.IsPublic)
+                if (constructor.IsStatic)
                 {
                     continue;
                 }
@@ -304,7 +302,7 @@ namespace Microsoft.Extensions.Internal
             for (var i = 0; i < argumentTypes.Length; i++)
             {
                 var foundMatch = false;
-                var givenParameter = argumentTypes[i].GetTypeInfo();
+                var givenParameter = argumentTypes[i];
 
                 for (var j = 0; j < constructorParameters.Length; j++)
                 {
@@ -314,7 +312,7 @@ namespace Microsoft.Extensions.Internal
                         continue;
                     }
 
-                    if (constructorParameters[j].ParameterType.GetTypeInfo().IsAssignableFrom(givenParameter))
+                    if (constructorParameters[j].ParameterType.IsAssignableFrom(givenParameter))
                     {
                         foundMatch = true;
                         parameterMap[j] = i;
@@ -350,13 +348,13 @@ namespace Microsoft.Extensions.Internal
                 var applyExactLength = 0;
                 for (var givenIndex = 0; givenIndex != givenParameters.Length; givenIndex++)
                 {
-                    var givenType = givenParameters[givenIndex]?.GetType().GetTypeInfo();
+                    var givenType = givenParameters[givenIndex]?.GetType();
                     var givenMatched = false;
 
                     for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
                     {
                         if (_parameterValues[applyIndex] == null &&
-                            _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
+                            _parameters[applyIndex].ParameterType.IsAssignableFrom(givenType))
                         {
                             givenMatched = true;
                             _parameterValues[applyIndex] = givenParameters[givenIndex];

@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     // attributes on the Property Type.
                     var matchingAttributes = context.PropertyAttributes.OfType<BindingBehaviorAttribute>();
                     return matchingAttributes.FirstOrDefault()
-                        ?? context.Key.ContainerType.GetTypeInfo()
+                        ?? context.Key.ContainerType
                             .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
                             .OfType<BindingBehaviorAttribute>()
                             .FirstOrDefault();

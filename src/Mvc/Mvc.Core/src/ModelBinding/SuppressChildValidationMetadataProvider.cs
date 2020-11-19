@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return true;
             }
 
-            return IsMatchingName(type.GetTypeInfo().BaseType);
+            return IsMatchingName(type.BaseType);
         }
     }
 }

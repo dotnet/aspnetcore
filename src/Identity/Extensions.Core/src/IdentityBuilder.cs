@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddTokenProvider(string providerName, Type provider)
         {
-            if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
+            if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).IsAssignableFrom(provider))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTwoFactorTokenProvider", UserType.Name));
             }
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var userManagerType = typeof(UserManager<>).MakeGenericType(UserType);
             var customType = typeof(TUserManager);
-            if (!userManagerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
+            if (!userManagerType.IsAssignableFrom(customType))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "UserManager", UserType.Name));
             }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             var managerType = typeof(RoleManager<>).MakeGenericType(RoleType);
             var customType = typeof(TRoleManager);
-            if (!managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
+            if (!managerType.IsAssignableFrom(customType))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "RoleManager", RoleType.Name));
             }

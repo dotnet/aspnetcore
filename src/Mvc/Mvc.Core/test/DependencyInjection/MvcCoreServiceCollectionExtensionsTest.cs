@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var services = new ServiceCollection();
             var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
-            var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName();
+            var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly.GetName();
             var applicationName = assemblyName.FullName;
             environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
             services.AddSingleton<IWebHostEnvironment>(environment.Object);

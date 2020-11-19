@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivatorCache)))
                            .Returns(typeActivator);
             serviceProvider.Setup(mock => mock.GetService(It.Is<Type>(serviceType =>
-                serviceType.GetTypeInfo().IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
+                serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
                 .Returns<Type>(serviceType =>
                 {
                     var enumerableType = serviceType.GetGenericArguments().First();

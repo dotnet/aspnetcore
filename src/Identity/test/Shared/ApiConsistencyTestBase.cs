@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        protected TypeInfo GetBasestTypeInAssembly(Type type)
+        protected Type GetBasestTypeInAssembly(Type type)
         {
-            while (type.GetTypeInfo()?.BaseType?.GetTypeInfo()?.Assembly == type.GetTypeInfo().Assembly)
+            while (type.BaseType?.Assembly == type.Assembly)
             {
-                type = type.GetTypeInfo().BaseType;
+                type = type.BaseType;
             }
 
-            return type.GetTypeInfo();
+            return type;
         }
     }
 }

@@ -283,7 +283,7 @@ namespace Microsoft.Extensions.Localization
             }
 
             public TestAssemblyWrapper(Type type)
-                : base(type.GetTypeInfo().Assembly)
+                : base(type.Assembly)
             {
             }
 
