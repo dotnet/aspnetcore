@@ -239,7 +239,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             frameReceived = true;
                             Log.Http2FrameReceived(ConnectionId, _incomingFrame);
-                            await ProcessFrameAsync(application, framePayload);
+
+                            try
+                            {
+                                await ProcessFrameAsync(application, framePayload);
+                            }
+                            catch (Http2StreamErrorException ex)
+                            {
+                                Log.Http2StreamError(ConnectionId, ex);
+                                // The client doesn't know this error is coming, allow draining additional frames for now.
+                                AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
+
+                                await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+
+                                // Resume reading frames after aborting this HTTP/2 stream.
+                                // This is important because additional frames could be
+                                // in the current buffer. We don't want to delay reading
+                                // them until the next incoming read/heartbeat.
+                            }
                         }
 
                         if (result.IsCompleted)
@@ -263,14 +280,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                                 throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR);
                             }
                         }
-                    }
-                    catch (Http2StreamErrorException ex)
-                    {
-                        Log.Http2StreamError(ConnectionId, ex);
-                        // The client doesn't know this error is coming, allow draining additional frames for now.
-                        AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
-
-                        await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
                     }
                     finally
                     {
