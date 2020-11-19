@@ -6,7 +6,7 @@ These are project templates which are used in .NET Core for creating ASP.NET Cor
 
 The following contains a description of each sub-directory in the `ProjectTemplates` directory.
 
-- `BlazorTemplates.Tests`: Contains the source files for the Blazor template tests, these are currently split out due to them not running on Helix yet.
+- `BlazorTemplates.Tests`: Contains the source files for the Blazor template tests, these are currently split out due to not being Helix ready yet.
 - `Shared`: Contains a collection of shared constants and helper methods/classes including the infrastructure for managing dotnet processes to create, build, run template tests.
 - `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
 - `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
