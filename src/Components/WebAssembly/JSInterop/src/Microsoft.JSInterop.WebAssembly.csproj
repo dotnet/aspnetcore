@@ -6,7 +6,7 @@
     <PackageTags>wasm;javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -27,8 +27,8 @@
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftNetCompilersToolsetPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNetCompilersToolsetPackageVersion)</_Parameter2>
+      <_Parameter1>MicrosoftNetCompilersToolsetVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNetCompilersToolsetVersion)</_Parameter2>
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">

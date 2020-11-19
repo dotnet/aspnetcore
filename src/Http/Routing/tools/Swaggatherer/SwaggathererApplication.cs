@@ -199,7 +199,7 @@ namespace Swaggatherer
                         break;
                     }
 
-                    if (HttpMethods.HasValue() && 
+                    if (HttpMethods.HasValue() &&
                         !string.Equals(entry.Method, other.Method, StringComparison.OrdinalIgnoreCase))
                     {
                         isSame = false;
@@ -227,7 +227,7 @@ namespace Swaggatherer
                     return comparison;
                 }
 
-                return x.Template.TemplateText.CompareTo(y.Template.TemplateText);
+                return string.Compare(x.Template.TemplateText, y.Template.TemplateText, StringComparison.Ordinal);
             });
         }
 

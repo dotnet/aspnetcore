@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_AccessTokenProvider()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_IRemoteAuthenticationService()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptionsConfigurationCallback_GetsCalledOnce()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
             builder.Services.AddApiAuthorization(options =>
             {
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationTestAuthenticationState_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
             builder.Services.AddApiAuthorization<TestAuthenticationState>(options => calls++);
 
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationTestAuthenticationState_NoCallback_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization<TestAuthenticationState>();
 
             var host = builder.Build();
@@ -148,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationCustomAuthenticationStateAndAccount_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
             builder.Services.AddApiAuthorization<TestAuthenticationState, TestAccount>(options => calls++);
 
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationTestAuthenticationStateAndAccount_NoCallback_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization<TestAuthenticationState, TestAccount>();
 
             var host = builder.Build();
@@ -197,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_DefaultsCanBeOverriden()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddApiAuthorization(options =>
             {
                 options.AuthenticationPaths.LogInPath = "a";
@@ -248,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.Replace(ServiceDescriptor.Singleton<NavigationManager, TestNavigationManager>());
             builder.Services.AddOidcAuthentication(options => { });
             var host = builder.Build();
@@ -279,6 +281,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             Assert.Null(provider.Authority);
             Assert.Null(provider.ClientId);
             Assert.Equal(new[] { "openid", "profile" }, provider.DefaultScopes);
+            Assert.Equal(new Dictionary<string, string>(), provider.AdditionalProviderParameters);
             Assert.Equal("https://www.example.com/base/authentication/login-callback", provider.RedirectUri);
             Assert.Equal("https://www.example.com/base/authentication/logout-callback", provider.PostLogoutRedirectUri);
         }
@@ -286,7 +289,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_DefaultsCanBeOverriden()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddOidcAuthentication(options =>
             {
                 options.AuthenticationPaths.LogInPath = "a";
@@ -307,6 +310,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 options.ProviderOptions.Authority = "p";
                 options.ProviderOptions.ClientId = "q";
                 options.ProviderOptions.DefaultScopes.Clear();
+                options.ProviderOptions.AdditionalProviderParameters.Add("r", "s");
                 options.ProviderOptions.RedirectUri = "https://www.example.com/base/custom-login";
                 options.ProviderOptions.PostLogoutRedirectUri = "https://www.example.com/base/custom-logout";
             });
@@ -339,6 +343,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             Assert.Equal("p", provider.Authority);
             Assert.Equal("q", provider.ClientId);
             Assert.Equal(Array.Empty<string>(), provider.DefaultScopes);
+            Assert.Equal(new Dictionary<string, string>() { { "r", "s" } }, provider.AdditionalProviderParameters);
             Assert.Equal("https://www.example.com/base/custom-login", provider.RedirectUri);
             Assert.Equal("https://www.example.com/base/custom-logout", provider.PostLogoutRedirectUri);
         }
@@ -346,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void AddOidc_ConfigurationGetsCalledOnce()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
 
             builder.Services.AddOidcAuthentication(options => calls++);
@@ -363,10 +368,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void AddOidc_CustomState_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
 
-            builder.Services.AddOidcAuthentication<TestAuthenticationState>(options => options.ProviderOptions.Authority = (++calls).ToString());
+            builder.Services.AddOidcAuthentication<TestAuthenticationState>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
             builder.Services.Replace(ServiceDescriptor.Singleton(typeof(NavigationManager), new TestNavigationManager()));
 
             var host = builder.Build();
@@ -385,10 +390,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void AddOidc_CustomStateAndAccount_SetsUpConfiguration()
         {
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var calls = 0;
 
-            builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => options.ProviderOptions.Authority = (++calls).ToString());
+            builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
             builder.Services.Replace(ServiceDescriptor.Singleton(typeof(NavigationManager), new TestNavigationManager()));
 
             var host = builder.Build();

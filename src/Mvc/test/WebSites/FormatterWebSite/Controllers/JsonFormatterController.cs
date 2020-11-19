@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,7 @@ namespace FormatterWebSite.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Content(dummyObject.SampleInt.ToString());
+            return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
         }
 
         [HttpPost]
@@ -65,7 +66,7 @@ namespace FormatterWebSite.Controllers
                 Response.StatusCode = StatusCodes.Status400BadRequest;
             }
 
-            return Content(value.ToString());
+            return Content(value.ToString(CultureInfo.InvariantCulture));
         }
 
         [HttpPost]

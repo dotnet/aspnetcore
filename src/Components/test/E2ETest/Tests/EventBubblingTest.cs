@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27372")]
         [InlineData("target")]
         [InlineData("intermediate")]
         public void StopPropagation(string whereToStopPropagation)

@@ -40,7 +40,7 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
@@ -118,7 +118,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -146,6 +146,7 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
             project.AssertEmptyMigration("mvc");
 
+            // Note: if any links are updated here, RazorPagesTemplateTest.cs should be updated as well
             var pages = new List<Page> {
                 new Page
                 {
@@ -234,7 +235,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
-        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("cert failure", Queues = "All.OSX")]
         public async Task MvcTemplate_SingleFileExe()
         {
             // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
@@ -305,7 +306,6 @@ namespace Templates.Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });
@@ -323,7 +323,7 @@ namespace Templates.Test
 
         private async Task<Project> MvcTemplateBuildsAndPublishes(string auth, string[] args)
         {
-            var project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+            var project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
 
             var createResult = await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

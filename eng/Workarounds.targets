@@ -1,8 +1,8 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-  <!-- Workaround while there is no 5.0 SDK available, suppress unsupported version error -->
+  <!-- Workaround while there is no 6.0 SDK available, suppress unsupported version error -->
   <PropertyGroup>
-    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
+    <NETCoreAppMaximumVersion>6.0</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +11,7 @@
       Update="Microsoft.NETCore.App"
       Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
-      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" />
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
   </ItemGroup>
 
   <!--
@@ -38,18 +38,18 @@
 
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.1 -->
+    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 5.0 -->
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
       TargetFramework="$(KnownAppHostPackOrFrameworkReferenceTfm)"
       Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
       TargetFramework="$(KnownAppHostPackOrFrameworkReferenceTfm)"
       Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />

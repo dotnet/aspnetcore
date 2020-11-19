@@ -57,7 +57,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# If specified, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
+# If specifies, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
 [string]$runtimeSourceFeed = if (Test-Path variable:runtimeSourceFeed) { $runtimeSourceFeed } else { $null }
 # Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
 [string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }

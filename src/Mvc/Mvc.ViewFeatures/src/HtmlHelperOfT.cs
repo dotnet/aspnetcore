@@ -13,6 +13,10 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// A <see cref="HtmlHelper"/> for a specific model type.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
     public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     {
         private readonly ModelExpressionProvider _modelExpressionProvider;
@@ -42,6 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public new ViewDataDictionary<TModel> ViewData { get; private set; }
 
+        /// <inheritdoc />
         public override void Contextualize(ViewContext viewContext)
         {
             if (viewContext == null)

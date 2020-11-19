@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27398")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
             Browser.Equal(string.Empty, () => submissionStatus.Text);
             submitButton.Click();
-            Browser.True(() => submissionStatus.Text.StartsWith("Submitted"));
+            Browser.True(() => submissionStatus.Text.StartsWith("Submitted", StringComparison.Ordinal));
 
             // Fields can revert to unmodified
             Browser.Equal("valid", () => userNameInput.GetAttribute("class"));

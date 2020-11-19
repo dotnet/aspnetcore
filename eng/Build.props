@@ -21,13 +21,17 @@
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
+                      " />
+
+    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
+    <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
 
@@ -176,8 +180,6 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
-                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
-                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
@@ -214,7 +216,6 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
-                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"

@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Use(async (context, next) =>
                 {
-                    var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value);
+                    var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
                     var browserParam = queryParams.Get("browser");
-                    Uri browserUrl = null;
+                    Uri? browserUrl = null;
                     var devToolsHost = "http://localhost:9222";
                     if (browserParam != null)
                     {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
                             await targetPickerUi.Display(context);
                             break;
                         case "/ws-proxy":
-                            context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl.PathAndQuery}");
+                            context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl!.PathAndQuery}");
                             break;
                         default:
                             context.Response.StatusCode = (int)HttpStatusCode.NotFound;

@@ -30,8 +30,8 @@ build_installers=''
 build_projects=''
 target_arch='x64'
 configuration=''
-dotnet_runtime_source_feed=''
-dotnet_runtime_source_feed_key=''
+runtime_source_feed=''
+runtime_source_feed_key=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -77,8 +77,8 @@ Options:
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
-    --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
-    --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
+    --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
+    --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -209,15 +209,15 @@ while [[ $# -gt 0 ]]; do
         -excludeCIBinarylog|-nobl)
             exclude_ci_binary_log=true
             ;;
-        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
+        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime-source-feed|-runtimesourcefeed)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
-            dotnet_runtime_source_feed="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
+            runtime_source_feed="${1:-}"
             ;;
-        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey)
+        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey|-runtime-source-feed-key|-runtimesourcefeedkey)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed-key" && __usage
-            dotnet_runtime_source_feed_key="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
+            runtime_source_feed_key="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
@@ -290,9 +290,9 @@ msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
 # Set up additional runtime args
 toolset_build_args=()
-if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
-    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
-    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
+if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
+    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$runtime_source_feed"
+    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg

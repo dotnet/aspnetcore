@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="${MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="${MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion}" />
   </ItemGroup>
 
 </Project>

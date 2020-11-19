@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task MissingAuthority_200Status()
         {
             var headers = new[]

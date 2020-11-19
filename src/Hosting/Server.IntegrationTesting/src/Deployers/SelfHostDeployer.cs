@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public Process HostProcess { get; private set; }
 
+        // Use this property before calling DeployAsync
+        // instead of using HostProcess.OutputDataReceived
+        // in order to capture process output from the beginning of the process
+        public Action<string> ProcessOutputListener { get; set; }
+
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
             : base(deploymentParameters, loggerFactory)
         {
@@ -158,6 +163,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
                     }
+
+                    ProcessOutputListener?.Invoke(dataArgs.Data);
                 };
                 var hostExitTokenSource = new CancellationTokenSource();
                 HostProcess.Exited += (sender, e) =>

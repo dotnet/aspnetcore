@@ -6,6 +6,7 @@
     <PackageTags>javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

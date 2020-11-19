@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Hosting
             for (var i = 0; i < bytes.Length; i++)
             {
                 // The x2 format means lowercase hex, where each byte is a 2-character string.
-                result.Append(bytes[i].ToString("x2"));
+                result.Append(bytes[i].ToString("x2", CultureInfo.InvariantCulture));
             }
 
             return result.ToString();

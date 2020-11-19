@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         [ConditionalTheory]
         [MemberData(nameof(Http11And2))]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Windows only supports ALPN on 8.1 and later.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Windows only supports ALPN and required ciphers on 10 and later.")]
         public async Task Anonymous_NoChallenge_NoOps(Version version)
         {
             using var host = await CreateHostAsync();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         [ConditionalTheory]
         [MemberData(nameof(Http11And2))]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Windows only supports ALPN on 8.1 and later.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Windows only supports ALPN and required ciphers on 10 and later.")]
         public async Task Anonymous_Challenge_401Negotiate(Version version)
         {
             using var host = await CreateHostAsync();

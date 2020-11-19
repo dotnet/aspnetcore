@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
@@ -385,7 +387,7 @@ namespace Test
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
 
             // Invariants
             Assert.Empty(attribute.Diagnostics);
@@ -503,12 +505,12 @@ namespace Test
             Assert.Equal("@bind-myprop", requiredAttribute.DisplayName);
             Assert.Equal("@bind-myprop", requiredAttribute.Name);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
             Assert.Equal("@bind-myprop", attribute.Name);
             Assert.Equal("Bind_myprop", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind_myprop", attribute.DisplayName);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
+            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format", StringComparison.Ordinal));
             Assert.Equal("format-myprop", attribute.Name);
             Assert.Equal("Format_myprop", attribute.GetPropertyName());
             Assert.Equal("string Test.BindAttributes.Format_myprop", attribute.DisplayName);
@@ -559,7 +561,7 @@ namespace Test
             Assert.Equal("@bind", requiredAttribute.DisplayName);
             Assert.Equal("@bind", requiredAttribute.Name);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
             Assert.Equal("@bind", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
@@ -627,7 +629,7 @@ namespace Test
                     Assert.Equal("@bind", a.Name);
                 });
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
             Assert.Equal("@bind", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
@@ -697,7 +699,7 @@ namespace Test
                     Assert.Equal("@bind-somevalue", a.Name);
                 });
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
             Assert.Equal("@bind-somevalue", attribute.Name);
             Assert.Equal("Bind_somevalue", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind_somevalue", attribute.DisplayName);
@@ -816,7 +818,7 @@ namespace Test
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind", StringComparison.Ordinal));
 
             // Invariants
             Assert.Empty(attribute.Diagnostics);

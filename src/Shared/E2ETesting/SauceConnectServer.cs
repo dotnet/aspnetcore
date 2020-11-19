@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             // Make output null so that we stop logging to it.
             output = null;
             logOutput.CompleteAdding();
-            var exitCodeString = process.HasExited ? process.ExitCode.ToString() : "Process has not yet exited.";
+            var exitCodeString = process.HasExited ? process.ExitCode.ToString(CultureInfo.InvariantCulture) : "Process has not yet exited.";
             var message = $@"Failed to launch the server.
 ExitCode: {exitCodeString}
 Captured output lines:
@@ -236,7 +237,7 @@ Captured output lines:
             {
                 try
                 {
-                    await File.WriteAllTextAsync(pidFile, process.Id.ToString());
+                    await File.WriteAllTextAsync(pidFile, process.Id.ToString(CultureInfo.InvariantCulture));
                     return pidFile;
                 }
                 catch

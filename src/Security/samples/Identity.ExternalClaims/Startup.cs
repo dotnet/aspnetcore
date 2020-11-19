@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -47,7 +48,7 @@ namespace Identity.ExternalClaims
                 o.Events.OnCreatingTicket = ctx =>
                 {
                     List<AuthenticationToken> tokens = ctx.Properties.GetTokens().ToList();
-                    tokens.Add(new AuthenticationToken() { Name = "TicketCreated", Value = DateTime.UtcNow.ToString() });
+                    tokens.Add(new AuthenticationToken() { Name = "TicketCreated", Value = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) });
                     ctx.Properties.StoreTokens(tokens);
                     return Task.CompletedTask;
                 };

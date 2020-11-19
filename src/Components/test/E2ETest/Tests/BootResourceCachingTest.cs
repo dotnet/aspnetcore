@@ -39,17 +39,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27374")]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
             Navigate("/");
             WaitUntilLoaded();
             var initialResourcesRequested = GetAndClearRequestedPaths();
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js", StringComparison.Ordinal)));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll", StringComparison.Ordinal)));
 
             // On subsequent loads, we skip the items referenced from blazor.boot.json
             // which includes .dll files and dotnet.wasm
@@ -57,14 +57,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
+            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm", StringComparison.Ordinal)));
+            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js", StringComparison.Ordinal)));
+            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll", StringComparison.Ordinal)));
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20154")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded()
         {
-            var element = Browser.Exists(By.TagName("h1"));
+            var element = Browser.Exists(By.TagName("h1"), TimeSpan.FromSeconds(30));
             Browser.Equal("Hello, world!", () => element.Text);
         }
     }

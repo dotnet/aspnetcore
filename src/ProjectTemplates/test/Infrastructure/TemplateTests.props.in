@@ -4,6 +4,8 @@
     <RestoreAdditionalProjectSources>${RestoreAdditionalProjectSources}</RestoreAdditionalProjectSources>
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
+    <!-- Workaround while there is no 6.0 SDK available, suppress unsupported version error -->
+    <NETCoreAppMaximumVersion>6.0</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,19 +13,33 @@
       Update="Microsoft.NETCore.App"
       DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 5.0 -->
+    <KnownAppHostPack
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
+      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
+      />
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
+      TargetFramework="${KnownAppHostPackOrFrameworkReferenceTfm}"
+      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}')))"
+      />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="${MicrosoftNetCompilersToolsetPackageVersion}"
+      Version="${MicrosoftNetCompilersToolsetVersion}"
       PrivateAssets="all"
       IsImplicitlyDefined="true" />
   </ItemGroup>
@@ -37,5 +53,5 @@
     <RazorSdkDirectoryRoot>${ArtifactsBinDir}Microsoft.NET.Sdk.Razor\${Configuration}\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
   <Import Project="${RepoRoot}src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"  Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
-  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props"  Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
+  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\$(DefaultNetCoreTargetFramework)\Microsoft.NET.Sdk.BlazorWebAssembly.props"  Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
 </Project>

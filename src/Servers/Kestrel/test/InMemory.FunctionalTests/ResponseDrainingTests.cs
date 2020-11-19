@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Assert.NotNull(transportConnection.AbortReason);
                     Assert.Equal(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, transportConnection.AbortReason.Message);
 
-                    Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel <= LogLevel.Debug);
+                    Assert.Single(LogMessages, w => w.EventId.Id == 28 && w.LogLevel <= LogLevel.Debug);
                 }
             }
         }

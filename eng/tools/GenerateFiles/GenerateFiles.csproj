@@ -9,11 +9,11 @@
       <_TemplateProperties>
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
-        MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
-        MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
-        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
+        MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
       </_TemplateProperties>
     </PropertyGroup>

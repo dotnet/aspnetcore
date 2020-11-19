@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,7 @@ using System.Threading;
 namespace Microsoft.AspNetCore.Razor.Tools
 {
     /// <summary>
-    /// Class for logging information about what happens in the server and client parts of the 
+    /// Class for logging information about what happens in the server and client parts of the
     /// Razor command line compiler and build tasks. Useful for debugging what is going on.
     /// </summary>
     /// <remarks>
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             if (IsLoggingEnabled)
             {
-                Log(string.Format(format, arguments));
+                Log(string.Format(CultureInfo.InvariantCulture, format, arguments));
             }
         }
 
@@ -131,8 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private static int GetCurrentThreadId()
         {
-            var thread = Thread.CurrentThread;
-            return thread.ManagedThreadId;
+            return Environment.CurrentManagedThreadId;
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// </summary>
         private static string GetLoggingPrefix()
         {
-            return string.Format("{0} PID={1} TID={2} Ticks={3}: ", s_prefix, GetCurrentProcessId(), GetCurrentThreadId(), Environment.TickCount);
+            return string.Format(CultureInfo.InvariantCulture, "{0} PID={1} TID={2} Ticks={3}: ", s_prefix, GetCurrentProcessId(), GetCurrentThreadId(), Environment.TickCount);
         }
     }
 }
