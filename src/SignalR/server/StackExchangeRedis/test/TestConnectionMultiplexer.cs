@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 using StackExchange.Redis.Profiling;
@@ -73,11 +75,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             remove { }
         }
 
-        private readonly ISubscriber _subscriber;
+        private readonly TestRedisServer _server;
 
         public TestConnectionMultiplexer(TestRedisServer server)
         {
-            _subscriber = new TestSubscriber(server);
+            _server = server;
         }
 
         public void BeginProfiling(object forContext)
@@ -167,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ISubscriber GetSubscriber(object asyncState = null)
         {
-            return _subscriber;
+            return new TestSubscriber(_server);
         }
 
         public int HashSlot(RedisKey key)
@@ -223,14 +225,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TestRedisServer
     {
-        private readonly ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>> _subscriptions =
-            new ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>>();
+        private readonly ConcurrentDictionary<RedisChannel, List<(int, Action<RedisChannel, RedisValue>)>> _subscriptions =
+            new ConcurrentDictionary<RedisChannel, List<(int, Action<RedisChannel, RedisValue>)>>();
 
         public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
         {
             if (_subscriptions.TryGetValue(channel, out var handlers))
             {
-                foreach (var handler in handlers)
+                foreach (var (_, handler) in handlers)
                 {
                     handler(channel, message);
                 }
@@ -239,26 +241,35 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return handlers != null ? handlers.Count : 0;
         }
 
-        public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
+        public void Subscribe(ChannelMessageQueue messageQueue, int subscriberId, CommandFlags flags = CommandFlags.None)
         {
-            _subscriptions.AddOrUpdate(channel, _ => new List<Action<RedisChannel, RedisValue>> { handler }, (_, list) =>
+            Action<RedisChannel, RedisValue> handler = (channel, value) =>
             {
-                list.Add(handler);
+                typeof(ChannelMessageQueue).GetMethod("HandleMessage", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(messageQueue, new object[] { channel, value });
+            };
+
+            _subscriptions.AddOrUpdate(messageQueue.Channel, _ => new List<(int, Action<RedisChannel, RedisValue>)> { (subscriberId, handler) }, (_, list) =>
+            {
+                list.Add((subscriberId, handler));
                 return list;
             });
         }
 
-        public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
+        public void Unsubscribe(RedisChannel channel, int subscriberId, CommandFlags flags = CommandFlags.None)
         {
             if (_subscriptions.TryGetValue(channel, out var list))
             {
-                list.Remove(handler);
+                list.RemoveAll((item) => item.Item1 == subscriberId);
             }
         }
     }
 
     public class TestSubscriber : ISubscriber
     {
+        private static int StaticId;
+
+        private readonly int _id;
         private readonly TestRedisServer _server;
         public ConnectionMultiplexer Multiplexer => throw new NotImplementedException();
 
@@ -267,6 +278,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public TestSubscriber(TestRedisServer server)
         {
             _server = server;
+            _id = Interlocked.Increment(ref StaticId);
         }
 
         public EndPoint IdentifyEndpoint(RedisChannel channel, CommandFlags flags = CommandFlags.None)
@@ -307,7 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
         {
-            _server.Subscribe(channel, handler, flags);
+            throw new NotImplementedException();
         }
 
         public Task SubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
@@ -328,7 +340,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
         {
-            _server.Unsubscribe(channel, handler, flags);
+            _server.Unsubscribe(channel, _id, flags);
         }
 
         public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
@@ -364,7 +376,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ChannelMessageQueue Subscribe(RedisChannel channel, CommandFlags flags = CommandFlags.None)
         {
-            throw new NotImplementedException();
+            var redisSubscriberType = typeof(RedisChannel).Assembly.GetType("StackExchange.Redis.RedisSubscriber");
+            var ctor = typeof(ChannelMessageQueue).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null,
+                new Type[] { typeof(RedisChannel).MakeByRefType(), redisSubscriberType }, modifiers: null);
+
+            var queue = (ChannelMessageQueue)ctor.Invoke(new object[] { channel, null });
+            _server.Subscribe(queue, _id);
+            return queue;
         }
 
         public Task<ChannelMessageQueue> SubscribeAsync(RedisChannel channel, CommandFlags flags = CommandFlags.None)
