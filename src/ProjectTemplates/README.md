@@ -4,17 +4,17 @@ These are project templates which are used in .NET Core for creating ASP.NET Cor
 
 ## Description
 
-The following contains a description of each sub-directory in the `DataProtection` directory.
+The following contains a description of each sub-directory in the `ProjectTemplates` directory.
 
-- `BlazorTemplates.Tests`: Contains the source files for the main DataProtection interfaces like IDataProtector and IDataProtectionProvider
-- `Shared`: Contains a collection of shared constants and helper methods/classes
-- `Web.Client.ItemTemplates`: Contains the source files for cryptography infrastucture, applications and libraries should not reference this package directly.
-- `Web.ItemTemplates`: Contains the source files for cryptography infrastucture, applications and libraries should not reference this package directly.
-- `Web.ProjectTemplates`: Contains the source files for cryptography infrastucture, applications and libraries should not reference this package directly.
-- `Web.Spa.ProjectTemplates`: Contains the source files for cryptography infrastucture, applications and libraries should not reference this package directly.
-- `migrations`: Contains a collection of sample apps
-- `scripts`: Contains a collection of sample apps
-- `test`: Contains a collection of sample apps
+- `BlazorTemplates.Tests`: Contains the source files for the Blazor template tests, these are currently split out due to them not running on Helix yet.
+- `Shared`: Contains a collection of shared constants and helper methods/classes including the infrastructure for managing dotnet processes to create, build, run template tests.
+- `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
+- `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
+- `Web.ProjectTemplates`: Contains the ASP.NET Core Web Template pack, including Blazor Server, WASM, Empty, Grpc, Razor Class Library, RazorPages, MVC, WebApi.
+- `Web.Spa.ProjectTemplates`: Contains the Single Page Application templates for ASP.NET Core, including Anuglar, React, ReactRedux.
+- `migrations`: Contains a migration related scripts.
+- `scripts`: Contains a collection of scripts that help running tests locally that avoid having to install the templates to the machine.
+- `test`: Contains the end to end template tests.
 - `testassets`: Contains assets used by the tests, like a dotnet tools installer
 
 ### Build
