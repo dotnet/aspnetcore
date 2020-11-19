@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((Http3Connection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).StopProcessingStreams(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).OnServerShutdown(), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public void StopProcessingStreams()
+        public void OnServerShutdown()
         {
             bool previousState;
             lock (_protocolSelectionLock)
@@ -113,8 +113,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            // send goaway
             SendGoAway();
+
+            // Close connection here.
+            _context.ConnectionContext.Abort();
         }
 
         public void OnConnectionClosed()
@@ -143,6 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 _abortedException = ex;
                 SendGoAway();
+                _context.ConnectionContext.Abort(ex);
             }
         }
 
@@ -280,12 +283,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             finally
             {
                 // Abort all streams as connection has shutdown.
+                // TODO I think we don't need to be calling abort here?
                 lock (_streams)
                 {
                     if (_aborted)
                     {
                         foreach (var stream in _streams.Values)
                         {
+                            // Don't think we should abort everything here.
                             stream.Abort(_abortedException);
                         }
                     }
@@ -350,6 +355,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
 
                 _haveSentGoAway = true;
+
+                //OutboundControlStream.OnInputOrOutputCompleted();
             }
         }
 

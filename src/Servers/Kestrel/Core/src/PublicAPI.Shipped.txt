@@ -36,8 +36,6 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Http2Limits.MaxRequestHeaderFieldSize.s
 Microsoft.AspNetCore.Server.Kestrel.Core.Http2Limits.MaxStreamsPerConnection.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Core.Http2Limits.MaxStreamsPerConnection.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits
-Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.HeaderTableSize.get -> int
-Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.HeaderTableSize.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.Http3Limits() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.MaxRequestHeaderFieldSize.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.MaxRequestHeaderFieldSize.set -> void

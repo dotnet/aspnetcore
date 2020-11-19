@@ -75,7 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void OnInputOrOutputCompleted()
         {
             TryClose();
-            _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            // this closes input, don't abort?
+            //_frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         }
 
         private bool TryClose()

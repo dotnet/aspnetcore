@@ -213,15 +213,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         internal Task WriteGoAway(long id)
         {
             _outgoingFrame.PrepareGoAway();
-            var buffer = _outputWriter.GetSpan(9);
-            buffer[0] = (byte)_outgoingFrame.Type;
 
-            var length = VariableLengthIntegerHelper.WriteInteger(buffer.Slice(1), id);
+            var length = VariableLengthIntegerHelper.GetByteCount(id);
 
             _outgoingFrame.Length = length;
 
             WriteHeaderUnsynchronized();
 
+            var buffer = _outputWriter.GetSpan(8);
+            VariableLengthIntegerHelper.WriteInteger(buffer, id);
+            _outputWriter.Advance(length);
             return _outputWriter.FlushAsync().AsTask();
         }
 

@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private QuicConnection _connection;
         private readonly QuicTransportContext _context;
         private readonly IQuicTrace _log;
+        private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private ValueTask _closeTask;
 
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _log = context.Log;
             _context = context;
             _connection = connection;
+            ConnectionClosed = _connectionClosedTokenSource.Token;
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             Features.Set<IProtocolErrorCodeFeature>(this);
 
@@ -36,13 +38,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
         {
             var stream = _connection.OpenUnidirectionalStream();
-            return new ValueTask<ConnectionContext>(new QuicStreamContext(stream, this, _context));
+            var context = new QuicStreamContext(stream, this, _context);
+            context.Start();
+            return new ValueTask<ConnectionContext>(context);
         }
 
         public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
         {
             var stream = _connection.OpenBidirectionalStream();
-            return new ValueTask<ConnectionContext>(new QuicStreamContext(stream, this, _context));
+            var context = new QuicStreamContext(stream, this, _context);
+            context.Start();
+            return new ValueTask<ConnectionContext>(context);
         }
 
         public override async ValueTask DisposeAsync()
@@ -54,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                     _closeTask  = _connection.CloseAsync(errorCode: 0);
                     await _closeTask;
                 }
-                else 
+                else
                 {
                     await _closeTask;
                 }
@@ -71,6 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
+            // dedup calls to abort here.
             _closeTask = _connection.CloseAsync(errorCode: Error);
         }
 
@@ -79,11 +86,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             try
             {
                 var stream = await _connection.AcceptStreamAsync(cancellationToken);
-                return new QuicStreamContext(stream, this, _context);
+                var context = new QuicStreamContext(stream, this, _context);
+                context.Start();
+                return context;
             }
             catch (QuicException ex)
             {
                 // Accept on graceful close throws an aborted exception rather than returning null.
+
+                // TODO cancel CTS here?
                 _log.LogDebug($"Accept loop ended with exception: {ex.Message}");
             }
 
@@ -111,7 +122,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                 quicStream = _connection.OpenBidirectionalStream();
             }
 
-            return new ValueTask<ConnectionContext>(new QuicStreamContext(quicStream, this, _context));
+            var context = new QuicStreamContext(quicStream, this, _context);
+            context.Start();
+
+            return new ValueTask<ConnectionContext>(context);
         }
     }
 }
