@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             opts.AddArgument("--no-sandbox");
+            opts.AddArgument("--ignore-certificate-errors");
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
