@@ -117,6 +117,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, nameof(Http2MaxConcurrentStreamsReached)),
                 @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
 
+        private static readonly Action<ILogger, Exception> _invalidResponseHeaderRemoved =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(41, nameof(InvalidResponseHeaderRemoved)),
+                "A response header has been removed because it was invalid for the current protocol.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -293,6 +297,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void Http2MaxConcurrentStreamsReached(string connectionId)
         {
             _http2MaxConcurrentStreamsReached(_logger, connectionId, null);
+        }
+
+        public void InvalidResponseHeaderRemoved()
+        {
+            _invalidResponseHeaderRemoved(_logger, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

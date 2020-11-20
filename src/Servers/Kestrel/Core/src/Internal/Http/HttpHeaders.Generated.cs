@@ -8319,7 +8319,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasConnection => (_bits & 0x2L) != 0;
         public bool HasDate => (_bits & 0x4L) != 0;
+        public bool HasKeepAlive => (_bits & 0x10L) != 0;
         public bool HasTransferEncoding => (_bits & 0x80L) != 0;
+        public bool HasUpgrade => (_bits & 0x100L) != 0;
+        public bool HasProxyConnection => (_bits & 0x4000000L) != 0;
         public bool HasServer => (_bits & 0x10000000L) != 0;
 
         

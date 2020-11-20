@@ -132,7 +132,10 @@ namespace CodeGenerator
                 "Connection",
                 "Server",
                 "Date",
-                "Transfer-Encoding"
+                "Transfer-Encoding",
+                "Keep-Alive",
+                "Upgrade",
+                "Proxy-Connection"
             };
             var enhancedHeaders = new[]
             {

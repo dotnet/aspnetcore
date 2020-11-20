@@ -4825,6 +4825,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
 
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+
+            Assert.Contains(LogMessages, m => m.Message.Equals("A response header has been removed because it was invalid for the current protocol."));
         }
     }
 }
