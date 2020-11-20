@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.LegacyRouteMatching;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -75,7 +76,20 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
 
-        private RouteTable Routes { get; set; }
+        /// <summary>
+        /// Gets or sets a flag to indicate whether route matching should prefer exact matches
+        /// over wildcards.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Important: all applications should explicitly set this to true. The option to set it to false
+        /// (or leave unset, which defaults to false) is only provided for backward compatibility.
+        /// In .NET 6, this option will be removed and the router will always prefer exact matches.
+        /// </para>
+        /// </remarks>
+        [Parameter] public bool PreferExactMatches { get; set; }
+
+        private IRouteTable Routes { get; set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -142,7 +156,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             if (!_assemblies.SetEquals(assembliesSet))
             {
-                Routes = RouteTableFactory.Create(assemblies);
+                Routes = PreferExactMatches
+                    ? RouteTableFactory.Create(assemblies)
+                    : LegacyRouteTableFactory.Create(assemblies);
                 _assemblies.Clear();
                 _assemblies.UnionWith(assembliesSet);
             }

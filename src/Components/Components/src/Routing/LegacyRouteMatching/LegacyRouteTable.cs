@@ -1,16 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Routing
+// Avoid referencing the whole Microsoft.AspNetCore.Components.Routing namespace to
+// avoid the risk of accidentally relying on the non-legacy types in the legacy fork
+using RouteContext = Microsoft.AspNetCore.Components.Routing.RouteContext;
+
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
-    internal class RouteTable : IRouteTable
+    internal class LegacyRouteTable : Routing.IRouteTable
     {
-        public RouteTable(RouteEntry[] routes)
+        public LegacyRouteTable(LegacyRouteEntry[] routes)
         {
             Routes = routes;
         }
 
-        public RouteEntry[] Routes { get; }
+        public LegacyRouteEntry[] Routes { get; }
 
         public void Route(RouteContext routeContext)
         {
