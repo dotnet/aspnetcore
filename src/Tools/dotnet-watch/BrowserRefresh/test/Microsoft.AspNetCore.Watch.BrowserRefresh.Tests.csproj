@@ -18,6 +18,7 @@
       We'll simply test against it as source.
     -->
     <Compile Include="..\src\BrowserRefreshMiddleware.cs" LinkBase="src" />
+    <Compile Include="..\src\BrowserScriptMiddleware.cs" LinkBase="src" />
     <Compile Include="..\src\ResponseStreamWrapper.cs" LinkBase="src" />
     <Compile Include="..\src\WebSocketScriptInjection.cs" LinkBase="src" />
     <EmbeddedResource Include="..\src\WebSocketScriptInjection.js" />

@@ -1,20 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
     /// <summary>
     /// A route constraint that allows the value to be null or parseable as the specified
     /// type.
     /// </summary>
     /// <typeparam name="T">The type to which the value must be parseable.</typeparam>
-    internal class OptionalTypeRouteConstraint<T> : RouteConstraint
+    internal class LegacyOptionalTypeRouteConstraint<T> : LegacyRouteConstraint
     {
-        public delegate bool TryParseDelegate(string str, out T result);
+        public delegate bool LegacyTryParseDelegate(string str, out T result);
 
-        private readonly TryParseDelegate _parser;
+        private readonly LegacyTryParseDelegate _parser;
 
-        public OptionalTypeRouteConstraint(TryParseDelegate parser)
+        public LegacyOptionalTypeRouteConstraint(LegacyTryParseDelegate parser)
         {
             _parser = parser;
         }
