@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         /// <summary>
         /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
-        /// by further customizing the <see cref="IWebHostBuilder"/> when calling 
+        /// by further customizing the <see cref="IWebHostBuilder"/> when calling
         /// <see cref="WebApplicationFactory{TEntryPoint}.WithWebHostBuilder(Action{IWebHostBuilder})"/>.
         /// </summary>
         public IReadOnlyList<WebApplicationFactory<TEntryPoint>> Factories => _derivedFactories.AsReadOnly();
@@ -164,13 +165,34 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _server = CreateServer(builder);
         }
 
-        private void SetContentRoot(IWebHostBuilder builder)
-        {
+        private void SetContentRoot(IWebHostBuilder builder) {
             if (SetContentRootFromSetting(builder))
             {
                 return;
             }
 
+            // Where do we store the file that we read the JSON config from
+            var fromFile = File.Exists("AppManifest.json");
+            var contentRoot = fromFile ? GetContentRootFromFile("AppManifest.json") : GetContentRootFromAssembly();
+
+            if (contentRoot != null)
+            {
+                builder.UseContentRoot(contentRoot);
+            }
+            else
+            {
+                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
+            }
+        }
+
+        private string GetContentRootFromFile(string file) {
+            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(file);
+            var key = typeof(TEntryPoint).Assembly.GetName().Name;
+            return data[key];
+        }
+
+        private string GetContentRootFromAssembly()
+        {
             var metadataAttributes = GetContentRootMetadataAttributes(
                 typeof(TEntryPoint).Assembly.FullName,
                 typeof(TEntryPoint).Assembly.GetName().Name);
@@ -194,14 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
             }
 
-            if (contentRoot != null)
-            {
-                builder.UseContentRoot(contentRoot);
-            }
-            else
-            {
-                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
-            }
+            return contentRoot;
         }
 
         private static bool SetContentRootFromSetting(IWebHostBuilder builder)
