@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23015")]
         public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
         {
             // Arrange & Act
