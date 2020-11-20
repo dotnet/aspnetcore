@@ -29,8 +29,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                // Default 200
+                var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                Assert.False(feature.IsUpgradableRequest);
                 Assert.False(httpContext.Request.CanHaveBody());
+                // Default 200
                 return Task.CompletedTask;
             });
 
