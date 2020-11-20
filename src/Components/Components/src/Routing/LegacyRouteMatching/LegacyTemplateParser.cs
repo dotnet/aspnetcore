@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
     // This implementation is temporary, in the future we'll want to have
     // a more performant/properly designed routing set of abstractions.
@@ -17,23 +18,23 @@ namespace Microsoft.AspNetCore.Components.Routing
     // * Literal path segments. (Like /Path/To/Some/Page)
     // * Parameter path segments (Like /Customer/{Id}/Orders/{OrderId})
     // * Catch-all parameters (Like /blog/{*slug})
-    internal class TemplateParser
+    internal class LegacyTemplateParser
     {
         public static readonly char[] InvalidParameterNameCharacters =
             new char[] { '{', '}', '=', '.' };
 
-        internal static RouteTemplate ParseTemplate(string template)
+        internal static LegacyRouteTemplate ParseTemplate(string template)
         {
             var originalTemplate = template;
             template = template.Trim('/');
             if (template == string.Empty)
             {
                 // Special case "/";
-                return new RouteTemplate("/", Array.Empty<TemplateSegment>());
+                return new LegacyRouteTemplate("/", Array.Empty<LegacyTemplateSegment>());
             }
 
             var segments = template.Split('/');
-            var templateSegments = new TemplateSegment[segments.Length];
+            var templateSegments = new LegacyTemplateSegment[segments.Length];
             for (int i = 0; i < segments.Length; i++)
             {
                 var segment = segments[i];
@@ -50,12 +51,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                         throw new InvalidOperationException(
                             $"Invalid template '{template}'. Missing '{{' in parameter segment '{segment}'.");
                     }
-                    if (segment[^1] == '?')
-                    {
-                        throw new InvalidOperationException(
-                            $"Invalid template '{template}'. '?' is not allowed in literal segment '{segment}'.");
-                    }
-                    templateSegments[i] = new TemplateSegment(originalTemplate, segment, isParameter: false);
+                    templateSegments[i] = new LegacyTemplateSegment(originalTemplate, segment, isParameter: false);
                 }
                 else
                 {
@@ -78,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                             $"Invalid template '{template}'. The character '{segment[invalidCharacter]}' in parameter segment '{segment}' is not allowed.");
                     }
 
-                    templateSegments[i] = new TemplateSegment(originalTemplate, segment.Substring(1, segment.Length - 2), isParameter: true);
+                    templateSegments[i] = new LegacyTemplateSegment(originalTemplate, segment.Substring(1, segment.Length - 2), isParameter: true);
                 }
             }
 
@@ -100,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 {
                     var nextSegment = templateSegments[j];
 
-                    if (currentSegment.IsOptional && !nextSegment.IsOptional && !nextSegment.IsCatchAll)
+                    if (currentSegment.IsOptional && !nextSegment.IsOptional)
                     {
                         throw new InvalidOperationException($"Invalid template '{template}'. Non-optional parameters or literal routes cannot appear after optional parameters.");
                     }
@@ -113,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 }
             }
 
-            return new RouteTemplate(template, templateSegments);
+            return new LegacyRouteTemplate(template, templateSegments);
         }
     }
 }
