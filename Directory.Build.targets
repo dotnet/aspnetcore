@@ -160,7 +160,7 @@
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
       <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
       <!-- Only update the default runtime version for preview builds. -->
-      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true' and '$(TargetLatestDotNetRuntime)' != 'false'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
       <!-- Only update the targeting pack version for preview builds. -->
       <TargetingPackVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
