@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var paths = options.Value.AuthenticationPaths;
 
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var user = options.Value.UserOptions;
             Assert.Equal("Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests", user.AuthenticationType);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var user = options.Value.UserOptions;
             // Make sure that the defaults are applied on this overload
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var user = options.Value.UserOptions;
             // Make sure that the defaults are applied on this overload
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var user = options.Value.UserOptions;
             // Make sure that the defaults are applied on this overload
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var user = options.Value.UserOptions;
             // Make sure that the defaults are applied on this overload
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>>();
 
             var paths = options.Value.AuthenticationPaths;
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             builder.Services.AddOidcAuthentication(options => { });
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
 
             var paths = options.Value.AuthenticationPaths;
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
 
             var paths = options.Value.AuthenticationPaths;
 
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
             Assert.Equal("name", options.Value.UserOptions.NameClaim);
 
             Assert.Equal(1, calls);
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
             // Make sure options are applied
             Assert.Equal("name", options.Value.UserOptions.NameClaim);
 
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var host = builder.Build();
 
-            var options = host.Services.GetRequiredService<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            var options = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
             // Make sure options are applied
             Assert.Equal("name", options.Value.UserOptions.NameClaim);
 
@@ -407,6 +407,34 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var authenticationService = host.Services.GetService<IRemoteAuthenticationService<TestAuthenticationState>>();
             Assert.NotNull(authenticationService);
             Assert.IsType<RemoteAuthenticationService<TestAuthenticationState, TestAccount, OidcProviderOptions>>(authenticationService);
+        }
+
+        [Fact]
+        public void OidcProviderOptionsAndDependencies_NotResolvedFromRootScope()
+        {
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
+
+            var calls = 0;
+
+            builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => { });
+            builder.Services.Replace(ServiceDescriptor.Scoped(typeof(NavigationManager), _ =>
+            {
+                calls++;
+                return new TestNavigationManager();
+            }));
+
+            var host = builder.Build();
+
+            using var scope = host.Services.CreateScope();
+
+            // from the root scope.
+            var rootOptions = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+
+            // from the created scope
+            var scopedOptions = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+
+            // we should have 2 navigation managers. One in the root scope, and one in the created scope.
+            Assert.Equal(2, calls);
         }
 
         private class TestNavigationManager : NavigationManager
