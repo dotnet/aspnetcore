@@ -158,7 +158,7 @@
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
-      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(TargetLatestDotNetRuntime)' != 'false">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(TargetLatestDotNetRuntime)' != 'false'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
       <!-- Only update the default runtime version for preview builds. -->
       <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true' and '$(TargetLatestDotNetRuntime)' != 'false'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
       <!-- Only update the targeting pack version for preview builds. -->
