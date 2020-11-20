@@ -1099,19 +1099,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Proxy-Connection, Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection header field."
             //
             // Http/3 has a similar requirement: https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-field-formatting-and-compre
-            if (_httpVersion > Http.HttpVersion.Http11
-                && (hasTransferEncoding
-                    || hasConnection
-                    || responseHeaders.HasKeepAlive
-                    || responseHeaders.HasUpgrade
-                    || responseHeaders.HasProxyConnection))
+            if (_httpVersion > Http.HttpVersion.Http11 && responseHeaders.HasInvalidH2H3Headers)
             {
-                responseHeaders.ClearTransferEncoding();
-                responseHeaders.ClearConnection();
-                responseHeaders.ClearKeepAlive();
-                responseHeaders.ClearUpgrade();
-                responseHeaders.ClearProxyConnection();
-
+                responseHeaders.ClearInvalidH2H3Headers();
                 hasTransferEncoding = false;
                 hasConnection = false;
 

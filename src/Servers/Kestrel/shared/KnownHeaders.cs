@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http.HPack;
 using System.Text;
-using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator
 {
@@ -17,6 +16,7 @@ namespace CodeGenerator
         public readonly static KnownHeader[] RequestHeaders;
         public readonly static KnownHeader[] ResponseHeaders;
         public readonly static KnownHeader[] ResponseTrailers;
+        public readonly static long InvalidH2H3ResponseHeadersBits;
 
         static KnownHeaders()
         {
@@ -132,10 +132,7 @@ namespace CodeGenerator
                 "Connection",
                 "Server",
                 "Date",
-                "Transfer-Encoding",
-                "Keep-Alive",
-                "Upgrade",
-                "Proxy-Connection"
+                "Transfer-Encoding"
             };
             var enhancedHeaders = new[]
             {
@@ -202,6 +199,20 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains(header)
             })
             .ToArray();
+
+            var invalidH2H3ResponseHeaders = new[]
+            {
+                "Connection",
+                "Transfer-Encoding",
+                "Keep-Alive",
+                "Upgrade",
+                "Proxy-Connection"
+            };
+
+            InvalidH2H3ResponseHeadersBits = ResponseHeaders
+                .Where(header => invalidH2H3ResponseHeaders.Contains(header.Name))
+                .Select(header => 1L << header.Index)
+                .Aggregate((a, b) => a | b);
         }
 
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
@@ -771,13 +782,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _headers._{header.Identifier} = value;
             _headers._raw{header.Identifier} = raw;
         }}")}
-{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-        public void Clear{header.Identifier}()
-        {{
-            {header.ClearBit()};
-            _headers._{header.Identifier} = default;
-            {(header.EnhancedSetter ? $"_headers._raw{header.Identifier} = null;" : "")}
-        }}")}
         protected override int GetCountFast()
         {{
             return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
@@ -1026,6 +1030,11 @@ $@"        private void Clear(long bitsToClear)
             return true;
         }}
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
+        internal bool HasInvalidH2H3Headers => (_bits & {InvalidH2H3ResponseHeadersBits}) != 0;
+        internal void ClearInvalidH2H3Headers()
+        {{
+            _bits &= ~{InvalidH2H3ResponseHeadersBits};
+        }}
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
             var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
