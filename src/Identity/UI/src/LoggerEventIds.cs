@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Identity.UI
 {
-    internal static class LoggerEventIds
+    public static class LoggerEventIds
     {
         public static readonly EventId UserCreatedByExternalProvider  = new EventId(1, "UserCreatedByExternalProvider");
         public static readonly EventId UserLoggedInByExternalProvider = new EventId(2, "UserLoggedInByExternalProvider");
@@ -24,7 +24,5 @@ namespace Microsoft.AspNetCore.Identity.UI
         public static readonly EventId AuthenticationAppKeyReset = new EventId(15, "AuthenticationAppKeyReset");
         public static readonly EventId UserCreated = new EventId(16, "UserCreated");
         public static readonly EventId UserLoggedOut = new EventId(17, "UserLoggedOut");
- 
-
     }
 }
