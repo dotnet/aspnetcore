@@ -159,8 +159,8 @@ if [ "$?" == "0" ]; then
     for DisabledSourceName in ${DisabledDarcIntSources[@]} ; do
         if [[ $DisabledSourceName == darc-int* ]]
             then
-                OldDisableValue="add key=\"$DisabledSourceName\" value=\"true\""
-                NewDisableValue="add key=\"$DisabledSourceName\" value=\"false\""
+                OldDisableValue="<add key=\"$DisabledSourceName\" value=\"true\" />"
+                NewDisableValue="<!-- Reenabled for build : $DisabledSourceName -->"
                 sed -i.bak "s|$OldDisableValue|$NewDisableValue|" $ConfigFile
                 echo "Neutralized disablePackageSources entry for '$DisabledSourceName'"
         fi

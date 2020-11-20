@@ -99,8 +99,9 @@ function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Username, $Passw
 function EnablePrivatePackageSources($DisabledPackageSources) {
     $maestroPrivateSources = $DisabledPackageSources.SelectNodes("add[contains(@key,'darc-int')]")
     ForEach ($DisabledPackageSource in $maestroPrivateSources) {
-        Write-Host "`tEnsuring private source '$($DisabledPackageSource.key)' is enabled"
-        $DisabledPackageSource.SetAttribute("value", "false")
+        Write-Host "`tEnsuring private source '$($DisabledPackageSource.key)' is enabled by deleting it from disabledPackageSource"
+        # Due to https://github.com/NuGet/Home/issues/10291, we must actually remove the disabled entries
+        $DisabledPackageSources.RemoveChild($DisabledPackageSource)
     }
 }
 
