@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Build tasks for functional tests.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+  </ItemGroup>
+</Project>

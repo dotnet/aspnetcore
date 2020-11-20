@@ -17,6 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference
+        Include="..\..\Mvc.Testing.Tasks\src\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj"
+        Targets="Publish"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+    <Content Include="AppManifest.json"/>
   </ItemGroup>
 </Project>
