@@ -275,7 +275,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
-        // Http.Sys returns a 411 Length Required if PUT or POST does not specify content-length or chunked.
         public async Task OpaqueUpgrade_PostWithBodyAndUpgradeHeaders_Accepted()
         {
             using (Utilities.CreateHttpServer(out string address, async httpContext =>
