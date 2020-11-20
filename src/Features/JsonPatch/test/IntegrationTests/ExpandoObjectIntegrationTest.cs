@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -117,6 +117,41 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Act & Assert
             patchDocument.ApplyTo(targetObject);
+        }
+
+        [Fact]
+        public void TestEmptyProperty_IsSuccessful()
+        {
+            // Arrange
+            dynamic targetObject = new ExpandoObject();
+            targetObject.Test = "";
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Test("Test", "");
+
+            // Act & Assert
+            patchDocument.ApplyTo(targetObject);
+        }
+
+        [Fact]
+        public void TestValueAgainstEmptyProperty_ThrowsJsonPatchException_IsSuccessful()
+        {
+            // Arrange
+            dynamic targetObject = new ExpandoObject();
+            targetObject.Test = "";
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Test("Test", "TestValue");
+
+            // Act
+            var exception = Assert.Throws<JsonPatchException>(() =>
+            {
+                patchDocument.ApplyTo(targetObject);
+            });
+
+            // Assert
+            Assert.Equal("The current value '' at path 'Test' is not equal to the test value 'TestValue'.",
+                exception.Message);
         }
 
         [Fact]
