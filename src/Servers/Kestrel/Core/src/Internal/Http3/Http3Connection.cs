@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         public DynamicTable DynamicTable { get; set; }
 
-        public Http3ControlStream ControlStream { get; set; }
-        public Http3ControlStream EncoderStream { get; set; }
-        public Http3ControlStream DecoderStream { get; set; }
+        public Http3ControlStream? ControlStream { get; set; }
+        public Http3ControlStream? EncoderStream { get; set; }
+        public Http3ControlStream? DecoderStream { get; set; }
 
         internal readonly Dictionary<long, Http3Stream> _streams = new Dictionary<long, Http3Stream>();
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
             try
             {
@@ -87,10 +87,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((Http3Connection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state).StopProcessingNextRequest(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).StopProcessingNextRequest(), this);
 
                 // Register for connection close
-                using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state).OnConnectionClosed(), this);
+                using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
 
                 await InnerProcessRequestsAsync(httpApplication);
             }
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             // Start other three unidirectional streams here.
             var controlTask = CreateControlStream(application);
@@ -211,19 +211,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     Debug.Assert(quicStreamFeature != null);
 
-                    var httpConnectionContext = new Http3StreamContext
-                    {
-                        ConnectionId = streamContext.ConnectionId,
-                        StreamContext = streamContext,
-                        // TODO connection context is null here. Should we set it to anything?
-                        ServiceContext = _context.ServiceContext,
-                        ConnectionFeatures = streamContext.Features,
-                        MemoryPool = _context.MemoryPool,
-                        Transport = streamContext.Transport,
-                        TimeoutControl = _context.TimeoutControl,
-                        LocalEndPoint = streamContext.LocalEndPoint as IPEndPoint,
-                        RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
-                    };
+                    var httpConnectionContext = new Http3StreamContext(
+                        streamContext.ConnectionId,
+                        protocols: default,
+                        connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                        _context.ServiceContext,
+                        streamContext.Features,
+                        _context.MemoryPool,
+                        streamContext.LocalEndPoint as IPEndPoint,
+                        streamContext.RemoteEndPoint as IPEndPoint,
+                        streamContext.Transport,
+                        streamContext);
+                    httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
                     if (!quicStreamFeature.CanWrite)
                     {
@@ -269,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application)
+        private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             ControlStream = stream;
@@ -277,38 +276,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             await stream.SendSettingsFrameAsync();
         }
 
-        private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application)
+        private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             EncoderStream = stream;
             await stream.SendStreamIdAsync(id: 2);
         }
 
-        private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application)
+        private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             DecoderStream = stream;
             await stream.SendStreamIdAsync(id: 3);
         }
 
-        private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application)
+        private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var features = new FeatureCollection();
             features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
             var streamContext = await _multiplexedContext.ConnectAsync(features);
-            var httpConnectionContext = new Http3StreamContext
-            {
-                //ConnectionId = "", TODO getting stream ID from stream that isn't started throws an exception.
-                StreamContext = streamContext,
-                Protocols = HttpProtocols.Http3,
-                ServiceContext = _context.ServiceContext,
-                ConnectionFeatures = streamContext.Features,
-                MemoryPool = _context.MemoryPool,
-                Transport = streamContext.Transport,
-                TimeoutControl = _context.TimeoutControl,
-                LocalEndPoint = streamContext.LocalEndPoint as IPEndPoint,
-                RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
-            };
+            var httpConnectionContext = new Http3StreamContext(
+                connectionId: null!, // TODO getting stream ID from stream that isn't started throws an exception.
+                HttpProtocols.Http3,
+                connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                _context.ServiceContext,
+                streamContext.Features,
+                _context.MemoryPool,
+                streamContext.LocalEndPoint as IPEndPoint,
+                streamContext.RemoteEndPoint as IPEndPoint,
+                streamContext.Transport,
+                streamContext);
+            httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
             return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
         }

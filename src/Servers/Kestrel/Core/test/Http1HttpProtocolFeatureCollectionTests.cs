@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Linq;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -16,33 +17,25 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HttpProtocolFeatureCollectionTests
+    public class Http1HttpProtocolFeatureCollectionTests
     {
         private readonly TestHttp1Connection _http1Connection;
         private readonly HttpConnectionContext _httpConnectionContext;
         private readonly IFeatureCollection _collection;
-        private readonly IFeatureCollection _http2Collection;
 
-        public HttpProtocolFeatureCollectionTests()
+        public Http1HttpProtocolFeatureCollectionTests()
         {
-            var context = new Http2StreamContext
-            {
-                ServiceContext = new TestServiceContext(),
-                ConnectionFeatures = new FeatureCollection(),
-                TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Transport = Mock.Of<IDuplexPipe>(),
-                ServerPeerSettings = new Http2PeerSettings(),
-                ClientPeerSettings = new Http2PeerSettings(),
-            };
+            var context = TestContextFactory.CreateHttpConnectionContext(
+                connectionContext: Mock.Of<ConnectionContext>(),
+                serviceContext: new TestServiceContext(),
+                transport: Mock.Of<IDuplexPipe>(),
+                connectionFeatures: new FeatureCollection(),
+                timeoutControl: Mock.Of<ITimeoutControl>());
 
             _httpConnectionContext = context;
             _http1Connection = new TestHttp1Connection(context);
             _http1Connection.Reset();
             _collection = _http1Connection;
-
-            var http2Stream = new TestHttp2Stream(context);
-            http2Stream.Reset();
-            _http2Collection = http2Stream;
         }
 
         [Fact]
@@ -161,36 +154,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void Http2StreamFeatureCollectionDoesNotIncludeIHttpMinResponseDataRateFeature()
+        public void Http1HasIHttpMinResponseDataRateFeature()
         {
-            Assert.Null(_http2Collection.Get<IHttpMinResponseDataRateFeature>());
             Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
-        }
-
-        [Fact]
-        public void Http2StreamFeatureCollectionDoesIncludeUpgradeFeature()
-        {
-            var upgradeFeature = _http2Collection.Get<IHttpUpgradeFeature>();
-
-            Assert.NotNull(upgradeFeature);
-            Assert.False(upgradeFeature.IsUpgradableRequest);
-        }
-
-        [Fact]
-        public void Http2StreamFeatureCollectionDoesIncludeIHttpMinRequestBodyDataRateFeature()
-        {
-            var minRateFeature = _http2Collection.Get<IHttpMinRequestBodyDataRateFeature>();
-
-            Assert.NotNull(minRateFeature);
-
-            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
-            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate = new MinDataRate(1, TimeSpan.FromSeconds(2)));
-
-            // You can set the MinDataRate to null though.
-            minRateFeature.MinDataRate = null;
-
-            // But you still cannot read the property;
-            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
         }
 
         private void CompareGenericGetterToIndexer()
@@ -249,17 +215,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
-
-        private class TestHttp2Stream : Http2Stream
-        {
-            public TestHttp2Stream(Http2StreamContext context) 
-            {
-                Initialize(context);
-            }
-
-            public override void Execute()
-            {
-            }
-        }
     }
 }

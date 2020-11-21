@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -36,14 +37,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal const string SchemeHttp = "http";
         internal const string SchemeHttps = "https";
 
-        protected BodyControl _bodyControl;
-        private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
-        private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        protected BodyControl? _bodyControl;
+        private Stack<KeyValuePair<Func<object, Task>, object>>? _onStarting;
+        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
 
         private readonly object _abortLock = new object();
         protected volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
-        private CancellationTokenSource _abortedCts;
+        private CancellationTokenSource? _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
 
         protected RequestProcessingStatus _requestProcessingStatus;
@@ -57,27 +58,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _hasAdvanced;
         private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
-        protected Exception _applicationException;
-        private BadHttpRequestException _requestRejectedException;
+        protected Exception? _applicationException;
+        private BadHttpRequestException? _requestRejectedException;
 
         protected HttpVersion _httpVersion;
         // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
         // how Kestrel processes requests/responses.
-        private string _httpProtocol;
+        private string? _httpProtocol;
 
-        private string _requestId;
+        private string? _requestId;
         private int _requestHeadersParsed;
 
         private long _responseBytesWritten;
 
-        private HttpConnectionContext _context;
-        private RouteValueDictionary _routeValues;
-        private Endpoint _endpoint;
+        private HttpConnectionContext _context = default!;
+        private RouteValueDictionary? _routeValues;
+        private Endpoint? _endpoint;
 
-        protected string _methodText = null;
-        private string _scheme = null;
-        private Stream _requestStreamInternal;
-        private Stream _responseStreamInternal;
+        protected string? _methodText = null;
+        private string? _scheme = null;
+        private Stream? _requestStreamInternal;
+        private Stream? _responseStreamInternal;
 
         public void Initialize(HttpConnectionContext context)
         {
@@ -90,26 +91,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpResponseControl = this;
         }
 
-        public IHttpResponseControl HttpResponseControl { get; set; }
+        public IHttpResponseControl HttpResponseControl { get; set; } = default!;
 
         public ServiceContext ServiceContext => _context.ServiceContext;
-        private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
-        private IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
+        private IPEndPoint? LocalEndPoint => _context.LocalEndPoint;
+        private IPEndPoint? RemoteEndPoint => _context.RemoteEndPoint;
         public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
-        public IHttpOutputProducer Output { get; protected set; }
+        public IHttpOutputProducer Output { get; protected set; } = default!;
 
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        protected KestrelServerOptions ServerOptions { get; set; }
+        protected KestrelServerOptions ServerOptions { get; set; } = default!;
         protected string ConnectionId => _context.ConnectionId;
 
-        public string ConnectionIdFeature { get; set; }
+        public string ConnectionIdFeature { get; set; } = default!;
         public bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
-        public MinDataRate MinRequestBodyDataRate { get; set; }
+        public MinDataRate? MinRequestBodyDataRate { get; set; }
         public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
@@ -131,18 +132,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool IsUpgradableRequest { get; private set; }
         public bool IsUpgraded { get; set; }
-        public IPAddress RemoteIpAddress { get; set; }
+        public IPAddress? RemoteIpAddress { get; set; }
         public int RemotePort { get; set; }
-        public IPAddress LocalIpAddress { get; set; }
+        public IPAddress? LocalIpAddress { get; set; }
         public int LocalPort { get; set; }
-        public string Scheme { get; set; }
+        public string? Scheme { get; set; }
         public HttpMethod Method { get; set; }
         public string MethodText => ((IHttpRequestFeature)this).Method;
-        public string PathBase { get; set; }
+        public string? PathBase { get; set; }
 
-        public string Path { get; set; }
-        public string QueryString { get; set; }
-        public string RawTarget { get; set; }
+        public string? Path { get; set; }
+        public string? QueryString { get; set; }
+        public string? RawTarget { get; set; }
 
         public string HttpVersion
         {
@@ -221,12 +222,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public IHeaderDictionary RequestHeaders { get; set; }
+        public IHeaderDictionary RequestHeaders { get; set; } = default!;
         public IHeaderDictionary RequestTrailers { get; } = new HeaderDictionary();
         public bool RequestTrailersAvailable { get; set; }
-        public Stream RequestBody { get; set; }
-        public PipeReader RequestBodyPipeReader { get; set; }
-        public HttpResponseTrailers ResponseTrailers { get; set; }
+        public Stream RequestBody { get; set; } = default!;
+        public PipeReader RequestBodyPipeReader { get; set; } = default!;
+        public HttpResponseTrailers? ResponseTrailers { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -243,9 +244,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private string _reasonPhrase;
+        private string? _reasonPhrase;
 
-        public string ReasonPhrase
+        public string? ReasonPhrase
         {
             get => _reasonPhrase;
 
@@ -260,9 +261,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public IHeaderDictionary ResponseHeaders { get; set; }
-        public Stream ResponseBody { get; set; }
-        public PipeWriter ResponseBodyPipeWriter { get; set; }
+        public IHeaderDictionary ResponseHeaders { get; set; } = default!;
+        public Stream ResponseBody { get; set; } = default!;
+        public PipeWriter ResponseBodyPipeWriter { get; set; } = default!;
 
         public CancellationToken RequestAborted
         {
@@ -347,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
             MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
             AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
-            TraceIdentifier = null;
+            TraceIdentifier = null!;
             Method = HttpMethod.None;
             _methodText = null;
             _endpoint = null;
@@ -394,7 +395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _manuallySetRequestAbortToken = null;
 
             // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
-            CancellationTokenSource localAbortCts = null;
+            CancellationTokenSource? localAbortCts = null;
 
             lock (_abortLock)
             {
@@ -450,7 +451,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                CancellationTokenSource localAbortCts = null;
+                CancellationTokenSource? localAbortCts = null;
 
                 lock (_abortLock)
                 {
@@ -489,7 +490,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (shouldScheduleCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedTokenCallback(), this);
+                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state!).CancelRequestAbortedTokenCallback(), this);
             }
         }
 
@@ -555,7 +556,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestTrailersAvailable = true;
         }
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             try
             {
@@ -606,7 +607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
+        private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             while (_keepAlive)
             {
@@ -694,6 +695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Using these streams in the OnCompleted callback is not allowed.
                 try
                 {
+                    Debug.Assert(_bodyControl != null);
                     await _bodyControl.StopAsync();
                 }
                 catch (Exception ex)
@@ -857,7 +859,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             var responseHeaders = HttpResponseHeaders;
             return new InvalidOperationException(
-                CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength.Value));
+                CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength!.Value));
         }
 
         private void CheckLastWrite()
@@ -878,7 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected bool VerifyResponseContentLength(out Exception ex)
+        protected bool VerifyResponseContentLength([NotNullWhen(false)] out Exception? ex)
         {
             var responseHeaders = HttpResponseHeaders;
 
@@ -912,7 +914,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             if (_httpVersion != Http.HttpVersion.Http10 &&
-                RequestHeaders.TryGetValue(HeaderNames.Expect, out var expect) &&
+                ((IHeaderDictionary)HttpRequestHeaders).TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
                 Output.Write100ContinueAsync().GetAwaiter().GetResult();
@@ -1191,7 +1193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if ((option.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
-                        responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint.Port}\"; ma=84600";
+                        responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint!.Port}\"; ma=84600";
                         break;
                     }
                 }
@@ -1307,6 +1309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [StackTraceHidden]
+        [DoesNotReturn]
         public void ThrowRequestTargetRejected(Span<byte> target)
             => throw GetInvalidRequestTargetException(target);
 
@@ -1331,7 +1334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestRejectedException = ex;
         }
 
-        public void ReportApplicationError(Exception ex)
+        public void ReportApplicationError(Exception? ex)
         {
             // ReportApplicationError can be called with a null exception from MessageBody
             if (ex == null)
@@ -1416,7 +1419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public Task CompleteAsync(Exception exception = null)
+        public Task CompleteAsync(Exception? exception = null)
         {
             if (exception != null)
             {
