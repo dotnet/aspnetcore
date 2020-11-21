@@ -183,12 +183,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
-
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendEmptyGetWithUpgrade();
-                    await connection.Receive("HTTP/1.1 200 OK");
-                }
             }
         }
 
@@ -260,12 +254,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "0",
                         "",
                         "");
-                    await connection.Receive("HTTP/1.1 200 OK");
-                }
-
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
             }
