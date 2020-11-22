@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public CacheControlHeaderValue CacheControl
+        public CacheControlHeaderValue? CacheControl
         {
             get
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public ContentDispositionHeaderValue ContentDisposition
+        public ContentDispositionHeaderValue? ContentDisposition
         {
             get
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public ContentRangeHeaderValue ContentRange
+        public ContentRangeHeaderValue? ContentRange
         {
             get
             {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public MediaTypeHeaderValue ContentType
+        public MediaTypeHeaderValue? ContentType
         {
             get
             {
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public RangeConditionHeaderValue IfRange
+        public RangeConditionHeaderValue? IfRange
         {
             get
             {
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public RangeHeaderValue Range
+        public RangeHeaderValue? Range
         {
             get
             {
@@ -262,12 +262,11 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
-        public Uri Referer
+        public Uri? Referer
         {
             get
             {
-                Uri uri;
-                if (Uri.TryCreate(Headers[HeaderNames.Referer], UriKind.RelativeOrAbsolute, out uri))
+                if (Uri.TryCreate(Headers[HeaderNames.Referer], UriKind.RelativeOrAbsolute, out var uri))
                 {
                     return uri;
                 }
@@ -287,7 +286,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         /// The given type must have a static TryParse method.</typeparam>
         /// <param name="name">The name of the header to retrieve.</param>
         /// <returns>The value of the header.</returns>
-        public T Get<T>(string name)
+        public T? Get<T>(string name)
         {
             return Headers.Get<T>(name);
         }
@@ -305,7 +304,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             return Headers.GetList<T>(name);
         }
 
-        public void Set(string name, object value)
+        public void Set(string name, object? value)
         {
             if (name == null)
             {
@@ -315,7 +314,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             Headers.Set(name, value);
         }
 
-        public void SetList<T>(string name, IList<T> values)
+        public void SetList<T>(string name, IList<T>? values)
         {
             if (name == null)
             {

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http
             return headers.Get<DateTimeOffset?>(name);
         }
 
-        internal static void Set(this IHeaderDictionary headers, string name, object value)
+        internal static void Set(this IHeaderDictionary headers, string name, object? value)
         {
             if (headers == null)
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T> values)
+        internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
         {
             if (headers == null)
             {
@@ -81,14 +81,14 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (values.Count == 1)
             {
-                headers[name] = new StringValues(values[0].ToString());
+                headers[name] = new StringValues(values[0]!.ToString());
             }
             else
             {
                 var newValues = new string[values.Count];
                 for (var i = 0; i < values.Count; i++)
                 {
-                    newValues[i] = values[i].ToString();
+                    newValues[i] = values[i]!.ToString()!;
                 }
                 headers[name] = new StringValues(newValues);
             }
@@ -112,13 +112,13 @@ namespace Microsoft.AspNetCore.Http
                     Headers.Append(name, StringValues.Empty);
                     break;
                 case 1:
-                    Headers.Append(name, new StringValues(values[0].ToString()));
+                    Headers.Append(name, new StringValues(values[0]!.ToString()));
                     break;
                 default:
                     var newValues = new string[values.Count];
                     for (var i = 0; i < values.Count; i++)
                     {
-                        newValues[i] = values[i].ToString();
+                        newValues[i] = values[i]!.ToString()!;
                     }
                     Headers.Append(name, new StringValues(newValues));
                     break;
@@ -149,34 +149,33 @@ namespace Microsoft.AspNetCore.Http
 
         private static IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
         {
-            { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue>(value => { CacheControlHeaderValue result; return CacheControlHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue>(value => { ContentDispositionHeaderValue result; return ContentDispositionHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue>(value => { ContentRangeHeaderValue result; return ContentRangeHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue>(value => { MediaTypeHeaderValue result; return MediaTypeHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue>(value => { RangeConditionHeaderValue result; return RangeConditionHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue>(value => { RangeHeaderValue result; return RangeHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue>(value => { EntityTagHeaderValue result; return EntityTagHeaderValue.TryParse(value, out result) ? result : null; }) },
-            { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { DateTimeOffset result; return HeaderUtilities.TryParseDate(value, out result) ? result : (DateTimeOffset?)null; }) },
-            { typeof(long?), new Func<string, long?>(value => { long result; return HeaderUtilities.TryParseNonNegativeInt64(value, out result) ? result : (long?)null; }) },
+            { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue?>(value => { return ContentRangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue?>(value => { return MediaTypeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue?>(value => { return RangeConditionHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue?>(value => { return RangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue?>(value => { return EntityTagHeaderValue.TryParse(value, out var result) ? result : null; }) },
+            { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { return HeaderUtilities.TryParseDate(value, out var result) ? result : null; }) },
+            { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
         };
 
         private static IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
         {
-            { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out IList<MediaTypeHeaderValue> result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
-            { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out IList<StringWithQualityHeaderValue> result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
-            { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out IList<CookieHeaderValue> result) ? result : Array.Empty<CookieHeaderValue>(); })  },
-            { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out IList<EntityTagHeaderValue> result) ? result : Array.Empty<EntityTagHeaderValue>(); })  },
-            { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out IList<SetCookieHeaderValue> result) ? result : Array.Empty<SetCookieHeaderValue>(); })  },
+            { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
+            { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
+            { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<CookieHeaderValue>(); })  },
+            { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<EntityTagHeaderValue>(); })  },
+            { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>(); })  },
         };
 
-        internal static T Get<T>(this IHeaderDictionary headers, string name)
+        internal static T? Get<T>(this IHeaderDictionary headers, string name)
         {
             if (headers == null)
             {
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            object temp;
             var value = headers[name];
 
             if (StringValues.IsNullOrEmpty(value))
@@ -184,7 +183,7 @@ namespace Microsoft.AspNetCore.Http
                 return default(T);
             }
 
-            if (KnownParsers.TryGetValue(typeof(T), out temp))
+            if (KnownParsers.TryGetValue(typeof(T), out var temp))
             {
                 var func = (Func<string, T>)temp;
                 return func(value);
@@ -200,7 +199,6 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            object temp;
             var values = headers[name];
 
             if (StringValues.IsNullOrEmpty(values))
@@ -208,7 +206,7 @@ namespace Microsoft.AspNetCore.Http
                 return Array.Empty<T>();
             }
 
-            if (KnownListParsers.TryGetValue(typeof(T), out temp))
+            if (KnownListParsers.TryGetValue(typeof(T), out var temp))
             {
                 var func = (Func<IList<string>, IList<T>>)temp;
                 return func(values);
@@ -217,7 +215,7 @@ namespace Microsoft.AspNetCore.Http
             return GetListViaReflection<T>(values);
         }
 
-        private static T GetViaReflection<T>(string value)
+        private static T? GetViaReflection<T>(string value)
         {
             // TODO: Cache the reflected type for later? Only if success?
             var type = typeof(T);
@@ -244,8 +242,8 @@ namespace Microsoft.AspNetCore.Http
                     nameof(T)));
             }
 
-            var parameters = new object[] { value, null };
-            var success = (bool)method.Invoke(null, parameters);
+            var parameters = new object?[] { value, null };
+            var success = (bool)method.Invoke(null, parameters)!;
             if (success)
             {
                 return (T)parameters[1];
@@ -280,11 +278,11 @@ namespace Microsoft.AspNetCore.Http
                     nameof(T)));
             }
 
-            var parameters = new object[] { values, null };
-            var success = (bool)method.Invoke(null, parameters);
+            var parameters = new object?[] { values, null };
+            var success = (bool)method.Invoke(null, parameters)!;
             if (success)
             {
-                return (IList<T>)parameters[1];
+                return (IList<T>)parameters[1]!;
             }
             return Array.Empty<T>();
         }
