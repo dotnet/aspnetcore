@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -222,11 +222,23 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         {
                             foundMatchingConstraint = true;
 
+                            ref var candidate = ref candidateSet[item.index];
+
+                            var routeData = new RouteData(candidate.Values);
+
+                            var dataTokens = candidate.Endpoint.Metadata.GetMetadata<IDataTokensMetadata>()?.DataTokens;
+
+                            if (dataTokens != null)
+                            {
+                                // Set the data tokens if there are any for this candidate
+                                routeData.PushState(router: null, values: null, dataTokens: new RouteValueDictionary(dataTokens));
+                            }
+
                             // Before we run the constraint, we need to initialize the route values.
                             // In endpoint routing, the route values are per-endpoint.
                             constraintContext.RouteContext = new RouteContext(httpContext)
                             {
-                                RouteData = new RouteData(candidateSet[item.index].Values),
+                                RouteData = routeData,
                             };
                             if (!constraint.Accept(constraintContext))
                             {
