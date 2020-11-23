@@ -34,7 +34,7 @@ To build the .NET code, you can:
 
 Alternatively, open `JSInterop.slnf` in Visual Studio.
 
-To build the JavaScript code,
+To build the JavaScript code, execute the following commands in a command shell:
 
  * `cd Microsoft.JSInterop.JS/src`
  * `npm run preclean`
