@@ -40,7 +40,7 @@ To build the JavaScript code, execute the following commands in a command shell:
  * `npm run preclean`
  * `npm run build`
 
-**Warning:** Due to special requirements related to ASP.NET Core's CI process for Linux distributions, we store the compiled JavaScript artifacts for `Microsoft.JSInterop.JS` in source control in the `Microsoft.JSInterop.JS\src\dist` directory. If you edit and build JavaScript sources, your Git client should indicate that those outputs have changed. You will need to include changes to those `dist` files in any PRs that you submit. When this leads to merge conflicts, we have to resolve them manually by rebasing and rebuilding.
+**Warning:** Due to special requirements related to ASP.NET Core's CI process for Linux distributions, we store the compiled JavaScript artifacts for `Microsoft.JSInterop.JS` in source control in the `Microsoft.JSInterop.JS/src/dist` directory. If you edit and build JavaScript sources, your Git client should indicate that those outputs have changed. You will need to include changes to those `dist` files in any PRs that you submit. When this leads to merge conflicts, we have to resolve them manually by rebasing and rebuilding.
 
 ## More Information
 
