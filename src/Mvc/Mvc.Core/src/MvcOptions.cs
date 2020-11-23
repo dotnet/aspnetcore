@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// custom <see cref="IActionInvokerFactory"/> and <see cref="IActionInvokerProvider"/> execute during the request pipeline.
         /// </summary>
         /// <remarks>This only applies when <see cref="EnableEndpointRouting"/> is true.</remarks>
+        /// <value>Defaults to <see langword="false" /> indicating that action invokers are unused by default.</value>
         public bool EnableActionInvokers { get; set; }
 
         /// <summary>
