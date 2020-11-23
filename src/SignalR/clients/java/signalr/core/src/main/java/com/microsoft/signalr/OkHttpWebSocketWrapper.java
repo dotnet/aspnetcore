@@ -109,6 +109,9 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
             } finally {
                 stateLock.unlock();
             }
+
+            logger.info("WebSocket closing with status code '{}' and reason '{}'.", code, reason);
+
             // Only call onClose if connection is open
             if (isOpen) {
                 onClose.invoke(code, reason);
@@ -126,7 +129,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            logger.error("WebSocket closed from an error: {}.", t.getMessage());
+            logger.error("WebSocket closed from an error.", t);
 
             boolean isOpen = false;
             try {
