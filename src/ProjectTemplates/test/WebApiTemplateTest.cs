@@ -45,11 +45,11 @@ namespace Templates.Test
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")])]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")])]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         public async Task WebApiTemplateCSharp_WithoutOpenAPI()
         {
             var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);

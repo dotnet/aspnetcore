@@ -40,7 +40,7 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")])]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
@@ -118,7 +118,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")])]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -306,7 +306,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = $"{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });
