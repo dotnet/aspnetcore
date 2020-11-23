@@ -32,7 +32,8 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = "Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
@@ -44,11 +45,11 @@ namespace Templates.Test
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task WebApiTemplateCSharp_WithoutOpenAPI()
         {
             var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);

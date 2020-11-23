@@ -40,7 +40,7 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         private async Task MvcTemplateCore(string languageOverride)
@@ -118,7 +118,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -305,7 +305,8 @@ namespace Templates.Test
             await aspNetProcess.AssertPagesOk(pages);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = "Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });
@@ -313,7 +314,8 @@ namespace Templates.Test
             Assert.False(Directory.Exists(Path.Combine(project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = "Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]

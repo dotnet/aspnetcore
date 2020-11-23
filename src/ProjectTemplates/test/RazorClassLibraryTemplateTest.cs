@@ -49,7 +49,8 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = "Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
         public async Task RazorClassLibraryTemplateAsync()
         {
             var project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);
