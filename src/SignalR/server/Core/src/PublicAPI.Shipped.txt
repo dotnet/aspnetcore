@@ -72,7 +72,6 @@ Microsoft.AspNetCore.SignalR.HubInvocationContext
 Microsoft.AspNetCore.SignalR.HubInvocationContext.Context.get -> Microsoft.AspNetCore.SignalR.HubCallerContext!
 Microsoft.AspNetCore.SignalR.HubInvocationContext.Hub.get -> Microsoft.AspNetCore.SignalR.Hub!
 Microsoft.AspNetCore.SignalR.HubInvocationContext.HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, System.IServiceProvider! serviceProvider, Microsoft.AspNetCore.SignalR.Hub! hub, System.Reflection.MethodInfo! hubMethod, System.Collections.Generic.IReadOnlyList<object?>! hubMethodArguments) -> void
-Microsoft.AspNetCore.SignalR.HubInvocationContext.HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, string! hubMethodName, object?[]! hubMethodArguments) -> void
 Microsoft.AspNetCore.SignalR.HubInvocationContext.HubMethod.get -> System.Reflection.MethodInfo!
 Microsoft.AspNetCore.SignalR.HubInvocationContext.HubMethodArguments.get -> System.Collections.Generic.IReadOnlyList<object?>!
 Microsoft.AspNetCore.SignalR.HubInvocationContext.HubMethodName.get -> string!
