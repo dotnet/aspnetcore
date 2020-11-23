@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter]
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-        public Type? Type { get; set; }
+        public Type Type { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a dictionary of parameters to be passed to the component.
