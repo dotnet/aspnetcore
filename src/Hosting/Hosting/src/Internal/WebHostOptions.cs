@@ -11,19 +11,14 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHostOptions
     {
-        public WebHostOptions() { }
-
-        public WebHostOptions(IConfiguration configuration)
-            : this(configuration, string.Empty) { }
-
-        public WebHostOptions(IConfiguration configuration, string applicationNameFallback)
+        public WebHostOptions(IConfiguration configuration, string? applicationNameFallback)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? applicationNameFallback;
+            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? applicationNameFallback ?? string.Empty; // TODO - What should happen if there is no app name?
             StartupAssembly = configuration[WebHostDefaults.StartupAssemblyKey];
             DetailedErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
             CaptureStartupErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = builder.UseStartup("MyStartupAssembly").Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal("MyStartupAssembly", options.ApplicationName);
                 Assert.Equal("MyStartupAssembly", options.StartupAssembly);
             }
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = hostBuilder.Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal("EnvB", options.Environment);
             }
         }
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = hostBuilder.Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal("EnvB", options.Environment);
             }
         }
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = hostBuilder.Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal("EnvB", options.Environment);
             }
         }
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = hostBuilder.Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal("EnvB", options.Environment);
             }
         }
@@ -1265,7 +1265,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = builder.Build())
             {
-                var options = new WebHostOptions(host.Services.GetRequiredService<IConfiguration>());
+                var options = CreateWebHostOptions(host.Services.GetRequiredService<IConfiguration>());
                 Assert.Equal(TimeSpan.FromSeconds(102), options.ShutdownTimeout);
             }
         }
@@ -1389,6 +1389,13 @@ namespace Microsoft.AspNetCore.Hosting
             var ordering = host.Services.GetRequiredService<StartOrder>();
             Assert.Equal(2, ordering.Order);
             await host.StopAsync();
+        }
+
+        private WebHostOptions CreateWebHostOptions(IConfiguration configuration, string applicationNameFallback = null)
+        {
+            return new WebHostOptions(
+                configuration,
+                applicationNameFallback: applicationNameFallback);
         }
 
         private class StartOrder

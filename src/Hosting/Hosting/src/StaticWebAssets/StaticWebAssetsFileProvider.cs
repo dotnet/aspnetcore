@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             public StaticWebAssetsDirectoryRoot(PathString remainingPath)
             {
                 // We MUST use the Value property here because it is unescaped.
-                _nextSegment = remainingPath.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                _nextSegment = remainingPath.Value?.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty; // TODO - Is this right?
             }
 
             public bool Exists => true;
