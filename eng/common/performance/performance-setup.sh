@@ -223,7 +223,9 @@ if [[ "$use_latest_dotnet" = false ]]; then
     # Get the tools section from the global.json.
     # This grabs the LKG version number of dotnet and passes it to our scripts
     dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
-    setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+    # TODO: Change this back to parsing when we have a good story for dealing with TFM changes or when the LKG in runtime gets updated to include net6.0
+    # setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+    setup_arguments="--dotnet-versions 6.0.100-alpha.1.20553.6 $setup_arguments"
 fi
 
 if [[ "$run_from_perf_repo" = true ]]; then

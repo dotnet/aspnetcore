@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             var filter = filterItem.Descriptor.Filter;
 
-            if (!(filter is IFilterFactory filterFactory))
+            if (filter is not IFilterFactory filterFactory)
             {
                 filterItem.Filter = filter;
                 filterItem.IsReusable = true;

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
         public RemoteAuthenticationService(
             IJSRuntime jsRuntime,
-            IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
+            IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
             NavigationManager navigation,
             AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
         {

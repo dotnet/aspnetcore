@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             Assert.Empty(result.FindAll("scope"));
         }
 
-        private static IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> CreateOptions(string scopeClaim = null)
+        private static IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>> CreateOptions(string scopeClaim = null)
         {
             var options = new RemoteAuthenticationOptions<OidcProviderOptions>();
 
@@ -504,7 +504,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             options.ProviderOptions.RedirectUri = "https://www.example.com/base/custom-login";
             options.ProviderOptions.PostLogoutRedirectUri = "https://www.example.com/base/custom-logout";
 
-            return Options.Create(options);
+            var iOptions = Options.Create(options);
+
+            var mock = new Mock<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+            mock.Setup(m => m.Value).Returns(options);
+            return mock.Object;
         }
 
         private class TestJsRuntime : IJSRuntime

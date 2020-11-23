@@ -42,6 +42,7 @@
 
     <ItemGroup>
       <_TemplateFiles Include="$(MSBuildThisFileDirectory)\HostingStartup\*.cs*" />
+      <_TemplateFiles Include="$(MSBuildThisFileDirectory)\HostingStartup\PublicAPI.*.txt*" />
       <!--
         Always use Major.Minor.0 so that if we have to produce a new SiteExtension during a patch build it will still work for non-patch runtimes.
         i.e. 3.0.0 dotnet will search for 3.0.0 and below and wouldn't find a 3.0.1 folder path
@@ -83,9 +84,9 @@
              Properties="
               __DummyTarget=Restore;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
@@ -95,9 +96,9 @@
              Properties="
               PublishDir=%(_HostingStartupPackageReference.WorkingDirectory)\p;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               IncludeMainProjectInDepsFile=false" />

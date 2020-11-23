@@ -11,7 +11,6 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <SkipHelixArm>true</SkipHelixArm>
 
     <BaseOutputPath />
     <OutputPath />
@@ -64,7 +63,7 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>

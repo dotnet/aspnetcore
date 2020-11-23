@@ -115,7 +115,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>, DefaultOidcOptionsConfiguration>());
+            services.TryAddEnumerable(ServiceDescriptor.Scoped<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>, DefaultOidcOptionsConfiguration>());
 
             return AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, OidcProviderOptions>(services, configure);
         }
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TAccount : RemoteUserAccount
         {
             services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>, DefaultApiAuthorizationOptionsConfiguration>(_ =>
+                ServiceDescriptor.Scoped<IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>, DefaultApiAuthorizationOptionsConfiguration>(_ =>
                 new DefaultApiAuthorizationOptionsConfiguration(inferredClientId)));
 
             services.AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, ApiAuthorizationProviderOptions>(configure);

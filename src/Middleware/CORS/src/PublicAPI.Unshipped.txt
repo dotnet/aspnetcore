@@ -1,45 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions
-Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions
-Microsoft.AspNetCore.Cors.CorsPolicyMetadata
-Microsoft.AspNetCore.Cors.DisableCorsAttribute
-Microsoft.AspNetCore.Cors.DisableCorsAttribute.DisableCorsAttribute() -> void
-Microsoft.AspNetCore.Cors.EnableCorsAttribute
-Microsoft.AspNetCore.Cors.EnableCorsAttribute.EnableCorsAttribute() -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsConstants
-Microsoft.AspNetCore.Cors.Infrastructure.CorsMiddleware
-Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions
-Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions.CorsOptions() -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.AllowAnyHeader.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.AllowAnyMethod.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.AllowAnyOrigin.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.CorsPolicy() -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.PreflightMaxAge.get -> System.TimeSpan?
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.PreflightMaxAge.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.SupportsCredentials.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.SupportsCredentials.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.CorsResult() -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.IsOriginAllowed.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.IsOriginAllowed.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.IsPreflightRequest.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.IsPreflightRequest.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.PreflightMaxAge.get -> System.TimeSpan?
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.PreflightMaxAge.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.SupportsCredentials.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.SupportsCredentials.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.VaryByOrigin.get -> bool
-Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.VaryByOrigin.set -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsService
-Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider
-Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyMetadata
-Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider
-Microsoft.AspNetCore.Cors.Infrastructure.ICorsService
-Microsoft.AspNetCore.Cors.Infrastructure.IDisableCorsAttribute
-Microsoft.AspNetCore.Cors.Infrastructure.IEnableCorsAttribute
-Microsoft.Extensions.DependencyInjection.CorsServiceCollectionExtensions
 Microsoft.AspNetCore.Cors.CorsPolicyMetadata.CorsPolicyMetadata(Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy! policy) -> void
 Microsoft.AspNetCore.Cors.CorsPolicyMetadata.Policy.get -> Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy!
 Microsoft.AspNetCore.Cors.EnableCorsAttribute.EnableCorsAttribute(string? policyName) -> void

@@ -35,11 +35,11 @@
   <!-- These references are used when building on the Benchmarks Server. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
 
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppVersion)" />
 
     <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
     <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppVersion)" />
   </ItemGroup>
 </Project>

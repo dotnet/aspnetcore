@@ -1,9 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisMiddleware
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisStartupFilter
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisStartupFilter.AnalysisStartupFilter() -> void
-Microsoft.Extensions.DependencyInjection.AnalysisServiceCollectionExtensions
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.AnalysisBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder! inner) -> void
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.set -> void

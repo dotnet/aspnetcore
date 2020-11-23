@@ -4945,6 +4945,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 7, ignoreNonGoAwayFrames: true);
         }
 
+        [Fact]
+        public async Task FramesInBatchAreStillProcessedAfterStreamError_WithoutHeartbeat()
+        {
+            // Previously, if there was a stream error, frame processing would stop and wait for either
+            // the heartbeat or more data before continuing frame processing. This is testing that frames
+            // continue to be processed if they were in the same read.
+
+            CreateConnection();
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
+
+            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[2];
+                var result = await context.Request.BodyReader.ReadAsync().DefaultTimeout();
+                Assert.True(result.IsCompleted);
+                result.Buffer.CopyTo(buffer);
+                context.Request.BodyReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+
+                tcs.SetResult(buffer);
+            });
+
+            var streamPayload = new byte[2] { 42, 24 };
+            await StartStreamAsync(1, headers, endStream: false);
+            // Send these 2 frames in a batch with the error in the first frame
+            await StartStreamAsync(3, headers, endStream: false, flushFrame: false);
+            await SendDataAsync(1, streamPayload, endStream: true);
+
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
+
+            var streamResponse = await tcs.Task.DefaultTimeout();
+            Assert.Equal(streamPayload, streamResponse);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: true);
+        }
+
         [Theory]
         [InlineData((int)(Http2FrameType.DATA))]
         [InlineData((int)(Http2FrameType.HEADERS))]

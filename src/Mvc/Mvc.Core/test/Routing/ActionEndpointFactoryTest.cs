@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal(
                 "Failed to update the route pattern 'Products/{action:int}' with required route values. " +
                 "This can occur when the route pattern contains parameters with reserved names such as: 'controller', 'action', 'page' and also uses route constraints such as '{action:int}'. " +
-                "To fix this error, choose a different parmaeter name.",
+                "To fix this error, choose a different parameter name.",
                 exception.Message);
         }
 
