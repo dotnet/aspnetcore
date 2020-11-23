@@ -7,10 +7,10 @@
     "runtimes": {
       "dotnet/x64": [
         "2.1.18",
-        "$(MicrosoftNETCoreAppInternalVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
-        "$(MicrosoftNETCoreAppInternalVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
         "3.1.4"

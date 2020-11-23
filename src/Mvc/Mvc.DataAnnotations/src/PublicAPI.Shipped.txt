@@ -1,1 +1,38 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter
+Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider
+Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions
+Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions.MvcDataAnnotationsLocalizationOptions() -> void
+Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter
+Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapterProvider
+Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapterProvider.ValidationAttributeAdapterProvider() -> void
+Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationProviderAttribute
+Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationProviderAttribute.ValidationProviderAttribute() -> void
+Microsoft.AspNetCore.Mvc.HiddenInputAttribute
+Microsoft.AspNetCore.Mvc.HiddenInputAttribute.DisplayValue.get -> bool
+Microsoft.AspNetCore.Mvc.HiddenInputAttribute.DisplayValue.set -> void
+Microsoft.AspNetCore.Mvc.HiddenInputAttribute.HiddenInputAttribute() -> void
+Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcBuilderExtensions
+Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcCoreBuilderExtensions
+~Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>
+~Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>.AttributeAdapterBase(TAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) -> void
+~Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) -> string
+~Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider.GetAttributeAdapter(System.ComponentModel.DataAnnotations.ValidationAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) -> Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter
+~Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions.DataAnnotationLocalizerProvider -> System.Func<System.Type, Microsoft.Extensions.Localization.IStringLocalizerFactory, Microsoft.Extensions.Localization.IStringLocalizer>
+~Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter.RequiredAttributeAdapter(System.ComponentModel.DataAnnotations.RequiredAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) -> void
+~Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>
+~Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.Attribute.get -> TAttribute
+~Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.ValidationAttributeAdapter(TAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) -> void
+~Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapterProvider.GetAttributeAdapter(System.ComponentModel.DataAnnotations.ValidationAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) -> Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter
+~abstract Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) -> string
+~abstract Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> void
+~abstract Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationProviderAttribute.GetValidationAttributes() -> System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationAttribute>
+~override Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter.AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> void
+~override Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) -> string
+~static Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.MergeAttribute(System.Collections.Generic.IDictionary<string, string> attributes, string key, string value) -> bool
+~static Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcBuilderExtensions.AddDataAnnotationsLocalization(this Microsoft.Extensions.DependencyInjection.IMvcBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
+~static Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcBuilderExtensions.AddDataAnnotationsLocalization(this Microsoft.Extensions.DependencyInjection.IMvcBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
+~static Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcCoreBuilderExtensions.AddDataAnnotations(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
+~static Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcCoreBuilderExtensions.AddDataAnnotationsLocalization(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
+~static Microsoft.Extensions.DependencyInjection.MvcDataAnnotationsMvcCoreBuilderExtensions.AddDataAnnotationsLocalization(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
+~virtual Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata modelMetadata, params object[] arguments) -> string

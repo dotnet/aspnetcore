@@ -861,17 +861,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSoc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Microbenchmarks", "src\Middleware\perf\ResponseCaching.Microbenchmarks\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj", "{8A745E35-8098-4EB4-AC55-587B9F0DC4BE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MusicStore", "MusicStore", "{884AED21-7931-42A3-B08A-E58F7B0D6E7F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8DA88110-5A13-41A9-9F9D-674D921EB442}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore", "src\MusicStore\samples\MusicStore\MusicStore.csproj", "{4BCF2228-159D-4547-8D54-CDD2252D076A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D347127-3B13-47B1-84EC-770A9C1E11B0}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.Test", "src\MusicStore\test\MusicStore.Test\MusicStore.Test.csproj", "{A7802482-55BA-4D95-BE79-8A601131F527}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.E2ETests", "src\MusicStore\test\MusicStore.E2ETests\MusicStore.E2ETests.csproj", "{81947277-035F-41F6-A1D4-8EA362CB46D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicrosoftAccount", "MicrosoftAccount", "{8C4006DF-FF48-46B6-A124-10B1EEAA266E}"
 EndProject

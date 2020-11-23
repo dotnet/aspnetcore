@@ -11,9 +11,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class WebSockerScriptInjectionTest
     {
-        private const string ClientScript = "<script><!--My cool script--></script>";
-        private readonly WebSocketScriptInjection ScriptInjection = new WebSocketScriptInjection(ClientScript);
-
         [Fact]
         public async Task TryInjectLiveReloadScriptAsync_DoesNotInjectMarkup_IfInputDoesNotContainBodyTag()
         {
@@ -22,7 +19,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var input = Encoding.UTF8.GetBytes("<div>this is not a real body tag.</div>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.False(result);
@@ -37,7 +34,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 $@"<footer>
     This is the footer
 </footer>
-{ClientScript}</body>
+{WebSocketScriptInjection.InjectedScript}</body>
 </html>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes(
@@ -48,7 +45,7 @@ $@"<footer>
 </html>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -60,12 +57,12 @@ $@"<footer>
         public async Task TryInjectLiveReloadScriptAsync_WithOffsetBodyTagAppearsInMiddle()
         {
             // Arrange
-            var expected = $"</table>{ClientScript}</body>";
+            var expected = $"</table>{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("unused</table></body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
 
             // Assert
             Assert.True(result);
@@ -77,12 +74,12 @@ $@"<footer>
         public async Task TryInjectLiveReloadScriptAsync_WithOffsetBodyTagAppearsAtStartOfOffset()
         {
             // Arrange
-            var expected = $"{ClientScript}</body>";
+            var expected = $"{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("unused</body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
 
             // Assert
             Assert.True(result);
@@ -94,12 +91,12 @@ $@"<footer>
         public async Task TryInjectLiveReloadScriptAsync_InjectsMarkupIfBodyTagAppearsAtTheStartOfOutput()
         {
             // Arrange
-            var expected = $"{ClientScript}</body></html>";
+            var expected = $"{WebSocketScriptInjection.InjectedScript}</body></html>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("</body></html>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -111,12 +108,12 @@ $@"<footer>
         public async Task TryInjectLiveReloadScriptAsync_InjectsMarkupIfBodyTagAppearsByItself()
         {
             // Arrange
-            var expected = $"{ClientScript}</body>";
+            var expected = $"{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("</body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -128,12 +125,12 @@ $@"<footer>
         public async Task TryInjectLiveReloadScriptAsync_MultipleBodyTags()
         {
             // Arrange
-            var expected = $"<p></body>some text</p>{ClientScript}</body>";
+            var expected = $"<p></body>some text</p>{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("abc<p></body>some text</p></body>").AsMemory(3);
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
+            var result = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -150,7 +147,7 @@ $@"<footer>
             var input = Encoding.UTF8.GetBytes(expected).AsSpan();
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
+            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.False(result);
@@ -162,12 +159,12 @@ $@"<footer>
         public void TryInjectLiveReloadScript_NoOffset()
         {
             // Arrange
-            var expected = $"</table>{ClientScript}</body>";
+            var expected = $"</table>{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("</table></body>").AsSpan();
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
+            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.True(result);
@@ -179,28 +176,17 @@ $@"<footer>
         public void TryInjectLiveReloadScript_WithOffset()
         {
             // Arrange
-            var expected = $"</table>{ClientScript}</body>";
+            var expected = $"</table>{WebSocketScriptInjection.InjectedScript}</body>";
             var stream = new MemoryStream();
             var input = Encoding.UTF8.GetBytes("unused</table></body>").AsSpan(6);
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
+            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.True(result);
             var output = Encoding.UTF8.GetString(stream.ToArray());
             Assert.Equal(expected, output);
-        }
-
-        [Fact]
-        public void GetWebSocketClientJavaScript_Works()
-        {
-            // Act
-            var script = WebSocketScriptInjection.GetWebSocketClientJavaScript("some-host");
-
-            // Assert
-            Assert.Contains("// dotnet-watch browser reload script", script);
-            Assert.Contains("'some-host'", script);
         }
     }
 }

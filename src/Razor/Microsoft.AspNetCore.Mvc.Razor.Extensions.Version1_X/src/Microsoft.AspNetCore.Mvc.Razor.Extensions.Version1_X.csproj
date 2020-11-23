@@ -5,10 +5,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
     <PublishWindowsPdb>true</PublishWindowsPdb>
-    <EnableApiCheck>false</EnableApiCheck>
     <IsShipping>false</IsShipping>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- No need to track public APIs of this design-time build infrastructure. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

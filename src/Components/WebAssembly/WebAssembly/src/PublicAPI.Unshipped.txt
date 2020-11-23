@@ -1,37 +1,5 @@
 ﻿#nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.Parameters.get -> Microsoft.AspNetCore.Components.ParameterView
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.RootComponentMappingCollection() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Dispose() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Reload() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.WebAssemblyHostConfiguration() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.Default = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.ForceCache = 4 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.NoCache = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.NoStore = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.OnlyIfCached = 5 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.Reload = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.Include = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.Omit = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.SameOrigin = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.Cors = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.Navigate = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.NoCors = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.SameOrigin = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods
-Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.ComponentType.get -> System.Type!
