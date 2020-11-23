@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components
             // ComponentProperties.SetProperties.
             foreach (var entry in parameters)
             {
-                if (entry.Name.Equals(nameof (Type), StringComparison.OrdinalIgnoreCase))
+                if (entry.Name.Equals(nameof(Type), StringComparison.OrdinalIgnoreCase))
                 {
                     Type = (Type)entry.Value;
                 }
