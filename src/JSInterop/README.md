@@ -17,7 +17,7 @@ This section provides a brief overview of the architecture.
  * Providing platform-independent abstract base class implementations of those abstractions, such as `JSRuntime` and `JSObjectReference`. These implement common logic around handling errors and asynchrony, even though they are independent of any particular runtime environment.
  * Providing extension methods on `IJSRuntime` that simplify making calls with differing numbers of parameters, cancellation tokens, etc.
 
-For these types to become usable in a particular runtime environment such as Blazor Server or Blazor WebAssembly, the runtime environment implements its own concrete subclasses that know how to dispatch calls to the actual JavaScript runtime that is available in that environment. For example, Blazor Server uses the SignalR-based circuit to send invocations to the end user's browser.
+For these types to become usable in a particular runtime environment, such as Blazor Server or Blazor WebAssembly, the runtime environment implements its own concrete subclasses that know how to dispatch calls to the actual JavaScript runtime that is available in that environment. For example, Blazor Server uses the SignalR-based circuit to send invocations to the end user's browser.
 
 `Microsoft.JSInterop.JS` is the JavaScript-side counterpart to the above. It runs within a standard web browser environment, receives the invocations from .NET code, executes them, and sends back results in the format understood by the `JSRuntime` base class. This includes special handling for certain parameter types such as `ElementReference` and `DotNetObjectReference`. `Microsoft.JSInterop.JS` also exposes JavaScript functions that can be used to issue calls from JavaScript to .NET.
 
