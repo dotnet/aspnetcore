@@ -26,9 +26,6 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 
 To build the ProjectTemplates:
 
-1. Run `. .\activate.ps1` if you haven't already.
-1. Run `git submodule update --init --recursive` if you haven't already.
-1. Run `git submodule update` to update submodules.
 1. Run `build.cmd -all -pack -configuration Release` in the repository root to build all of the dependencies.
 1. Run `build.cmd -pack -NoRestore -NoBuilddeps -configuration Release` in src/ProjectTemplates directory to produce NuGet packages for each class of template in the artifacts directory.
 
