@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             return ToQueryString().GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return ToQueryString().Equals(obj);
         }
