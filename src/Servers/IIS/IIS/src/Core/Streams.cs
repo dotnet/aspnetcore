@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class Streams
     {
-        private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
-            = new ThrowingWasUpgradedWriteOnlyStream();
+        private static readonly ThrowingWasUpgradedWriteOnlyStreamInternal _throwingResponseStream
+            = new ThrowingWasUpgradedWriteOnlyStreamInternal();
 
         private readonly IISHttpContext _context;
         private readonly HttpResponseStream _response;
