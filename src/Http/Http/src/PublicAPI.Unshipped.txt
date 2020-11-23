@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Http.HttpContextFactory
+*REMOVED*Microsoft.AspNetCore.Http.HttpContextFactory.Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> Microsoft.AspNetCore.Http.HttpContext!
+*REMOVED*Microsoft.AspNetCore.Http.HttpContextFactory.Dispose(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
