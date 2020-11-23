@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;Windows.10.Arm64v8.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036")]
+        [SkipOnHelix("Not supported queues", Queues = $"Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;{HelixConstants.Windows10Arm64};{HelixConstants.DebianArm64}")]
         [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
         public async Task GrpcTemplate()
         {
