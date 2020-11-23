@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
 #if LIBUV
         [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24608")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28067")]
 #else
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
 #endif
