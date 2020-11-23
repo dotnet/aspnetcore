@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Components
         private RenderHandle _renderHandle;
         private RenderFragment _cachedRenderFragment;
 
+        /// <summary>
+        /// Constructs an instance of <see cref="DynamicComponent"/>.
+        /// </summary>
         public DynamicComponent()
         {
             _cachedRenderFragment = Render;
