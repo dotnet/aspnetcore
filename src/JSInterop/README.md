@@ -1,6 +1,6 @@
 # JSInterop
 
-This directory contains sources for `Microsoft.JSInterop`, a package that provides abstractions and features for interop between .NET and JavaScript code.
+This directory contains sources for [`Microsoft.JSInterop`](https://www.nuget.org/packages/Microsoft.JSInterop), a package that provides abstractions and features for interop between .NET and JavaScript code.
 
 The primary use case is for applications built with Blazor. For usage information, see the following documentation:
 
