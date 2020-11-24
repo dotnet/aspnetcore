@@ -91,4 +91,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
     }
+
+    public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
+    {
+        public ServerDynamicComponentRenderingTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
 }
