@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
 
-            Assert.Contains(LogMessages, m => m.Message.Equals("A response header has been removed because it was invalid for the current protocol."));
+            Assert.Contains(LogMessages, m => m.Message.Equals("One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'."));
         }
 
         [Fact(Skip = "Http3OutputProducer.Complete is called before input recognizes there is an error. Why is this different than HTTP/2?")]
