@@ -209,9 +209,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bfc49945c0bedeffe01bb5d6f3c217dad207d0d8</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="5.0.0">
+    <Dependency Name="System.IO.Pipelines" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>bfc49945c0bedeffe01bb5d6f3c217dad207d0d8</Sha>
+      <Sha>2767f4466bd3fe4e3678510aba636b66f02b11b4</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -291,15 +291,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>e564220b5228e7d26a959dcecec62e6c98d8cbb7</Sha>
+      <Sha>2767f4466bd3fe4e3678510aba636b66f02b11b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20572.4">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20574.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>e564220b5228e7d26a959dcecec62e6c98d8cbb7</Sha>
+      <Sha>2767f4466bd3fe4e3678510aba636b66f02b11b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20572.4">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20574.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>e564220b5228e7d26a959dcecec62e6c98d8cbb7</Sha>
+      <Sha>2767f4466bd3fe4e3678510aba636b66f02b11b4</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
