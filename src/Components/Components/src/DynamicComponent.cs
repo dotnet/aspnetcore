@@ -77,17 +77,17 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
+            if (Type is null)
+            {
+                throw new InvalidOperationException($"{nameof(DynamicComponent)} requires a non-null value for the parameter {nameof(Type)}.");
+            }
+
             _renderHandle.Render(_cachedRenderFragment);
             return Task.CompletedTask;
         }
 
         void Render(RenderTreeBuilder builder)
         {
-            if (Type is null)
-            {
-                throw new InvalidOperationException($"{nameof(DynamicComponent)} requires a non-null value for the parameter {nameof(Type)}.");
-            }
-
             builder.OpenComponent(0, Type);
 
             if (Parameters != null)
