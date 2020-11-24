@@ -55,13 +55,13 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (scheme is AuthenticationSchemeWithFactory schemeWithFactory)
                 {
-                    handler = (IAuthenticationHandler) schemeWithFactory.ObjectFactory(context.RequestServices,
-                        Array.Empty<object>());
+                    handler = schemeWithFactory.ObjectFactory(context.RequestServices,
+                        Array.Empty<object>()) as IAuthenticationHandler;
                 }
                 else
                 {
-                    handler = (IAuthenticationHandler) ActivatorUtilities.CreateInstance(context.RequestServices,
-                        scheme.HandlerType);
+                    handler = ActivatorUtilities.CreateInstance(context.RequestServices,
+                        scheme.HandlerType) as IAuthenticationHandler;
                 }
             }
 
