@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -17,11 +18,30 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
     public class WebSocketsTests
     {
+        private readonly string _requestUri;
         private readonly string _webSocketUri;
 
         public WebSocketsTests(IISTestSiteFixture fixture)
         {
-            _webSocketUri = fixture.DeploymentResult.ApplicationBaseUri.Replace("http:", "ws:");
+            _requestUri = fixture.DeploymentResult.ApplicationBaseUri;
+            _webSocketUri = _requestUri.Replace("http:", "ws:");
+        }
+
+        [ConditionalFact]
+        public async Task RequestWithBody_NotUpgradable()
+        {
+            using var client = new HttpClient();
+            using var response = await client.PostAsync(_requestUri + "WebSocketNotUpgradable", new StringContent("Hello World"));
+            response.EnsureSuccessStatusCode();
+        }
+
+        [ConditionalFact]
+        public async Task RequestWithoutBody_Upgradable()
+        {
+            using var client = new HttpClient();
+            // POST with Content-Length: 0 counts as not having a body.
+            using var response = await client.PostAsync(_requestUri + "WebSocketUpgradable", new StringContent(""));
+            response.EnsureSuccessStatusCode();
         }
 
         [ConditionalFact]
@@ -38,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task WebReadBeforeUpgrade()
         {
             var cws = new ClientWebSocket();
-            await cws.ConnectAsync(new Uri(_webSocketUri + "WebReadBeforeUpgrade"), default);
+            await cws.ConnectAsync(new Uri(_webSocketUri + "WebSocketReadBeforeUpgrade"), default);
 
             await ReceiveMessage(cws, "Yay");
         }
