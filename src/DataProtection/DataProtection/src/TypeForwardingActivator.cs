@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.DataProtection
         {
             // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
 
-            var versionStartIndex = forwardedTypeName.IndexOf("Version=");
+            var versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
 
             if (versionStartIndex == -1)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 return forwardedTypeName;
             }
 
-            var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex);
+            var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + "Version=".Length);
 
             if (versionEndIndex == -1)
             {
