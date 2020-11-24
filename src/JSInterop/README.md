@@ -29,7 +29,7 @@ Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments suc
 
 To build the .NET code, you can:
 
- * Run `dotnet build` in the `Microsoft.JSInterop/src` directory.
+ * Run `dotnet build` in the `Microsoft.JSInterop/src` directory. You can also read more [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
  * Run `dotnet build` or `dotnet test` in the `Microsoft.JSInterop/test` directory. You can also read more about how to [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line).
 
 Alternatively, open `JSInterop.slnf` in Visual Studio.
