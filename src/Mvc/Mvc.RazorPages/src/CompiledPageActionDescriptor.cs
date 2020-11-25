@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public class CompiledPageActionDescriptor : PageActionDescriptor
     {
         /// <summary>
-        /// Initializes an empty <see cref="CompiledPageDescriptor"/>.
+        /// Initializes an empty <see cref="CompiledPageActionDescriptor"/>.
         /// </summary>
         public CompiledPageActionDescriptor()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CompiledPageDescriptor"/>
+        /// Initializes a new instance of <see cref="CompiledPageActionDescriptor"/>
         /// from the specified <paramref name="actionDescriptor"/> instance.
         /// </summary>
         /// <param name="actionDescriptor">The <see cref="PageActionDescriptor"/>.</param>
