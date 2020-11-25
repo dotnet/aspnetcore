@@ -92,7 +92,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
-    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm</CrossCompileDirectory>
+    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm'">x64_arm</CrossCompileDirectory>
     <CrossCompileDirectory Condition=" '$(TargetArchitecture)' == 'arm64' AND '$(BuildArchitecture)' != 'arm64' ">x64_arm64</CrossCompileDirectory>
     <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm</CrossCompileDirectory>
 

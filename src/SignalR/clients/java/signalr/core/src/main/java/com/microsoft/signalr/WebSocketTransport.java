@@ -86,8 +86,6 @@ class WebSocketTransport implements Transport {
     }
 
     void onClose(Integer code, String reason) {
-        logger.info("WebSocket connection stopping with " +
-                "code {} and reason '{}'.", code, reason);
         if (code == null || code != 1000) {
             onClose.invoke(reason);
         }
