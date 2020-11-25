@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -14,14 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public class CompiledPageActionDescriptor : PageActionDescriptor
     {
         /// <summary>
-        /// Initializes an empty <see cref="CompiledPageActionDescriptor"/>.
+        /// Initializes an empty <see cref="CompiledPageDescriptor"/>.
         /// </summary>
         public CompiledPageActionDescriptor()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CompiledPageActionDescriptor"/>
+        /// Initializes a new instance of <see cref="CompiledPageDescriptor"/>
         /// from the specified <paramref name="actionDescriptor"/> instance.
         /// </summary>
         /// <param name="actionDescriptor">The <see cref="PageActionDescriptor"/>.</param>
@@ -65,5 +66,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets or sets the associated <see cref="Endpoint"/> of this page.
         /// </summary>
         public Endpoint Endpoint { get; set; }
+
+        internal PageActionInvokerCacheEntry CacheEntry { get; set; }
+
+        internal override CompiledPageActionDescriptor CompiledPageDescriptor
+        {
+            get => this;
+            set => throw new InvalidOperationException("Setting the compiled descriptor on a compiled descriptor is not allowed.");
+        }
     }
 }
