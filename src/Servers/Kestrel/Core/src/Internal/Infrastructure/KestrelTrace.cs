@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
 
         private static readonly Action<ILogger, Exception> _invalidResponseHeaderRemoved =
-            LoggerMessage.Define(LogLevel.Information, new EventId(41, nameof(InvalidResponseHeaderRemoved)),
+            LoggerMessage.Define(LogLevel.Warning, new EventId(41, nameof(InvalidResponseHeaderRemoved)),
                 "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.");
 
         protected readonly ILogger _logger;
