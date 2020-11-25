@@ -5,21 +5,21 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
-    internal abstract class RouteConstraint
+    internal abstract class LegacyRouteConstraint
     {
         // note: the things that prevent this cache from growing unbounded is that
         // we're the only caller to this code path, and the fact that there are only
         // 8 possible instances that we create.
         //
         // The values passed in here for parsing are always static text defined in route attributes.
-        private static readonly ConcurrentDictionary<string, RouteConstraint> _cachedConstraints
-            = new ConcurrentDictionary<string, RouteConstraint>();
+        private static readonly ConcurrentDictionary<string, LegacyRouteConstraint> _cachedConstraints
+            = new ConcurrentDictionary<string, LegacyRouteConstraint>();
 
         public abstract bool Match(string pathSegment, out object? convertedValue);
 
-        public static RouteConstraint Parse(string template, string segment, string constraint)
+        public static LegacyRouteConstraint Parse(string template, string segment, string constraint)
         {
             if (string.IsNullOrEmpty(constraint))
             {
@@ -51,34 +51,59 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Creates a structured RouteConstraint object given a string that contains
         /// the route constraint. A constraint is the place after the colon in a
         /// parameter definition, for example `{age:int?}`.
+        ///
+        /// If the constraint denotes an optional, this method will return an
+        /// <see cref="LegacyOptionalTypeRouteConstraint{T}" /> which handles the appropriate checks.
         /// </summary>
         /// <param name="constraint">String representation of the constraint</param>
         /// <returns>Type-specific RouteConstraint object</returns>
-        private static RouteConstraint? CreateRouteConstraint(string constraint)
+        private static LegacyRouteConstraint? CreateRouteConstraint(string constraint)
         {
             switch (constraint)
             {
                 case "bool":
-                    return new TypeRouteConstraint<bool>(bool.TryParse);
+                    return new LegacyTypeRouteConstraint<bool>(bool.TryParse);
+                case "bool?":
+                    return new LegacyOptionalTypeRouteConstraint<bool>(bool.TryParse);
                 case "datetime":
-                    return new TypeRouteConstraint<DateTime>((string str, out DateTime result)
+                    return new LegacyTypeRouteConstraint<DateTime>((string str, out DateTime result)
+                        => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result));
+                case "datetime?":
+                    return new LegacyOptionalTypeRouteConstraint<DateTime>((string str, out DateTime result)
                         => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result));
                 case "decimal":
-                    return new TypeRouteConstraint<decimal>((string str, out decimal result)
+                    return new LegacyTypeRouteConstraint<decimal>((string str, out decimal result)
+                        => decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
+                case "decimal?":
+                    return new LegacyOptionalTypeRouteConstraint<decimal>((string str, out decimal result)
                         => decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "double":
-                    return new TypeRouteConstraint<double>((string str, out double result)
+                    return new LegacyTypeRouteConstraint<double>((string str, out double result)
+                        => double.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
+                case "double?":
+                    return new LegacyOptionalTypeRouteConstraint<double>((string str, out double result)
                         => double.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "float":
-                    return new TypeRouteConstraint<float>((string str, out float result)
+                    return new LegacyTypeRouteConstraint<float>((string str, out float result)
+                        => float.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
+                case "float?":
+                    return new LegacyOptionalTypeRouteConstraint<float>((string str, out float result)
                         => float.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result));
                 case "guid":
-                    return new TypeRouteConstraint<Guid>(Guid.TryParse);
+                    return new LegacyTypeRouteConstraint<Guid>(Guid.TryParse);
+                case "guid?":
+                    return new LegacyOptionalTypeRouteConstraint<Guid>(Guid.TryParse);
                 case "int":
-                    return new TypeRouteConstraint<int>((string str, out int result)
+                    return new LegacyTypeRouteConstraint<int>((string str, out int result)
+                        => int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
+                case "int?":
+                    return new LegacyOptionalTypeRouteConstraint<int>((string str, out int result)
                         => int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 case "long":
-                    return new TypeRouteConstraint<long>((string str, out long result)
+                    return new LegacyTypeRouteConstraint<long>((string str, out long result)
+                        => long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
+                case "long?":
+                    return new LegacyOptionalTypeRouteConstraint<long>((string str, out long result)
                         => long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out result));
                 default:
                     return null;
