@@ -38,34 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
-            IActionResultTypeMapper mapper)
-            : this(
-                  pageLoader,
-                  pageActionInvokerCache,
-                  modelMetadataProvider,
-                  tempDataFactory,
-                  mvcOptions,
-                  mvcViewOptions,
-                  selector,
-                  diagnosticListener,
-                  loggerFactory,
-                  mapper,
-                  actionContextAccessor: null)
-        {
-        }
-
-        public PageActionInvokerProvider(
-            PageLoader pageLoader,
-            PageActionInvokerCache pageActionInvokerCache,
-            IModelMetadataProvider modelMetadataProvider,
-            ITempDataDictionaryFactory tempDataFactory,
-            IOptions<MvcOptions> mvcOptions,
-            IOptions<MvcViewOptions> mvcViewOptions,
-            IPageHandlerMethodSelector selector,
-            DiagnosticListener diagnosticListener,
-            ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor actionContextAccessor)
+            IActionContextAccessor actionContextAccessor = null)
         {
             _pageLoader = pageLoader;
             _pageActionInvokerCache = pageActionInvokerCache;
