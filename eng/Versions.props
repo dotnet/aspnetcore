@@ -58,10 +58,10 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.1-servicing.20575.2</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.1-servicing.20575.9</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.1-servicing.20575.2</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.1-servicing.20575.9</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
@@ -77,7 +77,7 @@
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0</MicrosoftExtensionsConfigurationXmlPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
