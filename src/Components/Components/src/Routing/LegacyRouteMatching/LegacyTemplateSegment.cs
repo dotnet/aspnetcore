@@ -4,23 +4,23 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
-    internal class TemplateSegment
+    internal class LegacyTemplateSegment
     {
-        public TemplateSegment(string template, string segment, bool isParameter)
+        public LegacyTemplateSegment(string template, string segment, bool isParameter)
         {
             IsParameter = isParameter;
 
-            IsCatchAll = isParameter && segment.StartsWith('*');
+            IsCatchAll = segment.StartsWith('*');
 
             if (IsCatchAll)
             {
                 // Only one '*' currently allowed
-                Value = segment[1..];
+                Value = segment.Substring(1);
 
-                var invalidCharacterIndex = Value.IndexOf('*');
-                if (invalidCharacterIndex != -1)
+                var invalidCharacter = Value.IndexOf('*');
+                if (Value.IndexOf('*') != -1)
                 {
                     throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have one '*' at the beginning of the segment.");
                 }
@@ -30,29 +30,26 @@ namespace Microsoft.AspNetCore.Components.Routing
                 Value = segment;
             }
 
-            // Process segments that parameters  that do not contain a token separating a type constraint.
-            if (IsParameter)
+            // Process segments that are not parameters or do not contain
+            // a token separating a type constraint.
+            if (!isParameter || Value.IndexOf(':') < 0)
             {
-                if (Value.IndexOf(':') < 0)
-                {
-
                 // Set the IsOptional flag to true for segments that contain
                 // a parameter with no type constraints but optionality set
                 // via the '?' token.
-                    var questionMarkIndex = Value.IndexOf('?');
-                    if (questionMarkIndex == Value.Length - 1)
+                if (Value.IndexOf('?') == Value.Length - 1)
                 {
                     IsOptional = true;
-                        Value = Value[0..^1];
+                    Value = Value.Substring(0, Value.Length - 1);
                 }
                 // If the `?` optional marker shows up in the segment but not at the very end,
                 // then throw an error.
-                    else if (questionMarkIndex >= 0)
+                else if (Value.IndexOf('?') >= 0 && Value.IndexOf('?') != Value.Length - 1)
                 {
                     throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}'. '?' character can only appear at the end of parameter name.");
                 }
 
-                Constraints = Array.Empty<RouteConstraint>();
+                Constraints = Array.Empty<LegacyRouteConstraint>();
             }
             else
             {
@@ -62,23 +59,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                     throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}' has no name before the constraints list.");
                 }
 
-                Value = tokens[0];
-                    IsOptional = tokens[^1].EndsWith('?');
-                    if (IsOptional)
-                    {
-                        tokens[^1] = tokens[^1][0..^1];
-            }
+                // Set the IsOptional flag to true if any type constraints
+                // for this parameter are designated as optional.
+                IsOptional = tokens.Skip(1).Any(token => token.EndsWith('?'));
 
-                    Constraints = new RouteConstraint[tokens.Length - 1];
-                    for (var i = 1; i < tokens.Length; i++)
-                    {
-                        Constraints[i - 1] = RouteConstraint.Parse(template, segment, tokens[i]);
-                    }
-                }
-            }
-            else
-            {
-                Constraints = Array.Empty<RouteConstraint>();
+                Value = tokens[0];
+                Constraints = tokens.Skip(1)
+                    .Select(token => LegacyRouteConstraint.Parse(template, segment, token))
+                    .ToArray();
             }
 
             if (IsParameter)
@@ -107,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public bool IsCatchAll { get; }
 
-        public RouteConstraint[] Constraints { get; }
+        public LegacyRouteConstraint[] Constraints { get; }
 
         public bool Match(string pathSegment, out object? matchedParameterValue)
         {
@@ -131,17 +119,5 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return string.Equals(Value, pathSegment, StringComparison.OrdinalIgnoreCase);
             }
         }
-
-        public override string ToString() => this switch
-        {
-            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: 0 } } => $"{{{Value}}}",
-            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}}}",
-            { IsParameter: true, IsOptional: true, Constraints: { Length: 0 } } => $"{{{Value}?}}",
-            { IsParameter: true, IsOptional: true, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
-            { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => $"{{*{Value}}}",
-            { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => $"{{*{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
-            { IsParameter: false } => Value,
-            _ => throw new InvalidOperationException("Invalid template segment.")
-        };
     }
 }

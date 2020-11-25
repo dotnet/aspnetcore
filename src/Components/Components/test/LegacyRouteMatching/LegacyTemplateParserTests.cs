@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
-    public class TemplateParserTests
+    public class LegacyTemplateParserTests
     {
         [Fact]
         public void Parse_SingleLiteral()
@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Literal("awesome");
 
             // Act
-            var actual = TemplateParser.ParseTemplate("awesome");
+            var actual = LegacyTemplateParser.ParseTemplate("awesome");
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -32,10 +32,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Parameter("p");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = LegacyTemplateParser.ParseTemplate(template);
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("cool").Literal("super");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = LegacyTemplateParser.ParseTemplate(template);
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -62,10 +62,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Parameter("p1").Parameter("p2").Parameter("p3");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = LegacyTemplateParser.ParseTemplate(template);
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Parameter("p1?").Parameter("p2?").Parameter("p3?");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = LegacyTemplateParser.ParseTemplate(template);
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -90,10 +90,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Parameter("p");
 
             // Act
-            var actual = TemplateParser.ParseTemplate("{*p}");
+            var actual = LegacyTemplateParser.ParseTemplate("{*p}");
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -103,10 +103,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p");
 
             // Act
-            var actual = TemplateParser.ParseTemplate("awesome/wow/{*p}");
+            var actual = LegacyTemplateParser.ParseTemplate("awesome/wow/{*p}");
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
@@ -116,19 +116,19 @@ namespace Microsoft.AspNetCore.Components.Routing
             var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2");
 
             // Act
-            var actual = TemplateParser.ParseTemplate("awesome/{p1}/{*p2}");
+            var actual = LegacyTemplateParser.ParseTemplate("awesome/{p1}/{*p2}");
 
             // Assert
-            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+            Assert.Equal(expected, actual, LegacyRouteTemplateTestComparer.Instance);
         }
 
         [Fact]
         public void InvalidTemplate_WithRepeatedParameter()
         {
             var ex = Assert.Throws<InvalidOperationException>(
-                () => TemplateParser.ParseTemplate("{p1}/literal/{p1}"));
+                () => LegacyTemplateParser.ParseTemplate("{p1}/literal/{p1}"));
 
-            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter '{p1}' appears multiple times.";
+            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter 'Microsoft.AspNetCore.Components.LegacyRouteMatching.LegacyTemplateSegment' appears multiple times.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void InvalidTemplate_WithMismatchedBraces(string template, string expectedMessage)
         {
             var ex = Assert.Throws<InvalidOperationException>(
-                () => TemplateParser.ParseTemplate(template));
+                () => LegacyTemplateParser.ParseTemplate(template));
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(string template, string expectedMessage)
         {
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate(template));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate(template));
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("{a}/{}/{z}"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("{a}/{}/{z}"));
 
             var expectedMessage = "Invalid template '{a}/{}/{z}'. Empty parameter name in segment '{}' is not allowed.";
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("{a}//{z}"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("{a}//{z}"));
 
             var expectedMessage = "Invalid template '{a}//{z}'. Empty segments are not allowed.";
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_LiteralAfterOptionalParam()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/test"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("/test/{a?}/test"));
 
             var expectedMessage = "Invalid template 'test/{a?}/test'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_NonOptionalParamAfterOptionalParam()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/{b}"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("/test/{a?}/{b}"));
 
             var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_CatchAllParamWithMultipleAsterisks()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a}/{**b}"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("/test/{a}/{**b}"));
 
             var expectedMessage = "Invalid template '/test/{a}/{**b}'. A catch-all parameter may only have one '*' at the beginning of the segment.";
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_CatchAllParamNotLast()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{*a}/{b}"));
+            var ex = Assert.Throws<InvalidOperationException>(() => LegacyTemplateParser.ParseTemplate("/test/{*a}/{b}"));
 
             var expectedMessage = "Invalid template 'test/{*a}/{b}'. A catch-all parameter can only appear as the last segment of the route template.";
 
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Fact]
         public void InvalidTemplate_BadOptionalCharacterPosition()
         {
-            var ex = Assert.Throws<ArgumentException>(() => TemplateParser.ParseTemplate("/test/{a?bc}/{b}"));
+            var ex = Assert.Throws<ArgumentException>(() => LegacyTemplateParser.ParseTemplate("/test/{a?bc}/{b}"));
 
             var expectedMessage = "Malformed parameter 'a?bc' in route '/test/{a?bc}/{b}'. '?' character can only appear at the end of parameter name.";
 
@@ -238,30 +238,30 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private class ExpectedTemplateBuilder
         {
-            public IList<TemplateSegment> Segments { get; set; } = new List<TemplateSegment>();
+            public IList<LegacyTemplateSegment> Segments { get; set; } = new List<LegacyTemplateSegment>();
 
             public ExpectedTemplateBuilder Literal(string value)
             {
-                Segments.Add(new TemplateSegment("testtemplate", value, isParameter: false));
+                Segments.Add(new LegacyTemplateSegment("testtemplate", value, isParameter: false));
                 return this;
             }
 
             public ExpectedTemplateBuilder Parameter(string value)
             {
-                Segments.Add(new TemplateSegment("testtemplate", value, isParameter: true));
+                Segments.Add(new LegacyTemplateSegment("testtemplate", value, isParameter: true));
                 return this;
             }
 
-            public RouteTemplate Build() => new RouteTemplate(string.Join('/', Segments), Segments.ToArray());
+            public LegacyRouteTemplate Build() => new LegacyRouteTemplate(string.Join('/', Segments), Segments.ToArray());
 
-            public static implicit operator RouteTemplate(ExpectedTemplateBuilder builder) => builder.Build();
+            public static implicit operator LegacyRouteTemplate(ExpectedTemplateBuilder builder) => builder.Build();
         }
 
-        private class RouteTemplateTestComparer : IEqualityComparer<RouteTemplate>
+        private class LegacyRouteTemplateTestComparer : IEqualityComparer<LegacyRouteTemplate>
         {
-            public static RouteTemplateTestComparer Instance { get; } = new RouteTemplateTestComparer();
+            public static LegacyRouteTemplateTestComparer Instance { get; } = new LegacyRouteTemplateTestComparer();
 
-            public bool Equals(RouteTemplate x, RouteTemplate y)
+            public bool Equals(LegacyRouteTemplate x, LegacyRouteTemplate y)
             {
                 if (x.Segments.Length != y.Segments.Length)
                 {
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return true;
             }
 
-            public int GetHashCode(RouteTemplate obj) => 0;
+            public int GetHashCode(LegacyRouteTemplate obj) => 0;
         }
     }
 }

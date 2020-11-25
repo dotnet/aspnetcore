@@ -6,20 +6,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Components.Routing;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 {
     /// <summary>
     /// Resolves components for an application.
     /// </summary>
-    internal static class RouteTableFactory
+    internal static class LegacyRouteTableFactory
     {
-        private static readonly ConcurrentDictionary<Key, RouteTable> Cache =
-            new ConcurrentDictionary<Key, RouteTable>();
-        public static readonly IComparer<RouteEntry> RoutePrecedence = Comparer<RouteEntry>.Create(RouteComparison);
+        private static readonly ConcurrentDictionary<Key, LegacyRouteTable> Cache =
+            new ConcurrentDictionary<Key, LegacyRouteTable>();
+        public static readonly IComparer<LegacyRouteEntry> RoutePrecedence = Comparer<LegacyRouteEntry>.Create(RouteComparison);
 
-        public static RouteTable Create(IEnumerable<Assembly> assemblies)
+        public static LegacyRouteTable Create(IEnumerable<Assembly> assemblies)
         {
             var key = new Key(assemblies.OrderBy(a => a.FullName).ToArray());
             if (Cache.TryGetValue(key, out var resolvedComponents))
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Components
             return routeTable;
         }
 
-        internal static RouteTable Create(IEnumerable<Type> componentTypes)
+        internal static LegacyRouteTable Create(IEnumerable<Type> componentTypes)
         {
             var templatesByHandler = new Dictionary<Type, string[]>();
             foreach (var componentType in componentTypes)
@@ -50,12 +49,12 @@ namespace Microsoft.AspNetCore.Components
             return Create(templatesByHandler);
         }
 
-        internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler)
+        internal static LegacyRouteTable Create(Dictionary<Type, string[]> templatesByHandler)
         {
-            var routes = new List<RouteEntry>();
+            var routes = new List<LegacyRouteEntry>();
             foreach (var keyValuePair in templatesByHandler)
             {
-                var parsedTemplates = keyValuePair.Value.Select(v => TemplateParser.ParseTemplate(v)).ToArray();
+                var parsedTemplates = keyValuePair.Value.Select(v => LegacyTemplateParser.ParseTemplate(v)).ToArray();
                 var allRouteParameterNames = parsedTemplates
                     .SelectMany(GetParameterNames)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -66,15 +65,15 @@ namespace Microsoft.AspNetCore.Components
                     var unusedRouteParameterNames = allRouteParameterNames
                         .Except(GetParameterNames(parsedTemplate), StringComparer.OrdinalIgnoreCase)
                         .ToArray();
-                    var entry = new RouteEntry(parsedTemplate, keyValuePair.Key, unusedRouteParameterNames);
+                    var entry = new LegacyRouteEntry(parsedTemplate, keyValuePair.Key, unusedRouteParameterNames);
                     routes.Add(entry);
                 }
             }
 
-            return new RouteTable(routes.OrderBy(id => id, RoutePrecedence).ToArray());
+            return new LegacyRouteTable(routes.OrderBy(id => id, RoutePrecedence).ToArray());
         }
 
-        private static string[] GetParameterNames(RouteTemplate routeTemplate)
+        private static string[] GetParameterNames(LegacyRouteTemplate routeTemplate)
         {
             return routeTemplate.Segments
                 .Where(s => s.IsParameter)
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Components
         /// * For parameters with different numbers of constraints, the one with more wins
         /// If we get to the end of the comparison routing we've detected an ambiguous pair of routes.
         /// </summary>
-        internal static int RouteComparison(RouteEntry x, RouteEntry y)
+        internal static int RouteComparison(LegacyRouteEntry x, LegacyRouteEntry y)
         {
             if (ReferenceEquals(x, y))
             {
@@ -120,63 +119,62 @@ namespace Microsoft.AspNetCore.Components
 
             var xTemplate = x.Template;
             var yTemplate = y.Template;
-            var minSegments = Math.Min(xTemplate.Segments.Length, yTemplate.Segments.Length);
-            var currentResult = 0;
-            for (var i = 0; i < minSegments; i++)
+            if (xTemplate.Segments.Length != y.Template.Segments.Length)
             {
-                var xSegment = xTemplate.Segments[i];
-                var ySegment = yTemplate.Segments[i];
-
-                var xRank = GetRank(xSegment);
-                var yRank = GetRank(ySegment);
-
-                currentResult = xRank.CompareTo(yRank);
-
-                // If they are both literals we can disambiguate
-                if ((xRank, yRank) == (0, 0))
+                return xTemplate.Segments.Length < y.Template.Segments.Length ? -1 : 1;
+            }
+            else
+            {
+                for (var i = 0; i < xTemplate.Segments.Length; i++)
                 {
-                    currentResult = StringComparer.OrdinalIgnoreCase.Compare(xSegment.Value, ySegment.Value);
+                    var xSegment = xTemplate.Segments[i];
+                    var ySegment = yTemplate.Segments[i];
+                    if (!xSegment.IsParameter && ySegment.IsParameter)
+                    {
+                        return -1;
+                    }
+                    if (xSegment.IsParameter && !ySegment.IsParameter)
+                    {
+                        return 1;
+                    }
+
+                    if (xSegment.IsParameter)
+                    {
+                        // Always favor non-optional parameters over optional ones
+                        if (!xSegment.IsOptional && ySegment.IsOptional)
+                        {
+                            return -1;
+                        }
+
+                        if (xSegment.IsOptional && !ySegment.IsOptional)
+                        {
+                            return 1;
+                        }
+
+                        if (xSegment.Constraints.Length > ySegment.Constraints.Length)
+                        {
+                            return -1;
+                        }
+                        else if (xSegment.Constraints.Length < ySegment.Constraints.Length)
+                        {
+                            return 1;
+                        }
+                    }
+                    else
+                    {
+                        var comparison = string.Compare(xSegment.Value, ySegment.Value, StringComparison.OrdinalIgnoreCase);
+                        if (comparison != 0)
+                        {
+                            return comparison;
+                        }
+                    }
                 }
 
-                if (currentResult != 0)
-                {
-                    break;
-                }
-            }
-
-            if (currentResult == 0)
-            {
-                currentResult = xTemplate.Segments.Length.CompareTo(yTemplate.Segments.Length);
-            }
-
-            if (currentResult == 0)
-            {
                 throw new InvalidOperationException($@"The following routes are ambiguous:
 '{x.Template.TemplateText}' in '{x.Handler.FullName}'
 '{y.Template.TemplateText}' in '{y.Handler.FullName}'
 ");
             }
-
-            return currentResult;
-        }
-
-        private static int GetRank(TemplateSegment xSegment)
-        {
-            return xSegment switch
-            {
-                // Literal
-                { IsParameter: false } => 0,
-                // Parameter with constraints
-                { IsParameter: true, IsCatchAll: false, Constraints: { Length: > 0 } } => 1,
-                // Parameter without constraints
-                { IsParameter: true, IsCatchAll: false, Constraints: { Length: 0 } } => 2,
-                // Catch all parameter with constraints
-                { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => 3,
-                // Catch all parameter without constraints
-                { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => 4,
-                // The segment is not correct
-                _ => throw new InvalidOperationException($"Unknown segment definition '{xSegment}.")
-            };
         }
 
         private readonly struct Key : IEquatable<Key>
