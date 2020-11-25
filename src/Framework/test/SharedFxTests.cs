@@ -175,6 +175,15 @@ namespace Microsoft.AspNetCore
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                 var assemblyDefinition = reader.GetAssemblyDefinition();
 
+                if (assemblyDefinition.GetAssemblyName().Name is
+                    "System.Security.Cryptography.Pkcs" or
+                    "System.IO.Pipelines")
+                {
+                    Assert.Equal(0, assemblyDefinition.Version.Build);
+                    Assert.Equal(1, assemblyDefinition.Version.Revision);
+                    return;
+                }
+
                 // Assembly versions should all match Major.Minor.0.0
                 Assert.Equal(0, assemblyDefinition.Version.Build);
                 Assert.Equal(0, assemblyDefinition.Version.Revision);
@@ -196,6 +205,15 @@ namespace Microsoft.AspNetCore
                 Assert.All(reader.AssemblyReferences, handle =>
                 {
                     var reference = reader.GetAssemblyReference(handle);
+
+                    if (reader.GetString(reference.Name) is
+                        "System.Security.Cryptography.Pkcs" or
+                        "System.IO.Pipelines")
+                    {
+                        Assert.Equal(1, reference.Version.Revision);
+                        return;
+                    }
+
                     Assert.Equal(0, reference.Version.Revision);
                 });
             });
