@@ -54,48 +54,48 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
         {
             // Fallback to action invoker extensibility so that invokers can override any default behaviors
-            if (!_enableActionInvokers && actionDescriptor is ControllerActionDescriptor)
+            if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor)
             {
-                return context =>
-                {
-                    RouteData routeData = null;
-
-                    if (dataTokens is null or { Count: 0 })
-                    {
-                        routeData = new RouteData(context.Request.RouteValues);
-                    }
-                    else
-                    {
-                        routeData = new RouteData();
-                        routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
-                    }
-
-                    var actionContext = new ActionContext(context, routeData, actionDescriptor);
-
-                    var controllerContext = new ControllerContext(actionContext)
-                    {
-                        // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                        ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
-                    };
-
-                    controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
-
-                    var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
-
-                    var invoker = new ControllerActionInvoker(
-                        _logger,
-                        _diagnosticListener,
-                        _actionContextAccessor,
-                        _mapper,
-                        controllerContext,
-                        cacheEntry,
-                        filters);
-
-                    return invoker.InvokeAsync();
-                };
+                return null;
             }
 
-            return null;
+            return context =>
+            {
+                RouteData routeData = null;
+
+                if (dataTokens is null or { Count: 0 })
+                {
+                    routeData = new RouteData(context.Request.RouteValues);
+                }
+                else
+                {
+                    routeData = new RouteData();
+                    routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
+                }
+
+                var actionContext = new ActionContext(context, routeData, actionDescriptor);
+
+                var controllerContext = new ControllerContext(actionContext)
+                {
+                    // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                    ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                };
+
+                controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+
+                var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
+
+                var invoker = new ControllerActionInvoker(
+                    _logger,
+                    _diagnosticListener,
+                    _actionContextAccessor,
+                    _mapper,
+                    controllerContext,
+                    cacheEntry,
+                    filters);
+
+                return invoker.InvokeAsync();
+            };
         }
     }
 }
