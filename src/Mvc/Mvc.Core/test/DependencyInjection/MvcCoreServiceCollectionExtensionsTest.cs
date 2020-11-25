@@ -286,6 +286,13 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
+                        typeof(IRequestDelegateFactory),
+                        new Type[]
+                        {
+                            typeof(ControllerRequestDelegateFactory)
+                        }
+                    },
+                    {
                         typeof(IFilterProvider),
                         new Type[]
                         {
