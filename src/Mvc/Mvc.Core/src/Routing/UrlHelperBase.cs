@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
                     builder.Append(protocol);
 
-                    builder.Append("://");
+                    builder.Append(Uri.SchemeDelimiter);
 
                     host = string.IsNullOrEmpty(host) ? ActionContext.HttpContext.Request.Host.Value : host;
                     builder.Append(host);
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
                     builder.Append(protocol);
 
-                    builder.Append("://");
+                    builder.Append(Uri.SchemeDelimiter);
 
                     host = string.IsNullOrEmpty(host) ? ActionContext.HttpContext.Request.Host.Value : host;
                     builder.Append(host);
