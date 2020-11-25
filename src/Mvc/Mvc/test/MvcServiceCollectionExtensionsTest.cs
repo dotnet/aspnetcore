@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -523,6 +524,14 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(ControllerActionInvokerProvider),
                             typeof(PageActionInvokerProvider),
+                        }
+                    },
+                    {
+                        typeof(IRequestDelegateFactory),
+                        new Type[]
+                        {
+                            typeof(PageRequestDelegateFactory),
+                            typeof(ControllerRequestDelegateFactory)
                         }
                     },
                     {
