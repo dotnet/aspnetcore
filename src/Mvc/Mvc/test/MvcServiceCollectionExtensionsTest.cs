@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc
                     // 'single-registration' services should only have one implementation registered.
                     AssertServiceCountEquals(services, service.ServiceType, 1);
                 }
-                else if (service.ImplementationType != null && !service.ImplementationType.GetTypeInfo().Assembly.FullName.Contains("Mvc"))
+                else if (service.ImplementationType != null && !service.ImplementationType.Assembly.FullName.Contains("Mvc"))
                 {
                     // Ignore types that don't come from MVC
                 }
@@ -278,8 +278,8 @@ namespace Microsoft.AspNetCore.Mvc
         public void AddMvc_AddsAssemblyPartsForFrameworkTagHelpers()
         {
             // Arrange
-            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
-            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).Assembly;
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).Assembly;
             var services = new ServiceCollection();
             var providers = new IApplicationFeatureProvider[]
             {
@@ -305,8 +305,8 @@ namespace Microsoft.AspNetCore.Mvc
         public void AddMvcTwice_DoesNotAddDuplicateFrameworkParts()
         {
             // Arrange
-            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
-            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).Assembly;
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).Assembly;
             var services = new ServiceCollection();
             var providers = new IApplicationFeatureProvider[]
             {
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Act & Assert
             using (var scope = scopeFactory.CreateScope())
             {
-                foreach (var serviceType in services.Select(d => d.ServiceType).Where(t => !t.GetTypeInfo().IsGenericTypeDefinition).Distinct())
+                foreach (var serviceType in services.Select(d => d.ServiceType).Where(t => !t.IsGenericTypeDefinition).Distinct())
                 {
                     // This will throw if something is invalid.
                     scope.ServiceProvider.GetService(typeof(IEnumerable<>).MakeGenericType(serviceType));
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc
                 var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
-                    .Where(sd => sd.ServiceType.GetTypeInfo().Assembly.FullName.Contains("Mvc"))
+                    .Where(sd => sd.ServiceType.Assembly.FullName.Contains("Mvc"))
                     .Select(sd => sd.ServiceType);
             }
         }
@@ -636,7 +636,7 @@ namespace Microsoft.AspNetCore.Mvc
             var environment = new Mock<IWebHostEnvironment>();
             environment
                 .Setup(e => e.ApplicationName)
-                .Returns(typeof(MvcServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName().Name);
+                .Returns(typeof(MvcServiceCollectionExtensionsTest).Assembly.GetName().Name);
 
             return environment.Object;
         }

@@ -326,13 +326,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal static void AddTagHelpersFrameworkParts(ApplicationPartManager partManager)
         {
-            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).Assembly;
             if (!partManager.ApplicationParts.OfType<AssemblyPart>().Any(p => p.Assembly == mvcTagHelpersAssembly))
             {
                 partManager.ApplicationParts.Add(new FrameworkAssemblyPart(mvcTagHelpersAssembly));
             }
 
-            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).Assembly;
             if (!partManager.ApplicationParts.OfType<AssemblyPart>().Any(p => p.Assembly == mvcRazorAssembly))
             {
                 partManager.ApplicationParts.Add(new FrameworkAssemblyPart(mvcRazorAssembly));

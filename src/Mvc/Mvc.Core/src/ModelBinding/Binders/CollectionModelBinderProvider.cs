@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (enumerableType != null)
             {
                 var listType = typeof(List<>).MakeGenericType(enumerableType.GenericTypeArguments);
-                if (modelType.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo()))
+                if (modelType.IsAssignableFrom(listType))
                 {
                     return CreateInstance(context, listType);
                 }

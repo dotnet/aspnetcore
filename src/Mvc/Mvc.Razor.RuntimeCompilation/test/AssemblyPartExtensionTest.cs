@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void GetReferencePaths_ReturnsReferencesFromDependencyContext_IfPreserveCompilationContextIsSet()
         {
             // Arrange
-            var assembly = GetType().GetTypeInfo().Assembly;
+            var assembly = GetType().Assembly;
             var part = new AssemblyPart(assembly);
 
             // Act
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             // Assert
             Assert.Contains(assembly.Location, references);
             Assert.Contains(
-                typeof(AssemblyPart).GetTypeInfo().Assembly.GetName().Name,
+                typeof(AssemblyPart).Assembly.GetName().Name,
                 references.Select(Path.GetFileNameWithoutExtension));
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         {
             // Arrange
             // src projects do not have preserveCompilationContext specified.
-            var assembly = typeof(AssemblyPart).GetTypeInfo().Assembly;
+            var assembly = typeof(AssemblyPart).Assembly;
             var part = new AssemblyPart(assembly);
 
             // Act

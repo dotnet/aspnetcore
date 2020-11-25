@@ -113,8 +113,8 @@ namespace Microsoft.Extensions.Internal
         {
             // Arrange
             var provider = new EmbeddedFileProvider(
-                GetType().GetTypeInfo().Assembly,
-                baseNamespace: $"{typeof(ExceptionDetailsProviderTest).GetTypeInfo().Assembly.GetName().Name}.Resources");
+                GetType().Assembly,
+                baseNamespace: $"{typeof(ExceptionDetailsProviderTest).Assembly.GetName().Name}.Resources");
 
             // Act
             var exceptionDetailProvider = new ExceptionDetailsProvider(provider, logger: null, sourceCodeLineCount: 6);

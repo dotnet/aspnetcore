@@ -137,7 +137,7 @@ namespace SomeApp
             var compilation = CSharpCompilation.Create(
                 $"TestAssembly-{Guid.NewGuid().ToString("D")}",
                 new[] { syntaxTree },
-                new[] { MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location) },
+                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
                 new CSharpCompilationOptions(OutputKind.ConsoleApplication));
             using var ms = new MemoryStream();
             var compilationResult = compilation.Emit(ms);
