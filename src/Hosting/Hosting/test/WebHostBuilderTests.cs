@@ -1434,7 +1434,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             public StartOrder Ordering { get; }
 
-            public IFeatureCollection Features => null;
+            public IFeatureCollection Features { get; } = new FeatureCollection();
 
             public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
             {
@@ -1550,7 +1550,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private class TestServer : IServer
         {
-            IFeatureCollection IServer.Features { get; }
+            IFeatureCollection IServer.Features { get; } = new FeatureCollection();
             public RequestDelegate RequestDelegate { get; private set; }
 
             public void Dispose() { }
