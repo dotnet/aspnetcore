@@ -227,10 +227,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentDocumentClassifierPass());
 
             // Directive Classifier
-            var whitespacePass = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0
-                ? (IRazorFeature)new ComponentWhitespacePass()
-                : new LegacyV3ComponentWhitespacePass();
-            builder.Features.Add(whitespacePass);
+            builder.Features.Add(new ComponentWhitespacePass());
             
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
