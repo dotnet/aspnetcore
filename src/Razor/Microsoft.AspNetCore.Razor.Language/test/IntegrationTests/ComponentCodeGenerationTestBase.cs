@@ -4778,6 +4778,224 @@ namespace Test
 
         #endregion
 
+        #region Legacy 3.1 Whitespace
+
+        [Fact]
+        public void Legacy_3_1_LeadingWhiteSpace_WithDirective()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+
+@using System
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_LeadingWhiteSpace_WithCSharpExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+
+@(""My value"")
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_LeadingWhiteSpace_WithComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class SomeOtherComponent : ComponentBase
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<SomeOtherComponent>
+    <h1>Child content at @DateTime.Now</h1>
+    <p>Very @(""good"")</p>
+</SomeOtherComponent>
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_TrailingWhiteSpace_WithDirective()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<h1>Hello</h1>
+
+@page ""/my/url""
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_TrailingWhiteSpace_WithCSharpExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<h1>Hello</h1>
+
+@(""My value"")
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_TrailingWhiteSpace_WithComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class SomeOtherComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<h1>Hello</h1>
+
+<SomeOtherComponent />
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_Whitespace_BetweenElementAndFunctions()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+    <elem attr=@Foo />
+    @code {
+        int Foo = 18;
+    }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_WhiteSpace_InsideAttribute_InMarkupBlock()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_WhiteSpace_InMarkupInFunctionsBlock()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Rendering
+@code {
+    void MyMethod(RenderTreeBuilder __builder)
+    {
+        <ul>
+            @for (var i = 0; i < 100; i++)
+            {
+                <li>
+                    @i
+                </li>
+            }
+        </ul>
+    }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Legacy_3_1_WhiteSpace_WithPreserveWhitespace()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+
+@preservewhitespace true
+
+    <elem attr=@Foo>
+        <child />
+    </elem>
+
+    @code {
+        int Foo = 18;
+    }
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        #endregion
+
         #region Imports
         [Fact]
         public void Component_WithImportsFile()
