@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             public StaticWebAssetsDirectoryRoot(PathString remainingPath)
             {
                 // We MUST use the Value property here because it is unescaped.
-                _nextSegment = remainingPath.Value?.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty; // TODO - Is this right?
+                _nextSegment = remainingPath.Value?.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty;
             }
 
             public bool Exists => true;

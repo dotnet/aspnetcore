@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private void ExecuteHostingStartups()
         {
-            var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (webHostOptions.PreventHostingStartup)
             {
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
-                var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name);
+                var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
                 var webHostBuilderContext = new WebHostBuilderContext
                 {
                     Configuration = context.Configuration,
