@@ -4968,32 +4968,6 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact]
-        public void Legacy_3_1_WhiteSpace_WithPreserveWhitespace()
-        {
-            // Arrange
-
-            // Act
-            var generated = CompileToCSharp(@"
-
-@preservewhitespace true
-
-    <elem attr=@Foo>
-        <child />
-    </elem>
-
-    @code {
-        int Foo = 18;
-    }
-
-");
-
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
-
         #endregion
 
         #region Imports

@@ -1,9 +1,0 @@
-Source Location: (95:6,11 [29] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-        int Foo = 18;
-    |
-Generated Location: (1134:35,11 [29] )
-|
-        int Foo = 18;
-    |
-
