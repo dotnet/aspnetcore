@@ -31,7 +31,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.OpenElement(0, "ul");
+        __builder.AddContent(0, "        ");
+        __builder.OpenElement(1, "ul");
+        __builder.AddMarkupContent(2, "\r\n");
 #nullable restore
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
              for (var i = 0; i < 100; i++)
@@ -40,8 +42,10 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.OpenElement(1, "li");
-        __builder.AddContent(2, 
+        __builder.AddContent(3, "                ");
+        __builder.OpenElement(4, "li");
+        __builder.AddMarkupContent(5, "\r\n                    ");
+        __builder.AddContent(6, 
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
                      i
@@ -50,7 +54,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
         );
+        __builder.AddMarkupContent(7, "\r\n                ");
         __builder.CloseElement();
+        __builder.AddMarkupContent(8, "\r\n");
 #nullable restore
 #line 11 "x:\dir\subdir\Test\TestComponent.cshtml"
             }
@@ -58,7 +64,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
+        __builder.AddContent(9, "        ");
         __builder.CloseElement();
+        __builder.AddMarkupContent(10, "\r\n");
 #nullable restore
 #line 13 "x:\dir\subdir\Test\TestComponent.cshtml"
     }

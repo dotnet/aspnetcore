@@ -15,9 +15,10 @@ namespace Test
         {
             __builder.OpenComponent<Test.SomeOtherComponent>(0);
             __builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                __builder2.OpenElement(2, "h1");
-                __builder2.AddContent(3, "Child content at ");
-                __builder2.AddContent(4, 
+                __builder2.AddMarkupContent(2, "\r\n    ");
+                __builder2.OpenElement(3, "h1");
+                __builder2.AddContent(4, "Child content at ");
+                __builder2.AddContent(5, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                           DateTime.Now
@@ -27,10 +28,10 @@ namespace Test
 #nullable disable
                 );
                 __builder2.CloseElement();
-                __builder2.AddMarkupContent(5, "\r\n    ");
-                __builder2.OpenElement(6, "p");
-                __builder2.AddContent(7, "Very ");
-                __builder2.AddContent(8, 
+                __builder2.AddMarkupContent(6, "\r\n    ");
+                __builder2.OpenElement(7, "p");
+                __builder2.AddContent(8, "Very ");
+                __builder2.AddContent(9, 
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
               "good"
@@ -40,11 +41,12 @@ namespace Test
 #nullable disable
                 );
                 __builder2.CloseElement();
+                __builder2.AddMarkupContent(10, "\r\n");
             }
             ));
             __builder.CloseComponent();
-            __builder.AddMarkupContent(9, "\r\n\r\n");
-            __builder.AddMarkupContent(10, "<h1>Hello</h1>");
+            __builder.AddMarkupContent(11, "\r\n\r\n");
+            __builder.AddMarkupContent(12, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998
     }

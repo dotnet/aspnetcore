@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -227,7 +227,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentDocumentClassifierPass());
 
             // Directive Classifier
-            builder.Features.Add(new ComponentWhitespacePass());
+            var whitespacePass = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0
+                ? (IRazorFeature)new ComponentWhitespacePass()
+                : new LegacyV3ComponentWhitespacePass();
+            builder.Features.Add(whitespacePass);
             
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
