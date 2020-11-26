@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.Views
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName!).Version?.ToString() ?? string.Empty;
             var clrVersion = assemblyVersion;
-            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
+            var currentAssembly = typeof(ErrorPage).Assembly;
             var currentAssemblyVesion = currentAssembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
                 .InformationalVersion;
