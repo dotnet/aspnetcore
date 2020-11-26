@@ -68,9 +68,9 @@
   <ItemGroup>
     <CrossgenSizeOnDiskWorkItem Include="@(SingleAssembly)" Condition="'$(Architecture)' == 'x64'">
       <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
-      <PreCommands>$(Python) pre.py crossgen --core-root $(CoreRoot) --single %(Identity) </PreCommands>
-      <Command>$(Python) test.py sod --scenario-name &quot;Crossgen %(Identity) Size&quot; --dirs ./crossgen/</Command>
-      <PostCommands>$(Python) post.py</PostCommands>
+      <PreCommands>$(Python) $(CrossgenDirectory)pre.py crossgen --core-root $(CoreRoot) --single %(Identity) </PreCommands>
+      <Command>$(Python) $(CrossgenDirectory)test.py sod --scenario-name &quot;Crossgen %(Identity) Size&quot; --dirs ./crossgen/</Command>
+      <PostCommands>$(Python) $(CrossgenDirectory)post.py</PostCommands>
     </CrossgenSizeOnDiskWorkItem>
   </ItemGroup>
 
@@ -78,8 +78,8 @@
     <Crossgen2SizeOnDiskWorkItem Include="@(SingleAssembly)" Condition="'$(Architecture)' == 'x64'">
       <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
       <PreCommands>$(Python) $(Crossgen2Directory)pre.py crossgen2 --core-root $(CoreRoot) --single %(Identity) </PreCommands>
-      <Command>$(Python) test.py sod --scenario-name &quot;Crossgen2 %(Identity) Size&quot; --dirs ./crossgen/</Command>
-      <PostCommands>$(Python) post.py</PostCommands>
+      <Command>$(Python) $(Crossgen2Directory)test.py sod --scenario-name &quot;Crossgen2 %(Identity) Size&quot; --dirs ./crossgen/</Command>
+      <PostCommands>$(Python) $(Crossgen2Directory)post.py</PostCommands>
     </Crossgen2SizeOnDiskWorkItem>
   </ItemGroup>
 

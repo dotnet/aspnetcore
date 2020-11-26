@@ -1,1 +1,40 @@
 #nullable enable
+Microsoft.AspNetCore.Diagnostics.CompilationFailure
+Microsoft.AspNetCore.Diagnostics.DiagnosticMessage
+Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.EndColumn.get -> int
+Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.EndLine.get -> int
+Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.StartColumn.get -> int
+Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.StartLine.get -> int
+Microsoft.AspNetCore.Diagnostics.ErrorContext
+Microsoft.AspNetCore.Diagnostics.ICompilationException
+Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter
+Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature
+Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature
+Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature
+Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature.Enabled.get -> bool
+Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature.Enabled.set -> void
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages) -> void
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string sourceFilePath, string sourceFileContent, string compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage> messages, string failureSummary) -> void
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompiledContent.get -> string
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.FailureSummary.get -> string
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.Messages.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage>
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.SourceFileContent.get -> string
+~Microsoft.AspNetCore.Diagnostics.CompilationFailure.SourceFilePath.get -> string
+~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.DiagnosticMessage(string message, string formattedMessage, string filePath, int startLine, int startColumn, int endLine, int endColumn) -> void
+~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.FormattedMessage.get -> string
+~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.Message.get -> string
+~Microsoft.AspNetCore.Diagnostics.DiagnosticMessage.SourceFilePath.get -> string
+~Microsoft.AspNetCore.Diagnostics.ErrorContext.ErrorContext(Microsoft.AspNetCore.Http.HttpContext httpContext, System.Exception exception) -> void
+~Microsoft.AspNetCore.Diagnostics.ErrorContext.Exception.get -> System.Exception
+~Microsoft.AspNetCore.Diagnostics.ErrorContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
+~Microsoft.AspNetCore.Diagnostics.ICompilationException.CompilationFailures.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.CompilationFailure>
+~Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter.HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Error.get -> System.Exception
+~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string
+~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void

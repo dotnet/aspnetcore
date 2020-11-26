@@ -7,10 +7,10 @@
     "runtimes": {
       "dotnet/x64": [
         "2.1.18",
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
         "3.1.4"
@@ -30,7 +30,7 @@
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.15.2",
-    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.20529.1",
-    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20529.1"
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.20567.7",
+    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20567.7"
   }
 }

@@ -14,9 +14,9 @@
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
-    <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefPackageVersion)</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefVersion)</DotnetTargetingPackDependencyVersion>
     <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
-    <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefPackageVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefPackageVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
+    <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
 
     <PackageSummary>$(SharedFxProductName)</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>

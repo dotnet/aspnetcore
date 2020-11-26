@@ -1,47 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.DefaultFilesExtensions
-Microsoft.AspNetCore.Builder.DefaultFilesOptions
-Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFilesOptions() -> void
-Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions
-Microsoft.AspNetCore.Builder.DirectoryBrowserOptions
-Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.DirectoryBrowserOptions() -> void
-Microsoft.AspNetCore.Builder.FileServerExtensions
-Microsoft.AspNetCore.Builder.FileServerOptions
-Microsoft.AspNetCore.Builder.FileServerOptions.EnableDefaultFiles.get -> bool
-Microsoft.AspNetCore.Builder.FileServerOptions.EnableDefaultFiles.set -> void
-Microsoft.AspNetCore.Builder.FileServerOptions.EnableDirectoryBrowsing.get -> bool
-Microsoft.AspNetCore.Builder.FileServerOptions.EnableDirectoryBrowsing.set -> void
-Microsoft.AspNetCore.Builder.FileServerOptions.FileServerOptions() -> void
-Microsoft.AspNetCore.Builder.StaticFileExtensions
-Microsoft.AspNetCore.Builder.StaticFileOptions
-Microsoft.AspNetCore.Builder.StaticFileOptions.HttpsCompression.get -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
-Microsoft.AspNetCore.Builder.StaticFileOptions.HttpsCompression.set -> void
-Microsoft.AspNetCore.Builder.StaticFileOptions.ServeUnknownFileTypes.get -> bool
-Microsoft.AspNetCore.Builder.StaticFileOptions.ServeUnknownFileTypes.set -> void
-Microsoft.AspNetCore.Builder.StaticFileOptions.StaticFileOptions() -> void
-Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions
-Microsoft.AspNetCore.StaticFiles.DefaultFilesMiddleware
-Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware
-Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider
-Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.FileExtensionContentTypeProvider() -> void
-Microsoft.AspNetCore.StaticFiles.HtmlDirectoryFormatter
-Microsoft.AspNetCore.StaticFiles.IContentTypeProvider
-Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.RedirectToAppendTrailingSlash.get -> bool
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.RedirectToAppendTrailingSlash.set -> void
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.RequestPath.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.RequestPath.set -> void
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.SharedOptions() -> void
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RedirectToAppendTrailingSlash.get -> bool
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RedirectToAppendTrailingSlash.set -> void
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RequestPath.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RequestPath.set -> void
-Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware
-Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext
-Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.StaticFileResponseContext() -> void
-Microsoft.Extensions.DependencyInjection.DirectoryBrowserServiceExtensions
 Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.set -> void
 Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFilesOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions! sharedOptions) -> void

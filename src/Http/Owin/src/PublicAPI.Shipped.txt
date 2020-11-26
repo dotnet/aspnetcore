@@ -1,1 +1,72 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.OwinExtensions
+Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature
+Microsoft.AspNetCore.Owin.OwinEnvironment
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.CanSet.get -> bool
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>
+Microsoft.AspNetCore.Owin.OwinEnvironmentFeature
+Microsoft.AspNetCore.Owin.OwinEnvironmentFeature.OwinEnvironmentFeature() -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Dispose() -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Get<TFeature>() -> TFeature
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Revision.get -> int
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Set<TFeature>(TFeature instance) -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.get -> bool
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.set -> void
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptAdapter
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.OwinWebSocketAcceptContext() -> void
+Microsoft.AspNetCore.Owin.OwinWebSocketAdapter
+Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter
+Microsoft.AspNetCore.Owin.WebSocketAdapter
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Abort() -> void
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseStatus.get -> System.Net.WebSockets.WebSocketCloseStatus?
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Dispose() -> void
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.State.get -> System.Net.WebSockets.WebSocketState
+~Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature.Environment.get -> System.Collections.Generic.IDictionary<string, object>
+~Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature.Environment.set -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter, System.Action<object, object> setter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter, System.Func<object> defaultFactory) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter, System.Func<object> defaultFactory, System.Action<object, object> setter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter, System.Func<object> defaultFactory, System.Action<object, object> setter, System.Func<object> featureFactory) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>.FeatureMap(System.Func<TFeature, object> getter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>.FeatureMap(System.Func<TFeature, object> getter, System.Action<TFeature, object> setter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>.FeatureMap(System.Func<TFeature, object> getter, System.Func<object> defaultFactory) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>.FeatureMap(System.Func<TFeature, object> getter, System.Func<object> defaultFactory, System.Action<TFeature, object> setter) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>.FeatureMap(System.Func<TFeature, object> getter, System.Func<object> defaultFactory, System.Action<TFeature, object> setter, System.Func<TFeature> featureFactory) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMaps.get -> System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap>
+~Microsoft.AspNetCore.Owin.OwinEnvironment.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>
+~Microsoft.AspNetCore.Owin.OwinEnvironment.OwinEnvironment(Microsoft.AspNetCore.Http.HttpContext context) -> void
+~Microsoft.AspNetCore.Owin.OwinEnvironmentFeature.Environment.get -> System.Collections.Generic.IDictionary<string, object>
+~Microsoft.AspNetCore.Owin.OwinEnvironmentFeature.Environment.set -> void
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.Environment.get -> System.Collections.Generic.IDictionary<string, object>
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.Environment.set -> void
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.Get(System.Type key) -> object
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>>
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.OwinFeatureCollection(System.Collections.Generic.IDictionary<string, object> environment) -> void
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.Set(System.Type key, object value) -> void
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.this[System.Type key].get -> object
+~Microsoft.AspNetCore.Owin.OwinFeatureCollection.this[System.Type key].set -> void
+~Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.Options.get -> System.Collections.Generic.IDictionary<string, object>
+~Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.OwinWebSocketAcceptContext(System.Collections.Generic.IDictionary<string, object> options) -> void
+~Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.OwinWebSocketAdapter(System.Collections.Generic.IDictionary<string, object> websocketContext, string subProtocol) -> void
+~Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter.WebSocketAcceptAdapter(System.Collections.Generic.IDictionary<string, object> env, System.Func<Microsoft.AspNetCore.Http.WebSocketAcceptContext, System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket>> accept) -> void
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.SubProtocol.get -> string
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.SubProtocol.set -> void
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus closeStatus, string statusDescription, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseOutputAsync(System.Net.WebSockets.WebSocketCloseStatus closeStatus, string statusDescription, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseStatusDescription.get -> string
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.ReceiveAsync(System.ArraySegment<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocketReceiveResult>
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.SendAsync(System.ArraySegment<byte> buffer, System.Net.WebSockets.WebSocketMessageType messageType, bool endOfMessage, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.SubProtocol.get -> string
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseBuilder(this System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>> app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseBuilder(this System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>> app, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> pipeline) -> System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>>
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseBuilder(this System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>> app, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> pipeline, System.IServiceProvider serviceProvider) -> System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>>
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseBuilder(this System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>> app, System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseOwin(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>>
+~static Microsoft.AspNetCore.Builder.OwinExtensions.UseOwin(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, System.Action<System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>>> pipeline) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Owin.OwinWebSocketAcceptAdapter.AdaptWebSockets(System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task> next) -> System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>
+~static Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter.AdaptWebSockets(System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task> next) -> System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>

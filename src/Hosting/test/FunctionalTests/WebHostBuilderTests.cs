@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27557")]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
         {
             using (StartLog(out var loggerFactory))
@@ -41,18 +42,19 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
-                    await deployer.DeployAsync();
-
-                    string output = string.Empty;
                     var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                    deployer.HostProcess.OutputDataReceived += (sender, args) =>
+                    var output = string.Empty;
+
+                    deployer.ProcessOutputListener = (data) =>
                     {
-                        if (!string.IsNullOrWhiteSpace(args.Data))
+                        if (!string.IsNullOrWhiteSpace(data))
                         {
-                            output += args.Data + '\n';
+                            output += data + '\n';
                             tcs.TrySetResult();
                         }
                     };
+
+                    await deployer.DeployAsync();
 
                     try
                     {

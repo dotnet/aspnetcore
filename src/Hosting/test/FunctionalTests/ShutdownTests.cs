@@ -72,21 +72,20 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
-                    await deployer.DeployAsync();
-
                     var startedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var completedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var output = string.Empty;
-                    deployer.HostProcess.OutputDataReceived += (sender, args) =>
+
+                    deployer.ProcessOutputListener = (data) =>
                     {
-                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage, StringComparison.Ordinal))
+                        if (!string.IsNullOrEmpty(data) && data.StartsWith(StartedMessage, StringComparison.Ordinal))
                         {
                             startedTcs.TrySetResult();
-                            output += args.Data.Substring(StartedMessage.Length) + '\n';
+                            output += data.Substring(StartedMessage.Length) + '\n';
                         }
                         else
                         {
-                            output += args.Data + '\n';
+                            output += data + '\n';
                         }
 
                         if (output.Contains(CompletionMessage))
@@ -94,6 +93,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                             completedTcs.TrySetResult();
                         }
                     };
+
+                    await deployer.DeployAsync();
 
                     try
                     {

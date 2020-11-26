@@ -8,6 +8,7 @@ using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.JSInterop;
 using Moq;
 using Xunit;
 using static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyCultureProvider;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         {
             // Arrange
             using var cultureReplacer = new CultureReplacer("en-GB");
-            var invoker = new Mock<WebAssemblyJSRuntimeInvoker>();
+            var invoker = new Mock<IJSUnmarshalledRuntime>();
             invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, new[] { "en-GB", "en" }, null, null))
                 .Returns(Task.FromResult<object>(1))
                 .Verifiable();
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         {
             // Arrange
             using var cultureReplacer = new CultureReplacer("en-GB");
-            var invoker = new Mock<WebAssemblyJSRuntimeInvoker>();
+            var invoker = new Mock<IJSUnmarshalledRuntime>();
             invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, new[] { "en-GB", "en" }, null, null))
                 .Returns(Task.FromResult<object>(0))
                 .Verifiable();
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             try
             {
                 // WebAssembly is initialized with en-US
-                var cultureProvider = new WebAssemblyCultureProvider(WebAssemblyJSRuntimeInvoker.Instance, new CultureInfo("en-US"), new CultureInfo("en-US"));
+                var cultureProvider = new WebAssemblyCultureProvider(DefaultWebAssemblyJSRuntime.Instance, new CultureInfo("en-US"), new CultureInfo("en-US"));
 
                 // Culture is changed to fr-FR as part of the app
                 using var cultureReplacer = new CultureReplacer("fr-FR");

@@ -7,7 +7,7 @@
       We'll fall back to whatever the current SDK provides in regards to Roslyn's Microsoft.Net.Compilers.Toolset.
     -->
     <BuildingTestAppsIndependently>false</BuildingTestAppsIndependently>
-    <BuildingTestAppsIndependently Condition="'$(MicrosoftNetCompilersToolsetPackageVersion)' == ''">true</BuildingTestAppsIndependently>
+    <BuildingTestAppsIndependently Condition="'$(MicrosoftNetCompilersToolsetVersion)' == ''">true</BuildingTestAppsIndependently>
 
     <!-- Do not resolve Reference ItemGroup since it has a different semantic meaning in Razor test apps -->
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        Version="$(MicrosoftNetCompilersToolsetVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
   </ItemGroup>

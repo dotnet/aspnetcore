@@ -9,10 +9,9 @@
     <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
-      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
+      Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
-      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-      />
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
   </ItemGroup>
 
   <!--
@@ -39,7 +38,7 @@
 
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup>

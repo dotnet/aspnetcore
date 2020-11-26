@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,8 +15,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 throw new ArgumentNullException(nameof(request));
             }
 
-            MediaTypeHeaderValue mediaType;
-            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out mediaType))
+            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaType))
             {
                 return string.Empty;
             }

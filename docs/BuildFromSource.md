@@ -107,7 +107,7 @@ You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is requ
 
 `curl` and `wget` are command line tools that can be used to download files from an HTTP server. Either utility will need to be installed in order to complete the setup. Typically, these will be included on your machine by default.
 
-If netier utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
+If neither utility is installed, you can install curl (https://curl.haxx.se) or wget (https://www.gnu.org/software/wget).
 
 ##### Git
 
@@ -278,9 +278,21 @@ On macOS/Linux:
 
 ### Building a subset of the code
 
-This repository is large. Look for `build.cmd`/`.sh` scripts in subfolders. These scripts can be used to invoke build and test on a smaller set of projects.
+When working in the repository, you'll typically be focused on one project area, such as Blazor and SignalR. In that case, it's easier to use the `build.cmd` and `build.sh` that are available in each subfolder. When invoked in a subfolder on Windows:
 
-Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
+```ps1
+.\build.cmd
+```
+
+Or on macOS or Linux:
+
+```bash
+./build.sh
+```
+
+> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
+
+These scripts will build and test the projects within a specific directory. Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
 
 ### Build properties
 

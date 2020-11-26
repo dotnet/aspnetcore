@@ -55,9 +55,9 @@
   </Target>
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\..\test\testassets\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
+    <MSBuild Projects="..\..\test\testassets\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);RepoRoot=$(RepoRoot)" />
+    <MSBuild Projects="..\..\test\testassets\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);RepoRoot=$(RepoRoot)" />
+    <MSBuild Projects="..\..\test\testassets\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);RepoRoot=$(RepoRoot)" />
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">

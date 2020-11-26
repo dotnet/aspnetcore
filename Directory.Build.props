@@ -11,14 +11,23 @@
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
-    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf')) OR $(RepoRelativeProjectDir.Contains('benchmarkapps'))">true</IsBenchmarkProject>
+    <IsBenchmarkProject Condition=" $(MSBuildProjectName.EndsWith('.Performance')) OR
+        $(RepoRelativeProjectDir.Contains('perf')) OR
+        $(RepoRelativeProjectDir.Contains('benchmarkapps')) ">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
-    <IsUnitTestProject Condition="'$(IsSpecificationTestProject)' != 'true' and ( $(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('.Test')) or $(MSBuildProjectName.EndsWith('.FunctionalTest')) )">true</IsUnitTestProject>
-    <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
-    <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    <IsUnitTestProject Condition=" '$(IsSpecificationTestProject)' != 'true' AND
+        ( $(MSBuildProjectName.EndsWith('Tests')) OR
+          $(MSBuildProjectName.EndsWith('.Test')) OR
+          $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
+    <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) ">true</IsTestAssetProject>
+    <IsSampleProject Condition=" $(RepoRelativeProjectDir.Contains('sample')) OR
+        $(RepoRelativeProjectDir.Contains('Sample')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
-    <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+    <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
+        '$(IsTestAssetProject)' == 'true' OR
+        '$(IsBenchmarkProject)' == 'true' OR
+        '$(IsUnitTestProject)' == 'true'">false</IsShipping>
 
     <!--
       Following logic mimics core-setup approach as well as
@@ -130,7 +139,7 @@
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
-      Archives and installers using this prefix are intended for internal-use only.
+      Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
       into their own installers.
     -->

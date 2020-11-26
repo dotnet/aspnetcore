@@ -1,1 +1,35 @@
 #nullable enable
+Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions
+Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder
+Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.HtmlTestEncoder() -> void
+Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder
+Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.JavaScriptTestEncoder() -> void
+Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder
+Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.UrlTestEncoder() -> void
+Microsoft.Extensions.WebEncoders.WebEncoderOptions
+Microsoft.Extensions.WebEncoders.WebEncoderOptions.TextEncoderSettings.get -> System.Text.Encodings.Web.TextEncoderSettings?
+Microsoft.Extensions.WebEncoders.WebEncoderOptions.TextEncoderSettings.set -> void
+Microsoft.Extensions.WebEncoders.WebEncoderOptions.WebEncoderOptions() -> void
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.Encode(System.IO.TextWriter! output, char[]! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.Encode(System.IO.TextWriter! output, string! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.Encode(string! value) -> string!
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.FindFirstCharacterToEncode(char* text, int textLength) -> int
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.MaxOutputCharactersPerInputCharacter.get -> int
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten) -> bool
+override Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder.WillEncode(int unicodeScalar) -> bool
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.Encode(System.IO.TextWriter! output, char[]! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.Encode(System.IO.TextWriter! output, string! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.Encode(string! value) -> string!
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.FindFirstCharacterToEncode(char* text, int textLength) -> int
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.MaxOutputCharactersPerInputCharacter.get -> int
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten) -> bool
+override Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder.WillEncode(int unicodeScalar) -> bool
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.Encode(System.IO.TextWriter! output, char[]! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.Encode(System.IO.TextWriter! output, string! value, int startIndex, int characterCount) -> void
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.Encode(string! value) -> string!
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.FindFirstCharacterToEncode(char* text, int textLength) -> int
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.MaxOutputCharactersPerInputCharacter.get -> int
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten) -> bool
+override Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder.WillEncode(int unicodeScalar) -> bool
+static Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions.AddWebEncoders(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions.AddWebEncoders(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.WebEncoders.WebEncoderOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

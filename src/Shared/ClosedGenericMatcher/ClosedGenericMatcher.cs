@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Internal
         private static bool IsGenericInstantiation(Type candidate, Type interfaceType)
         {
             return
-                candidate.GetTypeInfo().IsGenericType &&
+                candidate.IsGenericType &&
                 candidate.GetGenericTypeDefinition() == interfaceType;
         }
 
@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             // BaseType will be null for object and interfaces, which means we've reached 'bottom'.
-            var baseType = queryType?.GetTypeInfo().BaseType;
+            var baseType = queryType?.BaseType;
             if (baseType == null)
             {
                 return null;

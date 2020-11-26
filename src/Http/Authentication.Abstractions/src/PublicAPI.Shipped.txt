@@ -1,1 +1,157 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.AuthenticateResult
+Microsoft.AspNetCore.Authentication.AuthenticateResult.AuthenticateResult() -> void
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Clone() -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Failure.get -> System.Exception?
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Failure.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticateResult.None.get -> bool
+Microsoft.AspNetCore.Authentication.AuthenticateResult.None.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Principal.get -> System.Security.Claims.ClaimsPrincipal?
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Properties.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Succeeded.get -> bool
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.get -> Microsoft.AspNetCore.Authentication.AuthenticationTicket?
+Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions
+Microsoft.AspNetCore.Authentication.AuthenticationOptions
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme(string! name, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder!>! configureBuilder) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme<THandler>(string! name, string? displayName) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.AuthenticationOptions() -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultAuthenticateScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultAuthenticateScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultChallengeScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultChallengeScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultForbidScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultForbidScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultSignInScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultSignInScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultSignOutScheme.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DefaultSignOutScheme.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.RequireAuthenticatedSignIn.get -> bool
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.RequireAuthenticatedSignIn.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.SchemeMap.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder!>!
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.Schemes.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder!>!
+Microsoft.AspNetCore.Authentication.AuthenticationProperties
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.AllowRefresh.get -> bool?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.AllowRefresh.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.AuthenticationProperties() -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.AuthenticationProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.AuthenticationProperties(System.Collections.Generic.IDictionary<string!, string?>? items, System.Collections.Generic.IDictionary<string!, object?>? parameters) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.Clone() -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.ExpiresUtc.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.ExpiresUtc.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetBool(string! key) -> bool?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetDateTimeOffset(string! key) -> System.DateTimeOffset?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetParameter<T>(string! key) -> T?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.GetString(string! key) -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.IsPersistent.get -> bool
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.IsPersistent.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.IssuedUtc.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.IssuedUtc.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.Items.get -> System.Collections.Generic.IDictionary<string!, string?>!
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.Parameters.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.SetBool(string! key, bool? value) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.SetDateTimeOffset(string! key, System.DateTimeOffset? value) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.SetParameter<T>(string! key, T value) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.SetString(string! key, string? value) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationScheme
+Microsoft.AspNetCore.Authentication.AuthenticationScheme.AuthenticationScheme(string! name, string? displayName, System.Type! handlerType) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationScheme.DisplayName.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationScheme.HandlerType.get -> System.Type!
+Microsoft.AspNetCore.Authentication.AuthenticationScheme.Name.get -> string!
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.AuthenticationSchemeBuilder(string! name) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.Build() -> Microsoft.AspNetCore.Authentication.AuthenticationScheme!
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.DisplayName.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.DisplayName.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.HandlerType.get -> System.Type?
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.HandlerType.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder.Name.get -> string!
+Microsoft.AspNetCore.Authentication.AuthenticationTicket
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.AuthenticationScheme.get -> string!
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.AuthenticationTicket(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties, string! authenticationScheme) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.AuthenticationTicket(System.Security.Claims.ClaimsPrincipal! principal, string! authenticationScheme) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.Clone() -> Microsoft.AspNetCore.Authentication.AuthenticationTicket!
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.Principal.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Authentication.AuthenticationTicket.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!
+Microsoft.AspNetCore.Authentication.AuthenticationToken
+Microsoft.AspNetCore.Authentication.AuthenticationToken.AuthenticationToken() -> void
+Microsoft.AspNetCore.Authentication.AuthenticationToken.Name.get -> string!
+Microsoft.AspNetCore.Authentication.AuthenticationToken.Name.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationToken.Value.get -> string!
+Microsoft.AspNetCore.Authentication.AuthenticationToken.Value.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions
+Microsoft.AspNetCore.Authentication.IAuthenticationFeature
+Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.set -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPathBase.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPathBase.set -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationHandler
+Microsoft.AspNetCore.Authentication.IAuthenticationHandler.AuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+Microsoft.AspNetCore.Authentication.IAuthenticationHandler.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationHandler.InitializeAsync(Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider
+Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider.GetHandlerAsync(Microsoft.AspNetCore.Http.HttpContext! context, string! authenticationScheme) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.IAuthenticationHandler?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler
+Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.AddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme) -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetAllSchemesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme!>!>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetDefaultAuthenticateSchemeAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetDefaultChallengeSchemeAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetDefaultForbidSchemeAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetDefaultSignInSchemeAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetDefaultSignOutSchemeAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetRequestHandlerSchemesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme!>!>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.GetSchemeAsync(string! name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme?>!
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.RemoveScheme(string! name) -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider.TryAddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme) -> bool
+Microsoft.AspNetCore.Authentication.IAuthenticationService
+Microsoft.AspNetCore.Authentication.IAuthenticationService.AuthenticateAsync(Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+Microsoft.AspNetCore.Authentication.IAuthenticationService.ChallengeAsync(Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationService.ForbidAsync(Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationService.SignInAsync(Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationService.SignOutAsync(Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler
+Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler.SignInAsync(System.Security.Claims.ClaimsPrincipal! user, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler
+Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler.SignOutAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.IClaimsTransformation
+Microsoft.AspNetCore.Authentication.IClaimsTransformation.TransformAsync(System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal!>!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(string! failureMessage) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.NoResult() -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Success(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ForbidAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ForbidAsync(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ForbidAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ForbidAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.GetTokenAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string! tokenName) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.GetTokenAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, string! tokenName) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenAsync(this Microsoft.AspNetCore.Authentication.IAuthenticationService! auth, Microsoft.AspNetCore.Http.HttpContext! context, string! tokenName) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenAsync(this Microsoft.AspNetCore.Authentication.IAuthenticationService! auth, Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, string! tokenName) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName) -> string?
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokens(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken!>!
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.StoreTokens(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken!>! tokens) -> void
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.UpdateTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName, string! tokenValue) -> bool

@@ -68,11 +68,11 @@ internal class StartupHook
                 RuntimeDisplayName = RuntimeInformation.FrameworkDescription
             };
 
-            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
+            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
             var clrVersion = assemblyVersion;
             model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
+            var currentAssembly = typeof(ErrorPage).Assembly;
             model.CurrentAssemblyVesion = currentAssembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 .InformationalVersion;

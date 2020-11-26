@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Http
         {
             if (IsUnixPipe)
             {
-                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
+                return Scheme.ToLowerInvariant() + Uri.SchemeDelimiter + Host.ToLowerInvariant();
             }
             else
             {
-                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase;
+                return Scheme.ToLowerInvariant() + Uri.SchemeDelimiter + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase;
             }
         }
 
@@ -79,12 +79,12 @@ namespace Microsoft.AspNetCore.Http
         {
             address = address ?? string.Empty;
 
-            int schemeDelimiterStart = address.IndexOf("://", StringComparison.Ordinal);
+            int schemeDelimiterStart = address.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
                 throw new FormatException($"Invalid url: '{address}'");
             }
-            int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
+            int schemeDelimiterEnd = schemeDelimiterStart + Uri.SchemeDelimiter.Length;
 
             var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
 

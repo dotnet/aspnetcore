@@ -52,7 +52,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
 
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
-    const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
+    const anchorTarget = findAnchorTarget(event);
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
       const href = anchorTarget.getAttribute('href')!;
@@ -116,12 +116,36 @@ export function toAbsoluteUri(relativeUri: string) {
   return testAnchor.href;
 }
 
-function findClosestAncestor(element: Element | null, tagName: string) {
+function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
+  // _blazorDisableComposedPath is a temporary escape hatch in case any problems are discovered
+  // in this logic. It can be removed in a later release, and should not be considered supported API.
+  const path = !window['_blazorDisableComposedPath'] && event.composedPath && event.composedPath();
+  if (path) {
+    // This logic works with events that target elements within a shadow root,
+    // as long as the shadow mode is 'open'. For closed shadows, we can't possibly
+    // know what internal element was clicked.
+    for (let i = 0; i < path.length; i++) {
+      const candidate = path[i];
+      if (candidate instanceof Element && candidate.tagName === 'A') {
+        return candidate as HTMLAnchorElement;
+      }
+    }
+    return null;
+  } else {
+    // Since we're adding use of composedPath in a patch, retain compatibility with any
+    // legacy browsers that don't support it by falling back on the older logic, even
+    // though it won't work properly with ShadowDOM. This can be removed in the next
+    // major release.
+    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A');
+  }
+}
+
+function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
   return !element
     ? null
     : element.tagName === tagName
       ? element
-      : findClosestAncestor(element.parentElement, tagName);
+      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
 }
 
 function isWithinBaseUriSpace(href: string) {

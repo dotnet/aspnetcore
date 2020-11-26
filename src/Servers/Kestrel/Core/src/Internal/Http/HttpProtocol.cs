@@ -1088,6 +1088,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var hasConnection = responseHeaders.HasConnection;
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
 
+            // We opt to remove the following headers from an HTTP/2+ response since their presence would be considered a protocol violation.
+            // This is done quietly because these headers are valid in other contexts and this saves the app from being broken by
+            // low level protocol details. Http.Sys also removes these headers silently.
+            //
+            // https://tools.ietf.org/html/rfc7540#section-8.1.2.2
+            // "This means that an intermediary transforming an HTTP/1.x message to HTTP/2 will need to remove any header fields
+            // nominated by the Connection header field, along with the Connection header field itself.
+            // Such intermediaries SHOULD also remove other connection-specific header fields, such as Keep-Alive,
+            // Proxy-Connection, Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection header field."
+            //
+            // Http/3 has a similar requirement: https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-field-formatting-and-compre
+            if (_httpVersion > Http.HttpVersion.Http11 && responseHeaders.HasInvalidH2H3Headers)
+            {
+                responseHeaders.ClearInvalidH2H3Headers();
+                hasTransferEncoding = false;
+                hasConnection = false;
+
+                Log.InvalidResponseHeaderRemoved();
+            }
+
             if (_keepAlive &&
                 hasConnection &&
                 (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)

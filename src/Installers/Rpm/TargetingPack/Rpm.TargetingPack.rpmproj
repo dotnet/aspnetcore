@@ -13,7 +13,7 @@
     <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
 
-    <MicrosoftNETCoreAppRefMajorMinorVersion>$(MicrosoftNETCoreAppRefPackageVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefPackageVersion.Split('.')[1])</MicrosoftNETCoreAppRefMajorMinorVersion>
+    <MicrosoftNETCoreAppRefMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</MicrosoftNETCoreAppRefMajorMinorVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
-    <RpmDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppRefMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersion.Split('-')[0])" />
+    <RpmDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppRefMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefVersion.Split('-')[0])" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />

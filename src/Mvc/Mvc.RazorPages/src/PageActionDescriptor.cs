@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
@@ -59,6 +61,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// This value will be <c>null</c> for non-area pages.
         /// </summary>
         public string AreaName { get; set; }
+
+        internal virtual CompiledPageActionDescriptor CompiledPageDescriptor { get; set; }
+
+        // This is a cache to avoid multiple compilation operations kicking off
+        internal Task<CompiledPageActionDescriptor> CompiledPageActionDescriptorTask { get; set; }
 
         /// <inheritdoc />
         public override string DisplayName
