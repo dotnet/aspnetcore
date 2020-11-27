@@ -63,31 +63,11 @@ internal class StartupHook
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();
             var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
 
-            var model = new ErrorPageModel
-            {
-                RuntimeDisplayName = RuntimeInformation.FrameworkDescription
-            };
-
-            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).Assembly;
-            var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
-            var clrVersion = assemblyVersion;
-            model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-            var currentAssembly = typeof(ErrorPage).Assembly;
-            model.CurrentAssemblyVesion = currentAssembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
-            model.ClrVersion = clrVersion;
-            model.OperatingSystemDescription = RuntimeInformation.OSDescription;
-
-            var exceptionDetailProvider = new ExceptionDetailsProvider(
+            var model = ErrorPageModelBuilder.CreateErrorPageModel(
                 new PhysicalFileProvider(contentRoot),
                 logger: null,
-                sourceCodeLineCount: 6);
-
-            // The startup hook is only present when detailed errors are allowed, so
-            // we can turn on all the details.
-            model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
-            model.ShowRuntimeDetails = true;
+                showDetailedErrors: true,
+                exception);
 
             var errorPage = new ErrorPage(model);
 

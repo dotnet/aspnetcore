@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             hostingStartupErrors = null;
 
-            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (!_options.PreventHostingStartup)
             {
