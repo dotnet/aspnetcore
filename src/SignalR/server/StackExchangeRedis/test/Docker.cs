@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
     public class Docker
     {
-        private static readonly string _exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+        private static readonly string _exeSuffix = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
         private static readonly string _dockerContainerName = "redisTestContainer";
         private static readonly string _dockerMonitorContainerName = _dockerContainerName + "Monitor";
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             // OSX + Docker + Redis don't play well together for some reason. We already have these tests covered on Linux and Windows
             // So we are happy ignoring them on OSX
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 return null;
             }

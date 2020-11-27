@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     if (OSVersionUtil.IsWindows())
                     {
-                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
+                        Debug.Assert(OperatingSystem.IsWindows()); // Hint for the platform compatibility analyzer.
 
                         // If the user profile is available, we can protect using DPAPI.
                         // Probe to see if protecting to local user is available, and use it as the default if so.
@@ -526,12 +526,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     RegistryKey regKeyStorageKey = null;
                     if (OSVersionUtil.IsWindows())
                     {
-                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
+                        Debug.Assert(OperatingSystem.IsWindows()); // Hint for the platform compatibility analyzer.
                         regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
                     }
                     if (regKeyStorageKey != null)
                     {
-                        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)); // Hint for the platform compatibility analyzer.
+                        Debug.Assert(OperatingSystem.IsWindows()); // Hint for the platform compatibility analyzer.
                         regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
 
                         // If the user profile isn't available, we can protect using DPAPI (to machine).

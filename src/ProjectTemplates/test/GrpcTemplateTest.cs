@@ -50,8 +50,8 @@ namespace Templates.Test
             var buildResult = await project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
+            var isOsx = OperatingSystem.IsMacOS();
+            var isWindowsOld = OperatingSystem.IsWindows() && Environment.OSVersion.Version < new Version(6, 2);
             var unsupported = isOsx || isWindowsOld;
 
             using (var serverProcess = project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: Logger))
@@ -125,7 +125,7 @@ namespace Templates.Test
 
             // This logic is borrowed from https://github.com/dotnet/runtime/blob/6a5a78bec9a6e14b4aa52cd5ac558f6cf5c6a211/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.Unix.cs
             private static bool IsAlpine { get; } =
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists("/etc/os-release") &&
+                OperatingSystem.IsLinux() && File.Exists("/etc/os-release") &&
                 File.ReadAllLines("/etc/os-release").Any(line =>
                     line.StartsWith("ID=", StringComparison.Ordinal) && line.Substring(3).Trim('"', '\'') == "alpine");
         }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {
     public class Executable
     {
-        private static readonly string _exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+        private static readonly string _exeSuffix = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
         public string Location { get; }
 

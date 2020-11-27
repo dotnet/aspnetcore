@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             // Do not change the current platform support without explicit approval.
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64,
+                OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64,
                 "Selenium tests should be running in this platform.");
         }
 

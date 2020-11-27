@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Testing
         public static string GetCertPath(string name) => Path.Combine(_baseDir, name);
 
         private const int MutexTimeout = 120 * 1000;
-        private static readonly Mutex importPfxMutex = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        private static readonly Mutex importPfxMutex = OperatingSystem.IsWindows() ?
             new Mutex(initiallyOwned: false, "Global\\KestrelTests.Certificates.LoadPfxCertificate") :
             null;
 

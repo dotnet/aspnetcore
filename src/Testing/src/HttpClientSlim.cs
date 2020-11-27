@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Testing
         private static async Task<string> RetryRequest(Func<Task<string>> retryBlock)
         {
             var retryCount = 1;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 retryCount = 3;
             }

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Configuration = RazorConfiguration.Default;
             FileSystem = new VirtualRazorProjectFileSystem();
             PathSeparator = Path.DirectorySeparatorChar.ToString();
-            WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
+            WorkingDirectory = OperatingSystem.IsWindows() ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
 
             DefaultRootNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Result of doing 'temp' compilation
                 var tempAssembly = CompileToAssembly(declaration, throwOnFailure);
 
-                // Add the 'temp' compilation as a metadata reference 
+                // Add the 'temp' compilation as a metadata reference
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
                 projectEngine = CreateProjectEngine(Configuration, references);
 
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         protected static void AssertSourceEquals(string expected, CompileToCSharpResult generated)
         {
             // Normalize the paths inside the expected result to match the OS paths
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 var windowsPath = Path.Combine(ArbitraryWindowsPath, generated.CodeDocument.Source.RelativePath).Replace('/', '\\');
                 expected = expected.Replace(windowsPath, generated.CodeDocument.Source.FilePath);

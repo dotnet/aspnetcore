@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 return;
             }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 _skipReasonStatic = "IIS tests can only be run on Windows";
                 return;

@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS())
             {
                 // Launching a browser requires file associations that are not available in all operating systems.
                 reporter.Verbose("Browser refresh is only supported in Windows and MacOS.");

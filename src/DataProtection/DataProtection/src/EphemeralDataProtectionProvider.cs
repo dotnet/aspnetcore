@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 var configuration = new T();
                 if (configuration is CngGcmAuthenticatedEncryptorConfiguration)
                 {
-                    Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                    Debug.Assert(OperatingSystem.IsWindows());
 
                     var descriptor = (CngGcmAuthenticatedEncryptorDescriptor)new T().CreateNewDescriptor();
                     return new CngGcmAuthenticatedEncryptorFactory(loggerFactory)

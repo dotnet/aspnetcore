@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var executableArgs = string.Empty;
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
-                    : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+                    : (OperatingSystem.IsWindows() ? ".exe" : "");
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         static ProcessTracker()
         {
             // Requires Win8 or later
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || Environment.OSVersion.Version < new Version(6, 2))
+            if (!OperatingSystem.IsWindows() || Environment.OSVersion.Version < new Version(6, 2))
             {
                 return;
             }

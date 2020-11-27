@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
                 var location = filePath + "(1,2)";
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     // Absolute paths on OSX don't work well.
                     location = null;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // This needs to be relative path. Tracked by https://github.com/aspnet/Razor/issues/2187.
                 var filePath = Path.Combine(Project.DirectoryPath, "Views", "Shared", "NavMenu.razor");
                 var location = filePath + "(1,2)";
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     // Absolute paths on OSX don't work well.
                     location = null;

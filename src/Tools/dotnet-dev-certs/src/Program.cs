@@ -236,12 +236,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             var manager = CertificateManager.Instance;
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     reporter.Output("Cleaning HTTPS development certificates from the machine. A prompt might get " +
                         "displayed to confirm the removal of some of the certificates.");
                 }
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     reporter.Output("Cleaning HTTPS development certificates from the machine. This operation might " +
                         "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
@@ -289,9 +289,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
             if (trust != null && trust.HasValue())
             {
-                if(!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if(!OperatingSystem.IsLinux())
                 {
-                    var store = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? StoreName.My : StoreName.Root;
+                    var store = OperatingSystem.IsMacOS() ? StoreName.My : StoreName.Root;
                     var trustedCertificates = certificateManager.ListCertificates(store, StoreLocation.CurrentUser, isValid: true);
                     if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                     {
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, exportPath.HasValue());
                 foreach (var certificate in certificates)
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
             if (trust?.HasValue() == true)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
                         "already trusted we will run the following command:" + Environment.NewLine +
@@ -348,13 +348,13 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "on the system keychain.");
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
                         "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (OperatingSystem.IsLinux())
                 {
                     reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate on Linux distributions automatically is not supported. " +
                         "For instructions on how to manually trust the certificate on your Linux distribution, go to https://aka.ms/dev-certs-trust");
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 now,
                 now.Add(HttpsCertificateValidity),
                 exportPath.Value(),
-                trust == null ? false : trust.HasValue() && !RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                trust == null ? false : trust.HasValue() && !OperatingSystem.IsLinux(),
                 password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
                 exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);

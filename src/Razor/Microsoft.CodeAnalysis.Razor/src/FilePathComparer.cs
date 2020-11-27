@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             get
             {
-                if (_instance == null && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (_instance == null && OperatingSystem.IsLinux())
                 {
                     _instance = StringComparer.Ordinal;
                 }

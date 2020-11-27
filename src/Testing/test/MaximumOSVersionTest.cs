@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing
         public void RunTest_Win7DoesRunOnWin7()
         {
             Assert.True(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                OperatingSystem.IsWindows() &&
                 Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should only be running on Win7 or Win2008R2.");
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Testing
         public void RunTheory_Win7DoesRunOnWin7(int arg)
         {
             Assert.True(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                OperatingSystem.IsWindows() &&
                 Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should only be running on Win7 or Win2008R2.");
         }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Testing
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RunTest_Win10_RS4()
         {
-            Assert.True(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            Assert.True(OperatingSystem.IsWindows());
             var versionKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             Assert.NotNull(versionKey);
             var currentVersion = (string)versionKey.GetValue("CurrentBuildNumber");
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Testing
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RunTest_Win10_19H2()
         {
-            Assert.True(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            Assert.True(OperatingSystem.IsWindows());
             var versionKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             Assert.NotNull(versionKey);
             var currentVersion = (string)versionKey.GetValue("CurrentBuildNumber");
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipClass_Win7DoesRunOnWin7()
         {
             Assert.True(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                OperatingSystem.IsWindows() &&
                 Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should only be running on Win7 or Win2008R2.");
         }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Testing
         [ConditionalFact]
         public void TestSkipClass_Win7DoesRunOnWin7()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 Assert.True(Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                     "Test should only be running on Win7 or Win2008R2.");

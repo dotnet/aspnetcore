@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components
 
         static PlatformInfo()
         {
-            IsWebAssembly = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
+            IsWebAssembly = OperatingSystem.IsBrowser());
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     PipeName,
                 };
 
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (!OperatingSystem.IsLinux())
                 {
                     // Workaround for https://github.com/dotnet/corefx/issues/31713. On Linux, the server shuts down but hangs around as defunct process
                     // We'll send a shutdown request but not wait for it.

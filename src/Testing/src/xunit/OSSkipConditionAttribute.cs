@@ -44,15 +44,15 @@ namespace Microsoft.AspNetCore.Testing
 
         static private OperatingSystems GetCurrentOS()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return OperatingSystems.Windows;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 return OperatingSystems.Linux;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 return OperatingSystems.MacOSX;
             }

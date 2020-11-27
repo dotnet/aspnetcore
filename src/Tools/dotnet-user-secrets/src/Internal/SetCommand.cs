@@ -22,7 +22,7 @@ Examples:
   dotnet user-secrets set ConnStr ""User ID=bob;Password=***""
 ";
 
-            var catCmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            var catCmd = OperatingSystem.IsWindows()
                 ? @"type .\secrets.json"
                 : "cat ./secrets.json";
 

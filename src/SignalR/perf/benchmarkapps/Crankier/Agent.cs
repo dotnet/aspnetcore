@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             return worker;
         }
 
-        private static string GetDotNetHost() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
+        private static string GetDotNetHost() => OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
 
         private async Task StartWorker(int id, string targetAddress, HttpTransportType transportType, int numberOfConnectionsPerWorker)
         {

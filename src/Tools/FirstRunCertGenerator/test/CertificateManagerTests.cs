@@ -427,9 +427,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public CertFixture()
         {
-            Manager = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            Manager = OperatingSystem.IsWindows() ?
             new WindowsCertificateManager(TestCertificateSubject, 1) :
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            OperatingSystem.IsMacOS() ?
                 new MacOSCertificateManager(TestCertificateSubject, 1) as CertificateManager :
                 new UnixCertificateManager(TestCertificateSubject, 1);
 
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         internal void CleanupCertificates()
         {
             Manager.RemoveAllCertificates(StoreName.My, StoreLocation.CurrentUser);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 Manager.RemoveAllCertificates(StoreName.Root, StoreLocation.CurrentUser);
             }

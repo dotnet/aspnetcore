@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipLinux()
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                OperatingSystem.IsLinux(),
                 "Test should not be running on Linux");
         }
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipMacOSX()
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                OperatingSystem.IsMacOS(),
                 "Test should not be running on MacOSX.");
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipWindows()
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+                OperatingSystem.IsWindows(),
                 "Test should not be running on Windows.");
         }
 
@@ -40,10 +40,10 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipLinuxAndMacOSX()
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                OperatingSystem.IsLinux(),
                 "Test should not be running on Linux.");
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                OperatingSystem.IsMacOS(),
                 "Test should not be running on MacOSX.");
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestTheorySkipLinux(int arg)
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                OperatingSystem.IsLinux(),
                 "Test should not be running on Linux");
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestTheorySkipMacOS(int arg)
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                OperatingSystem.IsMacOS(),
                 "Test should not be running on MacOSX.");
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestTheorySkipWindows(int arg)
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+                OperatingSystem.IsWindows(),
                 "Test should not be running on Windows.");
         }
 
@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.Testing
         public void TestTheorySkipLinuxAndMacOSX(int arg)
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                OperatingSystem.IsLinux(),
                 "Test should not be running on Linux.");
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                OperatingSystem.IsMacOS(),
                 "Test should not be running on MacOSX.");
         }
     }
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Testing
         public void TestSkipClassWindows()
         {
             Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+                OperatingSystem.IsWindows(),
                 "Test should not be running on Windows.");
         }
     }

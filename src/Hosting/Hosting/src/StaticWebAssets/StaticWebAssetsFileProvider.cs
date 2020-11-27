@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
     // <<mylibrarypath>>\wwwroot\** to _content/mylibrary/**
     internal class StaticWebAssetsFileProvider : IFileProvider
     {
-        private static readonly StringComparison FilePathComparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        private static readonly StringComparison FilePathComparison = OperatingSystem.IsWindows() ?
             StringComparison.OrdinalIgnoreCase :
             StringComparison.Ordinal;
 

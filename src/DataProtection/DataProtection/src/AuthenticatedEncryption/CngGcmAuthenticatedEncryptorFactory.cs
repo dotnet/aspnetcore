@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 return null;
             }
 
-            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            Debug.Assert(OperatingSystem.IsWindows());
 
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }

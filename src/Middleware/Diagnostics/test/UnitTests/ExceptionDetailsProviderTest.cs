@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Internal
                     "TestFiles/SourceFile.txt"
                 };
 
-                if (!(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
+                if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }

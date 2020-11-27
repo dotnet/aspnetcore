@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         static RendererRegistry()
         {
-            bool _isWebAssembly = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
+            bool _isWebAssembly = OperatingSystem.IsBrowser();
             if (_isWebAssembly)
             {
                 _renderers = new Dictionary<int, WebAssemblyRenderer>();

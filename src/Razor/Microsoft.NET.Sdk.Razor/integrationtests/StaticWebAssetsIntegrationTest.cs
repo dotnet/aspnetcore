@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml");
             Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.Manifest.cache");
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // Skip this check on mac as the CI seems to use a somewhat different path on OSX.
                 // This check works just fine on a local OSX instance, but the CI path seems to require prepending /private.
@@ -296,13 +296,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // We need to do this for Mac as apparently the temp folder in mac is prepended by /private by the os, even though the current user
             // can refer to it without the /private prefix. We don't care a lot about the specific path in this test as we will have tests that
             // validate the behavior at runtime.
-            var source = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"/private{Project.SolutionPath}" : Project.SolutionPath;
+            var source = OperatingSystem.IsMacOS() ? $"/private{Project.SolutionPath}" : Project.SolutionPath;
 
             var nugetPackages = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
             var restorePath = !string.IsNullOrEmpty(nugetPackages) ?
                 nugetPackages :
                 Path.Combine(
-                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Environment.GetEnvironmentVariable("USERPROFILE") : Environment.GetEnvironmentVariable("HOME"),
+                    OperatingSystem.IsWindows() ? Environment.GetEnvironmentVariable("USERPROFILE") : Environment.GetEnvironmentVariable("HOME"),
                     ".nuget",
                     "packages");
 

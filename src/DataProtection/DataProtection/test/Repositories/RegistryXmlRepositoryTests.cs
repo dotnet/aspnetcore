@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private class ConditionalRunTestOnlyIfHkcuRegistryAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && LazyHkcuTempKey.Value != null);
+            public bool IsMet => (OperatingSystem.IsWindows() && LazyHkcuTempKey.Value != null);
 
             public string SkipReason { get; } = "HKCU registry couldn't be opened.";
         }

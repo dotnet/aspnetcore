@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
 
             var exeToRun = pkgManagerCommand;
             var completeArguments = $"run {scriptName} -- {arguments ?? string.Empty}";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 // On Windows, the node executable is a .cmd file, so it can't be executed
                 // directly (except with UseShellExecute=true, but that's no good, because
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             StdErr = new EventedStreamReader(_npmProcess.StandardError);
 
             applicationStoppingToken.Register(((IDisposable)this).Dispose);
-            
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted"))
             {
                 diagnosticSource.Write(

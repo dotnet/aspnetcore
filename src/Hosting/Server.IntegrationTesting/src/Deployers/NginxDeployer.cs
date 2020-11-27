@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (uri.Port == 0)
                 {
                     var builder = new UriBuilder(uri);
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    if (OperatingSystem.IsLinux())
                     {
                         // This works with nginx 1.9.1 and later using the reuseport flag, available on Ubuntu 16.04.
                         // Keep it open so nobody else claims the port
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 return retVal;
             }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 using (var process = new Process
                 {

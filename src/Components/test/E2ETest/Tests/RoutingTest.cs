@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanFollowLinkToOtherPageWithCtrlClick()
         {
             // On macOS we need to hold the command key not the control for opening a popup
-            var key = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Keys.Command : Keys.Control;
+            var key = OperatingSystem.IsMacOS() ? Keys.Command : Keys.Control;
 
             try
             {

@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             CipherSuitesPolicy cipherSuitesPolicy = null;
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 try
                 {

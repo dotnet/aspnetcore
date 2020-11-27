@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Testing
         [Trait("Docker", "true")]
         public void DoesNotRunOnWindows()
         {
-            Assert.False(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            Assert.False(OperatingSystem.IsWindows());
         }
     }
 }

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _statusCode = securityStatusType.GetField("ErrorCode");
             _statusException = securityStatusType.GetField("Exception");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 var interopType = secAssembly.GetType("Interop", throwOnError: true);
                 var netNativeType = interopType.GetNestedType("NetSecurityNative", BindingFlags.NonPublic | BindingFlags.Static);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 // TODO: Remove after corefx changes
                 // The linux implementation always uses InternalError;
                 if (errorCode == SecurityStatusPalErrorCode.InternalError
-                    && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && !OperatingSystem.IsWindows()
                     && _gssExceptionType.IsInstanceOfType(error))
                 {
                     var majorStatus = (uint)error.HResult;

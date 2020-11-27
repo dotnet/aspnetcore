@@ -17,11 +17,11 @@ namespace Interop.FunctionalTests
 
         private static string ResolveChromeExecutablePath()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application", "chrome.exe");
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 return Path.Combine("/usr", "bin", "google-chrome");
             }

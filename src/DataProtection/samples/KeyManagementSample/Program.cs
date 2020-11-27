@@ -20,7 +20,7 @@ namespace KeyManagementSample
                 .AddDataProtection()
                 // point at a specific folder and use DPAPI to encrypt keys
                 .PersistKeysToFileSystem(new DirectoryInfo(keysFolder));
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 builder.ProtectKeysWithDpapi();
             }

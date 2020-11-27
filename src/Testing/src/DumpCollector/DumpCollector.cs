@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public static void Collect(Process process, string fileName)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 Windows.Collect(process, fileName);
             }

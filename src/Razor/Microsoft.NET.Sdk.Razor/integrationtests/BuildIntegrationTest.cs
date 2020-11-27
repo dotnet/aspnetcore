@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // GetFullPath on OSX doesn't work well in travis. We end up computing a different path than will
                 // end up in the MSBuild logs.
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Verifying that the error correctly gets mapped to the original source
             var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
             var location = filePath + "(1,27)";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 // Absolute paths on OSX don't work well.
                 location = null;

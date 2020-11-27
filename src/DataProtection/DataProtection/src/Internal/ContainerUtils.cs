@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
                 return false;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 // we currently don't have a good way to detect mounted file systems within Windows ctonainers
                 return false;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
                 return true;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 // we currently don't have a good way to detect if running in a Windows container
                 return false;

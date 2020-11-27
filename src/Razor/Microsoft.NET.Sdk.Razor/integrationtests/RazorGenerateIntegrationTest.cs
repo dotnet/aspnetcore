@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(RazorGenerateTarget);
 
             Assert.BuildFailed(result);
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // GetFullPath on OSX doesn't work well in travis. We end up computing a different path than will
                 // end up in the MSBuild logs.

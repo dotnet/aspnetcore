@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // we currently don't have a good way to detect if running in a Windows container
                     return false;

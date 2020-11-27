@@ -49,7 +49,7 @@ namespace FunctionalTests
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             bool useRSA = false;
-                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            if (OperatingSystem.IsWindows())
                             {
                                 // Detect Win10+
                                 var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");

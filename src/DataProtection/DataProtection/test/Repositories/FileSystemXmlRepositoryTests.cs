@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         [Fact]
         public void DefaultKeyStorageDirectory_Property()
         {
-            var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            var baseDir = OperatingSystem.IsWindows()
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ASP.NET")
                 : Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".aspnet");
             var expectedDir = new DirectoryInfo(Path.Combine(baseDir, "DataProtection-Keys")).FullName;

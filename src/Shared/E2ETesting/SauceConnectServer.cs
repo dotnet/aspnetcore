@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 RedirectStandardError = true,
             };
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 psi.FileName = "cmd";
                 psi.Arguments = $"/c npm {psi.Arguments}";

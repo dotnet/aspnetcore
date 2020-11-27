@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             // Check if in process
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
+            if (OperatingSystem.IsWindows() && NativeMethods.IsAspNetCoreModuleLoaded())
             {
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
                 // Trim trailing slash to be consistent with other servers

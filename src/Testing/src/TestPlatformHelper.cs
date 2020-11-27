@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Testing
             Type.GetType("Mono.Runtime") != null;
 
         public static bool IsWindows =>
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            OperatingSystem.IsWindows();
 
         public static bool IsLinux =>
-            RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            OperatingSystem.IsLinux();
 
         public static bool IsMac =>
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            OperatingSystem.IsMacOS();
     }
 }

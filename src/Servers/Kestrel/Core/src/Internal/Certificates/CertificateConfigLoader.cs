@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
 
                     if (certificate != null)
                     {
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        if (OperatingSystem.IsWindows())
                         {
                             return PersistKey(certificate);
                         }

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // Travis on OSX produces different full paths in C# and MSBuild
                 Assert.NuspecContains(
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // Travis on OSX produces different full paths in C# and MSBuild
                 Assert.NuspecContains(
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // Travis on OSX produces different full paths in C# and MSBuild
                 Assert.NuspecContains(
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (!OperatingSystem.IsMacOS())
             {
                 // Travis on OSX produces different full paths in C# and MSBuild
                 Assert.NuspecContains(

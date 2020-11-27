@@ -23,7 +23,7 @@ namespace NegotiateAuthSample
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                 .AddNegotiate(options =>
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    if (OperatingSystem.IsLinux())
                     {
                         /*
                         options.EnableLdap("DOMAIN.net");

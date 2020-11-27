@@ -70,7 +70,7 @@
 
     public async Task InvokeInteropAsync()
     {
-        var shouldSupportSyncInterop = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
+        var shouldSupportSyncInterop = OperatingSystem.IsBrowser();
         var testDTOTOPassByRef = new TestDTO(nonSerializedValue: 123);
         var instanceMethodsTarget = new JavaScriptInterop();
         var genericType = new JavaScriptInterop.GenericType<string> { Value = "Initial value" };

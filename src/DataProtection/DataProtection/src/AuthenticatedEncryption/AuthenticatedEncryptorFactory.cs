@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     throw new PlatformNotSupportedException(Resources.Platform_WindowsRequiredForGcm);
                 }
 
-                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                Debug.Assert(OperatingSystem.IsWindows());
 
                 var configuration = new CngGcmAuthenticatedEncryptorConfiguration()
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             {
                 if (OSVersionUtil.IsWindows())
                 {
-                    Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                    Debug.Assert(OperatingSystem.IsWindows());
                     // CNG preferred over managed implementations if running on Windows
                     var configuration = new CngCbcAuthenticatedEncryptorConfiguration()
                     {

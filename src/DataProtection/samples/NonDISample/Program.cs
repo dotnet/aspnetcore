@@ -21,7 +21,7 @@ namespace NonDISample
                 configuration =>
                 {
                     configuration.SetApplicationName("my app name");
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (OperatingSystem.IsWindows())
                     {
                         configuration.ProtectKeysWithDpapi();
                     }

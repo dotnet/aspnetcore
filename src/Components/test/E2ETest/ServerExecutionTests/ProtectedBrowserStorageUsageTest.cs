@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         /// </remarks>
         private void OpenNewSession()
         {
-            var modifierKey = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            var modifierKey = OperatingSystem.IsMacOS() ?
                 Keys.Command :
                 Keys.Control;
 

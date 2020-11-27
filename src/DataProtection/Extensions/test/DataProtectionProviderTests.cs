@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.DataProtection
             Assert.StartsWith("key-", file.Name, StringComparison.OrdinalIgnoreCase);
             var fileText = File.ReadAllText(file.FullName);
             // On Windows, validate that it's protected using Windows DPAPI.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
                 Assert.Contains("This key is encrypted with Windows DPAPI.", fileText, StringComparison.Ordinal);

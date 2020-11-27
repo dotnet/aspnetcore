@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         static IISExpressAncmSchema()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 SkipReason = "IIS Express tests can only be run on Windows";
                 return;
