@@ -73,6 +73,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             {
                 disposable.Dispose();
             }
+            else if (controller is IAsyncDisposable asyncDisposable)
+            {
+                asyncDisposable.DisposeAsync().AsTask().Wait()
+            }
         }
     }
 }
