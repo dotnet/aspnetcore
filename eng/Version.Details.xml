@@ -237,6 +237,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
+    <Dependency Name="System.Security.AccessControl" Version="5.0.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Cng" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
