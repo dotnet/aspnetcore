@@ -253,11 +253,13 @@
     <_CompileTfmUsingReferenceAssemblies
         Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
+
   <!--
     If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
-  <ItemGroup Condition=" ($(_CompileTfmUsingReferenceAssemblies) AND '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime') OR
-      ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+  <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+      ($(_CompileTfmUsingReferenceAssemblies) OR
+       ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"
         Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
         IsImplicitlyDefined="true"
