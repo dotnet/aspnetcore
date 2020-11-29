@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
@@ -40,7 +41,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         private static string? TryFindMuxerPath()
         {
             var fileName = MuxerName;
-            if (OperatingSystem.IsWindows())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 fileName += ".exe";
             }
