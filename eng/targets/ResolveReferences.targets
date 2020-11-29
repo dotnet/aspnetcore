@@ -268,6 +268,30 @@
         GeneratePathProperty="true" />
   </ItemGroup>
 
+  <!--
+    Remove compile-time assets for packages that overlap Microsoft.Extensions.Internal.Transport. Serviced packages
+    may otherwise increase the referenced version. Avoid this because change reduces compatible runtime versions.
+    That's not a big deal within the shared framework but can cause problems for shipped packages. Leave test
+    projects and Ignitor alone because they may transitively reference newer netstandard assemblies and need a
+    net5.0 assembly with the same version. (This can happen in implementation projects but is less likely.)
+  -->
+  <Target Name="RemoveExtensionsCompileAssets"
+      AfterTargets="ResolvePackageAssets"
+      Condition=" '$(PkgMicrosoft_Extensions_Internal_Transport)' != '' AND
+          '$(IsServicingBuild)' == 'true' AND
+          '$(IsImplementationProject)' == 'true' AND
+          '$(MSBuildProjectName)' != 'Ignitor' AND
+          '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+          ($(_CompileTfmUsingReferenceAssemblies) OR
+           ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
+          Condition=" '%(NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
+              EXISTS('$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
+              $([System.String]::new('%(Directory)').Contains('$(TargetFramework)')) " />
+    </ItemGroup>
+  </Target>
+
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
