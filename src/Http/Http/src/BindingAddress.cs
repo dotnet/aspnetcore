@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!OperatingSystem.IsWindows())
                 {
                     // "/" character in unix refers to root. Windows has drive letters and volume separator (c:)
                     unixPipeHostPrefixLength--;
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Http
             else
             {
                 var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // Windows has drive letters and volume separator (c:)
                     unixPipeHostPrefixLength += 2;
