@@ -162,17 +162,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
             var debuggerPort = new Uri(_browserHost).Port;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return $@"<p>Press Win+R and enter the following:</p>
                           <p><strong><code>chrome --remote-debugging-port={debuggerPort} --user-data-dir=""{profilePath}"" {targetApplicationUrl}</code></strong></p>";
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 return $@"<p>In a terminal window execute the following:</p>
                           <p><strong><code>google-chrome --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>Execute the following:</p>
                           <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
@@ -188,12 +188,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
             var debuggerPort = new Uri(_browserHost).Port;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return $@"<p>Press Win+R and enter the following:</p>
                           <p><strong><code>msedge --remote-debugging-port={debuggerPort} --user-data-dir=""{profilePath}"" --no-first-run {targetApplicationUrl}</code></strong></p>";
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>In a terminal window execute the following:</p>
                           <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
