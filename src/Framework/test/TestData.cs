@@ -8,9 +8,10 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore
 {
-    public class TestData
+    public static class TestData
     {
         public static List<string> ListedSharedFxAssemblies;
+
         public static SortedDictionary<string, string> ListedTargetingPackAssemblies;
 
         static TestData()
@@ -149,6 +150,7 @@ namespace Microsoft.AspNetCore
                 "System.Security.Permissions",
                 "System.Windows.Extensions"
             };
+
             ListedTargetingPackAssemblies = new SortedDictionary<string, string>
             {
                 { "Microsoft.AspNetCore", "5.0.0.0" },
@@ -299,6 +301,8 @@ namespace Microsoft.AspNetCore
         public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
 
         public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("TargetRuntimeIdentifier");
+
+        public static string GetSharedFrameworkBinariesFromRepo() => GetTestDataValue("SharedFrameworkBinariesFromRepo");
 
         public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
 
