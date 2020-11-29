@@ -48,17 +48,17 @@ namespace Interop.FunctionalTests
         private static string GetToolLocation()
         {
             var root = Path.Combine(Environment.CurrentDirectory, "h2spec");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return Path.Combine(root, "windows", "h2spec.exe");
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 var toolPath = Path.Combine(root, "linux", "h2spec");
                 chmod755(toolPath);
                 return toolPath;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 var toolPath = Path.Combine(root, "darwin", "h2spec");
                 chmod755(toolPath);
@@ -267,7 +267,7 @@ namespace Interop.FunctionalTests
                     if (node.Attributes["errors"].Value != "0")
                     {
                         // This does not list the individual sub-tests in each section
-                        failures.Add("Test failed: " + node.Attributes["package"].Value + "; "  + node.Attributes["name"].Value);
+                        failures.Add("Test failed: " + node.Attributes["package"].Value + "; " + node.Attributes["name"].Value);
                     }
                     if (node.Attributes["tests"].Value != "0")
                     {
