@@ -128,6 +128,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</ContentSourcePath>
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</ContentSourcePath>
         <RelativePath>%(ServiceWorker.Identity)</RelativePath>
+        <RelativePath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').Replace('/','\').StartsWith('wwwroot\'))">$(_BlazorPublishOutputPath)$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</RelativePath>
       </_ServiceWorkerIntermediatePublishFile>
 
       <_ServiceWorkerPublishFile Include="@(ResolvedFileToPublish)" Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))">
@@ -161,7 +162,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish
         Include="$(_ServiceWorkerAssetsManifestPublishIntermediateOutputPath)"
         CopyToPublishDirectory="PreserveNewest"
-        RelativePath="wwwroot\$(ServiceWorkerAssetsManifest)"
+        RelativePath="$(_BlazorPublishOutputPath)$(ServiceWorkerAssetsManifest)"
         ExcludeFromSingleFile="true" />
     </ItemGroup>
   </Target>

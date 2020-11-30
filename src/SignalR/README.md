@@ -12,19 +12,19 @@ This folder contains the server and client implementations for SignalR.
 
 The following contains a description of the sub-directories.
 
-`server/Core`: Contains the main server-side implementation of the SignalR protocol and the Hubs API.
-`server/SignalR`: Contains extensions that help make using SignalR easier.
-`server/StackExchangeRedis`: Contains a backplane implementation using StackExchange.Redis.
-`server/Specification.Tests`: Contains a set of tests for users to use when verifying custom implementations of SignalR types.
-`common/Http.Connections.Common`: Contains common types used by both the server and .NET client for the HTTP layer.
-`common/Http.Connections`: Contains the HTTP implementation layer for LongPolling, ServerSentEvents, and WebSockets on the server.
-`common/Protocols.Json`: Contains the Json Hub Protocol implementation using System.Text.Json for the server and .NET client.
-`common/Protocols.MessagePack`: Contains the MessagePack Hub Protocol implementation for the server and .NET client.
-`common/Protocols.NewtonsoftJson`: Contains the Json Hub Protocol implementation using Newtonsoft.Json for the server and .NET client.
-`common/SignalR.Common`: Contains common types used by both the server and .NET client for the SignalR layer.
-`clients/csharp`: Contains the client-side implementation of the SignalR protocol in .NET.
-`clients/java`: Contains the client-side implementation of the SignalR protocol in Java.
-`clients/ts`: Contains the client-side implementation of the SignalR protocol in TypeScript/JavaScript.
+- `server/Core`: Contains the main server-side implementation of the SignalR protocol and the Hubs API.
+- `server/SignalR`: Contains extensions that help make using SignalR easier.
+- `server/StackExchangeRedis`: Contains a backplane implementation using StackExchange.Redis.
+- `server/Specification.Tests`: Contains a set of tests for users to use when verifying custom implementations of SignalR types.
+- `common/Http.Connections.Common`: Contains common types used by both the server and .NET client for the HTTP layer.
+- `common/Http.Connections`: Contains the HTTP implementation layer for LongPolling, ServerSentEvents, and WebSockets on the server.
+- `common/Protocols.Json`: Contains the Json Hub Protocol implementation using System.Text.Json for the server and .NET client.
+- `common/Protocols.MessagePack`: Contains the MessagePack Hub Protocol implementation for the server and .NET client.
+- `common/Protocols.NewtonsoftJson`: Contains the Json Hub Protocol implementation using Newtonsoft.Json for the server and .NET client.
+- `common/SignalR.Common`: Contains common types used by both the server and .NET client for the SignalR layer.
+- `clients/csharp`: Contains the client-side implementation of the SignalR protocol in .NET.
+- `clients/java`: Contains the client-side implementation of the SignalR protocol in Java.
+- `clients/ts`: Contains the client-side implementation of the SignalR protocol in TypeScript/JavaScript.
 
 ## Development Setup
 

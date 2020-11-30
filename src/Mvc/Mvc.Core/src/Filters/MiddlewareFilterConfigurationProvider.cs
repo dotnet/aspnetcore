@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 throw new ArgumentNullException(nameof(configurationType));
             }
 
-            if (!HasParameterlessConstructor(configurationType.GetTypeInfo()))
+            if (!HasParameterlessConstructor(configurationType))
             {
                 throw new InvalidOperationException(
                     Resources.FormatMiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType(configurationType, nameof(configurationType)));
@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             return methodInfo;
         }
 
-        private static bool HasParameterlessConstructor(TypeInfo modelTypeInfo)
+        private static bool HasParameterlessConstructor(Type modelType)
         {
-            return !modelTypeInfo.IsAbstract && modelTypeInfo.GetConstructor(Type.EmptyTypes) != null;
+            return !modelType.IsAbstract && modelType.GetConstructor(Type.EmptyTypes) != null;
         }
 
         private class ConfigureBuilder

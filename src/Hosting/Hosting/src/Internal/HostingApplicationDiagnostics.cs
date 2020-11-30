@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Hosting
         private void LogRequestStarting(HostingApplication.Context context)
         {
             // IsEnabled is checked in the caller, so if we are here just log
-            var startLog = new HostingRequestStartingLog(context.HttpContext);
+            var startLog = new HostingRequestStartingLog(context.HttpContext!);
             context.StartLog = startLog;
 
             _logger.Log(

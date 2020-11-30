@@ -109,12 +109,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string path = null;
             var whole = prefix ?? string.Empty;
 
-            var schemeDelimiterEnd = whole.IndexOf("://", StringComparison.Ordinal);
+            var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
             if (schemeDelimiterEnd < 0)
             {
                 throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
             }
-            var hostDelimiterStart = schemeDelimiterEnd + "://".Length;
+            var hostDelimiterStart = schemeDelimiterEnd + Uri.SchemeDelimiter.Length;
 
             var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
             if (pathDelimiterStart < 0)
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Path { get; }
 
         internal string PathWithoutTrailingSlash { get; }
-        
+
         /// <summary>
         /// Gets a string representation of the prefix
         /// </summary>

@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TAccount : RemoteUserAccount
         {
             services.AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, MsalProviderOptions>(configure);
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>, MsalDefaultOptionsConfiguration>());
+            services.TryAddEnumerable(ServiceDescriptor.Scoped<IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>, MsalDefaultOptionsConfiguration>());
 
             return new MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>(services);
         }

@@ -203,8 +203,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return true;
             }
 
-            return targetType.GetTypeInfo().IsClass &&
-                !targetType.GetTypeInfo().IsAbstract &&
+            return targetType.IsClass &&
+                !targetType.IsAbstract &&
                 typeof(ICollection<TElement>).IsAssignableFrom(targetType);
         }
 

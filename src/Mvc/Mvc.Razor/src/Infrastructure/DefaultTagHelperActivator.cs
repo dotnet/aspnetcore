@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 {
@@ -13,22 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
     /// </summary>
     internal class DefaultTagHelperActivator : ITagHelperActivator
     {
-        private readonly ITypeActivatorCache _typeActivatorCache;
-
-        /// <summary>
-        /// Instantiates a new <see cref="DefaultTagHelperActivator"/> instance.
-        /// </summary>
-        /// <param name="typeActivatorCache">The <see cref="ITypeActivatorCache"/>.</param>
-        public DefaultTagHelperActivator(ITypeActivatorCache typeActivatorCache)
-        {
-            if (typeActivatorCache == null)
-            {
-                throw new ArgumentNullException(nameof(typeActivatorCache));
-            }
-
-            _typeActivatorCache = typeActivatorCache;
-        }
-
         /// <inheritdoc />
         public TTagHelper Create<TTagHelper>(ViewContext context)
             where TTagHelper : ITagHelper
@@ -38,9 +22,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return _typeActivatorCache.CreateInstance<TTagHelper>(
-                context.HttpContext.RequestServices,
-                typeof(TTagHelper));
+            return Cache<TTagHelper>.Create(context.HttpContext.RequestServices);
+        }
+
+        private static class Cache<TTagHelper>
+        {
+            private static readonly ObjectFactory _objectFactory = ActivatorUtilities.CreateFactory(typeof(TTagHelper), Type.EmptyTypes);
+
+            public static TTagHelper Create(IServiceProvider serviceProvider) => (TTagHelper)_objectFactory(serviceProvider, arguments: null);
         }
     }
 }

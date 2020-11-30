@@ -425,7 +425,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch { }
-    MONO.mono_wasm_setenv("TZ", timeZone || "UTC");
+    MONO.mono_wasm_setenv("TZ", timeZone || 'UTC');
     // Turn off full-gc to prevent browser freezing.
     const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
     mono_wasm_enable_on_demand_gc(0);

@@ -56,7 +56,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
-                Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
+                if (Log.IsEnabled())
+                {
+                    Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
+                }
                 using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {
                     process.WaitForExit();
@@ -238,7 +241,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 RedirectStandardError = true
             };
 
-            Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
+            if (Log.IsEnabled())
+            {
+                Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
+            }
+
             using (var process = Process.Start(processInfo))
             {
                 var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
@@ -282,7 +289,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 RedirectStandardError = true
             };
 
-            Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
+            if (Log.IsEnabled())
+            {
+                Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
+            }
+
             using (var process = Process.Start(processInfo))
             {
                 var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();

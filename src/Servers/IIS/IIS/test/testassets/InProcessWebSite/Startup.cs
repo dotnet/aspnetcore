@@ -1488,6 +1488,8 @@ namespace TestSite
             Assert.Equal("HTTP/2", httpContext.Request.Protocol);
 #if !FORWARDCOMPAT
             Assert.False(httpContext.Request.CanHaveBody());
+            var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            Assert.False(feature.IsUpgradableRequest);
 #endif
             Assert.Null(httpContext.Request.ContentLength);
             Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));

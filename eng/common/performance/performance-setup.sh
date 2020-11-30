@@ -198,6 +198,12 @@ if [[ "$internal" == true ]]; then
     else
         queue=Ubuntu.1804.Amd64.Tiger.Perf
     fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
+    fi
 fi
 
 if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then

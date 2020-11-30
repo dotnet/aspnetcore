@@ -12,110 +12,114 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     internal class KestrelTrace : IKestrelTrace
     {
         private static readonly Action<ILogger, string, Exception> _connectionStart =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(ConnectionStart)), @"Connection id ""{ConnectionId}"" started.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionStart"), @"Connection id ""{ConnectionId}"" started.");
 
         private static readonly Action<ILogger, string, Exception> _connectionStop =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, nameof(ConnectionStop)), @"Connection id ""{ConnectionId}"" stopped.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "ConnectionStop"), @"Connection id ""{ConnectionId}"" stopped.");
 
         private static readonly Action<ILogger, string, Exception> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(ConnectionPause)), @"Connection id ""{ConnectionId}"" paused.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionPause"), @"Connection id ""{ConnectionId}"" paused.");
 
         private static readonly Action<ILogger, string, Exception> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(ConnectionResume)), @"Connection id ""{ConnectionId}"" resumed.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionResume"), @"Connection id ""{ConnectionId}"" resumed.");
 
         private static readonly Action<ILogger, string, Exception> _connectionKeepAlive =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, nameof(ConnectionKeepAlive)), @"Connection id ""{ConnectionId}"" completed keep alive response.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "ConnectionKeepAlive"), @"Connection id ""{ConnectionId}"" completed keep alive response.");
 
         private static readonly Action<ILogger, string, Exception> _connectionDisconnect =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, nameof(ConnectionDisconnect)), @"Connection id ""{ConnectionId}"" disconnecting.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, "ConnectionDisconnect"), @"Connection id ""{ConnectionId}"" disconnecting.");
 
         private static readonly Action<ILogger, string, string, Exception> _applicationError =
-            LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(13, nameof(ApplicationError)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
+            LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(13, "ApplicationError"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
 
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(16, nameof(NotAllConnectionsClosedGracefully)), "Some connections failed to close gracefully during server shutdown.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(16, "NotAllConnectionsClosedGracefully"), "Some connections failed to close gracefully during server shutdown.");
 
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(17, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(17, "ConnectionBadRequest"), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
 
         private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite =
-            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(18, nameof(ConnectionHeadResponseBodyWrite)), @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(18, "ConnectionHeadResponseBodyWrite"), @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
 
         private static readonly Action<ILogger, string, Exception> _requestProcessingError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, nameof(RequestProcessingError)), @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, "RequestProcessingError"), @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
 
         private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(21, nameof(NotAllConnectionsAborted)), "Some connections failed to abort during server shutdown.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(21, "NotAllConnectionsAborted"), "Some connections failed to abort during server shutdown.");
 
         private static readonly Action<ILogger, TimeSpan, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
+            LoggerMessage.Define<TimeSpan, TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, "HeartbeatSlow"), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
 
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
-            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, nameof(ApplicationNeverCompleted)), @"Connection id ""{ConnectionId}"" application never completed");
+            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, "ApplicationNeverCompleted"), @"Connection id ""{ConnectionId}"" application never completed");
 
         private static readonly Action<ILogger, string, Exception> _connectionRejected =
-            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, nameof(ConnectionRejected)), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, "ConnectionRejected"), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyStart =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, nameof(RequestBodyStart)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "RequestBodyStart"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyDone =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, nameof(RequestBodyDone)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, "RequestBodyDone"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
 
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string, double>(LogLevel.Debug, new EventId(27, nameof(RequestBodyMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
+            LoggerMessage.Define<string, string, double>(LogLevel.Debug, new EventId(27, "RequestBodyMinimumDataRateNotSatisfied"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(28, nameof(ResponseMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(28, "ResponseMinimumDataRateNotSatisfied"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, "Http2ConnectionError"), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
 
         private static readonly Action<ILogger, string, Exception> _http2StreamError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(30, nameof(Http2StreamError)), @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(30, "Http2StreamError"), @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
 
         private static readonly Action<ILogger, string, int, Exception> _hpackDecodingError =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(31, nameof(HPackDecodingError)), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(31, "HPackDecodingError"), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyNotEntirelyRead =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(32, nameof(RequestBodyNotEntirelyRead)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application completed without reading the entire request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(32, "RequestBodyNotEntirelyRead"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application completed without reading the entire request body.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyDrainTimedOut =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
 
         private static readonly Action<ILogger, string, string, Exception> _applicationAbortedConnection =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
         private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetError =
-            LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, nameof(Http2StreamResetAbort)),
+            LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, "Http2StreamResetAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionClosing =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosing)),
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(36, "Http2ConnectionClosing"),
                 @"Connection id ""{ConnectionId}"" is closing.");
 
         private static readonly Action<ILogger, string, int, Exception> _http2ConnectionClosed =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosed)),
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, "Http2ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameReceived =
-            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
                 @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}");
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameSending =
-            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}");
 
         private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
-            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, nameof(HPackEncodingError)),
+            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, "HPackEncodingError"),
                 @"Connection id ""{ConnectionId}"": HPACK encoding error while encoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, Exception> _connectionAccepted =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, nameof(ConnectionAccepted)), @"Connection id ""{ConnectionId}"" accepted.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, "ConnectionAccepted"), @"Connection id ""{ConnectionId}"" accepted.");
 
         private static readonly Action<ILogger, string, Exception> _http2MaxConcurrentStreamsReached =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, nameof(Http2MaxConcurrentStreamsReached)),
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, "Http2MaxConcurrentStreamsReached"),
                 @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
+
+        private static readonly Action<ILogger, Exception> _invalidResponseHeaderRemoved =
+            LoggerMessage.Define(LogLevel.Warning, new EventId(41, "InvalidResponseHeaderRemoved"),
+                "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.");
 
         protected readonly ILogger _logger;
 
@@ -293,6 +297,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void Http2MaxConcurrentStreamsReached(string connectionId)
         {
             _http2MaxConcurrentStreamsReached(_logger, connectionId, null);
+        }
+
+        public void InvalidResponseHeaderRemoved()
+        {
+            _invalidResponseHeaderRemoved(_logger, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

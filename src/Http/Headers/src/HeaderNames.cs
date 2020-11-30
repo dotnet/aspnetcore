@@ -65,6 +65,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Pragma = "Pragma";
         public static readonly string ProxyAuthenticate = "Proxy-Authenticate";
         public static readonly string ProxyAuthorization = "Proxy-Authorization";
+        public static readonly string ProxyConnection = "Proxy-Connection";
         public static readonly string Range = "Range";
         public static readonly string Referer = "Referer";
         public static readonly string RetryAfter = "Retry-After";

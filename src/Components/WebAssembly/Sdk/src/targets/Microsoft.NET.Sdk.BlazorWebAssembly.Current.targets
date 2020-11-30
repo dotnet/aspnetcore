@@ -74,7 +74,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Internal properties -->
     <_BlazorOutputPath>wwwroot\_framework\</_BlazorOutputPath>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -463,6 +462,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="JoinResult" ItemName="_ResolvedSatelliteToPublish" />
     </JoinItems>
 
+    <PropertyGroup>
+      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' != '/'">wwwroot\$(StaticWebAssetBasePath.Replace('/', '\'))</_BlazorPublishOutputPath>
+      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' == '/'">wwwroot\</_BlazorPublishOutputPath>
+      <_BlazorFrameworkPublishPath>$(_BlazorPublishOutputPath)_framework\</_BlazorFrameworkPublishPath>
+    </PropertyGroup>
+
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(_ResolvedSatelliteToPublish)" />
       <ResolvedFileToPublish Include="@(_ResolvedSatelliteToPublish)" />
@@ -478,13 +483,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Remove dotnet.js from publish output -->
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'dotnet.js'" />
 
-      <!-- Retarget so that items are published to the wwwroot directory -->
-      <ResolvedFileToPublish
-        RelativePath="$(_BlazorOutputPath)%(ResolvedFileToPublish.RelativePath)"
-        Condition="'%(ResolvedFileToPublish.RelativePath)' != 'web.config' AND !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
-
       <!-- Remove pdbs from the publish output -->
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'$(CopyOutputSymbolsToPublishDirectory)' != 'true' AND '%(Extension)' == '.pdb'" />
+
+      <!-- Retarget so that items are published to the wwwroot directory -->
+      <!--
+        This changes files (such as wwwroot/index.html) that are published to $(PublishDir)wwwroot\ -> $(PublishDir)wwwroot\$(StaticWebAssetBasePath)\.
+        Ignore any user specified web.config in the process.
+      -->
+      <ResolvedFileToPublish
+        RelativePath="$(_BlazorPublishOutputPath)$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/','\').Substring(8))"
+        Condition="'$(StaticWebAssetBasePath)' != '/' AND $([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/','\').StartsWith('wwwroot\'))" />
+
+      <!--
+        Change all remaining publish output to publish to appear under the $(PublishDir)wwwroot\$(StaticWebAssetBasePath) path.
+      -->
+      <ResolvedFileToPublish
+        RelativePath="$(_BlazorFrameworkPublishPath)%(ResolvedFileToPublish.RelativePath)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)' != 'web.config' AND !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('/','\').StartsWith('wwwroot\'))" />
     </ItemGroup>
 
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
@@ -530,11 +546,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <ResolvedFileToPublish
         Include="$(IntermediateOutputPath)blazor.publish.boot.json"
-        RelativePath="$(_BlazorOutputPath)blazor.boot.json" />
+        RelativePath="$(_BlazorFrameworkPublishPath)blazor.boot.json" />
 
       <ResolvedFileToPublish
         Include="@(_BlazorJSFile)"
-        RelativePath="$(_BlazorOutputPath)%(FileName)%(Extension)" />
+        RelativePath="$(_BlazorFrameworkPublishPath)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 

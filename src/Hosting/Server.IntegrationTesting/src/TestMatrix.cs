@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -124,9 +124,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 switch (RuntimeInformation.OSArchitecture)
                 {
+                    case Architecture.Arm:
                     case Architecture.X86:
                         Architectures.Add(RuntimeArchitecture.x86);
                         break;
+                    case Architecture.Arm64:
                     case Architecture.X64:
                         Architectures.Add(RuntimeArchitecture.x64);
                         break;

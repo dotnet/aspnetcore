@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Hosting
 
         public MethodInfo MethodInfo { get; }
 
-        public Action<IApplicationBuilder> Build(object instance) => builder => Invoke(instance, builder);
+        public Action<IApplicationBuilder> Build(object? instance) => builder => Invoke(instance, builder);
 
-        private void Invoke(object instance, IApplicationBuilder builder)
+        private void Invoke(object? instance, IApplicationBuilder builder)
         {
             // Create a scope for Configure, this allows creating scoped dependencies
             // without the hassle of manually creating a scope.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
                                 parameterInfo.ParameterType.FullName,
                                 parameterInfo.Name,
                                 MethodInfo.Name,
-                                MethodInfo.DeclaringType.FullName), ex);
+                                MethodInfo.DeclaringType?.FullName), ex);
                         }
                     }
                 }
