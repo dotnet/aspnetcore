@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,12 +20,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal class IISHttpServer : IServer
     {
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
-
-        private static readonly NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
-        private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
-        private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
-        private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _requestsDrainedHandler = OnRequestsDrained;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -89,12 +82,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _requestsDrainedHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(
+                &HandleRequest,
+                &HandleShutdown,
+                &OnDisconnect,
+                &OnAsyncCompletion,
+                &OnRequestsDrained,
+                (IntPtr)_httpServerHandle,
+                (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
+        [UnmanagedCallersOnly]
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
@@ -163,7 +164,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static bool HandleShutdown(IntPtr pvRequestContext)
+        [UnmanagedCallersOnly]
+        private static int HandleShutdown(IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 if (server ==  null)
                 {
                     // return value isn't checked.
-                    return true;
+                    return 1;
                 }
 
                 server._applicationLifetime.StopApplication();
@@ -183,9 +185,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleShutdown)}.");
             }
-            return true;
+            return 1;
         }
 
+        [UnmanagedCallersOnly]
         private static void OnDisconnect(IntPtr pvManagedHttpContext)
         {
             IISHttpContext context = null;
@@ -207,6 +210,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        [UnmanagedCallersOnly]
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
         {
             IISHttpContext context = null;
@@ -231,6 +235,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        [UnmanagedCallersOnly]
         private static void OnRequestsDrained(IntPtr serverContext)
         {
             IISHttpServer server = null;

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -38,24 +37,24 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public void RegisterCallbacks(
-            NativeMethods.PFN_REQUEST_HANDLER requestHandler,
-            NativeMethods.PFN_SHUTDOWN_HANDLER shutdownHandler,
-            NativeMethods.PFN_DISCONNECT_HANDLER disconnectHandler,
-            NativeMethods.PFN_ASYNC_COMPLETION onAsyncCompletion,
-            NativeMethods.PFN_REQUESTS_DRAINED_HANDLER requestDrainedHandler,
-            IntPtr requestContext,
-            IntPtr shutdownContext)
+        public unsafe void RegisterCallbacks(
+            delegate* unmanaged<nint, nint, NativeMethods.REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged<nint, int> shutdownCallback,
+            delegate* unmanaged<nint, void> disconnectCallback,
+            delegate* unmanaged<nint, int, int, NativeMethods.REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged<nint, void> requestsDrainedHandler,
+            nint pvRequestContext,
+            nint pvShutdownContext)
         {
             NativeMethods.HttpRegisterCallbacks(
                 _nativeApplication,
-                requestHandler,
-                shutdownHandler,
-                disconnectHandler,
-                onAsyncCompletion,
-                requestDrainedHandler,
-                requestContext,
-                shutdownContext);
+                requestCallback,
+                shutdownCallback,
+                disconnectCallback,
+                asyncCallback,
+                requestsDrainedHandler,
+                pvRequestContext,
+                pvShutdownContext);
         }
 
         public void Dispose()
