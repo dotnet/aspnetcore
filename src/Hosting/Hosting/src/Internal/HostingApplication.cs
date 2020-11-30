@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Hosting
         // Set up the request
         public Context CreateContext(IFeatureCollection contextFeatures)
         {
-            Context hostContext;
+            Context? hostContext;
             if (contextFeatures is IHostContextContainer<Context> container)
             {
                 hostContext = container.HostContext;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         // Clean up the request
-        public void DisposeContext(Context context, Exception exception)
+        public void DisposeContext(Context context, Exception? exception)
         {
             var httpContext = context.HttpContext!;
             _diagnostics.RequestEnd(httpContext, exception, context);

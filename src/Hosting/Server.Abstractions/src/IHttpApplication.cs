@@ -31,6 +31,6 @@ namespace Microsoft.AspNetCore.Hosting.Server
         /// </summary>
         /// <param name="context">The TContext to be disposed.</param>
         /// <param name="exception">The Exception thrown when processing did not complete successfully, otherwise null.</param>
-        void DisposeContext(TContext context, Exception exception);
+        void DisposeContext(TContext context, Exception? exception);
     }
 }

@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier);
 
-        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate);
+        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier, double rate);
 
-        void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier);
+        void ResponseMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier);
 
         void ApplicationAbortedConnection(string connectionId, string traceIdentifier);
 

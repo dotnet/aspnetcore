@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly object _protocolSelectionLock = new object();
         private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
-        private IRequestProcessor _requestProcessor;
-        private Http1Connection _http1Connection;
+        private IRequestProcessor? _requestProcessor;
+        private Http1Connection? _http1Connection;
 
         public HttpConnection(HttpConnectionContext context)
         {
@@ -45,14 +45,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
             try
             {
                 // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
                 _timeoutControl.Initialize(_systemClock.UtcNowTicks);
 
-                IRequestProcessor requestProcessor = null;
+                IRequestProcessor? requestProcessor = null;
 
                 switch (SelectProtocol())
                 {
@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
                     // Register for graceful shutdown of the server
-                    using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this);
+                    using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(), this);
 
                     // Register for connection close
-                    using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnConnectionClosed(), this);
+                    using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state!).OnConnectionClosed(), this);
 
                     await requestProcessor.ProcessRequestsAsync(httpApplication);
                 }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             switch (previousState)
             {
                 case ProtocolSelectionState.Selected:
-                    _requestProcessor.StopProcessingNextRequest();
+                    _requestProcessor!.StopProcessingNextRequest();
                     break;
                 case ProtocolSelectionState.Aborted:
                     break;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             switch (previousState)
             {
                 case ProtocolSelectionState.Selected:
-                    _requestProcessor.OnInputOrOutputCompleted();
+                    _requestProcessor!.OnInputOrOutputCompleted();
                     break;
                 case ProtocolSelectionState.Aborted:
                     break;
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             switch (previousState)
             {
                 case ProtocolSelectionState.Selected:
-                    _requestProcessor.Abort(ex);
+                    _requestProcessor!.Abort(ex);
                     break;
                 case ProtocolSelectionState.Aborted:
                     break;
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var http1Enabled = (_context.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1;
             var http2Enabled = (_context.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2;
 
-            string error = null;
+            string? error = null;
 
             if (_context.Protocols == HttpProtocols.None)
             {
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
             var now = _systemClock.UtcNowUnsynchronized;
             _timeoutControl.Tick(now);
-            _requestProcessor.Tick(now);
+            _requestProcessor!.Tick(now);
         }
 
         public void OnTimeout(TimeoutReason reason)
@@ -248,13 +248,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    _requestProcessor.StopProcessingNextRequest();
+                    _requestProcessor!.StopProcessingNextRequest();
                     break;
                 case TimeoutReason.RequestHeaders:
-                    _requestProcessor.HandleRequestHeadersTimeout();
+                    _requestProcessor!.HandleRequestHeadersTimeout();
                     break;
                 case TimeoutReason.ReadDataRate:
-                    _requestProcessor.HandleReadDataRateTimeout();
+                    _requestProcessor!.HandleReadDataRateTimeout();
                     break;
                 case TimeoutReason.WriteDataRate:
                     Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection?.TraceIdentifier);

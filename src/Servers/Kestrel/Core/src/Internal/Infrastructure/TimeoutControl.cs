@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _timeoutTimestamp = long.MaxValue;
 
         private readonly object _readTimingLock = new object();
-        private MinDataRate _minReadRate;
+        private MinDataRate? _minReadRate;
         private bool _readTimingEnabled;
         private bool _readTimingPauseRequested;
         private long _readTimingElapsedTicks;
         private long _readTimingBytesRead;
-        private InputFlowControl _connectionInputFlowControl;
+        private InputFlowControl? _connectionInputFlowControl;
         // The following are always 0 or 1 for HTTP/1.x
         private int _concurrentIncompleteRequestBodies;
         private int _concurrentAwaitingReads;
@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Assume overly long tick intervals are the result of server resource starvation.
                 // Don't count extra time between ticks against the rate limit.
                 _readTimingElapsedTicks += Math.Min(timestamp - _lastTimestamp, Heartbeat.Interval.Ticks);
+
+                Debug.Assert(_minReadRate != null);
 
                 if (_minReadRate.BytesPerSecond > 0 && _readTimingElapsedTicks > _minReadRate.GracePeriod.Ticks)
                 {

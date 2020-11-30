@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal async ValueTask SendSettingsFrameAsync()
         {
-            await _frameWriter.WriteSettingsAsync(null);
+            await _frameWriter.WriteSettingsAsync(new List<Http3PeerSettings>());
         }
 
         private async ValueTask<long> TryReadStreamIdAsync()
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return -1;
         }
 
-        public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application)
+        public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var streamType = await TryReadStreamIdAsync();
 
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _haveReceivedSettingsFrame = true;
-            using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3ControlStream)state).OnStreamClosed(), this);
+            using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3ControlStream)state!).OnStreamClosed(), this);
 
             while (true)
             {

@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         /// <remarks>
         /// </remarks>
-        public MinDataRate MinRequestBodyDataRate { get; set; } =
+        public MinDataRate? MinRequestBodyDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
             new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
 
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The connection is aborted if the write has not completed by the time that timer expires.
         /// </para>
         /// </remarks>
-        public MinDataRate MinResponseDataRate { get; set; } =
+        public MinDataRate? MinResponseDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
             new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
     }

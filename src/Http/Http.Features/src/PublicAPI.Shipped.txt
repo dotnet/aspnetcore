@@ -132,8 +132,8 @@ Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.ReasonPhrase.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature
-Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
 Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature
 Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature.SendFileAsync(string! path, long offset, long? count, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature
@@ -233,6 +233,7 @@ Microsoft.AspNetCore.Http.ISession.Keys.get -> System.Collections.Generic.IEnume
 Microsoft.AspNetCore.Http.ISession.LoadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.ISession.Remove(string! key) -> void
 Microsoft.AspNetCore.Http.ISession.Set(string! key, byte[]! value) -> void
+Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Http.SameSiteMode
 Microsoft.AspNetCore.Http.SameSiteMode.Lax = 1 -> Microsoft.AspNetCore.Http.SameSiteMode
 Microsoft.AspNetCore.Http.SameSiteMode.None = 0 -> Microsoft.AspNetCore.Http.SameSiteMode

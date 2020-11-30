@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
-        private TaskCompletionSource _appCompleted;
+        private TaskCompletionSource? _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
@@ -287,6 +287,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void HandleReadDataRateTimeout()
         {
+            Debug.Assert(Limits.MinRequestBodyDataRate != null);
+
             Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
             Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
         }
@@ -321,9 +323,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return false;
         }
 
-        public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application)
+        public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
@@ -371,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             finally
             {
                 var streamError = error as ConnectionAbortedException
-                    ?? new ConnectionAbortedException("The stream has completed.", error);
+                    ?? new ConnectionAbortedException("The stream has completed.", error!);
 
                 await Input.CompleteAsync();
 
@@ -414,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return RequestBodyPipe.Writer.CompleteAsync();
         }
 
-        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
+        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
         {
             switch (_incomingFrame.Type)
             {
@@ -441,7 +443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return Task.CompletedTask;
         }
 
-        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
+        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
         {
             QPackDecoder.Decode(payload, handler: this);
 
@@ -593,7 +595,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             // Approximate MaxRequestLineSize by totaling the required pseudo header field lengths.
-            var requestLineLength = _methodText.Length + Scheme.Length + hostText.Length + path.Length;
+            var requestLineLength = _methodText!.Length + Scheme!.Length + hostText.Length + path.Length;
             if (requestLineLength > ServerOptions.Limits.MaxRequestLineSize)
             {
                 Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http3ErrorCode.ProtocolError);
@@ -710,7 +712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     pathBuffer[i] = (byte)ch;
                 }
 
-                Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget, QueryString.Length);
+                Path = PathNormalizer.DecodePath(pathBuffer, pathEncoded, RawTarget!, QueryString!.Length);
 
                 return true;
             }
