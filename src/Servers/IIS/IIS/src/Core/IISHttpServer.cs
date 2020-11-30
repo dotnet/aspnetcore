@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,12 +22,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal class IISHttpServer : IServer
     {
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
-
-        private static readonly NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
-        private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
-        private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
-        private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _requestsDrainedHandler = OnRequestsDrained;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -89,12 +84,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _requestsDrainedHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(
+                &HandleRequest,
+                &HandleShutdown,
+                &OnDisconnect,
+                &OnAsyncCompletion,
+                &OnRequestsDrained,
+                (IntPtr)_httpServerHandle,
+                (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -134,7 +136,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(nint pInProcessHandler, nint pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -163,7 +166,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static bool HandleShutdown(IntPtr pvRequestContext)
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static bool HandleShutdown(nint pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -186,7 +190,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return true;
         }
 
-        private static void OnDisconnect(IntPtr pvManagedHttpContext)
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static void OnDisconnect(nint pvManagedHttpContext)
         {
             IISHttpContext context = null;
             try
@@ -207,7 +212,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(nint pvManagedHttpContext, int hr, int bytes)
         {
             IISHttpContext context = null;
             try
@@ -231,7 +237,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static void OnRequestsDrained(IntPtr serverContext)
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static void OnRequestsDrained(nint serverContext)
         {
             IISHttpServer server = null;
             try

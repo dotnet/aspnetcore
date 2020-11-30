@@ -39,13 +39,6 @@ namespace Microsoft.AspNetCore.Server.IIS
             RQ_NOTIFICATION_FINISH_REQUEST
         }
 
-        public delegate REQUEST_NOTIFICATION_STATUS PFN_REQUEST_HANDLER(IntPtr pInProcessHandler, IntPtr pvRequestContext);
-        public delegate void PFN_DISCONNECT_HANDLER(IntPtr pvManagedHttpContext);
-        public delegate bool PFN_SHUTDOWN_HANDLER(IntPtr pvRequestContext);
-        public delegate REQUEST_NOTIFICATION_STATUS PFN_ASYNC_COMPLETION(IntPtr pvManagedHttpContext, int hr, int bytes);
-        public delegate REQUEST_NOTIFICATION_STATUS PFN_WEBSOCKET_ASYNC_COMPLETION(IntPtr pInProcessHandler, IntPtr completionInfo, IntPtr pvCompletionContext);
-        public delegate void PFN_REQUESTS_DRAINED_HANDLER(IntPtr pvRequestContext);
-
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_post_completion(NativeSafeHandle pInProcessHandler, int cbBytes);
 
@@ -56,14 +49,14 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern void http_indicate_completion(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
-            PFN_REQUEST_HANDLER requestCallback,
-            PFN_SHUTDOWN_HANDLER shutdownCallback,
-            PFN_DISCONNECT_HANDLER disconnectCallback,
-            PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
-            IntPtr pvRequestContext,
-            IntPtr pvShutdownContext);
+        private unsafe static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
+            delegate* unmanaged[Cdecl]<nint, nint, REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged[Cdecl]<nint, bool> shutdownCallback,
+            delegate* unmanaged[Cdecl]<nint, void> disconnectCallback,
+            delegate* unmanaged[Cdecl]<nint, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged[Cdecl]<nint, void> requestsDrainedHandler,
+            nint pvRequestContext,
+            nint pvShutdownContext);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
@@ -115,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             byte* pvBuffer,
             int cbBuffer,
-            PFN_WEBSOCKET_ASYNC_COMPLETION pfnCompletionCallback,
+            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out int dwBytesReceived,
             out bool fCompletionExpected);
@@ -125,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
             int nChunks,
-            PFN_WEBSOCKET_ASYNC_COMPLETION pfnCompletionCallback,
+            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out bool fCompletionExpected);
 
@@ -168,14 +161,14 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_set_completion_status(pInProcessHandler, rquestNotificationStatus));
         }
 
-        public static void HttpRegisterCallbacks(NativeSafeHandle pInProcessApplication,
-            PFN_REQUEST_HANDLER requestCallback,
-            PFN_SHUTDOWN_HANDLER shutdownCallback,
-            PFN_DISCONNECT_HANDLER disconnectCallback,
-            PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
-            IntPtr pvRequestContext,
-            IntPtr pvShutdownContext)
+        public static unsafe void HttpRegisterCallbacks(NativeSafeHandle pInProcessApplication,
+            delegate* unmanaged[Cdecl]<nint, nint, REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged[Cdecl]<nint, bool> shutdownCallback,
+            delegate* unmanaged[Cdecl]<nint, void> disconnectCallback,
+            delegate* unmanaged[Cdecl]<nint, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged[Cdecl]<nint, void> requestsDrainedHandler,
+            nint pvRequestContext,
+            nint pvShutdownContext)
         {
             Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
         }
@@ -251,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             byte* pvBuffer,
             int cbBuffer,
-            PFN_WEBSOCKET_ASYNC_COMPLETION pfnCompletionCallback,
+            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext, out int dwBytesReceived,
             out bool fCompletionExpected)
         {
@@ -262,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
             int nChunks,
-            PFN_WEBSOCKET_ASYNC_COMPLETION pfnCompletionCallback,
+            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out bool fCompletionExpected)
         {
@@ -280,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             // ERROR_NOT_FOUND is expected if async operation finished
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363792(v=vs.85).aspx
             // ERROR_INVALID_PARAMETER is expected for "fake" requests like applicationInitialization ones
-            if (hr == ERROR_NOT_FOUND || hr ==  ERROR_INVALID_PARAMETER)
+            if (hr == ERROR_NOT_FOUND || hr == ERROR_INVALID_PARAMETER)
             {
                 return false;
             }
@@ -310,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         internal static unsafe void HttpSetStartupErrorPageContent(byte[] content)
         {
-            fixed(byte* bytePtr = content)
+            fixed (byte* bytePtr = content)
             {
                 http_set_startup_error_page_content(bytePtr, content.Length);
             }
