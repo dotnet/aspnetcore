@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,10 +29,12 @@ namespace WebApplication1
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            services.AddAuthentication().AddCookie("playerLogin");
+            services.AddAuthentication().AddCookie("playerLogin", opt =>
+            {
+                opt.SessionStore = new MemberTicketStore();
+            });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            //services.
         }
 
 
@@ -53,6 +52,7 @@ namespace WebApplication1
 
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
