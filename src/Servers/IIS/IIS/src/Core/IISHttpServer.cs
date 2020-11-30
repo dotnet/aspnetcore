@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         [UnmanagedCallersOnly]
-        private static byte HandleShutdown(IntPtr pvRequestContext)
+        private static int HandleShutdown(IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
             try
