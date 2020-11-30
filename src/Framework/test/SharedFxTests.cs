@@ -32,7 +32,9 @@ namespace Microsoft.AspNetCore
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")) ? ".version" : "Microsoft.AspNetCore.App.versions.txt";
+            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
+                ? ".version"
+                : "Microsoft.AspNetCore.App.versions.txt";
         }
 
         [Fact]
@@ -164,38 +166,65 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
         {
-            // Only test managed assemblies
-            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess"));
+            // Only test managed assemblies from dotnet/aspnetcore.
+            var repoAssemblies = TestData.GetSharedFrameworkBinariesFromRepo()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            var version = Version.Parse(TestData.GetMicrosoftNETCoreAppPackageVersion());
+            var dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
             Assert.All(dlls, path =>
             {
+                // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
+                if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+                {
+                    return;
+                }
+
                 using var fileStream = File.OpenRead(path);
                 using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                 var assemblyDefinition = reader.GetAssemblyDefinition();
 
                 // Assembly versions should all match Major.Minor.0.0
+                Assert.Equal(version.Major, assemblyDefinition.Version.Major);
+                Assert.Equal(version.Minor, assemblyDefinition.Version.Minor);
                 Assert.Equal(0, assemblyDefinition.Version.Build);
                 Assert.Equal(0, assemblyDefinition.Version.Revision);
             });
         }
 
+        // ASP.NET Core shared Fx assemblies should reference only ASP.NET Core assemblies with Revsion == 0.
         [Fact]
         public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
         {
-            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess") && !i.Contains("System.Security.Cryptography.Xml", StringComparison.OrdinalIgnoreCase));
+            // Only test managed assemblies from dotnet/aspnetcore.
+            var repoAssemblies = TestData.GetSharedFrameworkBinariesFromRepo()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
             Assert.All(dlls, path =>
             {
+                // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
+                // dotnet/aspnetcore assemblies build against RTM targeting pack from dotnet/runtime.
+                if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+                {
+                    return;
+                }
+
                 using var fileStream = File.OpenRead(path);
                 using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
-                
+
                 Assert.All(reader.AssemblyReferences, handle =>
                 {
                     var reference = reader.GetAssemblyReference(handle);
+                    Assert.Equal(0, reference.Version.Build);
                     Assert.Equal(0, reference.Version.Revision);
                 });
             });

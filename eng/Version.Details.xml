@@ -11,35 +11,35 @@
   <ProductDependencies>
     <Dependency Name="dotnet-ef" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.1">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>240223ef37a9bb44688f93ebab203c2c8f3c3e95</Sha>
+      <Sha>e08026a638e684e6d3eabbd65702251e8c0febea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -93,9 +93,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -209,9 +209,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="5.0.0">
+    <Dependency Name="System.IO.Pipelines" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -237,13 +237,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
+    <Dependency Name="System.Security.AccessControl" Version="5.0.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Cng" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.0">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -291,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9ecbcd746c9648d00d4bf98bf15f31e21e01db6e</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20570.12">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20575.16">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9ecbcd746c9648d00d4bf98bf15f31e21e01db6e</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20570.12">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20575.16">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9ecbcd746c9648d00d4bf98bf15f31e21e01db6e</Sha>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

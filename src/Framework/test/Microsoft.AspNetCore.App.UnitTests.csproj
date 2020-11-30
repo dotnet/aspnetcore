@@ -9,7 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_ExpectedSharedFrameworkBinaries Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
+    <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
+    <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
+
+    <_ExpectedSharedFrameworkBinaries Include="@(_SharedFrameworkBinariesFromRepo);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
     <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'" Include="aspnetcorev2_inprocess" />
 
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
@@ -23,6 +26,10 @@
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
       <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>SharedFrameworkBinariesFromRepo</_Parameter1>
+      <_Parameter2>@(_SharedFrameworkBinariesFromRepo)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>SharedFxDependencies</_Parameter1>

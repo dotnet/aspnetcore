@@ -58,10 +58,10 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.1-servicing.20570.12</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.1-servicing.20575.16</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.1-servicing.20570.12</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.1-servicing.20575.16</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
@@ -77,7 +77,7 @@
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0</MicrosoftExtensionsConfigurationXmlPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
@@ -104,15 +104,17 @@
     <SystemDiagnosticsEventLogPackageVersion>5.0.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemDirectoryServicesProtocolsPackageVersion>5.0.0</SystemDirectoryServicesProtocolsPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0</SystemDrawingCommonPackageVersion>
-    <SystemIOPipelinesPackageVersion>5.0.0</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.1</SystemIOPipelinesPackageVersion>
     <SystemNetHttpJsonPackageVersion>5.0.0</SystemNetHttpJsonPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>5.0.0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0</SystemReflectionMetadataPackageVersion>
     <SystemResourcesExtensionsPackageVersion>5.0.0</SystemResourcesExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
+    <SystemSecurityAccessControlPackageVersion>5.0.0</SystemSecurityAccessControlPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>5.0.0</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>5.0.1</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>5.0.0</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>5.0.0</SystemSecurityPermissionsPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>5.0.0</SystemSecurityPrincipalWindowsPackageVersion>
@@ -150,6 +152,36 @@
       All Runtime.$rid packages should have the same version.
     -->
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
+  </PropertyGroup>
+  <!--
+    We ship ref/ assemblies for runtime packages in our targeting targeting pack. When servicing that targeting pack,
+    these assemblies must not change. Must also compile our assemblies against the initial ref/ assemblies for runtime
+    packages. But, need to test against the latest implementation assemblies and ship them in our shared framework.
+    Upshot is we need Major.Minor.0 runtime packages for compilation and the targeting pack and Major.Minor.Latest
+    runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
+    Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
+
+    System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. Because
+    it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
+    the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
+
+    If testing this configuration prior to servicing, update the versions of dependencies too. E.g. change
+    `$(SystemSecurityPrincipalWindowsV0PackageVersion)` if you change `$(SystemSecurityAccessControlV0PackageVersion)`
+    because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
+  -->
+  <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
+    <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>
+    <MicrosoftWin32SystemEventsV0PackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0PackageVersion>
+    <SystemDiagnosticsEventLogV0PackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0PackageVersion>
+    <SystemDrawingCommonV0PackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonV0PackageVersion>
+    <SystemIOPipelinesV0PackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesV0PackageVersion>
+    <SystemSecurityAccessControlV0PackageVersion>$(SystemSecurityAccessControlPackageVersion.Split('.')[0]).$(SystemSecurityAccessControlPackageVersion.Split('.')[1]).0</SystemSecurityAccessControlV0PackageVersion>
+    <SystemSecurityCryptographyCngV0PackageVersion>$(SystemSecurityCryptographyCngPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyCngPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0PackageVersion>
+    <SystemSecurityCryptographyPkcsV0PackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0PackageVersion>
+    <SystemSecurityCryptographyXmlV0PackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0PackageVersion>
+    <SystemSecurityPermissionsV0PackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsV0PackageVersion>
+    <SystemSecurityPrincipalWindowsV0PackageVersion>$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0PackageVersion>
+    <SystemWindowsExtensionsV0PackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsV0PackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <MicrosoftNetCompilersToolsetPackageVersion>3.8.0-3.20458.6</MicrosoftNetCompilersToolsetPackageVersion>
