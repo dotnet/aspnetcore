@@ -164,7 +164,7 @@ function CheckJobResult(
     [ref]$ValidationFailures,
     [switch]$logErrors) {
   if ($result -ne '0') {
-    if ($logError) {
+    if ($logErrors) {
       Write-PipelineTelemetryError -Category 'SourceLink' -Message "$packagePath has broken SourceLink links."
     }
     $ValidationFailures.Value++
