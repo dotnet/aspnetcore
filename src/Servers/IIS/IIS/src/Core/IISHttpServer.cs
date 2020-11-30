@@ -3,13 +3,11 @@
 
 using System;
 using System.Buffers;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -136,8 +134,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(nint pInProcessHandler, nint pvRequestContext)
+        [UnmanagedCallersOnly]
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -166,8 +164,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static bool HandleShutdown(nint pvRequestContext)
+        [UnmanagedCallersOnly]
+        private static bool HandleShutdown(IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -190,8 +188,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return true;
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static void OnDisconnect(nint pvManagedHttpContext)
+        [UnmanagedCallersOnly]
+        private static void OnDisconnect(IntPtr pvManagedHttpContext)
         {
             IISHttpContext context = null;
             try
@@ -212,8 +210,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(nint pvManagedHttpContext, int hr, int bytes)
+        [UnmanagedCallersOnly]
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
         {
             IISHttpContext context = null;
             try
@@ -237,8 +235,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static void OnRequestsDrained(nint serverContext)
+        [UnmanagedCallersOnly]
+        private static void OnRequestsDrained(IntPtr serverContext)
         {
             IISHttpServer server = null;
             try

@@ -50,13 +50,13 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         [DllImport(AspNetCoreModuleDll)]
         private unsafe static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
-            delegate* unmanaged[Cdecl]<nint, nint, REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged[Cdecl]<nint, bool> shutdownCallback,
-            delegate* unmanaged[Cdecl]<nint, void> disconnectCallback,
-            delegate* unmanaged[Cdecl]<nint, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
-            delegate* unmanaged[Cdecl]<nint, void> requestsDrainedHandler,
-            nint pvRequestContext,
-            nint pvShutdownContext);
+            delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged<IntPtr, bool> shutdownCallback,
+            delegate* unmanaged<IntPtr, void> disconnectCallback,
+            delegate* unmanaged<IntPtr, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
+            IntPtr pvRequestContext,
+            IntPtr pvShutdownContext);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             byte* pvBuffer,
             int cbBuffer,
-            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
+            delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out int dwBytesReceived,
             out bool fCompletionExpected);
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
             int nChunks,
-            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
+            delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out bool fCompletionExpected);
 
@@ -162,13 +162,13 @@ namespace Microsoft.AspNetCore.Server.IIS
         }
 
         public static unsafe void HttpRegisterCallbacks(NativeSafeHandle pInProcessApplication,
-            delegate* unmanaged[Cdecl]<nint, nint, REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged[Cdecl]<nint, bool> shutdownCallback,
-            delegate* unmanaged[Cdecl]<nint, void> disconnectCallback,
-            delegate* unmanaged[Cdecl]<nint, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
-            delegate* unmanaged[Cdecl]<nint, void> requestsDrainedHandler,
-            nint pvRequestContext,
-            nint pvShutdownContext)
+            delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged<IntPtr, bool> shutdownCallback,
+            delegate* unmanaged<IntPtr, void> disconnectCallback,
+            delegate* unmanaged<IntPtr, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
+            IntPtr pvRequestContext,
+            IntPtr pvShutdownContext)
         {
             Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
         }
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             byte* pvBuffer,
             int cbBuffer,
-            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
+            delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext, out int dwBytesReceived,
             out bool fCompletionExpected)
         {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             NativeSafeHandle pInProcessHandler,
             HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
             int nChunks,
-            delegate* unmanaged[Cdecl]<nint, nint, nint, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
+            delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
             IntPtr pvCompletionContext,
             out bool fCompletionExpected)
         {

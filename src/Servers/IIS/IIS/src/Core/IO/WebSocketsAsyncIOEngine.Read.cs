@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         internal class WebSocketReadOperation : AsyncIOOperation
         {
-            [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-            public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(nint httpContext, nint completionInfo, nint completionContext)
+            [UnmanagedCallersOnly]
+            public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
                 var context = (WebSocketReadOperation)GCHandle.FromIntPtr(completionContext).Target;
 

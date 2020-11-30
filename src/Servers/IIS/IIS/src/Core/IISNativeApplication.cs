@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         public unsafe void RegisterCallbacks(
-            delegate* unmanaged[Cdecl]<nint, nint, NativeMethods.REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged[Cdecl]<nint, bool> shutdownCallback,
-            delegate* unmanaged[Cdecl]<nint, void> disconnectCallback,
-            delegate* unmanaged[Cdecl]<nint, int, int, NativeMethods.REQUEST_NOTIFICATION_STATUS> asyncCallback,
-            delegate* unmanaged[Cdecl]<nint, void> requestsDrainedHandler,
+            delegate* unmanaged<nint, nint, NativeMethods.REQUEST_NOTIFICATION_STATUS> requestCallback,
+            delegate* unmanaged<nint, bool> shutdownCallback,
+            delegate* unmanaged<nint, void> disconnectCallback,
+            delegate* unmanaged<nint, int, int, NativeMethods.REQUEST_NOTIFICATION_STATUS> asyncCallback,
+            delegate* unmanaged<nint, void> requestsDrainedHandler,
             nint pvRequestContext,
             nint pvShutdownContext)
         {

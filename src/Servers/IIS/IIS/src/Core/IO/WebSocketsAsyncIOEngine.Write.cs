@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         internal sealed class WebSocketWriteOperation : AsyncWriteOperationBase
         {
-            [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-            private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(nint httpContext, nint completionInfo, nint completionContext)
+            [UnmanagedCallersOnly]
+            private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
                 var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target;
 
