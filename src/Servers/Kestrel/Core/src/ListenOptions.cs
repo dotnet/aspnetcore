@@ -44,6 +44,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
+        /// <summary>
+        /// Gets the <see cref="EndPoint"/>.
+        /// </summary>
         public EndPoint EndPoint { get; internal set; }
 
         // For comparing bound endpoints to changed config during endpoint config reload.
@@ -80,6 +83,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
         public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
 
+        /// <summary>
+        /// Gets the application <see cref="IServiceProvider"/>.
+        /// </summary>
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 
         internal string Scheme
@@ -110,6 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
+        /// <inheritdoc />
         public override string ToString() => GetDisplayName();
 
         /// <summary>
@@ -131,6 +138,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return this;
         }
 
+        /// <summary>
+        /// Builds the <see cref="ConnectionDelegate"/>.
+        /// </summary>
+        /// <returns>The <see cref="ConnectionDelegate"/>.</returns>
         public ConnectionDelegate Build()
         {
             ConnectionDelegate app = context =>

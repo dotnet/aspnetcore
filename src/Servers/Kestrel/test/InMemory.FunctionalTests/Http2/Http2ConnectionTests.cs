@@ -37,16 +37,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _connection.ServerSettings.MaxConcurrentStreams = 2;
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            Assert.Equal(0, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(0, LogMessages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // Log message because we've reached the stream limit
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(1, LogMessages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // This stream will error because it exceeds max concurrent streams
             await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
             await WaitForStreamErrorAsync(5, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
+            Assert.Equal(1, LogMessages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
         }
@@ -1171,7 +1171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.NO_ERROR, null);
             // Logged without an exception.
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             // Writing over half the initial window size induces a connection-level window update.
             // But no stream window update since this is the last frame.
@@ -1504,7 +1504,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26291")]
         public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
         {
             // Kestrel tracks max streams per connection * 2
@@ -4426,7 +4425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
             await StopConnectionAsync(1, ignoreNonGoAwayFrames: false);
-            Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
+            Assert.Single(LogMessages, m => m.Exception is ConnectionResetException);
         }
 
         [Fact]
@@ -4437,7 +4436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete(new ConnectionResetException(string.Empty));
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
-            Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
+            Assert.DoesNotContain(LogMessages, m => m.Exception is ConnectionResetException);
         }
 
         [Fact]
@@ -4628,9 +4627,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            Assert.All(TestApplicationErrorLogger.Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
+            Assert.All(LogMessages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.EventId == 20);
+            var logMessage = LogMessages.Single(m => m.EventId == 20);
 
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
@@ -4646,7 +4645,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
+            var logMessage = LogMessages.Single(m => m.LogLevel >= LogLevel.Information);
 
             Assert.Equal(LogLevel.Warning, logMessage.LogLevel);
             Assert.Equal(CoreStrings.RequestProcessingEndError, logMessage.Message);
@@ -4679,7 +4678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
             // Logged without an exception.
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)
@@ -4944,6 +4943,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(7, Http2ErrorCode.REFUSED_STREAM, "HTTP/2 stream ID 7 error (REFUSED_STREAM): A new stream was refused because this connection has reached its stream limit.");
             requestBlock.SetResult(0);
             await StopConnectionAsync(expectedLastStreamId: 7, ignoreNonGoAwayFrames: true);
+        }
+
+        [Fact]
+        public async Task FramesInBatchAreStillProcessedAfterStreamError_WithoutHeartbeat()
+        {
+            // Previously, if there was a stream error, frame processing would stop and wait for either
+            // the heartbeat or more data before continuing frame processing. This is testing that frames
+            // continue to be processed if they were in the same read.
+
+            CreateConnection();
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
+
+            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[2];
+                var result = await context.Request.BodyReader.ReadAsync().DefaultTimeout();
+                Assert.True(result.IsCompleted);
+                result.Buffer.CopyTo(buffer);
+                context.Request.BodyReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+
+                tcs.SetResult(buffer);
+            });
+
+            var streamPayload = new byte[2] { 42, 24 };
+            await StartStreamAsync(1, headers, endStream: false);
+            // Send these 2 frames in a batch with the error in the first frame
+            await StartStreamAsync(3, headers, endStream: false, flushFrame: false);
+            await SendDataAsync(1, streamPayload, endStream: true);
+
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
+
+            var streamResponse = await tcs.Task.DefaultTimeout();
+            Assert.Equal(streamPayload, streamResponse);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: true);
         }
 
         [Theory]

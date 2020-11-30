@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="authenticationScheme"></param>
+        /// <param name="authenticationScheme">The authentication scheme.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, string authenticationScheme)
             => builder.AddCertificate(authenticationScheme, configureOptions: null);
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="configureOptions"></param>
+        /// <param name="configureOptions">A delegate to configure <see cref="CertificateAuthenticationOptions"/>.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions> configureOptions)
             => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme, configureOptions);
@@ -64,8 +64,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="authenticationScheme"></param>
-        /// <param name="configureOptions"></param>
+        /// <param name="authenticationScheme">The authentication scheme.</param>
+        /// <param name="configureOptions">A delegate to configure <see cref="CertificateAuthenticationOptions"/>.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(
             this AuthenticationBuilder builder,
@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="configureOptions"></param>
+        /// <param name="configureOptions">A delegate to configure <see cref="CertificateValidationCacheOptions"/>.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificateCache(
             this AuthenticationBuilder builder,

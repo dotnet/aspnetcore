@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// <summary>
     /// Encapsulates all information about a multiplexed connection.
     /// </summary>
-    internal abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
+    public abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
     {
         /// <summary>
         /// Asynchronously accept an incoming stream on the connection.

@@ -5,7 +5,6 @@
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
     <ItemsToSign Remove="@(ItemsToSign)" />
-    <StrongNameSignInfo Remove="@(StrongNameSignInfo)" />
     <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
   </ItemGroup>
 
@@ -15,6 +14,7 @@
     <CommonFilesToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <CommonFilesToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+    <CommonFilesToSign Remove="$(ArtifactsDir)installers\$(Configuration)\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
   </ItemGroup>
   <Choose>
     <!-- When post build signing is false - Sign as normal.
@@ -57,24 +57,10 @@
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".cab" CertificateName="None" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="None" />
-
-    <!--
-      Use the PublicKeyToken of .NET assemblies to determine which authenticode cert to use.
-      'None' is required to ensure code signing does not attempt to re-sign them or submit
-      to ESPR for strong-naming signing. We don't delay sign, so we only need to authenticode sign.
-      See https://github.com/dotnet/arcade/issues/1911 for context.
-    -->
-    <!-- The AspNetCore strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
-    <!-- The MsSharedLib72 strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
-    <!-- The MsftStrongName strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
-    <!-- The MsftStrongName2 strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
-    <!-- The MsftOpenStrongName strong name. -->
-    <StrongNameSignInfo Include="None" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
+    <!-- If doing post build sign, explicitly give MSIs a cert. If doing in build signing,
+         this is handled by the wix targets, and .msi should be "None" -->
+    <FileExtensionSignInfo Include=".msi" CertificateName="Microsoft400" Condition="'$(PostBuildSign)' == 'true'" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileSignInfo Include="aspnetcore.dll" CertificateName="Microsoft400" />

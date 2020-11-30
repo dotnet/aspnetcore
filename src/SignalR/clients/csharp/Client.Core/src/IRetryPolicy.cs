@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         /// <summary>
         /// If passed to <see cref="HubConnectionBuilderExtensions.WithAutomaticReconnect(IHubConnectionBuilder, IRetryPolicy)"/>,
-        /// this will be called after the trasnport loses a connection to determine if and for how long to wait before the next reconnect attempt.
+        /// this will be called after the transport loses a connection to determine if and for how long to wait before the next reconnect attempt.
         /// </summary>
         /// <param name="retryContext">
         /// Information related to the next possible reconnect attempt including the number of consecutive failed retries so far, time spent

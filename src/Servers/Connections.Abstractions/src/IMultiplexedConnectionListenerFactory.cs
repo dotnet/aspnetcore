@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// <summary>
     /// Defines an interface that provides the mechanisms for binding to various types of <see cref="EndPoint"/>s.
     /// </summary>
-    internal interface IMultiplexedConnectionListenerFactory
+    public interface IMultiplexedConnectionListenerFactory
     {
         /// <summary>
         /// Creates an <see cref="IMultiplexedConnectionListener"/> bound to the specified <see cref="EndPoint"/>.

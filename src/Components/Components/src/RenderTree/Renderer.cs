@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     //
     // Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
     // dispatching events to them, and notifying when the user interface is being updated.
-    public abstract partial class Renderer : IDisposable
+    public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
         private bool _disposed;
+        private Task _disposeTask;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -244,7 +245,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
         {
             Dispatcher.AssertAccess();
 
@@ -763,11 +764,34 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
             List<Exception> exceptions = null;
+            List<Task> asyncDisposables = null;
             foreach (var componentState in _componentStateById.Values)
             {
                 Log.DisposingComponent(_logger, componentState);
 
-                if (componentState.Component is IDisposable disposable)
+                // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+                // but in case they do, we prefer the async overload since we understand the sync overload
+                // is implemented for more "constrained" scenarios.
+                // Component authors are responsible for their IAsyncDisposable implementations not taking
+                // forever.
+                if (componentState.Component is IAsyncDisposable asyncDisposable)
+                {
+                    try
+                    {
+                        var task = asyncDisposable.DisposeAsync();
+                        if (!task.IsCompletedSuccessfully)
+                        {
+                            asyncDisposables ??= new();
+                            asyncDisposables.Add(task.AsTask());
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
+                }
+                else if (componentState.Component is IDisposable disposable)
                 {
                     try
                     {
@@ -784,13 +808,42 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _componentStateById.Clear(); // So we know they were all disposed
             _batchBuilder.Dispose();
 
-            if (exceptions?.Count > 1)
+            NotifyExceptions(exceptions);
+
+            if (asyncDisposables?.Count >= 1)
             {
-                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+                _disposeTask = HandleAsyncExceptions(asyncDisposables);
             }
-            else if (exceptions?.Count == 1)
+
+            async Task HandleAsyncExceptions(List<Task> tasks)
             {
-                HandleException(exceptions[0]);
+                List<Exception> asyncExceptions = null;
+                foreach (var task in tasks)
+                {
+                    try
+                    {
+                        await task;
+                    }
+                    catch (Exception exception)
+                    {
+                        asyncExceptions ??= new List<Exception>();
+                        asyncExceptions.Add(exception);
+                    }
+                }
+
+                NotifyExceptions(asyncExceptions);
+            }
+
+            void NotifyExceptions(List<Exception> exceptions)
+            {
+                if (exceptions?.Count > 1)
+                {
+                    HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+                }
+                else if (exceptions?.Count == 1)
+                {
+                    HandleException(exceptions[0]);
+                }
             }
         }
 
@@ -800,6 +853,32 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void Dispose()
         {
             Dispose(disposing: true);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_disposeTask != null)
+            {
+                await _disposeTask;
+            }
+            else
+            {
+                Dispose();
+                if (_disposeTask != null)
+                {
+                    await _disposeTask;
+                }
+                else
+                {
+                    await default(ValueTask);
+                }
+            }
         }
     }
 }

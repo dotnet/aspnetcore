@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
+    /// <summary>
+    /// <see cref="AuthenticationProperties"/> for a Google OAuth challenge.
+    /// </summary>
     public class GoogleChallengeProperties : OAuthChallengeProperties
     {
         /// <summary>
@@ -30,13 +33,24 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// </summary>
         public static readonly string PromptParameterKey = "prompt";
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
+        /// </summary>
         public GoogleChallengeProperties()
         { }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
+        /// </summary>
+        /// <inheritdoc />
         public GoogleChallengeProperties(IDictionary<string, string> items)
             : base(items)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
+        /// </summary>
+        /// <inheritdoc />
         public GoogleChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
             : base(items, parameters)
         { }

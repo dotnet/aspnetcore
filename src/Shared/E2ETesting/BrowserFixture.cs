@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             opts.AddArgument("--no-sandbox");
+            opts.AddArgument("--ignore-certificate-errors");
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
@@ -187,7 +188,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // Additionally, if we think the selenium server has become irresponsive, we could spin up
                     // replace the current selenium server instance and let a new instance take over for the
                     // remaining tests.
-                    var driver = new RemoteWebDriver(
+                    var driver = new RemoteWebDriverWithLogs(
                         instance.Uri,
                         opts.ToCapabilities(),
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
@@ -341,6 +342,15 @@ namespace Microsoft.AspNetCore.E2ETesting
             } while (attempt < maxAttempts);
 
             throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
+        }
+
+        // This is a workaround for https://github.com/SeleniumHQ/selenium/issues/8229
+        private class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
+        {
+            public RemoteWebDriverWithLogs(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+                : base(remoteAddress, desiredCapabilities, commandTimeout)
+            {
+            }
         }
     }
 }

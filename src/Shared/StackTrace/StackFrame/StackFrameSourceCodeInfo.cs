@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
+
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
@@ -14,12 +16,12 @@ namespace Microsoft.Extensions.StackTrace.Sources
         /// <summary>
         /// Function containing instruction
         /// </summary>
-        public string Function { get; set; }
+        public string? Function { get; set; }
 
         /// <summary>
         /// File containing the instruction
         /// </summary>
-        public string File { get; set; }
+        public string? File { get; set; }
 
         /// <summary>
         /// The line number of the instruction
@@ -49,6 +51,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
         /// <summary>
         /// Specific error details for this stack frame.
         /// </summary>
-        public string ErrorDetails { get; set; }
+        public string? ErrorDetails { get; set; }
     }
 }

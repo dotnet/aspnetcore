@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization
 {
+    /// <summary>
+    /// A middleware that enables authorization capabilities.
+    /// </summary>
     public class AuthorizationMiddleware
     {
         // AppContext switch used to control whether HttpContext or endpoint is passed as a resource to AuthZ
@@ -21,12 +24,21 @@ namespace Microsoft.AspNetCore.Authorization
         private readonly RequestDelegate _next;
         private readonly IAuthorizationPolicyProvider _policyProvider;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next middleware in the application middleware pipeline.</param>
+        /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider) 
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
+        /// <summary>
+        /// Invokes the middleware performing authorization.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         public async Task Invoke(HttpContext context)
         {
             if (context == null)

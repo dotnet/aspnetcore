@@ -763,22 +763,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             return new ClaimsPrincipal(rememberBrowserIdentity);
         }
-
-        private ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)
-        {
-            if (info == null)
-            {
-                return null;
-            }
-            var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
-            identity.AddClaim(new Claim(ClaimTypes.Name, info.UserId));
-            if (info.LoginProvider != null)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, info.LoginProvider));
-            }
-            return identity;
-        }
-
+        
         private async Task<bool> IsTfaEnabled(TUser user)
             => UserManager.SupportsUserTwoFactor &&
             await UserManager.GetTwoFactorEnabledAsync(user) &&

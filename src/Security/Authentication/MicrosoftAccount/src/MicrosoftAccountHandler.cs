@@ -18,12 +18,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
+    /// <summary>
+    /// Authentication handler for Microsoft Account based authentication.
+    /// </summary>
     public class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="MicrosoftAccountHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public MicrosoftAccountHandler(IOptionsMonitor<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
@@ -44,6 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             }
         }
 
+        /// <inheritdoc />
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             var queryStrings = new Dictionary<string, string>

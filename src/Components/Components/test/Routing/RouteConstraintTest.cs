@@ -32,15 +32,5 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Assert
             Assert.Same(original, another);
         }
-
-        [Fact]
-        public void Parse_DoesNotThrowIfOptionalConstraint()
-        {
-            // Act
-            var exceptions = Record.Exception(() => RouteConstraint.Parse("ignore", "ignore", "int?"));
-
-            // Assert
-            Assert.Null(exceptions);
-        }
     }
 }

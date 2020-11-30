@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <DefaultNetCoreTargetFramework>${DefaultNetCoreTargetFramework}</DefaultNetCoreTargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

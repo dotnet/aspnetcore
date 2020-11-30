@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// </summary>
         public string Name { get; set; } = default!;
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"{nameof(OperationAuthorizationRequirement)}:Name={Name}";

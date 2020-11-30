@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         public static string TestProjectName = "TestProject";
 
+        private static readonly ICompilationAssemblyResolver _assemblyResolver = new AppBaseCompilationAssemblyResolver();
         private static readonly Dictionary<Assembly, Solution> _solutionCache = new Dictionary<Assembly, Solution>();
 
         public static Project Create(Assembly testAssembly, string[] sources)
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
 
                     foreach (var defaultCompileLibrary in DependencyContext.Load(testAssembly).CompileLibraries)
                     {
-                        foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
+                        foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(_assemblyResolver))
                         {
                             solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
                         }
@@ -68,32 +69,6 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             }
 
             return solution.GetProject(testProject);
-        }
-
-        // Required to resolve compilation assemblies inside unit tests
-        private class AppLocalResolver : ICompilationAssemblyResolver
-        {
-            public bool TryResolveAssemblyPaths(CompilationLibrary library, List<string> assemblies)
-            {
-                foreach (var assembly in library.Assemblies)
-                {
-                    var dll = Path.Combine(Directory.GetCurrentDirectory(), "refs", Path.GetFileName(assembly));
-                    if (File.Exists(dll))
-                    {
-                        assemblies.Add(dll);
-                        return true;
-                    }
-
-                    dll = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(assembly));
-                    if (File.Exists(dll))
-                    {
-                        assemblies.Add(dll);
-                        return true;
-                    }
-                }
-
-                return false;
-            }
         }
     }
 }

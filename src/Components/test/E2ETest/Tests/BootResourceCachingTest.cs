@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27374")]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20154")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded()
         {
-            var element = Browser.Exists(By.TagName("h1"));
+            var element = Browser.Exists(By.TagName("h1"), TimeSpan.FromSeconds(30));
             Browser.Equal("Hello, world!", () => element.Text);
         }
     }

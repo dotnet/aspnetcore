@@ -145,8 +145,24 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             Directory.CreateDirectory(WorkFolder);
 
-            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
-            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
+            // On Helix, the Directory.Build.* files already exist in a parent folder.
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                var artifactsBinDirectory = typeof(ProjectToolScenario)
+                    .Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .Single(s => s.Key == "ArtifactsBinDir")
+                    .Value;
+                var directoryBuildFilesDirectory = Path.Combine(artifactsBinDirectory, "GenerateFiles");
+
+                foreach (var filename in new[] {"Directory.Build.props", "Directory.Build.targets"})
+                {
+                    File.Copy(
+                        Path.Combine(directoryBuildFilesDirectory, filename),
+                        Path.Combine(WorkFolder, filename),
+                        overwrite: true);
+                }
+            }
         }
 
         public void Dispose()

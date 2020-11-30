@@ -17,12 +17,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Facebook
 {
+    /// <summary>
+    /// Authentication handler for Facebook's OAuth based authentication.
+    /// </summary>
     public class FacebookHandler : OAuthHandler<FacebookOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="FacebookHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             var endpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, "access_token", tokens.AccessToken);
@@ -64,6 +72,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             }
         }
 
+        /// <inheritdoc />
         protected override string FormatScope(IEnumerable<string> scopes)
         {
             // Facebook deviates from the OAuth spec here. They require comma separated instead of space separated.
@@ -72,6 +81,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             return string.Join(",", scopes);
         }
 
+        /// <inheritdoc />
         protected override string FormatScope()
             => base.FormatScope();
     }

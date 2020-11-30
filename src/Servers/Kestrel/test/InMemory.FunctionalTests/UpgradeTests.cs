@@ -4,12 +4,15 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -150,9 +153,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task RejectsRequestWithContentLengthAndUpgrade()
+        public async Task AcceptsRequestWithContentLengthAndUpgrade()
         {
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+
+                if (HttpMethods.IsPost(context.Request.Method))
+                {
+                    Assert.False(feature.IsUpgradableRequest);
+                    Assert.Equal(1, context.Request.ContentLength);
+                    Assert.Equal(1, await context.Request.Body.ReadAsync(new byte[10], 0, 10));
+                }
+                else
+                {
+                    Assert.True(feature.IsUpgradableRequest);
+                }
+            },
+            new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -161,15 +179,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 1",
                         "Connection: Upgrade",
                         "",
-                        "");
+                        "A");
 
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 400 Bad Request",
-                        "Connection: close",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
-                        "",
-                        "");
+                    await connection.Receive("HTTP/1.1 200 OK");
                 }
             }
         }
@@ -177,7 +189,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.True(feature.IsUpgradableRequest);
+
+                if (HttpMethods.IsPost(context.Request.Method))
+                {
+                    Assert.Equal(0, context.Request.ContentLength);
+                }
+                Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[10], 0, 10));
+            },
+            new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -199,9 +222,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
+        public async Task AcceptsRequestWithChunkedEncodingAndUpgrade()
         {
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+
+                Assert.Null(context.Request.ContentLength);
+
+                if (HttpMethods.IsPost(context.Request.Method))
+                {
+                    Assert.False(feature.IsUpgradableRequest);
+                    Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                    Assert.Equal(11, await context.Request.Body.ReadAsync(new byte[12], 0, 12));
+                }
+                else
+                {
+                    Assert.True(feature.IsUpgradableRequest);
+                }
+            },
+            new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -210,14 +250,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Transfer-Encoding: chunked",
                         "Connection: Upgrade",
                         "",
-                        "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 400 Bad Request",
-                        "Connection: close",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
+                        "B", "Hello World",
+                        "0",
                         "",
                         "");
+                    await connection.Receive("HTTP/1.1 200 OK");
                 }
             }
         }
@@ -341,6 +378,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 await appCompletedTcs.Task.DefaultTimeout();
             }
+        }
+
+        [Fact]
+        public async Task DoesNotThrowGivenCanceledReadResult()
+        {
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async context =>
+            {
+                try
+                {
+                    var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                    var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                    // https://github.com/dotnet/aspnetcore/issues/26482
+                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                    connectionTransportFeature.Transport.Input.CancelPendingRead();
+
+                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync() 
+                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                    appCompletedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    appCompletedTcs.SetException(ex);
+                    throw;
+                }
+            },
+            new TestServiceContext(LoggerFactory));
+
+            using (var connection = server.CreateConnection())
+            {
+                await connection.SendEmptyGetWithUpgrade();
+                await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                    "Connection: Upgrade",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            await appCompletedTcs.Task.DefaultTimeout();
         }
 
         [Fact]

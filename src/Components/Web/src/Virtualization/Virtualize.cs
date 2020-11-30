@@ -253,6 +253,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         {
             CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
 
+            // Since we know the before spacer is now visible, we absolutely have to slide the window up
+            // by at least one element. If we're not doing that, the previous item size info we had must
+            // have been wrong, so just move along by one in that case to trigger an update and apply the
+            // new size info.
+            if (itemsBefore == _itemsBefore && itemsBefore > 0)
+            {
+                itemsBefore--;
+            }
+
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
@@ -261,6 +270,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
+
+            // Since we know the after spacer is now visible, we absolutely have to slide the window down
+            // by at least one element. If we're not doing that, the previous item size info we had must
+            // have been wrong, so just move along by one in that case to trigger an update and apply the
+            // new size info.
+            if (itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
+            {
+                itemsBefore++;
+            }
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }

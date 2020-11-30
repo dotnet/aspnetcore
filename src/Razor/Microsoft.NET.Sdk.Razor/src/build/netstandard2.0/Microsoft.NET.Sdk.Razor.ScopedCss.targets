@@ -171,6 +171,11 @@ Integration with static web assets:
 
 </Target>
 
+<Target
+    Name="_ResolveScopedCssOutputsDesignTime"
+    DependsOnTargets="_ResolveScopedCssOutputs"
+    BeforeTargets="CollectUpToDateCheckInputDesignTime;CollectUpToDateCheckBuiltDesignTime" />
+
 <!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
 <Target Name="_GenerateScopedCssFiles" Inputs="@(_ScopedCss)" Outputs="@(_ScopedCssOutputs)" DependsOnTargets="_ResolveScopedCssOutputs">
 

@@ -11,7 +11,7 @@ using System.Threading;
 namespace Microsoft.AspNetCore.Razor.Tools
 {
     /// <summary>
-    /// Class for logging information about what happens in the server and client parts of the 
+    /// Class for logging information about what happens in the server and client parts of the
     /// Razor command line compiler and build tasks. Useful for debugging what is going on.
     /// </summary>
     /// <remarks>
@@ -132,8 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private static int GetCurrentThreadId()
         {
-            var thread = Thread.CurrentThread;
-            return thread.ManagedThreadId;
+            return Environment.CurrentManagedThreadId;
         }
 
         /// <summary>

@@ -14,7 +14,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
-    internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
+    /// <summary>
+    /// A factory for QUIC based connections.
+    /// </summary>
+    public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
         private QuicTrace _log;
         private QuicTransportOptions _options;
@@ -36,6 +39,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
             _options = options.Value;
         }
 
+        /// <summary>
+        /// Binds an endpoint to be used for QUIC connections.
+        /// </summary>
+        /// <param name="endpoint">The endpoint to bind to.</param>
+        /// <param name="features">Additional features to be used to create the listener.</param>
+        /// <param name="cancellationToken">To cancel the </param>
+        /// <returns>A </returns>
         public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             var transport = new QuicConnectionListener(_options, _log, endpoint);

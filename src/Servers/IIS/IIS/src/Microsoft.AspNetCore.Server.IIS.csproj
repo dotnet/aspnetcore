@@ -12,7 +12,6 @@
     <IsPackable>false</IsPackable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 

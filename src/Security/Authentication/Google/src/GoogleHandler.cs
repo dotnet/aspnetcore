@@ -17,12 +17,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
+    /// <summary>
+    /// Authentication handler for Google's OAuth based authentication.
+    /// </summary>
     public class GoogleHandler : OAuthHandler<GoogleOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="GoogleHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticationTicket> CreateTicketAsync(
             ClaimsIdentity identity,
             AuthenticationProperties properties,
@@ -47,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             }
         }
 
-        // TODO: Abstract this properties override pattern into the base class?
+        /// <inheritdoc />
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             // Google Identity Platform Manual:

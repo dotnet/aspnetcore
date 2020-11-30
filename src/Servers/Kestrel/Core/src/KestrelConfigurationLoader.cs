@@ -21,6 +21,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
+    /// <summary>
+    /// Configuration loader for Kestrel.
+    /// </summary>
     public class KestrelConfigurationLoader
     {
         private bool _loaded = false;
@@ -45,7 +48,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             CertificateConfigLoader = new CertificateConfigLoader(hostEnvironment, logger);
         }
 
+        /// <summary>
+        /// Gets the <see cref="KestrelServerOptions"/>.
+        /// </summary>
         public KestrelServerOptions Options { get; }
+
+        /// <summary>
+        /// Gets the application <see cref="IConfiguration"/>.
+        /// </summary>
         public IConfiguration Configuration { get; internal set; }
 
         /// <summary>
@@ -260,6 +270,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
+        /// <summary>
+        /// Loads the configuration.
+        /// </summary>
         public void Load()
         {
             if (_loaded)

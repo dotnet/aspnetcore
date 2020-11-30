@@ -112,11 +112,11 @@ async function readFileData(elem: InputElement, fileId: number, startOffset: num
 function readFileDataSharedMemory(readRequest: any): number {
   const inputFileElementReferenceId = monoPlatform.readStringField(readRequest, 0);
   const inputFileElement = document.querySelector(`[_bl_${inputFileElementReferenceId}]`);
-  const fileId = monoPlatform.readInt32Field(readRequest, 4);
-  const sourceOffset = monoPlatform.readUint64Field(readRequest, 8);
-  const destination = monoPlatform.readInt32Field(readRequest, 16) as unknown as System_Array<number>;
-  const destinationOffset = monoPlatform.readInt32Field(readRequest, 20);
-  const maxBytes = monoPlatform.readInt32Field(readRequest, 24);
+  const fileId = monoPlatform.readInt32Field(readRequest, 8);
+  const sourceOffset = monoPlatform.readUint64Field(readRequest, 12);
+  const destination = monoPlatform.readInt32Field(readRequest, 24) as unknown as System_Array<number>;
+  const destinationOffset = monoPlatform.readInt32Field(readRequest, 32);
+  const maxBytes = monoPlatform.readInt32Field(readRequest, 36);
 
   const sourceArrayBuffer = getFileById(inputFileElement as InputElement, fileId).arrayBuffer as ArrayBuffer;
   const bytesToRead = Math.min(maxBytes, sourceArrayBuffer.byteLength - sourceOffset);

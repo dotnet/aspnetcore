@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class AuthorizationEndpointConventionBuilderExtensions
     {
-
         private static readonly IAllowAnonymous _allowAnonymousMetadata = new AllowAnonymousAttribute();
 
         /// <summary>
@@ -96,7 +95,6 @@ namespace Microsoft.AspNetCore.Builder
             });
             return builder;
         }
-
 
         private static void RequireAuthorizationCore<TBuilder>(TBuilder builder, IEnumerable<IAuthorizeData> authorizeData)
             where TBuilder : IEndpointConventionBuilder

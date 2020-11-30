@@ -4,8 +4,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authorization.Policy
 {
+    /// <summary>
+    /// Default implementation for <see cref="IAuthorizationMiddlewareResultHandler"/>.
+    /// </summary>
     public class AuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
     {
+        /// <inheritdoc />
         public async Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
         {
             if (authorizeResult.Challenged)

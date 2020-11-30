@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task MissingAuthority_200Status()
         {
             var headers = new[]
@@ -584,6 +585,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", responseHeaders[HeaderNames.Status]);
             Assert.Equal("0", responseHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task RemoveConnectionSpecificHeaders()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var response = context.Response;
+
+                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
+                response.Headers.Add(HeaderNames.Upgrade, "websocket");
+                response.Headers.Add(HeaderNames.Connection, "Keep-Alive");
+                response.Headers.Add(HeaderNames.KeepAlive, "timeout=5, max=1000");
+                response.Headers.Add(HeaderNames.ProxyConnection, "keep-alive");
+
+                await response.WriteAsync("Hello world");
+            });
+
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal(2, responseHeaders.Count);
+
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.Contains(LogMessages, m => m.Message.Equals("One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'."));
         }
 
         [Fact(Skip = "Http3OutputProducer.Complete is called before input recognizes there is an error. Why is this different than HTTP/2?")]

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             services.AddHttpContextAccessor();
             services.AddDataProtection();
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
             var builder = services.AddIdentityCore<TUser>(options =>
             {
                 options.Password.RequireDigit = false;

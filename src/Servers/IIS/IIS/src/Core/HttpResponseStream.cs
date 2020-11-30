@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-     internal class HttpResponseStream : WriteOnlyStream
+     internal class HttpResponseStream : WriteOnlyStreamInternal
      {
         private readonly IHttpBodyControlFeature _bodyControl;
         private readonly IISHttpContext _context;

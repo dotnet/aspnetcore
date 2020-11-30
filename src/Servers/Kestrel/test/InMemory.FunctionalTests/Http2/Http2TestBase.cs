@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Emulate transport abort so the _connectionTask completes.
                 Task.Run(() =>
                 {
-                    TestApplicationErrorLogger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
+                    Logger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
                     _pair.Application.Output.Complete(ex);
                 });
             });
@@ -525,14 +525,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             ((IRequestProcessor)_connection)?.Tick(now);
         }
 
-        protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
+        protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
         {
             var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             writableBuffer.WriteStartStream(streamId, _hpackEncoder, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
-            return FlushAsync(writableBuffer);
+
+            if (flushFrame)
+            {
+                return FlushAsync(writableBuffer);
+            }
+            return Task.CompletedTask;
         }
 
         protected Task StartStreamAsync(int streamId, Span<byte> headerData, bool endStream)
@@ -923,11 +928,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendAsync(payload);
         }
 
-        protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream)
+        protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream, bool flushFrame = true)
         {
             var outputWriter = _pair.Application.Output;
             outputWriter.WriteData(streamId, data, endStream);
-            return FlushAsync(outputWriter);
+            if (flushFrame)
+            {
+                return FlushAsync(outputWriter);
+            }
+            return Task.CompletedTask;
         }
 
         protected async Task SendDataWithPaddingAsync(int streamId, Memory<byte> data, byte padLength, bool endStream)
@@ -1205,13 +1214,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage?.Length > 0)
             {
-                var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is TException);
+                var message = Assert.Single(LogMessages, m => m.Exception is TException);
 
                 Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
             }
 
+            Logger.LogInformation("Waiting for Connection task");
             await _connectionTask.DefaultTimeout();
-            TestApplicationErrorLogger.LogInformation("Stopping Connection From ConnectionErrorAsync");
+            Logger.LogInformation("Stopping Connection From ConnectionErrorAsync");
         }
 
         internal async Task WaitForStreamErrorAsync(int expectedStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
@@ -1226,7 +1236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (expectedErrorMessage != null)
             {
-                Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                Assert.Contains(LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
             }
         }
 

@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Initialize the Response Compression middleware.
         /// </summary>
-        /// <param name="next"></param>
-        /// <param name="provider"></param>
+        /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
+        /// <param name="provider">The <see cref="IResponseCompressionProvider"/>.</param>
         public ResponseCompressionMiddleware(RequestDelegate next, IResponseCompressionProvider provider)
         {
             if (next == null)
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Invoke the middleware.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <returns>A task that represents the execution of this middleware.</returns>
         public async Task Invoke(HttpContext context)
         {
             if (!_provider.CheckRequestAcceptsCompression(context))

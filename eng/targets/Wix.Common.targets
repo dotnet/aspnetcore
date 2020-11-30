@@ -39,5 +39,8 @@
   <Import Project="$(NuGetRestoreTargets)" />
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
   <Import Project="$(WixTargetsPath)" Condition="'$(WixTargetsPath)' != '' " />
-  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
+  <!-- Don't import the Microbuild signing targets when post build sign is enabled. They override the
+       standard Wix targets for signing, and call ESRP directly (rather than through SignTool). So without this,
+       ASPNetCore will sign even when PostbuildSign == true -->
+  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != '' AND '$(PostBuildSign)' != 'true'" />
 </Project>

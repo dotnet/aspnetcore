@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -208,8 +209,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
+            // Validate that the scroll event completed successfully
+            var lastElement = Browser.Exists(By.Id("999"));
+            Browser.True(() => lastElement.Displayed);
+
             // Validate that the top spacer has expanded.
             Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+        }
+
+        [Fact]
+        public async Task ToleratesIncorrectItemSize()
+        {
+            Browser.MountTestComponent<VirtualizationComponent>();
+            var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
+            var expectedInitialSpacerStyle = "height: 0px;";
+
+            // Wait until items have been rendered.
+            Browser.True(() => GetItemCount() > 0);
+            Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+
+            // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
+            // due to the incorrect item size, whereby it would not realise it's necessary to show more
+            // items because the first time the spacer became visible, the size calculation said that
+            // we're already showing all the items we need to show.
+            for (var pos = 0; pos < 1000; pos += 50)
+            {
+                Browser.ExecuteJavaScript($"document.getElementById('incorrect-size-container').scrollTop = {pos};");
+                await Task.Delay(200);
+            }
+
+            // Validate that the top spacer did change
+            Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
+
+            int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
         }
 
         [Fact]

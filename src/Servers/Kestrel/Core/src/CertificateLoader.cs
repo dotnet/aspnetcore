@@ -8,12 +8,23 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
+    /// <summary>
+    /// Enables loading TLS certificates from the certificate store.
+    /// </summary>
     public static class CertificateLoader
     {
         // See http://oid-info.com/get/1.3.6.1.5.5.7.3.1
         // Indicates that a certificate can be used as a SSL server certificate
         private const string ServerAuthenticationOid = "1.3.6.1.5.5.7.3.1";
 
+        /// <summary>
+        /// Loads a certificate from the certificate store.
+        /// </summary>
+        /// <param name="subject">The certificate subject.</param>
+        /// <param name="storeName">The certificate store name.</param>
+        /// <param name="storeLocation">The certificate store location.</param>
+        /// <param name="allowInvalid">Whether or not to load certificates that are considered invalid.</param>
+        /// <returns>The loaded certificate.</returns>
         public static X509Certificate2 LoadFromStoreCert(string subject, string storeName, StoreLocation storeLocation, bool allowInvalid)
         {
             using (var store = new X509Store(storeName, storeLocation))

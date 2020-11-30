@@ -1,11 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.HealthCheckApplicationBuilderExtensions
-Microsoft.AspNetCore.Builder.HealthCheckEndpointRouteBuilderExtensions
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.AllowCachingResponses.get -> bool
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.AllowCachingResponses.set -> void
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.HealthCheckOptions() -> void
 ~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.HealthCheckMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions!>! healthCheckOptions, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService! healthCheckService) -> void
 Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.Predicate.get -> System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration!, bool>?

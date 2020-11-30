@@ -326,6 +326,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void Delegate(DelegationRule destination)
         {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
             if (Request.HasRequestBodyStarted)
             {
                 throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");

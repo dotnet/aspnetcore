@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var value = (AllowedValues == null || !AllowedValues.Any())

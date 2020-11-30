@@ -7,7 +7,7 @@
     <IsShipping>true</IsShipping>
     <ProjectGuid>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</ProjectGuid>
     <OutputType>Package</OutputType>
-    <OutputName>aspnetcoremodule_$(Platform)_en_v2</OutputName>
+    <OutputName>$(Name)_$(Platform)</OutputName>
     <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <DisableGuidGeneration>true</DisableGuidGeneration>
@@ -55,6 +55,6 @@
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <PackageFileName>aspnetcoremodule_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
   </PropertyGroup>
 </Project>

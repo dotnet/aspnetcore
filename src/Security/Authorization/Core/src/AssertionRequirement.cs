@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"{nameof(Handler)} assertion should evaluate to true.";

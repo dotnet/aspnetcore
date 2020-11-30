@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Authorization
@@ -30,8 +29,17 @@ namespace Microsoft.AspNetCore.Authorization
         /// <returns>A successful result.</returns>
         public static AuthorizationResult Success() => new AuthorizationResult { Succeeded = true };
 
+        /// <summary>
+        /// Creates a failed authorization result.
+        /// </summary>
+        /// <param name="failure">Contains information about why authorization failed.</param>
+        /// <returns>The <see cref="AuthorizationResult"/>.</returns>
         public static AuthorizationResult Failed(AuthorizationFailure failure) => new AuthorizationResult { Failure = failure };
 
+        /// <summary>
+        /// Creates a failed authorization result.
+        /// </summary>
+        /// <returns>The <see cref="AuthorizationResult"/>.</returns>
         public static AuthorizationResult Failed() => new AuthorizationResult { Failure = AuthorizationFailure.ExplicitFail() };
 
     }
