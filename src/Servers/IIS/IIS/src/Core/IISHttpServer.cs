@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         [UnmanagedCallersOnly]
-        private static bool HandleShutdown(IntPtr pvRequestContext)
+        private static byte HandleShutdown(IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
             try
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 if (server ==  null)
                 {
                     // return value isn't checked.
-                    return true;
+                    return 1;
                 }
 
                 server._applicationLifetime.StopApplication();
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleShutdown)}.");
             }
-            return true;
+            return 1;
         }
 
         [UnmanagedCallersOnly]

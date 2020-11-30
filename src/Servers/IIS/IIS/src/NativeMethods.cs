@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         [DllImport(AspNetCoreModuleDll)]
         private unsafe static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
             delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged<IntPtr, bool> shutdownCallback,
+            delegate* unmanaged<IntPtr, byte> shutdownCallback,
             delegate* unmanaged<IntPtr, void> disconnectCallback,
             delegate* unmanaged<IntPtr, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
             delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         public static unsafe void HttpRegisterCallbacks(NativeSafeHandle pInProcessApplication,
             delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged<IntPtr, bool> shutdownCallback,
+            delegate* unmanaged<IntPtr, byte> shutdownCallback,
             delegate* unmanaged<IntPtr, void> disconnectCallback,
             delegate* unmanaged<IntPtr, int, int, REQUEST_NOTIFICATION_STATUS> asyncCallback,
             delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
