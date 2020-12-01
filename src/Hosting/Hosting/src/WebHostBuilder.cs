@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             hostingStartupErrors = null;
 
-            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (!_options.PreventHostingStartup)
             {
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var startupType = StartupLoader.FindStartupType(_options.StartupAssembly, _hostingEnvironment.EnvironmentName);
 
-                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    if (typeof(IStartup).IsAssignableFrom(startupType))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);
                     }

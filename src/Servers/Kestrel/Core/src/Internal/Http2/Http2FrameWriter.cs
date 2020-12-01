@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
         private readonly ITimeoutControl _timeoutControl;
-        private readonly MinDataRate _minResponseDataRate;
+        private readonly MinDataRate? _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
         private readonly HPackEncoder _hpackEncoder;
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Http2Connection http2Connection,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
-            MinDataRate minResponseDataRate,
+            MinDataRate? minResponseDataRate,
             string connectionId,
             MemoryPool<byte> memoryPool,
             ServiceContext serviceContext)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             while (dataLength > 0)
             {
-                ValueTask<object> availabilityTask;
+                ValueTask<object?> availabilityTask;
                 var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)

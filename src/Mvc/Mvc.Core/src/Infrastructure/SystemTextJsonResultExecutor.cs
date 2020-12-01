@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             else
             {
-                if (!(serializerSettings is JsonSerializerOptions settingsFromResult))
+                if (serializerSettings is not JsonSerializerOptions settingsFromResult)
                 {
                     throw new InvalidOperationException(Resources.FormatProperty_MustBeInstanceOfType(
                         nameof(JsonResult),
@@ -152,12 +152,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             public static void JsonResultExecuting(ILogger logger, object value)
             {
-                var type = value == null ? "null" : value.GetType().FullName;
-                _jsonResultExecuting(logger, type, null);
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    var type = value == null ? "null" : value.GetType().FullName;
+                    _jsonResultExecuting(logger, type, null);
+                }
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

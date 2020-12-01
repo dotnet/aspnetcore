@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _debugger = debugger;
             _trace = trace;
             _interval = Interval;
-            _timerThread = new Thread(state => ((Heartbeat)state).TimerLoop())
+            _timerThread = new Thread(state => ((Heartbeat)state!).TimerLoop())
             {
                 Name = "Kestrel Timer",
                 IsBackground = true

@@ -32,7 +32,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task EmptyWebTemplateCSharp()
         {
             await EmtpyTemplateCore(languageOverride: null);

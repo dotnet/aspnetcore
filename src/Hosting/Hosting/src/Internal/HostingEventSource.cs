@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static readonly HostingEventSource Log = new HostingEventSource();
 
-        private IncrementingPollingCounter _requestsPerSecondCounter;
-        private PollingCounter _totalRequestsCounter;
-        private PollingCounter _failedRequestsCounter;
-        private PollingCounter _currentRequestsCounter;
+        private IncrementingPollingCounter? _requestsPerSecondCounter;
+        private PollingCounter? _totalRequestsCounter;
+        private PollingCounter? _failedRequestsCounter;
+        private PollingCounter? _currentRequestsCounter;
 
         private long _totalRequests;
         private long _currentRequests;

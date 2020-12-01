@@ -251,6 +251,111 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             VerifyCompression(result, blazorPublishDirectory);
         }
 
+        [Fact]
+        public async Task Publish_WithStaticWebBasePathWorks()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", "razorclasslibrary");
+            project.AddProjectFileContent(
+@"<PropertyGroup>
+    <StaticWebAssetBasePath>different-path/</StaticWebAssetBasePath>
+</PropertyGroup>");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            // Verify nothing is published directly to the wwwroot directory
+            Assert.FileCountEquals(result, 0, Path.Combine(publishDirectory, "wwwroot"), "*", SearchOption.TopDirectoryOnly);
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot", "different-path");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+            var webConfigContent = new StreamReader(GetType().Assembly.GetManifestResourceStream("Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.BlazorWasm.web.config")).ReadToEnd();
+            Assert.FileContentEquals(result, Path.Combine(publishDirectory, "web.config"), webConfigContent);
+            Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
+
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "styles.css");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result,
+                Path.Combine(publishDirectory, "wwwroot"),
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js",
+                staticWebAssetsBasePath: "different-path");
+        }
+
+        [Fact]
+        public async Task Publish_Hosted_WithStaticWebBasePathWorks()
+        {
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", });
+            var wasmProject = project.GetSibling("blazorwasm");
+            wasmProject.AddProjectFileContent(
+@"<PropertyGroup>
+    <StaticWebAssetBasePath>different-path/</StaticWebAssetBasePath>
+</PropertyGroup>");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+            // Make sure the main project exists
+            Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
+
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
+            Assert.FileExists(result, publishDirectory, "blazorwasm.dll");
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot", "different-path");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
+
+            // Verify project references appear as static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll");
+            // Also verify project references to the server project appear in the publish output
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+
+            // Verify compression works
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
+        }
+
         private static void VerifyCompression(MSBuildResult result, string blazorPublishDirectory)
         {
             var original = Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");

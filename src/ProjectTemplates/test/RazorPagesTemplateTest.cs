@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_NoAuth()
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -106,7 +106,7 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("cert failure", Queues = "All.OSX")]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -222,7 +222,8 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await BuildAndPublishRazorPagesTemplate(auth: null, new[] { "--razor-runtime-compilation" });
@@ -234,7 +235,8 @@ namespace Templates.Test
             Assert.False(Directory.Exists(refsDirectory), $"{refsDirectory} should not be in the publish output.");
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]

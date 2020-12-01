@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,7 +79,7 @@ namespace RazorSyntaxGenerator
         private static void WriteUsage()
         {
             Console.WriteLine("Invalid usage");
-            Console.WriteLine(typeof(Program).GetTypeInfo().Assembly.ManifestModule.Name + " input-file output-file [/write-test]");
+            Console.WriteLine(typeof(Program).Assembly.ManifestModule.Name + " input-file output-file [/write-test]");
         }
 
         private static void WriteToFile(Tree tree, Action<TextWriter, Tree> writeAction, string outputFile)

@@ -17,16 +17,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         public static readonly KestrelEventSource Log = new KestrelEventSource();
 
-        private IncrementingPollingCounter _connectionsPerSecondCounter;
-        private IncrementingPollingCounter _tlsHandshakesPerSecondCounter;
-        private PollingCounter _totalConnectionsCounter;
-        private PollingCounter _currentConnectionsCounter;
-        private PollingCounter _totalTlsHandshakesCounter;
-        private PollingCounter _currentTlsHandshakesCounter;
-        private PollingCounter _failedTlsHandshakesCounter;
-        private PollingCounter _connectionQueueLengthCounter;
-        private PollingCounter _httpRequestQueueLengthCounter;
-        private PollingCounter _currrentUpgradedHttpRequestsCounter;
+        private IncrementingPollingCounter? _connectionsPerSecondCounter;
+        private IncrementingPollingCounter? _tlsHandshakesPerSecondCounter;
+        private PollingCounter? _totalConnectionsCounter;
+        private PollingCounter? _currentConnectionsCounter;
+        private PollingCounter? _totalTlsHandshakesCounter;
+        private PollingCounter? _currentTlsHandshakesCounter;
+        private PollingCounter? _failedTlsHandshakesCounter;
+        private PollingCounter? _connectionQueueLengthCounter;
+        private PollingCounter? _httpRequestQueueLengthCounter;
+        private PollingCounter? _currrentUpgradedHttpRequestsCounter;
 
         private long _totalConnections;
         private long _currentConnections;
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(1, Level = EventLevel.Informational)]
         private void ConnectionStart(string connectionId,
-            string localEndPoint,
-            string remoteEndPoint)
+            string? localEndPoint,
+            string? remoteEndPoint)
         {
             WriteEvent(
                 1,
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
+                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path!, httpProtocol.MethodText);
             }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
+                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path!, httpProtocol.MethodText);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature feature)
+        public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature? feature)
         {
             Interlocked.Decrement(ref _currentTlsHandshakes);
             if (IsEnabled())

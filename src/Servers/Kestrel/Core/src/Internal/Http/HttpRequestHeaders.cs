@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _previousBits = 0;
 
         public bool ReuseHeaderValues { get; set; }
-        public Func<string, Encoding> EncodingSelector { get; set; }
+        public Func<string, Encoding?> EncodingSelector { get; set; }
 
-        public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding> encodingSelector = null)
+        public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
         {
             ReuseHeaderValues = reuseHeaderValues;
             EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
+                    ? collection.MaybeUnknown!.GetEnumerator()
                     : default;
             }
 

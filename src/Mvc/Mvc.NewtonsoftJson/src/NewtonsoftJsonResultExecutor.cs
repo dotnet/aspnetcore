@@ -196,12 +196,20 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             public static void JsonResultExecuting(ILogger logger, object value)
             {
-                var type = value == null ? "null" : value.GetType().FullName;
-                _jsonResultExecuting(logger, type, null);
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    var type = value == null ? "null" : value.GetType().FullName;
+                    _jsonResultExecuting(logger, type, null);
+                }
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

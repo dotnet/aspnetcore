@@ -250,7 +250,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             await _writeBodyTask;
         }
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => true;
+        // Http/2 does not support the upgrade mechanic.
+        // Http/1.x upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
+        // more complicated to support. See https://tools.ietf.org/html/rfc7230#section-6.7, https://tools.ietf.org/html/rfc7540#section-3.2
+        bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion < System.Net.HttpVersion.Version20;
 
         bool IFeatureCollection.IsReadOnly => false;
 

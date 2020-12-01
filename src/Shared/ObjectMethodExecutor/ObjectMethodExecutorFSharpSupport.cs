@@ -111,14 +111,12 @@ namespace Microsoft.Extensions.Internal
             var fsharpOptionOfTaskCreationOptionsType = fsharpOptionType
                 .MakeGenericType(typeof(TaskCreationOptions));
             _fsharpOptionOfTaskCreationOptionsNoneProperty = fsharpOptionOfTaskCreationOptionsType
-                .GetTypeInfo()
                 .GetRuntimeProperty("None");
 
             // Get a reference to FSharpOption<CancellationToken>.None
             var fsharpOptionOfCancellationTokenType = fsharpOptionType
                 .MakeGenericType(typeof(CancellationToken));
             _fsharpOptionOfCancellationTokenNoneProperty = fsharpOptionOfCancellationTokenType
-                .GetTypeInfo()
                 .GetRuntimeProperty("None");
 
             // Get a reference to FSharpAsync.StartAsTask<>

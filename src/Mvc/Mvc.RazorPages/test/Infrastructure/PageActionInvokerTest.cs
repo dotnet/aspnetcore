@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -1577,44 +1576,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 pageContext,
                 filters ?? Array.Empty<IFilterMetadata>(),
                 cacheEntry,
-                GetParameterBinder(),
                 tempDataFactory,
                 new HtmlHelperOptions());
             return invoker;
-        }
-
-        private static ParameterBinder GetParameterBinder(
-            IModelBinderFactory factory = null,
-            IModelValidatorProvider validator = null)
-        {
-            if (validator == null)
-            {
-                validator = CreateMockValidatorProvider();
-            }
-
-            if (factory == null)
-            {
-                factory = TestModelBinderFactory.CreateDefault();
-            }
-
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var mvcOptions = new MvcOptions();
-
-            return new ParameterBinder(
-                metadataProvider,
-                factory,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }, mvcOptions),
-                Options.Create(mvcOptions),
-                NullLoggerFactory.Instance);
-        }
-
-        private static IModelValidatorProvider CreateMockValidatorProvider()
-        {
-            var mockValidator = new Mock<IModelValidatorProvider>(MockBehavior.Strict);
-            mockValidator
-                .Setup(o => o.CreateValidators(
-                    It.IsAny<ModelValidatorProviderContext>()));
-            return mockValidator.Object;
         }
 
         private CompiledPageActionDescriptor CreateDescriptorForSimplePage()

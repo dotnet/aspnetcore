@@ -4,7 +4,6 @@
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
             var viewContext = MakeViewContext(httpContext);
             var viewDataValue = new object();
             viewContext.ViewData.Add("TestData", viewDataValue);
-            var activator = new DefaultTagHelperActivator(new TypeActivatorCache());
+            var activator = new DefaultTagHelperActivator();
 
             // Act
             var helper = activator.Create<TestTagHelper>(viewContext);

@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_ReturnsNotFoundFileInfo_IfFileDoesNotExist()
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
             var fileInfo = provider.GetFileInfo("DoesNotExist.Txt");
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_ReturnsFilesAtRoot(string filePath)
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
             var expectedFileLength = 8;
 
             // Act
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_ReturnsNotFoundFileInfo_IfFileDoesNotExistUnderSpecifiedNamespace()
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".SubNamespace");
+            var provider = new EmbeddedFileProvider(GetType().Assembly, Namespace + ".SubNamespace");
 
             // Act
             var fileInfo = provider.GetFileInfo("File.txt");
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_ReturnsNotFoundIfPathStartsWithBackSlash()
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
             var fileInfo = provider.GetFileInfo("\\File.txt");
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_LocatesFilesUnderSpecifiedNamespace(string path)
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".Resources");
+            var provider = new EmbeddedFileProvider(GetType().Assembly, Namespace + ".Resources");
 
             // Act
             var fileInfo = provider.GetFileInfo(path);
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetFileInfo_LocatesFilesUnderSubDirectories(string path)
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
             var fileInfo = provider.GetFileInfo(path);
@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetDirectoryContents_ReturnsAllFilesInFileSystem(string path)
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".Resources");
+            var provider = new EmbeddedFileProvider(GetType().Assembly, Namespace + ".Resources");
 
             // Act
             var files = provider.GetDirectoryContents(path);
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetDirectoryContents_ReturnsEmptySequence_IfResourcesDoNotExistUnderNamespace()
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "Unknown.Namespace");
+            var provider = new EmbeddedFileProvider(GetType().Assembly, "Unknown.Namespace");
 
             // Act
             var files = provider.GetDirectoryContents(string.Empty);
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void GetDirectoryContents_ReturnsNotFoundDirectoryContents_IfHierarchicalPathIsSpecified(string path)
         {
             // Arrange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
             var files = provider.GetDirectoryContents(path);
@@ -217,7 +217,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         public void Watch_ReturnsNoOpTrigger()
         {
             // Arange
-            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly);
+            var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
             var token = provider.Watch("Resources/File.txt");

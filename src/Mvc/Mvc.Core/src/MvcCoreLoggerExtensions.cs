@@ -1569,7 +1569,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (enumerableType != null)
             {
                 var elementType = enumerableType.GenericTypeArguments[0];
-                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
+                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 {
                     _attemptingToBindCollectionOfKeyValuePair(logger, modelName, modelName, modelName, modelName, modelName, modelName, null);
                     return;

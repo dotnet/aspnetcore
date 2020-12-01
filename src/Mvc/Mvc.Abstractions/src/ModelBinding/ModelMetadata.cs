@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             IsComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
             IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
-            IsReferenceOrNullableType = !ModelType.GetTypeInfo().IsValueType || IsNullableValueType;
+            IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
             UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
 
             var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));

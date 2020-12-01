@@ -188,11 +188,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 }
 
                 var stackFrames = new List<StackFrameSourceCodeInfo>();
-                var exceptionDetails = new ExceptionDetails
-                {
-                    StackFrames = stackFrames,
-                    ErrorMessage = compilationFailure.FailureSummary,
-                };
+                var exceptionDetails = new ExceptionDetails(compilationFailure.FailureSummary!, stackFrames);
                 model.ErrorDetails.Add(exceptionDetails);
                 model.CompiledContent.Add(compilationFailure.CompiledContent);
 

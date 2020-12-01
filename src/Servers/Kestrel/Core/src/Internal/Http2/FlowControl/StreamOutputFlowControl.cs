@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         private readonly OutputFlowControl _connectionLevelFlowControl;
         private readonly OutputFlowControl _streamLevelFlowControl;
 
-        private ManualResetValueTaskSource<object> _currentConnectionLevelAwaitable;
+        private ManualResetValueTaskSource<object?>? _currentConnectionLevelAwaitable;
         private int _currentConnectionLevelAwaitableVersion;
 
         public StreamOutputFlowControl(OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _streamLevelFlowControl.Advance(bytes);
         }
 
-        public int AdvanceUpToAndWait(long bytes, out ValueTask<object> availabilityTask)
+        public int AdvanceUpToAndWait(long bytes, out ValueTask<object?> availabilityTask)
         {
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                     _currentConnectionLevelAwaitableVersion = awaitable.Version;
                 }
 
-                availabilityTask = new ValueTask<object>(awaitable, awaitable.Version);
+                availabilityTask = new ValueTask<object?>(awaitable, awaitable.Version);
             }
 
             return actual;

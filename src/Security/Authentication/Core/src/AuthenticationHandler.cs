@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         protected string CurrentUri
         {
-            get => Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
+            get => Request.Scheme + Uri.SchemeDelimiter + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="targetPath">The path.</param>
         /// <returns>The absolute url.</returns>
         protected string BuildRedirectUri(string targetPath)
-            => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
+            => Request.Scheme + Uri.SchemeDelimiter + Request.Host + OriginalPathBase + targetPath;
 
         /// <summary>
         /// Resolves the scheme that this authentication operation is forwarded to.

@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX")]
+        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
         public async Task GrpcTemplate()
         {
