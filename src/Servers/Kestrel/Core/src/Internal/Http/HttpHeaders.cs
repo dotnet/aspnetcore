@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected long _bits = 0;
         protected long? _contentLength;
         protected bool _isReadOnly;
-        protected Dictionary<string, StringValues> MaybeUnknown;
+        protected Dictionary<string, StringValues>? MaybeUnknown;
         protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
 
         public long? ContentLength

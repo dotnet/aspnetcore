@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public abstract void CancelPendingRead();
 
-        public abstract void Complete(Exception exception);
+        public abstract void Complete(Exception? exception);
 
-        public virtual ValueTask CompleteAsync(Exception exception)
+        public virtual ValueTask CompleteAsync(Exception? exception)
         {
             Complete(exception);
             return default;

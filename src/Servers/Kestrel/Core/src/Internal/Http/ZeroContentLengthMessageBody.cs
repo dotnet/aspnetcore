@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal sealed class ZeroContentLengthMessageBody : MessageBody
     {
         public ZeroContentLengthMessageBody(bool keepAlive)
-            : base(null)
+            : base(null!) // Ok to pass null here because this type overrides all the base methods
         {
             RequestKeepAlive = keepAlive;
         }
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        public override void Complete(Exception ex) { }
+        public override void Complete(Exception? ex) { }
 
         public override void CancelPendingRead() { }
     }

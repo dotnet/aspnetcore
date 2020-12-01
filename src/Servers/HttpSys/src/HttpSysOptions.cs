@@ -68,8 +68,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
         /// <summary>
-        /// The maximum number of concurrent accepts.
+        /// The number of concurrent workers draining requests from the Http.sys queue.
         /// </summary>
+        /// <remarks>
+        /// Defaults to 5 times the number of processors.
+        /// </remarks>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
         /// <summary>

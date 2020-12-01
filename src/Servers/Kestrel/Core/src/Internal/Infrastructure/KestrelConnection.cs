@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
     {
-        private List<(Action<object> handler, object state)> _heartbeatHandlers;
+        private List<(Action<object> handler, object state)>? _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
 
-        private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
         private bool _completed;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _connectionClosingCts.Dispose();
         }
 
-        protected IDisposable BeginConnectionScope(BaseConnectionContext connectionContext)
+        protected IDisposable? BeginConnectionScope(BaseConnectionContext connectionContext)
         {
             if (Logger.IsEnabled(LogLevel.Critical))
             {

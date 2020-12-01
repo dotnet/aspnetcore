@@ -10,8 +10,8 @@ namespace System.IO.Pipelines
     // Copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegment.cs
     internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
     {
-        private object _memoryOwner;
-        private BufferSegment _next;
+        private object? _memoryOwner;
+        private BufferSegment? _next;
         private int _end;
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace System.IO.Pipelines
         /// working memory. The "active" memory is grown when bytes are copied in, End is increased, and Next is assigned. The "active"
         /// memory is shrunk when bytes are consumed, Start is increased, and blocks are returned to the pool.
         /// </summary>
-        public BufferSegment NextSegment
+        public BufferSegment? NextSegment
         {
             get => _next;
             set
@@ -61,6 +61,8 @@ namespace System.IO.Pipelines
 
         public void ResetMemory()
         {
+            Debug.Assert(_memoryOwner != null);
+
             if (_memoryOwner is IMemoryOwner<byte> owner)
             {
                 owner.Dispose();
@@ -83,7 +85,7 @@ namespace System.IO.Pipelines
         }
 
         // Exposed for testing
-        internal object MemoryOwner => _memoryOwner;
+        internal object? MemoryOwner => _memoryOwner;
 
         public Memory<byte> AvailableMemory { get; private set; }
 
@@ -106,7 +108,7 @@ namespace System.IO.Pipelines
 
             while (segment.Next != null)
             {
-                segment.NextSegment.RunningIndex = segment.RunningIndex + segment.Length;
+                segment.NextSegment!.RunningIndex = segment.RunningIndex + segment.Length;
                 segment = segment.NextSegment;
             }
         }

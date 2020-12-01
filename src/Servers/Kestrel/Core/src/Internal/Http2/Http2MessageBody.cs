@@ -103,13 +103,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _readResult;
         }
 
-        public override void Complete(Exception exception)
+        public override void Complete(Exception? exception)
         {
             _context.ReportApplicationError(exception);
             _context.RequestBodyPipe.Reader.Complete();
         }
 
-        public override ValueTask CompleteAsync(Exception exception)
+        public override ValueTask CompleteAsync(Exception? exception)
         {
             _context.ReportApplicationError(exception);
             return _context.RequestBodyPipe.Reader.CompleteAsync();
