@@ -8,7 +8,7 @@ using Polly.Registry;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-   /// Provides convenience extension methods to register <see cref="IPolicyRegistry{String}"/> and 
+   /// Provides convenience extension methods to register <see cref="IPolicyRegistry{String}"/> and
    /// <see cref="IReadOnlyPolicyRegistry{String}"/> in the service collection.
     /// </summary>
     public static class PollyServiceCollectionExtensions
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// the newly created registry.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The newly created <see cref="PolicyRegistry"/>.</returns>
+        /// <returns>The newly created <see cref="IPolicyRegistry{String}"/>.</returns>
         public static IPolicyRegistry<string> AddPolicyRegistry(this IServiceCollection services)
         {
             if (services == null)
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            // Create an empty registry, register and return it as an instance. This is the best way to get a 
+            // Create an empty registry, register and return it as an instance. This is the best way to get a
             // single instance registered using both interfaces.
             var registry = new PolicyRegistry();
             services.AddSingleton<IPolicyRegistry<string>>(registry);
