@@ -255,7 +255,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public async Task AddTransientHttpErrorPolicy_AddsPolicyHandler_HandlesStatusCode(HttpStatusCode statusCode)
         {
             // Arrange
-            var handler = new SequenceMessageHandler()
+            using var handler = new SequenceMessageHandler()
             {
                 Responses =
                 {
@@ -303,7 +303,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public async Task AddTransientHttpErrorPolicy_AddsPolicyHandler_HandlesHttpRequestException()
         {
             // Arrange
-            var handler = new SequenceMessageHandler()
+            using var handler = new SequenceMessageHandler()
             {
                 Responses =
                 {
