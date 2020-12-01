@@ -61,5 +61,42 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return registry;
         }
+
+        /// <summary>
+        /// Registers an empty <see cref="PolicyRegistry"/> in the service collection with service types
+        /// <see cref="IPolicyRegistry{String}"/>, and <see cref="IReadOnlyPolicyRegistry{String}"/> and
+        /// uses the specified delegate to configure it.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureRegistry">A delegate that is used to configure an <see cref="IPolicyRegistry{String}"/>.</param>
+        /// <returns>The provided <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddPolicyRegistry(this IServiceCollection services, Action<IServiceProvider, IPolicyRegistry<string>> configureRegistry)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configureRegistry == null)
+            {
+                throw new ArgumentNullException(nameof(configureRegistry));
+            }
+
+            // Create an empty registry, configure it and register it as an instance.
+            // This is the best way to get a single instance registered using both interfaces.
+            services.AddSingleton(serviceProvider =>
+            {
+                var registry = new PolicyRegistry();
+
+                configureRegistry(serviceProvider, registry);
+
+                return registry;
+            });
+
+            services.AddSingleton<IPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>());
+            services.AddSingleton<IReadOnlyPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>());
+
+            return services;
+        }
     }
 }
