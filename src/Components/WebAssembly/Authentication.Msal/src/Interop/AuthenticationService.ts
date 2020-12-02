@@ -101,8 +101,12 @@ class MsalAuthorizeService implements AuthorizeService {
             scopes: scopes
         };
 
-        const response = await this._msalApplication.acquireTokenSilent(silentRequest);
-        return response.idTokenClaims;
+        try {
+            const response = await this._msalApplication.acquireTokenSilent(silentRequest);
+            return response.idTokenClaims;
+        } catch (e) {
+            await this.signInCore(silentRequest);
+        }
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
@@ -224,10 +228,9 @@ class MsalAuthorizeService implements AuthorizeService {
     async completeSignIn() {
         // Make sure that the redirect handler has completed execution before
         // completing sign in.
-        await this._redirectCallback;
-        const account = this.getAccount();
-        if (account) {
-            return this.success(account);
+        var state = await this._redirectCallback;
+        if (state) {
+            return this.success(state.state);
         }
         return this.operationCompleted();
     }
@@ -251,9 +254,7 @@ class MsalAuthorizeService implements AuthorizeService {
 
     async completeSignOut(url: string) {
         const logoutStateId = sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
-        const updatedUrl = new URL(url);
-        updatedUrl.search = `?state=${logoutStateId}`;
-        const logoutState = await this.retrieveState(updatedUrl.href, /*isLogout*/ true);
+        const logoutState = this.retrieveState(logoutStateId, /*isLogout*/ true);
 
         sessionStorage.removeItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
 
@@ -285,25 +286,12 @@ class MsalAuthorizeService implements AuthorizeService {
         return base64UrlIdentifier;
     }
 
-    async retrieveState<T>(url: string, isLogout: boolean = false): Promise<T | undefined> {
-        const parsedUrl = new URL(url);
-        const fromHash = parsedUrl.hash && parsedUrl.hash.length > 0 && new URLSearchParams(parsedUrl.hash.substring(1));
-        let state = fromHash && fromHash.getAll('state');
-        if (state && state.length > 1) {
-            return undefined;
-        } else if (!state || state.length == 0) {
-            state = parsedUrl.searchParams && parsedUrl.searchParams.getAll('state');
-            if (!state || state.length !== 1) {
-                return undefined;
-            }
+    retrieveState<T>(state: string | null, isLogout: boolean = false): T | undefined {
+        if (!state) {
+            return;
         }
 
-        // We need to calculate the state key in two different ways. The reason for it is that
-        // msal.js doesn't support the state parameter on logout flows, which forces us to shim our own logout state.
-        // The format then is different, as msal follows the pattern state=<<guid>>|<<user_state>> and our format
-        // simple uses <<base64urlIdentifier>>.
-        const appState = !isLogout ? this.getAccountState(state[0]) : state[0];
-        const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${appState}`;
+        const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${state}`;
         const stateString = sessionStorage.getItem(stateKey);
         if (stateString) {
             sessionStorage.removeItem(stateKey);
@@ -336,12 +324,10 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     private handleResult(result: Msal.AuthenticationResult | null) {
-        if (result != null) {
-            this._account = result.account;
-            return this.success(result.state);
-        } else {
-            return this.operationCompleted();
+        if (result?.state) {
+            return this.success(this.retrieveState(result.state));
         }
+        return this.operationCompleted();
     }
 
     private getAccountState(state: string) {
