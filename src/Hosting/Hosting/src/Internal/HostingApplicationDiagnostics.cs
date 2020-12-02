@@ -266,7 +266,11 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
+                if (baggage.Length == 0)
+                {
+                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                }
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
                 // An order could be important if baggage has two items with the same key (that is allowed by the contract)
