@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -30,11 +29,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public const int RSAMinimumKeySizeInBits = 2048;
 
-        public static CertificateManager Instance { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        public static CertificateManager Instance { get; } = OperatingSystem.IsWindows() ?
 #pragma warning disable CA1416 // Validate platform compatibility
             new WindowsCertificateManager() :
 #pragma warning restore CA1416 // Validate platform compatibility
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            OperatingSystem.IsMacOS() ?
                 new MacOSCertificateManager() as CertificateManager :
                 new UnixCertificateManager();
 

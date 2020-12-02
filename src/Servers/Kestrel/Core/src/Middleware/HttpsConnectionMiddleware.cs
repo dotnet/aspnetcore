@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -466,7 +465,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
             if (httpProtocols == HttpProtocols.Http2)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (OperatingSystem.IsMacOS())
                 {
                     throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
                 }
@@ -486,7 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private static bool IsWindowsVersionIncompatibleWithHttp2()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
                 if (Environment.OSVersion.Version < new Version(6, 3) // Missing ALPN support

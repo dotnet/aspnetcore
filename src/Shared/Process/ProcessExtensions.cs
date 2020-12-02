@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Internal
 {
     internal static class ProcessExtensions
     {
-        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
         public static void KillTree(this Process process) => process.KillTree(_defaultTimeout);
@@ -20,7 +18,7 @@ namespace Microsoft.Extensions.Internal
         public static void KillTree(this Process process, TimeSpan timeout)
         {
             var pid = process.Id;
-            if (_isWindows)
+            if (OperatingSystem.IsWindows())
             {
                 RunProcessAndWaitForExit(
                     "taskkill",

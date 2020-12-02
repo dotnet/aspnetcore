@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var executableArgs = string.Empty;
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
-                    : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+                    : (OperatingSystem.IsWindows() ? ".exe" : "");
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
