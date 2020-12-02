@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // else // Attaching to an existing queue, don't add a default.
 
             // Can't call Start twice
-            Contract.Assert(Application == null);
+            Debug.Assert(Application == null);
 
-            Contract.Assert(application != null);
+            Debug.Assert(application != null);
 
             Application = new ApplicationWrapper<TContext>(application);
 
@@ -134,7 +134,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _serverAddresses.Addresses.Add(prefix.FullPrefix);
             }
 
-            ActivateRequestProcessingLimits();
+            // Dispatch to get off the SynchronizationContext and use UnsafeQueueUserWorkItem to avoid capturing the ExecutionContext
+            ThreadPool.UnsafeQueueUserWorkItem(state => state.ActivateRequestProcessingLimits(), this, preferLocal: false);
 
             return Task.CompletedTask;
         }
@@ -183,13 +184,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 RequestContext requestContext;
                 try
                 {
-                    requestContext = await Listener.AcceptAsync().SupressContext();
+                    requestContext = await Listener.AcceptAsync();
                     // Assign the message pump to this request context
                     requestContext.MessagePump = this;
                 }
                 catch (Exception exception)
                 {
-                    Contract.Assert(Stopping);
+                    Debug.Assert(Stopping);
                     if (Stopping)
                     {
                         _logger.LogDebug(LoggerEventIds.AcceptErrorStopping, exception, "Failed to accept a request, the server is stopping.");
