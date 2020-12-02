@@ -24,6 +24,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string AltSvc = "Alt-Svc";
         public static readonly string Authority = ":authority";
         public static readonly string Authorization = "Authorization";
+        public static readonly string Baggage = "baggage";
         public static readonly string CacheControl = "Cache-Control";
         public static readonly string Connection = "Connection";
         public static readonly string ContentDisposition = "Content-Disposition";
