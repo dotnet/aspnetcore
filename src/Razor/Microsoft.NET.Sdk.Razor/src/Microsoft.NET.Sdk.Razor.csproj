@@ -29,7 +29,7 @@
       Targets="Publish"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir;SelfContained" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
       ReferenceOutputAssembly="false"

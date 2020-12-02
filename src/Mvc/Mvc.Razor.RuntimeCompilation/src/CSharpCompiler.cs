@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             else
             {
                 // Based on https://github.com/dotnet/roslyn/blob/1d28ff9ba248b332de3c84d23194a1d7bde07e4d/src/Compilers/CSharp/Portable/CommandLine/CSharpCommandLineParser.cs#L624-L640
-                switch (dependencyContextOptions.DebugType.ToLower())
+                switch (dependencyContextOptions.DebugType.ToLowerInvariant())
                 {
                     case "none":
                         // There isn't a way to represent none in DebugInformationFormat.

@@ -96,20 +96,16 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-
-    <!--
-      Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props and
-      the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
-    -->
-    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
     <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+    <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+    <!-- For CI builds, ensure API docs are available. -->
+    <NoWarn Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
@@ -143,7 +139,7 @@
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
-      Archives and installers using this prefix are intended for internal-use only.
+      Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
       into their own installers.
     -->
@@ -161,6 +157,7 @@
       win-arm;
       win-arm64;
       osx-x64;
+      osx-arm64;
       linux-musl-x64;
       linux-musl-arm;
       linux-musl-arm64;

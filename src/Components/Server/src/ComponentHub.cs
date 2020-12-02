@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Components.Server
 
             if (baseUri == null ||
                 uri == null ||
-                !Uri.IsWellFormedUriString(baseUri, UriKind.Absolute) ||
-                !Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+                !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
+                !Uri.TryCreate(uri, UriKind.Absolute, out _))
             {
                 // We do some really minimal validation here to prevent obviously wrong data from getting in
                 // without duplicating too much logic.

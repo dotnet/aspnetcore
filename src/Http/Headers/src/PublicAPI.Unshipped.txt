@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) -> bool
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!

@@ -7,6 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
+    /// <summary>
+    /// Options for Quic based connections.
+    /// </summary>
     public class QuicTransportOptions
     {
         /// <summary>

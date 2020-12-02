@@ -437,6 +437,32 @@ namespace Microsoft.Net.Http.Headers
             return other;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether <paramref name="otherMediaType"/> is a subset of
+        /// this <see cref="MediaTypeHeaderValue"/> in terms of type/subType. A "subset" is defined as the same or a more specific media type
+        /// according to the precedence described in https://www.ietf.org/rfc/rfc2068.txt section 14.1, Accept.
+        /// </summary>
+        /// <param name="otherMediaType">The <see cref="StringSegment"/> to compare.</param>
+        /// <returns>
+        /// A value indicating whether <paramref name="otherMediaType"/> is a subset of
+        /// this <see cref="MediaTypeHeaderValue"/>.
+        /// </returns>
+        /// <remarks>
+        /// For example "multipart/mixed" is a subset of "multipart/mixed",
+        /// "multipart/*", and "*/*" but not "multipart/message."
+        /// </remarks>
+        public bool MatchesMediaType(StringSegment otherMediaType)
+        {
+            if (StringSegment.IsNullOrEmpty(otherMediaType))
+            {
+                return false;
+            }
+            GetMediaTypeExpressionLength(otherMediaType, 0, out var mediaType);
+
+            return MatchesType(mediaType) && MatchesSubtype(mediaType);
+        }
+
+
         public override string ToString()
         {
             var builder = new StringBuilder();
@@ -645,6 +671,14 @@ namespace Microsoft.Net.Http.Headers
                 set.Type.Equals(Type, StringComparison.OrdinalIgnoreCase);
         }
 
+        private bool MatchesType(StringSegment mediaType)
+        {
+            var type = mediaType.Subsegment(0, mediaType.IndexOf(ForwardSlashCharacter));
+
+            return MatchesAllTypes ||
+                Type.Equals(type, StringComparison.OrdinalIgnoreCase);
+        }
+
         private bool MatchesSubtype(MediaTypeHeaderValue set)
         {
             if (set.MatchesAllSubTypes)
@@ -672,16 +706,77 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        private bool MatchesSubtype(StringSegment mediaType)
+        {
+            if (MatchesAllSubTypes)
+            {
+                return true;
+            }
+
+            var subType = mediaType.Subsegment(mediaType.IndexOf(ForwardSlashCharacter) + 1);
+
+            StringSegment suffix;
+            var startOfSuffix = subType.LastIndexOf(PlusCharacter);
+            if (startOfSuffix == -1)
+            {
+                suffix = default(StringSegment);
+            }
+            else
+            {
+                suffix = subType.Subsegment(startOfSuffix + 1);
+            }
+
+            if (Suffix.HasValue)
+            {
+                if (suffix.HasValue)
+                {
+                    return MatchesSubtypeWithoutSuffix(subType, startOfSuffix) && MatchesSubtypeSuffix(suffix);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // If this subtype or suffix matches the subtype of the mediaType,
+                // it is considered a subtype.
+                // Ex: application/json > application/val+json
+                return MatchesEitherSubtypeOrSuffix(subType, suffix);
+            }
+        }
+
         private bool MatchesSubtypeWithoutSuffix(MediaTypeHeaderValue set)
         {
             return set.MatchesAllSubTypesWithoutSuffix ||
                 set.SubTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
+        private bool MatchesSubtypeWithoutSuffix(StringSegment subType, int startOfSuffix)
+        {
+            StringSegment subTypeWithoutSuffix;
+            if (startOfSuffix == -1)
+            {
+                subTypeWithoutSuffix = subType;
+            }
+            else
+            {
+                subTypeWithoutSuffix = subType.Subsegment(0, startOfSuffix);
+            }
+            return SubTypeWithoutSuffix.Equals(WildcardString, StringComparison.OrdinalIgnoreCase) ||
+                SubTypeWithoutSuffix.Equals(subTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
+        }
+
         private bool MatchesEitherSubtypeOrSuffix(MediaTypeHeaderValue set)
         {
             return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
                 set.SubType.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesEitherSubtypeOrSuffix(StringSegment subType, StringSegment suffix)
+        {
+            return subType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
+                SubType.Equals(suffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesParameters(MediaTypeHeaderValue set)
@@ -727,6 +822,13 @@ namespace Microsoft.Net.Http.Headers
             // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
             // because there's no clear use case for it.
             return set.Suffix.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesSubtypeSuffix(StringSegment suffix)
+        {
+            // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
+            // because there's no clear use case for it.
+            return Suffix.Equals(suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

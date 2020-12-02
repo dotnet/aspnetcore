@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core SignalR</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +17,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' AND '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <!-- Dependency (a transitive ref) was removed in 5.0. Suppression can be removed after 5.0 RTM is released. -->
     <SuppressBaselineReference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
@@ -36,6 +36,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

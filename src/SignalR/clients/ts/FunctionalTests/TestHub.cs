@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace FunctionalTests
 
         public int GetNumRedirects()
         {
-            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"]);
+            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"], CultureInfo.InvariantCulture);
         }
 
         public void ThrowException(string message)

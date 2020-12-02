@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private int _statusCode;
         private string _reasonPhrase;
         // Used to synchronize callback registration and native method calls
-        private readonly object _contextLock = new object();
+        internal readonly object _contextLock = new object();
 
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // If at this point request was not upgraded just start a normal IO engine
             if (AsyncIO == null)
             {
-                AsyncIO = new AsyncIOEngine(_contextLock, _requestNativeHandle);
+                AsyncIO = new AsyncIOEngine(this, _requestNativeHandle);
             }
         }
 
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                     catch (Exception ex)
                     {
-                        ReportApplicationError(ex);
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
                 }
             }

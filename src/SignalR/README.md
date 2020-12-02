@@ -1,52 +1,74 @@
-ASP.NET Core SignalR
-====================
+# ASP.NET Core SignalR
 
 ASP.NET Core SignalR is a library for ASP.NET Core developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.
 
 You can watch an introductory presentation here - [ASP.NET Core SignalR: Build 2018](https://www.youtube.com/watch?v=Lws0zOaseIM)
 
-## Documentation
-
 Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/aspnet/core/signalr/introduction) section of the ASP.NET Core Documentation site.
 
-## TypeScript Version
+## Description
 
-If you are encountering TypeScript definition issues with SignalR, please ensure you are using the latest version of TypeScript to compile your application. If the issue occurs in the latest TypeScript, please let us know.
+This folder contains the server and client implementations for SignalR.
 
-When in doubt, check the version of TypeScript referenced by our [package.json](clients/ts/package.json) file. That version is the minimum TypeScript version expected to work with SignalR.
+The following contains a description of the sub-directories.
 
-## Packages
+- `server/Core`: Contains the main server-side implementation of the SignalR protocol and the Hubs API.
+- `server/SignalR`: Contains extensions that help make using SignalR easier.
+- `server/StackExchangeRedis`: Contains a backplane implementation using StackExchange.Redis.
+- `server/Specification.Tests`: Contains a set of tests for users to use when verifying custom implementations of SignalR types.
+- `common/Http.Connections.Common`: Contains common types used by both the server and .NET client for the HTTP layer.
+- `common/Http.Connections`: Contains the HTTP implementation layer for LongPolling, ServerSentEvents, and WebSockets on the server.
+- `common/Protocols.Json`: Contains the Json Hub Protocol implementation using System.Text.Json for the server and .NET client.
+- `common/Protocols.MessagePack`: Contains the MessagePack Hub Protocol implementation for the server and .NET client.
+- `common/Protocols.NewtonsoftJson`: Contains the Json Hub Protocol implementation using Newtonsoft.Json for the server and .NET client.
+- `common/SignalR.Common`: Contains common types used by both the server and .NET client for the SignalR layer.
+- `clients/csharp`: Contains the client-side implementation of the SignalR protocol in .NET.
+- `clients/java`: Contains the client-side implementation of the SignalR protocol in Java.
+- `clients/ts`: Contains the client-side implementation of the SignalR protocol in TypeScript/JavaScript.
 
-You can install the latest released JavaScript client from npm with the following command:
+## Development Setup
+
+### Build
+
+By default, the build script will try to build Java and Typescript projects. If you don't want to include those, you can pass "-NoBuildJava" and "-NoBuildNodeJS" respectively to the build script to skip them. Or "--no-build-java" and "--no-build-nodejs" on MacOS or Linux.
+
+To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#building-a-subset-of-the-code).
+
+Or for the less detailed explanation, run the following command inside this directory.
+```powershell
+> ./build.cmd
+```
+
+Or on MacOS or Linux:
 
 ```bash
-npm install @microsoft/signalr
+$ ./build.sh
 ```
 
-The `@microsoft/signalr` package (and it's dependencies) require NPM 5.6.0 or higher.
+### Test
 
-**NOTE:** Previous versions of the SignalR client were named `@aspnet/signalr` or `@aspnet/signalr-client`.
+This project's tests require having "java" and "npm" on your path.
 
-**IMPORTANT:** When using preview builds, you should always ensure you are using the same version of both the JavaScript client and the Server. The version numbers should align as they are produced in the same build process.
+To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
-The CI build publishes the latest dev version of the JavaScript client to our dev npm registry as @microsoft/signalr. You can install the module as follows:
-
-- Create an .npmrc file with the following line:
-  `@microsoft:registry=https://dotnet.myget.org/f/aspnetcore-dev/npm/`
-- Run:
-  `npm install @microsoft/signalr`
-
-Alternatively, if you don't want to create the .npmrc file run the following commands:
-```
-npm install @microsoft/signalr --registry https://dotnet.myget.org/f/aspnetcore-dev/npm/
+Or for the less detailed explanation, run the following command inside this directory.
+```powershell
+> ./build.cmd -t
 ```
 
-We also have a MsgPack protocol library which is installed via:
+Or on MacOS or Linux:
 
 ```bash
-npm install @microsoft/signalr-protocol-msgpack
+$ ./build.sh -t
 ```
 
-## Deploying
+You can also run project specific tests by running `dotnet test` in the `tests` directory next to the `src` directory of the project.
 
-Once you've installed the NPM modules, they will be located in the `node_modules/@microsoft/signalr` and `node_modules/@microsoft/signalr-protocol-msgpack` folders. If you are building a NodeJS application or using an ECMAScript module loader/bundler (such as [webpack](https://webpack.js.org)), you can load them directly. If you are building a browser application without using a module bundler, you can find UMD-compatible bundles in the `dist/browser` folder; minified versions are provided as well. Simply copy these to your project as appropriate and use a build task to keep them up-to-date.
+To run Java tests go to the `clients/java/signalr` folder and run `gradle test`.
+
+To run TypeScript unit tests go to the `clients/ts` folder and run `npm run test`.
+To run TypeScript EndToEnd tests go to the `clients/ts/FunctionalTests` folder and run `npm run test:inner`.
+
+## More Information
+
+For more information, see the [ASP.NET Core README](../../README.md).

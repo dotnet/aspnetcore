@@ -17,16 +17,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         public static readonly KestrelEventSource Log = new KestrelEventSource();
 
-        private IncrementingPollingCounter _connectionsPerSecondCounter;
-        private IncrementingPollingCounter _tlsHandshakesPerSecondCounter;
-        private PollingCounter _totalConnectionsCounter;
-        private PollingCounter _currentConnectionsCounter;
-        private PollingCounter _totalTlsHandshakesCounter;
-        private PollingCounter _currentTlsHandshakesCounter;
-        private PollingCounter _failedTlsHandshakesCounter;
-        private PollingCounter _connectionQueueLengthCounter;
-        private PollingCounter _httpRequestQueueLengthCounter;
-        private PollingCounter _currrentUpgradedHttpRequestsCounter;
+        private IncrementingPollingCounter? _connectionsPerSecondCounter;
+        private IncrementingPollingCounter? _tlsHandshakesPerSecondCounter;
+        private PollingCounter? _totalConnectionsCounter;
+        private PollingCounter? _currentConnectionsCounter;
+        private PollingCounter? _totalTlsHandshakesCounter;
+        private PollingCounter? _currentTlsHandshakesCounter;
+        private PollingCounter? _failedTlsHandshakesCounter;
+        private PollingCounter? _connectionQueueLengthCounter;
+        private PollingCounter? _httpRequestQueueLengthCounter;
+        private PollingCounter? _currrentUpgradedHttpRequestsCounter;
 
         private long _totalConnections;
         private long _currentConnections;
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(1, Level = EventLevel.Informational)]
         private void ConnectionStart(string connectionId,
-            string localEndPoint,
-            string remoteEndPoint)
+            string? localEndPoint,
+            string? remoteEndPoint)
         {
             WriteEvent(
                 1,
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
+                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path!, httpProtocol.MethodText);
             }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
+                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path!, httpProtocol.MethodText);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature feature)
+        public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature? feature)
         {
             Interlocked.Decrement(ref _currentTlsHandshakes);
             if (IsEnabled())
@@ -230,54 +230,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("connections-per-second", this, () => _totalConnections)
+                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("connections-per-second", this, () => Volatile.Read(ref _totalConnections))
                 {
                     DisplayName = "Connection Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
 
-                _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => _totalConnections)
+                _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => Volatile.Read(ref _totalConnections))
                 {
                     DisplayName = "Total Connections",
                 };
 
-                _tlsHandshakesPerSecondCounter ??= new IncrementingPollingCounter("tls-handshakes-per-second", this, () => _totalTlsHandshakes)
+                _tlsHandshakesPerSecondCounter ??= new IncrementingPollingCounter("tls-handshakes-per-second", this, () => Volatile.Read(ref _totalTlsHandshakes))
                 {
                     DisplayName = "TLS Handshake Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
 
-                _totalTlsHandshakesCounter ??= new PollingCounter("total-tls-handshakes", this, () => _totalTlsHandshakes)
+                _totalTlsHandshakesCounter ??= new PollingCounter("total-tls-handshakes", this, () => Volatile.Read(ref _totalTlsHandshakes))
                 {
                     DisplayName = "Total TLS Handshakes",
                 };
 
-                _currentTlsHandshakesCounter ??= new PollingCounter("current-tls-handshakes", this, () => _currentTlsHandshakes)
+                _currentTlsHandshakesCounter ??= new PollingCounter("current-tls-handshakes", this, () => Volatile.Read(ref _currentTlsHandshakes))
                 {
                     DisplayName = "Current TLS Handshakes"
                 };
 
-                _failedTlsHandshakesCounter ??= new PollingCounter("failed-tls-handshakes", this, () => _failedTlsHandshakes)
+                _failedTlsHandshakesCounter ??= new PollingCounter("failed-tls-handshakes", this, () => Volatile.Read(ref _failedTlsHandshakes))
                 {
                     DisplayName = "Failed TLS Handshakes"
                 };
 
-                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => _currentConnections)
+                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => Volatile.Read(ref _currentConnections))
                 {
                     DisplayName = "Current Connections"
                 };
 
-                _connectionQueueLengthCounter ??= new PollingCounter("connection-queue-length", this, () => _connectionQueueLength)
+                _connectionQueueLengthCounter ??= new PollingCounter("connection-queue-length", this, () => Volatile.Read(ref _connectionQueueLength))
                 {
                     DisplayName = "Connection Queue Length"
                 };
 
-                _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => _httpRequestQueueLength)
+                _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => Volatile.Read(ref _httpRequestQueueLength))
                 {
                     DisplayName = "Request Queue Length"
                 };
 
-                _currrentUpgradedHttpRequestsCounter ??= new PollingCounter("current-upgraded-requests", this, () => _currentUpgradedHttpRequests)
+                _currrentUpgradedHttpRequestsCounter ??= new PollingCounter("current-upgraded-requests", this, () => Volatile.Read(ref _currentUpgradedHttpRequests))
                 {
                     DisplayName = "Current Upgraded Requests (WebSockets)"
                 };

@@ -36,7 +36,7 @@ namespace Benchmarks
                             .UseConfiguration(config);
                     });
 
-            var scenario = config["scenarios"]?.ToLower();
+            var scenario = config["scenarios"]?.ToLowerInvariant();
             if (scenario == "plaintextdispatcher" || scenario == "plaintextendpointrouting")
             {
                 hostBuilder.ConfigureWebHost(webHostBuilder =>

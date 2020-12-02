@@ -90,19 +90,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _connectionsStartedCounter ??= new PollingCounter("connections-started", this, () => _connectionsStarted)
+                _connectionsStartedCounter ??= new PollingCounter("connections-started", this, () => Volatile.Read(ref _connectionsStarted))
                 {
                     DisplayName = "Total Connections Started",
                 };
-                _connectionsStoppedCounter ??= new PollingCounter("connections-stopped", this, () => _connectionsStopped)
+                _connectionsStoppedCounter ??= new PollingCounter("connections-stopped", this, () => Volatile.Read(ref _connectionsStopped))
                 {
                     DisplayName = "Total Connections Stopped",
                 };
-                _connectionsTimedOutCounter ??= new PollingCounter("connections-timed-out", this, () => _connectionsTimedOut)
+                _connectionsTimedOutCounter ??= new PollingCounter("connections-timed-out", this, () => Volatile.Read(ref _connectionsTimedOut))
                 {
                     DisplayName = "Total Connections Timed Out",
                 };
-                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => _currentConnections)
+                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => Volatile.Read(ref _currentConnections))
                 {
                     DisplayName = "Current Connections",
                 };

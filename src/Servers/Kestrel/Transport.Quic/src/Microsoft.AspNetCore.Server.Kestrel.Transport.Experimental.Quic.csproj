@@ -13,9 +13,6 @@
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
-    <Compile Include="$(SharedSourceRoot)runtime\NetEventSource.Common.cs" Link="Shared\runtime\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)runtime\SR.Quic.cs" Link="Shared\runtime\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)runtime\Quic\**\*.cs" Link="Shared\runtime\Quic\%(Filename)%(Extension)" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
@@ -30,13 +27,6 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
-      <ManifestResourceName>System.Net.Quic.SR</ManifestResourceName>
-      <Generator></Generator>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

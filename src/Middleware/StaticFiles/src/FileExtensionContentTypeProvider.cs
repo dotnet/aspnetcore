@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -432,9 +433,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <param name="subpath">A file path</param>
         /// <param name="contentType">The resulting MIME type</param>
         /// <returns>True if MIME type could be determined</returns>
-        public bool TryGetContentType(string subpath, out string contentType)
+        public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
         {
-            string extension = GetExtension(subpath);
+            var extension = GetExtension(subpath);
             if (extension == null)
             {
                 contentType = null;
@@ -443,7 +444,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             return Mappings.TryGetValue(extension, out contentType);
         }
 
-        private static string GetExtension(string path)
+        private static string? GetExtension(string path)
         {
             // Don't use Path.GetExtension as that may throw an exception if there are
             // invalid characters in the path. Invalid characters should be handled

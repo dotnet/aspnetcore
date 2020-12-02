@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -55,7 +56,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
-                Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
+                if (Log.IsEnabled())
+                {
+                    Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
+                }
                 using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {
                     process.WaitForExit();
@@ -85,7 +89,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
         {
-            var sentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificates.{candidate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+            var sentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, ".dotnet", $"certificates.{candidate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
             if (!interactive && !File.Exists(sentinelPath))
             {
                 return new CheckCertificateStateResult(false, KeyNotAccessibleWithoutUserInteraction);
@@ -127,7 +131,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         internal override void CorrectCertificateState(X509Certificate2 candidate)
         {
             var status = CheckCertificateState(candidate, true);
-            if (!status.Result)
+            if (!status.Success)
             {
                 throw new InvalidOperationException(InvalidCertificateState);
             }
@@ -144,11 +148,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var subject = subjectMatch.Groups[1].Value;
             using var checkTrustProcess = Process.Start(new ProcessStartInfo(
                 MacOSFindCertificateCommandLine,
-                string.Format(MacOSFindCertificateCommandLineArgumentsFormat, subject))
+                string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject))
             {
                 RedirectStandardOutput = true
             });
-            var output = checkTrustProcess.StandardOutput.ReadToEnd();
+            var output = checkTrustProcess!.StandardOutput.ReadToEnd();
             checkTrustProcess.WaitForExit();
             var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
             var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
@@ -194,11 +198,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 var processInfo = new ProcessStartInfo(
                     MacOSRemoveCertificateTrustCommandLine,
                     string.Format(
+                        CultureInfo.InvariantCulture,
                         MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
                         certificatePath
                     ));
                 using var process = Process.Start(processInfo);
-                process.WaitForExit();
+                process!.WaitForExit();
                 if (process.ExitCode != 0)
                 {
                     Log.MacOSRemoveCertificateTrustRuleError(process.ExitCode);
@@ -226,6 +231,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var processInfo = new ProcessStartInfo(
                 MacOSDeleteCertificateCommandLine,
                 string.Format(
+                    CultureInfo.InvariantCulture,
                     MacOSDeleteCertificateCommandLineArgumentsFormat,
                     certificate.Thumbprint.ToUpperInvariant(),
                     keyChain
@@ -235,10 +241,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 RedirectStandardError = true
             };
 
-            Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
+            if (Log.IsEnabled())
+            {
+                Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
+            }
+
             using (var process = Process.Start(processInfo))
             {
-                var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+                var output = process!.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)
@@ -269,6 +279,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var processInfo = new ProcessStartInfo(
                 MacOSAddCertificateToKeyChainCommandLine,
             string.Format(
+                CultureInfo.InvariantCulture,
                 MacOSAddCertificateToKeyChainCommandLineArgumentsFormat,
                 certificatePath,
                 password
@@ -278,10 +289,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 RedirectStandardError = true
             };
 
-            Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
+            if (Log.IsEnabled())
+            {
+                Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
+            }
+
             using (var process = Process.Start(processInfo))
             {
-                var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+                var output = process!.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)

@@ -32,6 +32,18 @@
     <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
+  <!-- Ensure shared framework and targeting packs are laid out under .dotnet/ before executing non-Helix tests. -->
+  <ItemGroup Condition=" '$(ASPNETCORE_TEST_LOG_DIR)' == '' AND '$(IsHelixJob)' != 'true' ">
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+        Condition=" $(IsTargetingPackBuilding) "
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Condition=" !$(IsTargetingPackBuilding) "
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\src\BootJsonData.cs" LinkBase="Wasm" />
     <Compile Include="..\src\AssetsManifestFile.cs" LinkBase="Wasm" />
@@ -61,12 +73,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-  </Target>
-
-  <Target Name="EnsureLogFolder" AfterTargets="Build">
-    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))" />
+  <Target Name="RestoreTestProjects" BeforeTargets="RunTests;Test;VSTest" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" />
   </Target>
 
 </Project>

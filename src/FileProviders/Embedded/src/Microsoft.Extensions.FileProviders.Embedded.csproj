@@ -30,7 +30,7 @@
   <ItemGroup>
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
-    <NuspecProperty Include="AbstractionsPackageVersion=$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
+    <NuspecProperty Include="AbstractionsVersion=$(MicrosoftExtensionsFileProvidersAbstractionsVersion)" />
     <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
     <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
   </ItemGroup>

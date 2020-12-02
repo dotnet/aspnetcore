@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Builder
         /// Denotes the form element that contains the name of the resulting method type.
         /// If not set the X-Http-Method-Override header will be used.
         /// </summary>
-        public string FormFieldName { get; set; }
+        public string? FormFieldName { get; set; }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -515,7 +516,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private class TestDateInputComponent : TestInputComponent<DateTime>
         {
             protected override string FormatValueAsString(DateTime value)
-                => value.ToString("yyyy/MM/dd");
+                => value.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
 
             protected override bool TryParseValueFromString(string value, out DateTime result, out string validationErrorMessage)
             {

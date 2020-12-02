@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Collections.Generic;
 using Microsoft.Extensions.FileProviders;
@@ -18,8 +20,11 @@ namespace Microsoft.AspNetCore.Rewrite
         public IList<IRule> Rules { get; } = new List<IRule>();
 
         /// <summary>
-        /// Gets and sets the File Provider for file and directory checks. Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>
+        /// Gets and sets the File Provider for file and directory checks.
         /// </summary>
-        public IFileProvider StaticFileProvider { get; set; }
+        /// <value>
+        /// Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>.
+        /// </value>
+        public IFileProvider StaticFileProvider { get; set; } = default!;
     }
 }

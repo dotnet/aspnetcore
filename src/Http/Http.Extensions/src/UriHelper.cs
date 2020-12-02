@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         private const char ForwardSlash = '/';
         private const char Hash = '#';
         private const char QuestionMark = '?';
-        private const string SchemeDelimiter = "://";
+        private static readonly string SchemeDelimiter = Uri.SchemeDelimiter;
 
         /// <summary>
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.

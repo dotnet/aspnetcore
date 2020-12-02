@@ -65,14 +65,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                         await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
                         // Windows-only WebListener tests
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        if (IsWindows8OrHigher())
                         {
-                            if (IsWindows8OrHigher())
-                            {
-                                // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
-                                // For now, just allow the non-strict response, it's not a failure.
-                                await tester.DeployTestAndAddToSpec(ServerType.HttpSys, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
-                            }
+                            // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
+                            // For now, just allow the non-strict response, it's not a failure.
+                            await tester.DeployTestAndAddToSpec(ServerType.HttpSys, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
                         }
 
                         result = await tester.Run(cts.Token);
@@ -85,23 +82,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
             }
         }
 
-        private bool IsWindows8OrHigher()
-        {
-            const string WindowsName = "Microsoft Windows ";
-            const int VersionOffset = 18;
+        private bool IsWindows8OrHigher() => OperatingSystem.IsWindowsVersionAtLeast(6, 2);
 
-            if (RuntimeInformation.OSDescription.StartsWith(WindowsName))
-            {
-                var versionStr = RuntimeInformation.OSDescription.Substring(VersionOffset);
-                Version version;
-                if (Version.TryParse(versionStr, out version))
-                {
-                    return version.Major > 6 || (version.Major == 6 && version.Minor >= 2);
-                }
-            }
-
-            return false;
-        }
 
         private bool IsIISExpress10Installed()
         {

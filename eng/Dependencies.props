@@ -92,6 +92,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
@@ -103,9 +104,10 @@ and are generated based on the last package release.
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
@@ -173,6 +175,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="Polly" />
+    <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
@@ -196,12 +200,7 @@ and are generated based on the last package release.
 
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
-      <Version>$(%(VersionName)PackageVersion)</Version>
-      <RTMVersion>$(%(VersionName)V0PackageVersion)</RTMVersion>
-
-      <!-- Remove excess metadata. -->
-      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
-      <VersionName />
+      <Version>$(%(VersionName)Version)</Version>
     </LatestPackageReference>
 
     <!--

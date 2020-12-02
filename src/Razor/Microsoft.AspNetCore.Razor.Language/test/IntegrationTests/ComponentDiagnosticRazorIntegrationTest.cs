@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 item =>
                 {
                     Assert.Equal("RZ9981", item.Id);
-                    Assert.Equal("Unexpected closing tag 'mytag' with no matching start tag.", item.GetMessage());
+                    Assert.Equal("Unexpected closing tag 'mytag' with no matching start tag.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("RZ9979", diagnostic.Id);
-            Assert.NotNull(diagnostic.GetMessage());
+            Assert.NotNull(diagnostic.GetMessage(CultureInfo.CurrentCulture));
 
         }
 
@@ -62,7 +63,7 @@ Goodbye");
                 item =>
                 {
                     Assert.Equal("RZ9992", item.Id);
-                    Assert.Equal("Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see https://go.microsoft.com/fwlink/?linkid=872131", item.GetMessage());
+                    Assert.Equal("Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see https://go.microsoft.com/fwlink/?linkid=872131", item.GetMessage(CultureInfo.CurrentCulture));
                     Assert.Equal(2, item.Span.LineIndex);
                     Assert.Equal(4, item.Span.CharacterIndex);
                 });
@@ -96,7 +97,7 @@ namespace Test
                 {
                     Assert.Equal("RZ9978", item.Id);
                     Assert.Equal("The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. " +
-                "Use '@using <namespace>' directive instead.", item.GetMessage());
+                "Use '@using <namespace>' directive instead.", item.GetMessage(CultureInfo.CurrentCulture));
                     Assert.Equal(0, item.Span.LineIndex);
                     Assert.Equal(0, item.Span.CharacterIndex);
                 },
@@ -104,7 +105,7 @@ namespace Test
                 {
                     Assert.Equal("RZ9978", item.Id);
                     Assert.Equal("The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. " +
-                "Use '@using <namespace>' directive instead.", item.GetMessage());
+                "Use '@using <namespace>' directive instead.", item.GetMessage(CultureInfo.CurrentCulture));
                     Assert.Equal(1, item.Span.LineIndex);
                     Assert.Equal(0, item.Span.CharacterIndex);
                 });
@@ -125,7 +126,7 @@ namespace Test
             Assert.Equal("RZ9986", diagnostic.Id);
             Assert.Equal(
                 "Component attributes do not support complex content (mixed C# and markup). Attribute: '@key', text: 'Foo @Text'",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -143,7 +144,7 @@ namespace Test
             Assert.Equal("RZ10011", diagnostic.Id);
             Assert.Equal(
                 "Component 'lowerCase' starts with a lowercase character. Component names cannot start with a lowercase character.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -163,7 +164,7 @@ namespace Test
             Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
             Assert.Equal(
                 "Found markup element with unexpected name 'PossibleComponent'. If this is intended to be a component, add a @using directive for its namespace.",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -199,7 +200,7 @@ namespace Test
             Assert.Equal("RZ10013", diagnostic.Id);
             Assert.Equal(
                 "The start tag name 'MyComponent' does not match the end tag name 'mycomponent'. Components must have matching start and end tag names (case-sensitive).",
-                diagnostic.GetMessage());
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
     }
 }

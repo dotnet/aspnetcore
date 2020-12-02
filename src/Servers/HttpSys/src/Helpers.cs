@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Greater than 2gb, perf is no longer our concern
-            return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X") + "\r\n"));
+            return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X", CultureInfo.InvariantCulture) + "\r\n"));
         }
 
         /// <summary>

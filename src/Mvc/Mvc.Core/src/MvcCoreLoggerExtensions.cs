@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -856,7 +857,7 @@ namespace Microsoft.AspNetCore.Mvc
                 if (routeValueDictionary != null)
                 {
                     routeValues = routeValueDictionary
-                        .Select(pair => pair.Key + "=" + Convert.ToString(pair.Value))
+                        .Select(pair => pair.Key + "=" + Convert.ToString(pair.Value, CultureInfo.InvariantCulture))
                         .ToArray();
                 }
                 _noActionsMatched(logger, routeValues, null);
@@ -900,7 +901,7 @@ namespace Microsoft.AspNetCore.Mvc
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
                     }
 
                     _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, null);
@@ -913,7 +914,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var actionName = context.ActionDescriptor.DisplayName;
-                _actionMethodExecuted(logger, actionName, Convert.ToString(result), timeSpan.TotalMilliseconds, null);
+                _actionMethodExecuted(logger, actionName, Convert.ToString(result, CultureInfo.InvariantCulture), timeSpan.TotalMilliseconds, null);
             }
         }
 
@@ -1046,7 +1047,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 if (context.ContentType.HasValue)
                 {
-                    considered.Add(Convert.ToString(context.ContentType));
+                    considered.Add(Convert.ToString(context.ContentType, CultureInfo.InvariantCulture));
                 }
 
                 _noFormatter(logger, considered, null);
@@ -1060,7 +1061,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                var contentType = Convert.ToString(context.ContentType);
+                var contentType = Convert.ToString(context.ContentType, CultureInfo.InvariantCulture);
                 _formatterSelected(logger, outputFormatter, contentType, null);
             }
         }
@@ -1568,7 +1569,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (enumerableType != null)
             {
                 var elementType = enumerableType.GenericTypeArguments[0];
-                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
+                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 {
                     _attemptingToBindCollectionOfKeyValuePair(logger, modelName, modelName, modelName, modelName, modelName, modelName, null);
                     return;

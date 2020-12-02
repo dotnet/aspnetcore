@@ -882,9 +882,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     {
                         new List<DateTime>
                         {
-                            DateTime.Parse("1/1/14"),
-                            DateTime.Parse("2/1/14"),
-                            DateTime.Parse("3/1/14"),
+                            new DateTime(2014, 1, 1),
+                            new DateTime(2014, 2, 1),
+                            new DateTime(2014, 3, 1),
                         },
                         typeof(ICollection<DateTime>)
                     },

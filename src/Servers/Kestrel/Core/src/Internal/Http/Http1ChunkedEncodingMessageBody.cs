@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Mode _mode = Mode.Prefix;
         private volatile bool _canceled;
-        private Task _pumpTask;
+        private Task? _pumpTask;
         private readonly Pipe _requestBodyPipe;
         private ReadResult _readResult;
 
@@ -36,22 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
-
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
-        }
-
-        public override bool TryRead(out ReadResult readResult)
-        {
-            ThrowIfCompleted();
-
-            return TryReadInternal(out readResult);
         }
 
         public override bool TryReadInternal(out ReadResult readResult)
@@ -69,12 +57,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return boolResult;
-        }
-
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ThrowIfCompleted();
-            return ReadAsyncInternal(cancellationToken);
         }
 
         public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
@@ -102,12 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _readResult;
         }
 
-        public override void Complete(Exception exception)
-        {
-            _completed = true;
-            _context.ReportApplicationError(exception);
-        }
-
         public override void CancelPendingRead()
         {
             _requestBodyPipe.Reader.CancelPendingRead();
@@ -117,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(!RequestUpgrade, "Upgraded connections should never use this code path!");
 
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
@@ -181,37 +157,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                _requestBodyPipe.Writer.Complete(error);
+                await _requestBodyPipe.Writer.CompleteAsync(error);
             }
         }
 
-        protected override Task OnStopAsync()
+        protected override ValueTask OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return Task.CompletedTask;
+                return default;
             }
 
             // call complete here on the reader
             _requestBodyPipe.Reader.Complete();
+
+            Debug.Assert(_pumpTask != null, "OnReadStarted must have been called.");
 
             // PumpTask catches all Exceptions internally.
             if (_pumpTask.IsCompleted)
             {
                 // At this point both the request body pipe reader and writer should be completed.
                 _requestBodyPipe.Reset();
-                return Task.CompletedTask;
+                return default;
             }
 
             // Should I call complete here?
-            return StopAsyncAwaited();
+            return StopAsyncAwaited(_pumpTask);
         }
 
-        private async Task StopAsyncAwaited()
+        private async ValueTask StopAsyncAwaited(Task pumpTask)
         {
             _canceled = true;
             _context.Input.CancelPendingRead();
-            await _pumpTask;
+            await pumpTask;
 
             // At this point both the request body pipe reader and writer should be completed.
             _requestBodyPipe.Reset();

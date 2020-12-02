@@ -1,8 +1,9 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             var id = _counter++;
 
-            var directory = Path.Combine(UniqueDirectory, id.ToString());
+            var directory = Path.Combine(UniqueDirectory, id.ToString(CultureInfo.InvariantCulture));
             Directory.CreateDirectory(directory);
             return directory;
         }

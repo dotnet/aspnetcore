@@ -19,12 +19,14 @@ namespace RazorPageGenerator
             {
                 Console.WriteLine("Invalid argument(s).");
                 Console.WriteLine(@"Usage:
-    dotnet razorpagegenerator <root-namespace-of-views> [path]
+    dotnet razorpagegenerator <root-namespace-of-views> [directory path [#line path prefix]]
 Examples:
-    dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews
-        - processes all views in ""Views"" subfolders of the current directory
-    dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
-        - processes all views in ""Views"" subfolders of c:\project directory
+  dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews
+    - process all views in ""Views"" subfolders of the current directory; use filename in #line directives
+  dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
+    - process all views in ""Views"" subfolders of c:\project directory; use filename in #line directives
+  dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project ../Views/
+    - process all views in ""Views"" subfolders of c:\project directory; use ""../Views/{filename}"" in line directives
 ");
 
                 return 1;
@@ -33,7 +35,9 @@ Examples:
             var rootNamespace = args[0];
             var targetProjectDirectory = args.Length > 1 ? args[1] : Directory.GetCurrentDirectory();
             var projectEngine = CreateProjectEngine(rootNamespace, targetProjectDirectory);
-            var results = MainCore(projectEngine, targetProjectDirectory);
+
+            var physicalPathPrefix = args.Length > 2 ? args[2] : string.Empty;
+            var results = MainCore(projectEngine, targetProjectDirectory, physicalPathPrefix);
 
             foreach (var result in results)
             {
@@ -79,7 +83,10 @@ Examples:
             return projectEngine;
         }
 
-        public static IList<RazorPageGeneratorResult> MainCore(RazorProjectEngine projectEngine, string targetProjectDirectory)
+        public static IList<RazorPageGeneratorResult> MainCore(
+            RazorProjectEngine projectEngine,
+            string targetProjectDirectory,
+            string physicalPathPrefix)
         {
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
             var fileCount = 0;
@@ -94,14 +101,14 @@ Examples:
 
                 if (!cshtmlFiles.Any())
                 {
-                    Console.WriteLine("  No .cshtml files were found.");
+                    Console.WriteLine("  No .cshtml or .razor files were found.");
                     continue;
                 }
 
                 foreach (var item in cshtmlFiles)
                 {
                     Console.WriteLine("    Generating code file for view {0}...", item.FileName);
-                    results.Add(GenerateCodeFile(projectEngine, item));
+                    results.Add(GenerateCodeFile(projectEngine, item, physicalPathPrefix));
                     Console.WriteLine("      Done!");
                     fileCount++;
                 }
@@ -110,9 +117,12 @@ Examples:
             return results;
         }
 
-        private static RazorPageGeneratorResult GenerateCodeFile(RazorProjectEngine projectEngine, RazorProjectItem projectItem)
+        private static RazorPageGeneratorResult GenerateCodeFile(
+            RazorProjectEngine projectEngine,
+            RazorProjectItem projectItem,
+            string physicalPathPrefix)
         {
-            var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
+            var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem, physicalPathPrefix);
             var codeDocument = projectEngine.Process(projectItemWrapper);
             var cSharpDocument = codeDocument.GetCSharpDocument();
             if (cSharpDocument.Diagnostics.Any())
@@ -163,17 +173,19 @@ Examples:
         {
             private readonly RazorProjectItem _source;
 
-            public FileSystemRazorProjectItemWrapper(RazorProjectItem item)
+            public FileSystemRazorProjectItemWrapper(RazorProjectItem item, string physicalPathPrefix)
             {
                 _source = item;
+
+                // Mask the full name since we don't want a developer's local file paths to be committed.
+                PhysicalPath = $"{physicalPathPrefix}{_source.FileName}";
             }
 
             public override string BasePath => _source.BasePath;
 
             public override string FilePath => _source.FilePath;
 
-            // Mask the full name since we don't want a developer's local file paths to be commited.
-            public override string PhysicalPath => _source.FileName;
+            public override string PhysicalPath { get; }
 
             public override bool Exists => _source.Exists;
 
@@ -193,12 +205,12 @@ Examples:
                 var startIndex = 0;
                 while (startIndex < cshtmlContent.Length)
                 {
-                    startIndex = cshtmlContent.IndexOf(startMatch, startIndex);
+                    startIndex = cshtmlContent.IndexOf(startMatch, startIndex, StringComparison.Ordinal);
                     if (startIndex == -1)
                     {
                         break;
                     }
-                    var endIndex = cshtmlContent.IndexOf(endMatch, startIndex);
+                    var endIndex = cshtmlContent.IndexOf(endMatch, startIndex, StringComparison.Ordinal);
                     if (endIndex == -1)
                     {
                         throw new InvalidOperationException($"Invalid include file format in {_source.PhysicalPath}. Usage example: <%$ include: ErrorPage.js %>");

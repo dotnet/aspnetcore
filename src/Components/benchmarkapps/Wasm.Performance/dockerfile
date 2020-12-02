@@ -28,7 +28,7 @@ RUN .dotnet/dotnet publish -c Release --no-restore -o /app ./src/Components/benc
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
-FROM selenium/standalone-chrome:3.141.59-mercury as final
+FROM selenium/standalone-chrome:latest as final
 COPY --from=build ./app ./
 COPY ./exec.sh ./
 

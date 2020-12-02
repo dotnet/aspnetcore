@@ -11,21 +11,32 @@ namespace Microsoft.AspNetCore.Hosting.Views
     /// </summary>
     internal class ErrorPageModel
     {
+        public ErrorPageModel(IEnumerable<ExceptionDetails> errorDetails, bool showRuntimeDetails, string runtimeDisplayName, string runtimeArchitecture, string clrVersion, string currentAssemblyVesion, string operatingSystemDescription)
+        {
+            ErrorDetails = errorDetails;
+            ShowRuntimeDetails = showRuntimeDetails;
+            RuntimeDisplayName = runtimeDisplayName;
+            RuntimeArchitecture = runtimeArchitecture;
+            ClrVersion = clrVersion;
+            CurrentAssemblyVesion = currentAssemblyVesion;
+            OperatingSystemDescription = operatingSystemDescription;
+        }
+
         /// <summary>
         /// Detailed information about each exception in the stack.
         /// </summary>
-        public IEnumerable<ExceptionDetails> ErrorDetails { get; set; }
+        public IEnumerable<ExceptionDetails> ErrorDetails { get; }
 
-        public bool ShowRuntimeDetails { get; set; }
+        public bool ShowRuntimeDetails { get; }
 
-        public string RuntimeDisplayName { get; set; }
+        public string RuntimeDisplayName { get; }
 
-        public string RuntimeArchitecture { get; set; }
+        public string RuntimeArchitecture { get; }
 
-        public string ClrVersion { get; set; }
+        public string ClrVersion { get; }
 
-        public string CurrentAssemblyVesion { get; set; }
+        public string CurrentAssemblyVesion { get; }
 
-        public string OperatingSystemDescription { get; set; }
+        public string OperatingSystemDescription { get; }
     }
 }

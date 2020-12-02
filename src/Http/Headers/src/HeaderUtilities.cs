@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -228,7 +229,7 @@ namespace Microsoft.Net.Http.Headers
         /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
-        public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
+        public static bool TryParseSeconds(StringValues headerValues, string targetValue, [NotNullWhen(true)] out TimeSpan? value)
         {
             if (StringValues.IsNullOrEmpty(headerValues) || string.IsNullOrEmpty(targetValue))
             {
@@ -597,7 +598,7 @@ namespace Microsoft.Net.Http.Headers
                 });
             }
 
-            return dateTime.ToString("r");
+            return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
         public static StringSegment RemoveQuotes(StringSegment input)

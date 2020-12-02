@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -12,10 +11,24 @@ namespace Microsoft.AspNetCore.Http
     {
         private const string UnixPipeHostPrefix = "unix:/";
 
-        public string Host { get; private set; } = default!;
-        public string PathBase { get; private set; } = default!;
-        public int Port { get; internal set; }
-        public string Scheme { get; private set; } = default!;
+        private BindingAddress(string host, string pathBase, int port, string scheme)
+        {
+            Host = host;
+            PathBase = pathBase;
+            Port = port;
+            Scheme = scheme;
+        }
+
+        [Obsolete("This constructor is obsolete and will be removed in a future version. Use BindingAddress.Parse(address) to create a BindingAddress instance.")]
+        public BindingAddress()
+        {
+            throw new InvalidOperationException("This constructor is obsolete and will be removed in a future version. Use BindingAddress.Parse(address) to create a BindingAddress instance.");
+        }
+
+        public string Host { get; }
+        public string PathBase { get; }
+        public int Port { get; }
+        public string Scheme { get; }
 
         public bool IsUnixPipe
         {
@@ -34,26 +47,30 @@ namespace Microsoft.AspNetCore.Http
                     throw new InvalidOperationException("Binding address is not a unix pipe.");
                 }
 
-                var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // "/" character in unix refers to root. Windows has drive letters and volume separator (c:)
-                    unixPipeHostPrefixLength--;
-                }
-                return Host.Substring(unixPipeHostPrefixLength);
+                return GetUnixPipePath(Host);
             }
         }
 
+        private static string GetUnixPipePath(string host)
+        {
+            var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
+            if (!OperatingSystem.IsWindows())
+            {
+                // "/" character in unix refers to root. Windows has drive letters and volume separator (c:)
+                unixPipeHostPrefixLength--;
+            }
+            return host.Substring(unixPipeHostPrefixLength);
+        }
 
         public override string ToString()
         {
             if (IsUnixPipe)
             {
-                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
+                return Scheme.ToLowerInvariant() + Uri.SchemeDelimiter + Host.ToLowerInvariant();
             }
             else
             {
-                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase;
+                return Scheme.ToLowerInvariant() + Uri.SchemeDelimiter + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase;
             }
         }
 
@@ -77,14 +94,15 @@ namespace Microsoft.AspNetCore.Http
 
         public static BindingAddress Parse(string address)
         {
+            // A null/empty address will throw FormatException
             address = address ?? string.Empty;
 
-            int schemeDelimiterStart = address.IndexOf("://", StringComparison.Ordinal);
+            int schemeDelimiterStart = address.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
                 throw new FormatException($"Invalid url: '{address}'");
             }
-            int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
+            int schemeDelimiterEnd = schemeDelimiterStart + Uri.SchemeDelimiter.Length;
 
             var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
 
@@ -98,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
             else
             {
                 var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // Windows has drive letters and volume separator (c:)
                     unixPipeHostPrefixLength += 2;
@@ -117,8 +135,9 @@ namespace Microsoft.AspNetCore.Http
                 pathDelimiterStart = pathDelimiterEnd = address.Length;
             }
 
-            var serverAddress = new BindingAddress();
-            serverAddress.Scheme = address.Substring(0, schemeDelimiterStart);
+            var scheme = address.Substring(0, schemeDelimiterStart);
+            string? host = null;
+            int port = 0;
 
             var hasSpecifiedPort = false;
             if (!isUnixPipe)
@@ -133,49 +152,50 @@ namespace Microsoft.AspNetCore.Http
                     if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portNumber))
                     {
                         hasSpecifiedPort = true;
-                        serverAddress.Host = address.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);
-                        serverAddress.Port = portNumber;
+                        host = address.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);
+                        port = portNumber;
                     }
                 }
 
                 if (!hasSpecifiedPort)
                 {
-                    if (string.Equals(serverAddress.Scheme, "http", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase))
                     {
-                        serverAddress.Port = 80;
+                        port = 80;
                     }
-                    else if (string.Equals(serverAddress.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(scheme, "https", StringComparison.OrdinalIgnoreCase))
                     {
-                        serverAddress.Port = 443;
+                        port = 443;
                     }
                 }
             }
 
             if (!hasSpecifiedPort)
             {
-                serverAddress.Host = address.Substring(schemeDelimiterEnd, pathDelimiterStart - schemeDelimiterEnd);
+                host = address.Substring(schemeDelimiterEnd, pathDelimiterStart - schemeDelimiterEnd);
             }
 
-            if (string.IsNullOrEmpty(serverAddress.Host))
+            if (string.IsNullOrEmpty(host))
             {
                 throw new FormatException($"Invalid url: '{address}'");
             }
 
-            if (isUnixPipe && !Path.IsPathRooted(serverAddress.UnixPipePath))
+            if (isUnixPipe && !Path.IsPathRooted(GetUnixPipePath(host)))
             {
                 throw new FormatException($"Invalid url, unix socket path must be absolute: '{address}'");
             }
 
+            string pathBase;
             if (address[address.Length - 1] == '/')
             {
-                serverAddress.PathBase = address.Substring(pathDelimiterEnd, address.Length - pathDelimiterEnd - 1);
+                pathBase = address.Substring(pathDelimiterEnd, address.Length - pathDelimiterEnd - 1);
             }
             else
             {
-                serverAddress.PathBase = address.Substring(pathDelimiterEnd);
+                pathBase = address.Substring(pathDelimiterEnd);
             }
 
-            return serverAddress;
+            return new BindingAddress(host: host, pathBase: pathBase, port: port, scheme: scheme);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         IDictionary<string, object> IConfigurationBuilder.Properties { get; } = new Dictionary<string, object>();
 
         /// <inheritdoc />
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {

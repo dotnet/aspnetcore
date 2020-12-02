@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -754,7 +755,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 get
                 {
                     var builder = new StringBuilder();
-                    builder.AppendFormat("File content of '{0}' should not contain line: '{1}'.", FilePath, Match);
+                    builder.AppendFormat(CultureInfo.InvariantCulture, "File content of '{0}' should not contain line: '{1}'.", FilePath, Match);
                     builder.AppendLine();
                     builder.AppendLine();
                     builder.AppendLine(Content);
@@ -784,7 +785,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 get
                 {
                     var builder = new StringBuilder();
-                    builder.AppendFormat("File content of '{0}' did not contain the line: '{1}'.", FilePath, Match);
+                    builder.AppendFormat(CultureInfo.InvariantCulture, "File content of '{0}' did not contain the line: '{1}'.", FilePath, Match);
                     builder.AppendLine();
                     builder.AppendLine();
                     builder.AppendLine(Content);
@@ -814,7 +815,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 get
                 {
                     var builder = new StringBuilder();
-                    builder.AppendFormat("File content of '{0}' did not match the expected content: '{1}'.", FilePath, Expected);
+                    builder.AppendFormat(CultureInfo.InvariantCulture, "File content of '{0}' did not match the expected content: '{1}'.", FilePath, Expected);
                     builder.AppendLine();
                     builder.AppendLine();
                     builder.AppendLine(Actual);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // Write the hex
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append(buffer[i].ToString("X2"));
+                builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
                 builder.Append(" ");
 
                 var bufferChar = (char)buffer[i];
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return TaskToApm.End<int>(asyncResult);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }

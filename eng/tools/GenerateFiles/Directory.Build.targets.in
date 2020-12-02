@@ -24,20 +24,20 @@
       Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
       DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
     <!-- Use the just-built ASP.NET Core shared framework. -->
     <KnownFrameworkReference
       Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${KnownAppHostPackOrFrameworkReferenceTfm}'))"
-      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
-      TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
   <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="${MicrosoftNetCompilersToolsetPackageVersion}"
+      Version="${MicrosoftNetCompilersToolsetVersion}"
       PrivateAssets="all"
       IsImplicitlyDefined="true" />
   </ItemGroup>
