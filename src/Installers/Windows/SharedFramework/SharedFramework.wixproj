@@ -3,14 +3,10 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Everything built in this project _except_ the final package & MSI are shipping assets. -->
-    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
-    <_GeneratedPackageVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
-    <PackageFileName>$(RuntimeInstallerBaseName)-$(_GeneratedPackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <OutputNamePrefix>$(RuntimeInstallerBaseName)-</OutputNamePrefix>
+    <OutputNameSuffix>-win-$(Platform)</OutputNameSuffix>
     <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
     <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
-    <OutputName>$(PackageFileName)</OutputName>
     <OutputType>Package</OutputType>
     <EmbedCab>yes</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
@@ -84,6 +80,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
+    <PackageFileName>$(OutputName)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>

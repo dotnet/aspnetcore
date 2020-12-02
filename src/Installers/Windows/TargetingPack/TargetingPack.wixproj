@@ -3,15 +3,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Everything built in this project _except_ the final package are shipping assets. -->
-    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
-    <_GeneratedPackageVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
+    <OutputNamePrefix>$(TargetingPackInstallerBaseName)-</OutputNamePrefix>
+    <OutputNameSuffix>-win-$(Platform)</OutputNameSuffix>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
-    <PackageFileName>$(TargetingPackInstallerBaseName)-$(_GeneratedPackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
-    <OutputName>$(PackageFileName)</OutputName>
     <OutputType>Package</OutputType>
     <IsShipping>true</IsShipping>
     <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
@@ -75,6 +71,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
+    <PackageFileName>$(OutputName)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
 
     <!-- Suppresses building this project completely during servicing builds. -->
