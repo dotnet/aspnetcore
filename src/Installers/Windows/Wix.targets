@@ -23,13 +23,6 @@
     <InstallDir>$(ProductName)</InstallDir>
     <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
     <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
-    <!-- Set package version for SharedFx & TargetingPack wixproj's -->
-    <!-- Everything built in those projects _except_ the final package & MSI are shipping assets. -->
-    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
-    <_GeneratedPackageVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
-    <!-- Insert PackageVersion into OutputName for SharedFx & TargetingPack -->
-    <OutputName Condition="'$(OutputNamePrefix)' != '' AND '$(OutputNameSuffix)' != ''">$(OutputNamePrefix)$(_GeneratedPackageVersion)$(OutputNameSuffix)$(TargetExt)</OutputName>
   </PropertyGroup>
 
   <PropertyGroup>
