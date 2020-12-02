@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private ServerSession _serverSession;
         private bool _disposed;
-        private bool _created = false;
+        private bool _created;
 
         internal unsafe UrlGroup(ServerSession serverSession, ILogger logger)
         {
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _logger = logger;
 
             ulong urlGroupId = 0;
+            _created = false;
             var statusCode = HttpApi.HttpFindUrlGroupId(
                 url.FullPrefix, requestQueue.Handle, &urlGroupId);
 
