@@ -145,15 +145,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
 
         /// <summary>
-        ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
-        ///  does not have any associated validators.
-        /// </summary>
-        /// <value>The default value is <see langword="true"/>.</value>
-        /// <remarks>This property is currently ignored.</remarks>
-        [Obsolete("This property is deprecated and is no longer used by the runtime.")]
-        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; } = true;
-
-        /// <summary>
         /// Validates a object.
         /// </summary>
         /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
@@ -388,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         }
 
         /// <summary>
-        /// Validate complex types, this covers everything VisitSimpleType does not i.e. both enumerations and complex types. 
+        /// Validate complex types, this covers everything VisitSimpleType does not i.e. both enumerations and complex types.
         /// </summary>
         /// <param name="defaultStrategy">The default validation strategy to use.</param>
         /// <returns><see langword="true" /> if valid, otherwise <see langword="false" />.</returns>

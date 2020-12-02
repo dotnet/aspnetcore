@@ -28,21 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public ObjectResultExecutor(
-            OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ObjectResultExecutor"/>.
-        /// </summary>
-        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
