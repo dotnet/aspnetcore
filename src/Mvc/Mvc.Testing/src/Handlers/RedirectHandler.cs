@@ -146,7 +146,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
                 redirect.RequestUri = location;
             }
 
-            redirect.RequestUri = location;
             if (!ShouldKeepVerb(response))
             {
                 redirect.Method = HttpMethod.Get;
