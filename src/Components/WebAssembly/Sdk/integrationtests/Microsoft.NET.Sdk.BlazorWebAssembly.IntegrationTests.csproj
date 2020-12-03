@@ -10,7 +10,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
 
-    <!-- Tests do not work on Helix yet -->
+    <!-- Tests do not work on Helix yet. When enabled, add Publish to BeforeTargets of RestoreTestProjects. -->
     <BuildHelixPayload>false</BuildHelixPayload>
     <TestAppsRoot>$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
   </PropertyGroup>
@@ -32,8 +32,8 @@
     <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <!-- Ensure shared framework and targeting packs are laid out under .dotnet/ before executing non-Helix tests. -->
-  <ItemGroup Condition=" '$(ASPNETCORE_TEST_LOG_DIR)' == '' AND '$(IsHelixJob)' != 'true' ">
+  <!-- Ensure shared framework and targeting packs are laid out under .dotnet/ before executing tests. -->
+  <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' ">
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
         Condition=" $(IsTargetingPackBuilding) "
         ReferenceOutputAssembly="false"
@@ -73,7 +73,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="RunTests;Test;VSTest" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="RestoreTestProjects" BeforeTargets="RunTests;Test;VSTest" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
     <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" />
   </Target>
 

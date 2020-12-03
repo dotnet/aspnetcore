@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
     // <<mylibrarypath>>\wwwroot\** to _content/mylibrary/**
     internal class StaticWebAssetsFileProvider : IFileProvider
     {
-        private static readonly StringComparison FilePathComparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        private static readonly StringComparison FilePathComparison = OperatingSystem.IsWindows() ?
             StringComparison.OrdinalIgnoreCase :
             StringComparison.Ordinal;
 

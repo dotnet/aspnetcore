@@ -144,7 +144,7 @@ namespace RunTests
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     // ';' is the path separator on Windows, and ':' on Unix
-                    Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+                    Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                     EnvironmentVariables["PATH"] = Options.Path;
                 }
