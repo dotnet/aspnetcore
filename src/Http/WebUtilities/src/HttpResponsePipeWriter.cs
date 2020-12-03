@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -96,9 +97,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             return WriteInternalAsync(value.AsSpan());
         }
 
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
             => WriteInternalAsync(value.Span, cancellationToken);
-            
 
         public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
             => WriteInternalAsync(value.Span, cancellationToken, addNewLine: true);

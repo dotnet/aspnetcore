@@ -1,1 +1,28 @@
 #nullable enable
+Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter
+Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.DrainBufferAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.FileBufferingPipeWriter(System.IO.Pipelines.PipeWriter! pipeWriter, int memoryThreshold = 32768, long? bufferLimit = null, System.Func<string!>? tempFileDirectoryAccessor = null) -> void
+Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter
+Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.HttpResponsePipeWriter(System.IO.Pipelines.PipeWriter! writer, System.Text.Encoding! encoding) -> void
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.Advance(int bytes) -> void
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.CancelPendingFlush() -> void
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.Complete(System.Exception? exception = null) -> void
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.FlushAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult>
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.GetMemory(int sizeHint = 0) -> System.Memory<byte>
+override Microsoft.AspNetCore.WebUtilities.FileBufferingPipeWriter.GetSpan(int sizeHint = 0) -> System.Span<byte>
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Dispose(bool disposing) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.DisposeAsync() -> System.Threading.Tasks.ValueTask
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Encoding.get -> System.Text.Encoding!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Flush() -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.FlushAsync() -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Write(System.ReadOnlySpan<char> value) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Write(char value) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Write(char[]! values, int index, int count) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.Write(string? value) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteAsync(char value) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteAsync(char[]! values, int index, int count) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteAsync(string? value) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteLine(System.ReadOnlySpan<char> value) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponsePipeWriter.WriteLineAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
