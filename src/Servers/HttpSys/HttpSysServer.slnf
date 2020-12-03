@@ -23,7 +23,8 @@
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\HttpSys\\test\\FunctionalTests\\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj",
       "src\\Servers\\HttpSys\\test\\Tests\\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj",
-      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj"
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }
