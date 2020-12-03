@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Watcher
             {
                 if (group.Key == FileKind.StaticFile)
                 {
-                    _console.Out.WriteLine($"::: Watch Action: Refresh browser :::");
+                    _console.Out.WriteLine("::: Watch Action: Refresh browser :::");
                 }
 
                 foreach (var file in group)
