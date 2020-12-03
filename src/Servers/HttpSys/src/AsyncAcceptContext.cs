@@ -198,6 +198,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     _nativeRequestContext.ReleasePins();
                     _nativeRequestContext.Dispose();
+                    _nativeRequestContext = null;
                 }
             }
         }
