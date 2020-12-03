@@ -113,7 +113,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         /// </summary>
         internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
         {
-            var acceptTask = server.AcceptAsync();
+            var acceptContext = new AsyncAcceptContext(server);
+            var acceptTask = server.AcceptAsync(acceptContext).AsTask();
             var completedTask = await Task.WhenAny(acceptTask, Task.Delay(timeout));
 
             if (completedTask == acceptTask)
