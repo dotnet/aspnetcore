@@ -108,7 +108,6 @@ namespace Microsoft.DotNet.Watcher.Internal
                             fileItems.Add(new FileItem(file));
                         }
 
-                        // Ignore static files if we do not support it.
                         for (var i = 0; i < contentFiles.Values.Count; i++)
                         {
                             var contentFile = contentFiles.Values[i];
