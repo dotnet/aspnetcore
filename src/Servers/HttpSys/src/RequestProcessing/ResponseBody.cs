@@ -786,9 +786,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _writeFlushCancelled(logger, statusCode, null);
             }
 
-            public static void FileSendAsyncError(ILogger logger, Exception e)
+            public static void FileSendAsyncError(ILogger logger, Exception exception)
             {
-                _fileSendAsyncError(logger, e);
+                _fileSendAsyncError(logger, exception);
             }
 
             public static void FileSendAsyncCancelled(ILogger logger, uint statusCode)
