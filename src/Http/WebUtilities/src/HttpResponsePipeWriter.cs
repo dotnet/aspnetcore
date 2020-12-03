@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,6 @@ namespace Microsoft.AspNetCore.WebUtilities
     public class HttpResponsePipeWriter : TextWriter
     {
         private readonly Encoder _encoder;
-        private readonly char[] _singleCharArray;
         private readonly PipeWriter _writer;
 
         public override Encoding Encoding { get; }
@@ -35,13 +35,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
             Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
             _encoder = encoding.GetEncoder();
-            _singleCharArray = ArrayPool<char>.Shared.Rent(1);
         }
 
         public override void Write(char value)
         {
-            _singleCharArray[0] = value;
-            WriteInternal(_singleCharArray.AsSpan(0, 1));
+            WriteInternal(MemoryMarshal.CreateSpan(ref value, 1));
         }
 
         public override void Write(char[] values, int index, int count)
@@ -78,11 +76,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             => WriteInternal(value, addNewLine: true);
 
         public override Task WriteAsync(char value)
-        {
-            _singleCharArray[0] = value;
-
-            return WriteInternalAsync(_singleCharArray.AsSpan(0, 1));
-        }
+            => WriteInternalAsync(MemoryMarshal.CreateSpan(ref value, 1));
 
         public override Task WriteAsync(char[] values, int index, int count)
             => WriteInternalAsync(values.AsSpan(index, count));
