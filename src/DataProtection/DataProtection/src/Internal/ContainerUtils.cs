@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal
 {
@@ -101,9 +102,18 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
                 return false;
             }
 
-            var lines = File.ReadAllLines(procFile);
-            // typically the last line in the file is "1:name=openrc:/docker"
-            return lines.Reverse().Any(l => l.EndsWith("name=openrc:/docker", StringComparison.Ordinal));
+            using (StreamReader sr = new StreamReader(procFile, Encoding.UTF8))
+            {
+                while (sr.ReadLine() is string line)
+                {
+                    if (line.EndsWith("name=openrc:/docker", StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static bool GetBooleanEnvVar(string envVarName)
