@@ -7,6 +7,8 @@ using System.IO.Pipelines;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportConnection : IConnectionIdFeature,
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.Connections
             set => Transport = value;
         }
 
-        IDictionary<object, object> IConnectionItemsFeature.Items
+        IDictionary<object, object?> IConnectionItemsFeature.Items
         {
             get => Items;
             set => Items = value;

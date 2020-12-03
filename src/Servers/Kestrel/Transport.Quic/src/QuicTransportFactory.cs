@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
         /// <param name="features">Additional features to be used to create the listener.</param>
         /// <param name="cancellationToken">To cancel the </param>
         /// <returns>A </returns>
-        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
             var transport = new QuicConnectionListener(_options, _log, endpoint);
             return new ValueTask<IMultiplexedConnectionListener>(transport);
