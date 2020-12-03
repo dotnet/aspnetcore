@@ -87,7 +87,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var statusCode = HttpApi.HttpSetUrlGroupProperty(Id, property, info, infosize);
 
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS
+                && property == HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerDelegationProperty)
+            {
+                /* Swallow file already exists exception
+                 * Delegation property has been set by
+                 * another rule referencing the same UrlGroup
+                 */
+                return;
+            }
+            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 var exception = new HttpSysException((int)statusCode);
                 _logger.LogError(LoggerEventIds.SetUrlPropertyError, exception, "SetUrlGroupProperty");

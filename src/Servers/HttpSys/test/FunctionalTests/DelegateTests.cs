@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -142,6 +144,45 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             _ = await SendRequestWithBodyAsync(delegatorAddress);
             destination?.Dispose();
+        }
+
+        [ConditionalFact]
+        [DelegateSupportedCondition(true)]
+        public async Task DuplicateDelegationRuleTest()
+        {
+            var queueName = Guid.NewGuid().ToString();
+            using var receiver = Utilities.CreateHttpServer(out _, async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(_expectedResponseString);
+            },
+           options =>
+           {
+               options.RequestQueueName = queueName;
+               options.UrlPrefixes.Add("http://localhost:0");
+               options.UrlPrefixes.Add("http://localhost:0");
+           });
+
+            var receiverAddresses = receiver.Features.Get<IServerAddressesFeature>().Addresses.ToList();
+
+            DelegationRule destination0 = default;
+            DelegationRule destination1 = default;
+
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
+            {
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                // Let's pick the rule we set the delegation property on
+                delegateFeature.DelegateRequest(destination1);
+                return Task.CompletedTask;
+            });
+
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
+            destination0 = delegationProperty.CreateDelegationRule(queueName, receiverAddresses[0]);
+            destination1 = delegationProperty.CreateDelegationRule(queueName, receiverAddresses[1]);
+
+            var responseString = await SendRequestAsync(delegatorAddress);
+            Assert.Equal(_expectedResponseString, responseString);
+            destination0?.Dispose();
+            destination1?.Dispose();
         }
 
         [ConditionalFact]
