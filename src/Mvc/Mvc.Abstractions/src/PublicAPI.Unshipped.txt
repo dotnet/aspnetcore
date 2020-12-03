@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Pipelines.PipeWriter!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type! objectType, object! object) -> void
+virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.PipeWriterFactory.get -> System.Func<System.IO.Pipelines.PipeWriter!, System.Text.Encoding!, System.IO.TextWriter!>!
+virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.PipeWriterFactory.set -> void

@@ -1,0 +1,3 @@
+~Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor> logger) -> void
+~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector formatterSelector, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptions) -> void
+~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.PipeWriterFactory.get -> System.Func<System.IO.Pipelines.PipeWriter, System.Text.Encoding, System.IO.TextWriter>

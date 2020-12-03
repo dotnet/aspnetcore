@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="writerFactory">The delegate used to create a <see cref="TextWriter"/> for writing the response.</param>
         /// <param name="objectType">The <see cref="Type"/> of the object to write to the response.</param>
         /// <param name="object">The object to write to the response.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public OutputFormatterWriteContext(HttpContext httpContext, Func<Stream, Encoding, TextWriter> writerFactory, Type objectType, object @object)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(httpContext)
         {
             if (writerFactory == null)
@@ -41,7 +43,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="writerFactory">The delegate used to create a <see cref="TextWriter"/> for writing the response.</param>
         /// <param name="objectType">The <see cref="Type"/> of the object to write to the response.</param>
         /// <param name="object">The object to write to the response.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public OutputFormatterWriteContext(HttpContext httpContext, Func<PipeWriter, Encoding, TextWriter> writerFactory, Type objectType, object @object)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(httpContext)
         {
             if (writerFactory == null)
@@ -73,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <see cref="WriterFactory"/> delegate, and use <see cref="HttpResponse.Body"/> instead.
         /// </para>
         /// </remarks>
-        public virtual Func<Stream, Encoding, TextWriter>? WriterFactory { get; protected set; }
+        public virtual Func<Stream, Encoding, TextWriter> WriterFactory { get; protected set; }
 
         /// <summary>
         /// <para>
@@ -94,6 +98,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <see cref="PipeWriterFactory"/> delegate, and use <see cref="HttpResponse.BodyWriter"/> instead.
         /// </para>
         /// </remarks>
-        public virtual Func<PipeWriter, Encoding, TextWriter>? PipeWriterFactory { get; protected set; }
+        public virtual Func<PipeWriter, Encoding, TextWriter> PipeWriterFactory { get; protected set; }
     }
 }
