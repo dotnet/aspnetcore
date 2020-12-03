@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
-                // Let's pick the rule we set the delegation property on
+                // Let's pick the rule we didn't set the delegation property on
                 delegateFeature.DelegateRequest(destination1);
                 return Task.CompletedTask;
             });
