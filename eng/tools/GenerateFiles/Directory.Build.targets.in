@@ -37,11 +37,9 @@
         `[assembly: AssemblyVersion(...)]` changes in dotnet/runtime assemblies and our MSBuild tasks.
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
-          '$(TargetLatestDotNetRuntime)' != 'false'  AND
-          '$(TargetLatestDotNetRuntime)' != 'false'">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+          '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
       <TargetingPackVersion Condition=" '$(IsServicingBuild)' != 'true' AND
-          '$(TargetLatestDotNetRuntime)' != 'false'  AND
-          '$(TargetLatestDotNetRuntime)' != 'false'">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
+          '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
