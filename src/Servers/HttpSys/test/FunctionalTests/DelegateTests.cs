@@ -161,6 +161,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             _ = await SendRequestAsync(delegatorAddress);
         }
 
+        [ConditionalFact]
+        [DelegateSupportedCondition(true)]
+        public async Task UpdateDelegationRuleTest()
+        {
+            var queueName = Guid.NewGuid().ToString();
+            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(_expectedResponseString);
+            },
+           options =>
+           {
+               options.RequestQueueName = queueName;
+           });
+
+            DelegationRule destination = default;
+
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
+            {
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                delegateFeature.DelegateRequest(destination);
+                return Task.CompletedTask;
+            });
+
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            destination?.Dispose();
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            var responseString = await SendRequestAsync(delegatorAddress);
+            Assert.Equal(_expectedResponseString, responseString);
+            destination?.Dispose();
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             using var client = new HttpClient();
