@@ -735,7 +735,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private class Log
+        private static class Log
         {
             private static readonly Action<ILogger, Exception> _fewerBytesThanExpected =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
