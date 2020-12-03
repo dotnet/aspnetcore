@@ -159,8 +159,9 @@ namespace Microsoft.AspNetCore.Hosting
                 IServiceProvider? RunPipeline(IServiceCollection services)
                 {
 #pragma warning disable CS0612 // Type or member is obsolete
-                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>().Reverse().ToArray();
+                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>()
 #pragma warning restore CS0612 // Type or member is obsolete
+                        .ToArray();
 
                     // If there are no filters just run startup (makes IServiceProvider ConfigureServices(IServiceCollection services) work.
                     if (filters.Length == 0)
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Hosting
                     }
 
                     Action<IServiceCollection> pipeline = InvokeStartup;
-                    for (int i = 0; i < filters.Length; i++)
+                    for (int i = filters.Length - 1; i >= 0; i--)
                     {
                         pipeline = filters[i].ConfigureServices(pipeline);
                     }
@@ -204,15 +205,13 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var filters = HostingServiceProvider
 #pragma warning disable CS0612 // Type or member is obsolete
-                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>()
+                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>();
 #pragma warning restore CS0612 // Type or member is obsolete
-                        .Reverse()
-                        .ToArray();
 
                     Action<TContainerBuilder> pipeline = InvokeConfigureContainer;
-                    for (int i = 0; i < filters.Length; i++)
+                    foreach (var filter in filters.Reverse())
                     {
-                        pipeline = filters[i].ConfigureContainer(pipeline);
+                        pipeline = filter.ConfigureContainer(pipeline);
                     }
 
                     pipeline(containerBuilder);
