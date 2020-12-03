@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
+                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
                 if (baggage.Length == 0)
                 {
                     baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
