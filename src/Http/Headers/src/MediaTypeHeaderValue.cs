@@ -462,7 +462,7 @@ namespace Microsoft.Net.Http.Headers
             return MatchesType(mediaType) && MatchesSubtype(mediaType);
         }
 
-
+        /// <inheritdoc />
         public override string ToString()
         {
             var builder = new StringBuilder();
@@ -471,6 +471,7 @@ namespace Microsoft.Net.Http.Headers
             return builder.ToString();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as MediaTypeHeaderValue;
@@ -484,6 +485,7 @@ namespace Microsoft.Net.Http.Headers
                 HeaderUtilities.AreEqualCollections(_parameters, other._parameters);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             // The media-type string is case-insensitive.

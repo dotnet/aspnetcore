@@ -121,7 +121,6 @@ Microsoft.Net.Http.Headers.NameValueHeaderValue.Value.set -> void
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.LastModified.get -> System.DateTimeOffset?
-Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag) -> void
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(System.DateTimeOffset lastModified) -> void
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(string? entityTag) -> void
 Microsoft.Net.Http.Headers.RangeHeaderValue
