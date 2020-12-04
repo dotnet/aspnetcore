@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         // The default view compiler does a dictionary lookup so we can rely on that always completing synchronously
                         // this lets us avoid lots of per-request work as the compiled page is already available at
                         // startup for this page so we can base the endpoint on that directly.
-                        var compiledTask = _pageLoader.LoadAsync(action);
+                        var compiledTask = _pageLoader.LoadWithoutEndpoint(action);
 
                         // This should always complete synchronously
                         Debug.Assert(compiledTask.IsCompleted);

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return actionDescriptor.CompiledPageActionDescriptorTask = LoadAsyncCore(actionDescriptor, endpointMetadata);
         }
 
-        private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
+        internal async Task<CompiledPageActionDescriptor> LoadWithoutEndpoint(PageActionDescriptor actionDescriptor)
         {
             var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
             var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
@@ -80,7 +80,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             ApplyConventions(_conventions, context.PageApplicationModel);
 
-            var compiled = CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
+            return CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
+        }
+
+        private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
+        {
+            var compiled = await LoadWithoutEndpoint(actionDescriptor);
 
             // We need to create an endpoint for routing to use and attach it to the CompiledPageActionDescriptor...
             // routing for pages is two-phase. First we perform routing using the route info - we can do this without
