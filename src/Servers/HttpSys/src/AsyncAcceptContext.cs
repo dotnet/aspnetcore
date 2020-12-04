@@ -13,9 +13,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
         private readonly PreAllocatedOverlapped _preallocatedOverlapped;
+        private NativeOverlapped* _overlapped;
 
         // mutable struct; do not make this readonly
-        private ManualResetValueTaskSourceCore<RequestContext> _tcs = new()
+        private ManualResetValueTaskSourceCore<RequestContext> _mrvts = new()
         {
             // We want to run continuations on the IO threads
             RunContinuationsAsynchronously = false
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ValueTask<RequestContext> AcceptAsync()
         {
-            _tcs.Reset();
+            _mrvts.Reset();
 
             AllocateNativeRequest();
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return ValueTask.FromException<RequestContext>(new HttpSysException((int)statusCode));
             }
 
-            return new ValueTask<RequestContext>(this, _tcs.Version);
+            return new ValueTask<RequestContext>(this, _mrvts.Version);
         }
 
         private static void IOCompleted(AsyncAcceptContext asyncContext, uint errorCode, uint numBytes)
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    asyncContext._tcs.SetException(new HttpSysException((int)errorCode));
+                    asyncContext._mrvts.SetException(new HttpSysException((int)errorCode));
                     return;
                 }
 
@@ -78,14 +79,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             asyncContext._nativeRequestContext = null;
 
                             var requestContext = new RequestContext(server, nativeContext);
-                            asyncContext._tcs.SetResult(requestContext);
+                            asyncContext._mrvts.SetResult(requestContext);
 
                             complete = true;
                         }
                     }
                     catch (Exception ex)
                     {
-                        asyncContext._tcs.SetException(ex);
+                        asyncContext._mrvts.SetException(ex);
                     }
                     finally
                     {
@@ -111,13 +112,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         // someother bad error, possible(?) return values are:
                         // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                        asyncContext._tcs.SetException(new HttpSysException((int)statusCode));
+                        asyncContext._mrvts.SetException(new HttpSysException((int)statusCode));
                     }
                 }
             }
             catch (Exception exception)
             {
-                asyncContext._tcs.SetException(exception);
+                asyncContext._mrvts.SetException(exception);
             }
         }
 
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _nativeRequestContext.NativeRequest,
                     _nativeRequestContext.Size,
                     &bytesTransferred,
-                    _nativeRequestContext.NativeOverlapped);
+                    _overlapped);
 
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _nativeRequestContext.RequestId != 0)
                 {
@@ -179,10 +180,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _nativeRequestContext?.Dispose();
 
             var boundHandle = Server.RequestQueue.BoundHandle;
-            var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
-                boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped));
 
-            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, Server.MemoryPool, size, requestId);
+            if (_overlapped != null)
+            {
+                boundHandle.FreeNativeOverlapped(_overlapped);
+            }
+
+            _nativeRequestContext = new NativeRequestContext(Server.MemoryPool, size, requestId);
+            _overlapped = boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped);
         }
 
         public void Dispose()
@@ -199,23 +204,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _nativeRequestContext.ReleasePins();
                     _nativeRequestContext.Dispose();
                     _nativeRequestContext = null;
+
+                    var boundHandle = Server.RequestQueue.BoundHandle;
+
+                    if (_overlapped != null)
+                    {
+                        boundHandle.FreeNativeOverlapped(_overlapped);
+                        _overlapped = null;
+                    }
                 }
             }
         }
 
         public RequestContext GetResult(short token)
         {
-            return _tcs.GetResult(token);
+            return _mrvts.GetResult(token);
         }
 
         public ValueTaskSourceStatus GetStatus(short token)
         {
-            return _tcs.GetStatus(token);
+            return _mrvts.GetStatus(token);
         }
 
         public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
         {
-            _tcs.OnCompleted(continuation, state, token, flags);
+            _mrvts.OnCompleted(continuation, state, token, flags);
         }
     }
 }
