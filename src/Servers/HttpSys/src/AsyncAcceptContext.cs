@@ -24,10 +24,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         };
 
         private RequestContext _requestContext;
+        private readonly IRequestContextFactory _requestContextFactory;
 
-        internal AsyncAcceptContext(HttpSysListener server)
+        internal AsyncAcceptContext(HttpSysListener server, IRequestContextFactory requestContextFactory)
         {
             Server = server;
+            _requestContextFactory = requestContextFactory;
             _preallocatedOverlapped = new(IOCallback, state: this, pinData: null);
         }
 
@@ -193,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 boundHandle.FreeNativeOverlapped(_overlapped);
             }
 
-            _requestContext = new RequestContext(Server, size, requestId);
+            _requestContext = _requestContextFactory.CreateRequestContext(size, requestId);
             _overlapped = boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped);
         }
 

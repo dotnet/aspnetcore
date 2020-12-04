@@ -113,7 +113,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         /// </summary>
         internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
         {
-            var acceptContext = new AsyncAcceptContext(server);
+            var factory = new TestRequestContextFactory(server);
+            var acceptContext = new AsyncAcceptContext(server, factory);
             var acceptTask = server.AcceptAsync(acceptContext).AsTask();
             var completedTask = await Task.WhenAny(acceptTask, Task.Delay(timeout));
 
@@ -141,6 +142,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var response = await responseTask;
                 throw new InvalidOperationException("The response completed prematurely: " + response.ToString());
+            }
+        }
+
+        private class TestRequestContextFactory : IRequestContextFactory
+        {
+            private readonly HttpSysListener _server;
+
+            public TestRequestContextFactory(HttpSysListener server)
+            {
+                _server = server;
+            }
+
+            public RequestContext CreateRequestContext(uint? bufferSize, ulong requestId)
+            {
+                return new RequestContext(_server, bufferSize, requestId);
             }
         }
     }
