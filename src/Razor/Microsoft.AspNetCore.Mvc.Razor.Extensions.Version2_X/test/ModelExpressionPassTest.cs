@@ -149,7 +149,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             return RazorCodeDocument.Create(source);
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateEngine(params TagHelperDescriptor[] tagHelpers)
+#pragma warning restore CS0618
         {
             return RazorProjectEngine.Create(b =>
             {
@@ -157,7 +159,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             }).Engine;
         }
 
+#pragma warning disable CS0618
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

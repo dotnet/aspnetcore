@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract RazorProjectFileSystem FileSystem { get; }
 
+#pragma warning disable CS0618
         public abstract RazorEngine Engine { get; }
+#pragma warning restore CS0618
 
         public IReadOnlyList<IRazorEngineFeature> EngineFeatures => Engine.Features;
 
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             throw new NotImplementedException();
         }
-        
+
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -228,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Directive Classifier
             builder.Features.Add(new ComponentWhitespacePass());
-            
+
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());

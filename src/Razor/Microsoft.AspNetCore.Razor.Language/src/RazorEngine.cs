@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    [Obsolete("This class is obsolete and will be removed in a future version. The recommended alternative is " + nameof(RazorProjectEngine) + ".")]
     public abstract class RazorEngine
     {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -192,4 +193,5 @@ namespace Microsoft.AspNetCore.Razor.Language
         #endregion
     }
 }
+
 

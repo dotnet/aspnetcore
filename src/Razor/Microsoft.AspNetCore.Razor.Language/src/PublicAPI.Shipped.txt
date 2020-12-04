@@ -340,7 +340,6 @@ Microsoft.AspNetCore.Razor.Language.RazorDiagnosticSeverity.Error = 3 -> Microso
 Microsoft.AspNetCore.Razor.Language.RazorDiagnosticSeverity.Warning = 2 -> Microsoft.AspNetCore.Razor.Language.RazorDiagnosticSeverity
 Microsoft.AspNetCore.Razor.Language.RazorEngine
 Microsoft.AspNetCore.Razor.Language.RazorEngine.RazorEngine() -> void
-Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions
 Microsoft.AspNetCore.Razor.Language.RazorEngineFeatureBase
 Microsoft.AspNetCore.Razor.Language.RazorEngineFeatureBase.RazorEngineFeatureBase() -> void
 Microsoft.AspNetCore.Razor.Language.RazorEngineFeatureBase.ThrowForMissingDocumentDependency<TDocumentDependency>(TDocumentDependency value) -> void
@@ -1382,12 +1381,9 @@ virtual Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext.I
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind, bool optional) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind, bool optional, string name, string description) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
-~static Microsoft.AspNetCore.Razor.Language.Extensions.FunctionsDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.FunctionsDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
-~static Microsoft.AspNetCore.Razor.Language.Extensions.InheritsDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.InheritsDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.NamespaceDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.Extensions.SectionDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.SectionDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(string filePath) -> string
 ~static Microsoft.AspNetCore.Razor.Language.FileKinds.GetFileKindFromFilePath(string filePath) -> string
@@ -1440,11 +1436,6 @@ virtual Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext.I
 ~static Microsoft.AspNetCore.Razor.Language.RazorEngine.CreateDesignTime(System.Action<Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder> configure) -> Microsoft.AspNetCore.Razor.Language.RazorEngine
 ~static Microsoft.AspNetCore.Razor.Language.RazorEngine.CreateDesignTimeEmpty(System.Action<Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder> configure) -> Microsoft.AspNetCore.Razor.Language.RazorEngine
 ~static Microsoft.AspNetCore.Razor.Language.RazorEngine.CreateEmpty(System.Action<Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder> configure) -> Microsoft.AspNetCore.Razor.Language.RazorEngine
-~static Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions.AddDirective(this Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder, Microsoft.AspNetCore.Razor.Language.DirectiveDescriptor directive) -> Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions.AddTargetExtension(this Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder, Microsoft.AspNetCore.Razor.Language.CodeGeneration.ICodeTargetExtension extension) -> Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions.ConfigureClass(this Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder, System.Action<Microsoft.AspNetCore.Razor.Language.RazorCodeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.ClassDeclarationIntermediateNode> configureClass) -> Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions.SetBaseType(this Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder, string baseType) -> Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.RazorEngineBuilderExtensions.SetNamespace(this Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder, string namespaceName) -> Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder
 ~static Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion.Parse(string languageVersion) -> Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion
 ~static Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion.TryParse(string languageVersion, out Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion version) -> bool
 ~static Microsoft.AspNetCore.Razor.Language.RazorParserOptions.Create(System.Action<Microsoft.AspNetCore.Razor.Language.RazorParserOptionsBuilder> configure) -> Microsoft.AspNetCore.Razor.Language.RazorParserOptions

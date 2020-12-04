@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Registers a class configuration delegate that gets invoked during code generation.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
-        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure
         /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
         public static RazorProjectEngineBuilder ConfigureClass(
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            
+
             builder.Features.Add(new AdditionalImportsProjectFeature(imports));
 
             return builder;
@@ -313,7 +313,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public int Order { get; set; }
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {

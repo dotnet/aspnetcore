@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             // Runs after the @model and @namespace directives
             public override int Order => 10;
-            
+
             protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
                 if (documentNode.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
@@ -111,21 +111,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
         }
-
-        #region Obsolete
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AddDirective(Directive);
-            builder.Features.Add(new Pass());
-            builder.AddTargetExtension(new InjectTargetExtension());
-            return builder;
-        }
-        #endregion
     }
 }

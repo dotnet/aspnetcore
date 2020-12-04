@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private DefaultRazorProjectEngine ProjectEngine { get; }
 
+#pragma warning disable CS0618
         private RazorEngine Engine { get; }
+#pragma warning restore CS0618
 
         private ComponentMarkupBlockPass Pass { get; }
 
@@ -471,7 +473,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private class StaticTagHelperFeature : ITagHelperFeature
         {
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public List<TagHelperDescriptor> TagHelpers { get; set; }
 

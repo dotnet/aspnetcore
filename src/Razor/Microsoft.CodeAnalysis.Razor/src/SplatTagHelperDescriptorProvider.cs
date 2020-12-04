@@ -12,7 +12,9 @@ namespace Microsoft.CodeAnalysis.Razor
         // Order doesn't matter
         public int Order { get; set; }
 
+#pragma warning disable CS0618
         public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
         public void Execute(TagHelperDescriptorProviderContext context)
         {

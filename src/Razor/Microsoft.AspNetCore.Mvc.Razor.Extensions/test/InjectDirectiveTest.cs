@@ -179,7 +179,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.AddDirective(ModelDirective.Directive);
         }
 
+#pragma warning disable CS0618
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

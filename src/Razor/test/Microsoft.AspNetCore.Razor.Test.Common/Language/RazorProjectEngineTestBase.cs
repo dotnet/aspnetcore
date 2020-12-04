@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
+#pragma warning disable CS0618
         protected RazorEngine CreateEngine() => CreateProjectEngine().Engine;
+#pragma warning restore CS0618
 
         protected RazorProjectEngine CreateProjectEngine()
         {

@@ -5,7 +5,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public interface IRazorEnginePhase
     {
+#pragma warning disable CS0618
         RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
         void Execute(RazorCodeDocument codeDocument);
     }

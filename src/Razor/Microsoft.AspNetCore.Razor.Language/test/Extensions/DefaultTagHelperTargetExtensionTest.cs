@@ -1083,7 +1083,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -1108,7 +1108,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -1231,7 +1231,9 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
 
             public int Order { get; }
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorParserOptionsBuilder options)
             {

@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Result of doing 'temp' compilation
                 var tempAssembly = CompileToAssembly(declaration, throwOnFailure);
 
-                // Add the 'temp' compilation as a metadata reference 
+                // Add the 'temp' compilation as a metadata reference
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
                 projectEngine = CreateProjectEngine(Configuration, references);
 
@@ -438,7 +438,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             public int Order => 0;
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {

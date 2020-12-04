@@ -172,7 +172,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return visitor.Node;
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateEngine()
+#pragma warning restore CS0618
         {
             var configuration = RazorConfiguration.Create(RazorLanguageVersion.Version_1_1, "test", Array.Empty<RazorExtension>());
             return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
@@ -183,7 +185,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             }).Engine;
         }
 
+#pragma warning disable CS0618
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

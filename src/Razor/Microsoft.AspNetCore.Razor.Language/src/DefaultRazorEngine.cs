@@ -6,7 +6,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618
     internal class DefaultRazorEngine : RazorEngine
+#pragma warning restore CS0618
     {
         public DefaultRazorEngine(IRazorEngineFeature[] features, IRazorEnginePhase[] phases)
         {

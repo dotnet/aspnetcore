@@ -23,8 +23,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public bool DesignTime { get; }
 
+#pragma warning disable CS0618
         public RazorEngine Build()
         {
+#pragma warning restore CS0618
             var features = new IRazorEngineFeature[Features.Count];
             Features.CopyTo(features, arrayIndex: 0);
 

@@ -133,20 +133,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 }
             }
         }
-
-        #region Obsolete
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AddDirective(Directive);
-            builder.Features.Add(new Pass());
-            return builder;
-        }
-        #endregion
     }
 }

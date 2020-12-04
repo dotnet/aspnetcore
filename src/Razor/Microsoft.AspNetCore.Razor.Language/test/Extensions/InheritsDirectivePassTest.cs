@@ -69,7 +69,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Assert.Equal("Hello<World[]>", @class.BaseType);
         }
 
+#pragma warning disable CS0618
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Enumerable.Empty<RazorProjectItem>();
         }
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")] // Remove after .NET 6.
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public interface IRazorEngineFeature : IRazorFeature
     {
+#pragma warning disable CS0618
         RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
     }
 }

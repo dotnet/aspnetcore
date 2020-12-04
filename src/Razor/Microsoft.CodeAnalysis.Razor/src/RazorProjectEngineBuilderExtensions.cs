@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Razor
     public static class RazorProjectEngineBuilderExtensions
     {
         /// <summary>
-        /// Sets the C# language version to target when generating code. 
+        /// Sets the C# language version to target when generating code.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         /// <param name="csharpLanguageVersion">The C# <see cref="LanguageVersion"/>.</param>
@@ -51,7 +51,9 @@ namespace Microsoft.CodeAnalysis.Razor
 
             public int Order { get; set; }
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
@@ -78,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // to act in a safe manner to not cause unneeded errors for older compilers. Therefore if the version isn't
                     // >= 8.0 (Latest has a higher value) then nullability enforcement is suppressed.
                     //
-                    // Once the project finishes configuration the C# language version will be updated to reflect the effective 
+                    // Once the project finishes configuration the C# language version will be updated to reflect the effective
                     // language version for the project by our workspace change detectors. That mechanism extracts the correlated
                     // Roslyn project and acquires the effective C# version at that point.
                     options.SuppressNullabilityEnforcement = false;

@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
 
+#pragma warning disable CS0618
         public RazorEngine Engine => CreateProjectEngine().Engine;
+#pragma warning restore CS0618
 
         [Fact]
         public void Execute_HasDocumentKind_IgnoresDocument()

@@ -525,7 +525,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public int Order { get; }
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorParserOptionsBuilder options)
             {

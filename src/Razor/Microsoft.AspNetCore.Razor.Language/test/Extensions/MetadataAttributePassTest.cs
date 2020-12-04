@@ -381,7 +381,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Assert.Equal("/Foo/Import.cshtml", checksum.Identifier);
         }
 
+#pragma warning disable CS0618
         private static RazorEngine CreateEngine()
+#pragma warning restore CS0618
         {
             return RazorProjectEngine.Create(b =>
             {

@@ -363,7 +363,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             PageDirective.Register(builder);
         }
 
+#pragma warning disable CS0618
         private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

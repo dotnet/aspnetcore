@@ -127,13 +127,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
-            
+
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);
@@ -174,13 +176,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
-            
+
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);
@@ -218,7 +222,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage-Info/Add+User.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);
@@ -259,13 +265,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
-            
+
             document.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);
@@ -297,13 +305,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
-            
+
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);
@@ -333,13 +343,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
-            
+
             document.DocumentKind = null;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
+#pragma warning disable CS0618
             pass.Engine = Mock.Of<RazorEngine>();
+#pragma warning restore CS0618
 
             // Act
             pass.Execute(codeDocument, document);

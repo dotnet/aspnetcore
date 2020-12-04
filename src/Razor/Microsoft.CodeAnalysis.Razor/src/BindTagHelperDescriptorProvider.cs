@@ -15,7 +15,9 @@ namespace Microsoft.CodeAnalysis.Razor
         // Run after the component tag helper provider, because we need to see the results.
         public int Order { get; set; } = 1000;
 
+#pragma warning disable CS0618
         public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
         public void Execute(TagHelperDescriptorProviderContext context)
         {

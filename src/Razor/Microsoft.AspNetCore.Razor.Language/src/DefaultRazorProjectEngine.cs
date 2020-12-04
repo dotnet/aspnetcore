@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public DefaultRazorProjectEngine(
             RazorConfiguration configuration,
+#pragma warning disable CS0618
             RazorEngine engine,
+#pragma warning restore CS0618
             RazorProjectFileSystem fileSystem,
             IReadOnlyList<IRazorProjectEngineFeature> projectFeatures)
         {
@@ -51,7 +53,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override RazorProjectFileSystem FileSystem { get; }
 
+#pragma warning disable CS0618
         public override RazorEngine Engine { get; }
+#pragma warning restore CS0618
 
         public override IReadOnlyList<IRazorProjectEngineFeature> ProjectFeatures { get; }
 
@@ -66,8 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected RazorCodeDocument CreateCodeDocumentCore(
-            RazorProjectItem projectItem, 
-            Action<RazorParserOptionsBuilder> configureParser, 
+            RazorProjectItem projectItem,
+            Action<RazorParserOptionsBuilder> configureParser,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
         {
             if (projectItem == null)
@@ -89,9 +93,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected internal RazorCodeDocument CreateCodeDocumentCore(
-            RazorSourceDocument sourceDocument, 
-            string fileKind = null, 
-            IReadOnlyList<RazorSourceDocument> importSourceDocuments = null, 
+            RazorSourceDocument sourceDocument,
+            string fileKind = null,
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments = null,
             IReadOnlyList<TagHelperDescriptor> tagHelpers = null,
             Action<RazorParserOptionsBuilder> configureParser = null,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration = null,
@@ -165,9 +169,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected RazorCodeDocument CreateCodeDocumentDesignTimeCore(
-            RazorSourceDocument sourceDocument, 
-            string fileKind, 
-            IReadOnlyList<RazorSourceDocument> importSourceDocuments, 
+            RazorSourceDocument sourceDocument,
+            string fileKind,
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments,
             IReadOnlyList<TagHelperDescriptor> tagHelpers,
             Action<RazorParserOptionsBuilder> configureParser,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)

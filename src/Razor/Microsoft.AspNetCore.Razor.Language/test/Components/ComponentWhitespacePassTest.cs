@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private DefaultRazorProjectEngine ProjectEngine { get; }
 
+#pragma warning disable CS0618
         private RazorEngine Engine { get; }
+#pragma warning restore CS0618
 
         private ComponentWhitespacePass Pass { get; }
 

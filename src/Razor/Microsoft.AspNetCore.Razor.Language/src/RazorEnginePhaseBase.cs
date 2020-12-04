@@ -8,9 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorEnginePhaseBase : IRazorEnginePhase
     {
+#pragma warning disable CS0618
         private RazorEngine _engine;
+#pragma warning restore CS0618
 
+#pragma warning disable CS0618
         public RazorEngine Engine
+#pragma warning restore CS0618
         {
             get { return _engine; }
             set
@@ -73,7 +77,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Resources.FormatPhaseDependencyMissing(
                         GetType().Name,
                         typeof(TEngineDependency).Name,
+#pragma warning disable CS0618
                         typeof(RazorEngine).Name));
+#pragma warning restore CS0618
             }
         }
 

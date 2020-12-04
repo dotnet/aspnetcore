@@ -358,7 +358,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("some-route", attributeNode.Value);
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateRuntimeEngine()
+#pragma warning restore CS0618
         {
             return CreateProjectEngine(b =>
             {
@@ -366,7 +368,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }).Engine;
         }
 
+#pragma warning disable CS0618
         private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {

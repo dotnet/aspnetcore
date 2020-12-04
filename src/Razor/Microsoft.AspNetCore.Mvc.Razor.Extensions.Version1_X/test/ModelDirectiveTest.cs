@@ -236,17 +236,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return visitor.Node;
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateRuntimeEngine()
+#pragma warning restore CS0618
         {
             return CreateEngineCore();
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateDesignTimeEngine()
+#pragma warning restore CS0618
         {
             return CreateEngineCore(designTime: true);
         }
 
+#pragma warning disable CS0618
         private RazorEngine CreateEngineCore(bool designTime = false)
+#pragma warning restore CS0618
         {
             return CreateProjectEngine(b =>
             {
@@ -260,7 +266,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             }).Engine;
         }
 
+#pragma warning disable CS0618
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -329,7 +337,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             public int Order { get; }
 
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public void Configure(RazorParserOptionsBuilder options)
             {

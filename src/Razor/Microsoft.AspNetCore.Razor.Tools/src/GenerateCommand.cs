@@ -400,7 +400,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private class StaticTagHelperFeature : ITagHelperFeature
         {
+#pragma warning disable CS0618
             public RazorEngine Engine { get; set; }
+#pragma warning restore CS0618
 
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override ICollection<IRazorFeature> Features { get; }
 
         public override IList<IRazorEnginePhase> Phases { get; }
-        
+
         public override RazorProjectEngine Build()
         {
 #pragma warning disable CS0618 // Type or member is obsolete

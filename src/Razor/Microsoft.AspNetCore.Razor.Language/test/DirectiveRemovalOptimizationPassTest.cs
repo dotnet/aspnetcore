@@ -113,7 +113,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Empty(method.Children);
         }
 
+#pragma warning disable CS0618
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+#pragma warning restore CS0618
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
