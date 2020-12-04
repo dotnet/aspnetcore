@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var certLoader = new ClientCertLoader(RequestContext, cancellationToken);
             try
             {
-                await certLoader.LoadClientCertificateAsync().SupressContext();
+                await certLoader.LoadClientCertificateAsync();
                 // Populate the environment.
                 if (certLoader.ClientCert != null)
                 {

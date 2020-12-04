@@ -270,8 +270,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-        [MemberNotNull(nameof(_compressionProvider))]
-        private ICompressionProvider ResolveCompressionProvider()
+        private ICompressionProvider? ResolveCompressionProvider()
         {
             if (!_providerCreated)
             {
@@ -279,7 +278,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 _compressionProvider = _provider.GetCompressionProvider(_context);
             }
 
-            Debug.Assert(_compressionProvider != null);
             return _compressionProvider;
         }
 
