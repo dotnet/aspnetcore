@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <returns>A list of the loaded <see cref="Assembly"/></returns>
         public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
+            if (OperatingSystem.IsBrowser())
             {
                 return await LoadAssembliesInClientAsync(assembliesToLoad);
             }

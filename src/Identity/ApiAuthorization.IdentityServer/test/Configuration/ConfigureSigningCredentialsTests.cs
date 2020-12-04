@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         // due to the fact that is not part of .NET Standard. This value is only used with non-windows
         // platforms (all .NET Core) for which the value is defined on the underlying platform.
         private const X509KeyStorageFlags UnsafeEphemeralKeySet = (X509KeyStorageFlags)32;
-        private static readonly X509KeyStorageFlags DefaultFlags = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-            UnsafeEphemeralKeySet : (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? X509KeyStorageFlags.PersistKeySet :
+        private static readonly X509KeyStorageFlags DefaultFlags = OperatingSystem.IsLinux() ?
+            UnsafeEphemeralKeySet : (OperatingSystem.IsMacOS() ? X509KeyStorageFlags.PersistKeySet :
             X509KeyStorageFlags.DefaultKeySet);
 
         [ConditionalFact]
