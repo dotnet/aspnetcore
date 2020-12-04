@@ -248,16 +248,57 @@
         Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
   </Target>
 
+  <!--
+    Change @(ResolvedCompileFileDefinitions) items between generation and use in order to compile against RTM lib/
+    or ref/ assemblies. The approach works for all TFMs because it happens after a specific assembly is chosen for
+    compilation; no need to restrict this to (say) the default TFM.
+
+    This target could get confused if the layout changes for one of the dozen special-cased packages during servicing.
+    E.g. ResolvePackageAssets picks a compatible assembly from the 5.0.1 package and _UseRTMReferenceAssemblies
+    changes the path to one not present in the 5.0.0 package. Fortunately, this will break the build with complaints
+    about the "invalid strong name".
+  -->
+  <Target Name="_UseRTMReferenceAssemblies"
+      Condition=" '$(MSBuildProjectName)' != 'RepoTasks' "
+      AfterTargets="ResolvePackageAssets"
+      BeforeTargets="GenerateBuildDependencyFile;GeneratePublishDependencyFile;ILLink;ResolveLockFileReferences"
+      DependsOnTargets="ResolvePackageAssets">
+    <Error Condition=" !EXISTS('$(RepoRoot)artifacts\obj\RepoTasks\RepoTasks.csproj.nuget.g.props') "
+        Text="The eng/tools/RepoTasks project must be restored before building other projects." />
+
+    <JoinItems Left="@(ResolvedCompileFileDefinitions)"
+        Right="@(LatestPackageReference->HasMetadata('RTMVersion'))"
+        LeftKey="Filename"
+        ItemSpecToUse="Left"
+        LeftMetadata="*"
+        RightMetadata="RTMVersion;Version">
+      <Output TaskParameter="JoinResult" ItemName="_ResolvedCompileFileDefinitionsToChange" />
+    </JoinItems>
+
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(_ResolvedCompileFileDefinitionsToChange)" />
+
+      <!-- Ignore %(NuGetPackageVersion) when doing substitution because some projects use downlevel packages. -->
+      <_ResolvedCompileFileDefinitionsToChange
+          HintPath="$([System.String]::new('%(Identity)').Replace('\%(Version)\', '\%(RTMVersion)\').Replace('/%(Version)/', '/%(RTMVersion)/'))" />
+      <ResolvedCompileFileDefinitions Include="@(_ResolvedCompileFileDefinitionsToChange -> '%(HintPath)')" />
+
+      <_ResolvedCompileFileDefinitionsToChange Remove="@(_ResolvedCompileFileDefinitionsToChange)" />
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup>
     <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
     <_CompileTfmUsingReferenceAssemblies
         Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
+
   <!--
     If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
-  <ItemGroup
-      Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+  <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+      ($(_CompileTfmUsingReferenceAssemblies) OR
+       ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"
         Version="$(MicrosoftExtensionsInternalTransportVersion)"
         IsImplicitlyDefined="true"
@@ -265,6 +306,30 @@
         PrivateAssets="All"
         GeneratePathProperty="true" />
   </ItemGroup>
+
+  <!--
+    Remove compile-time assets for packages that overlap Microsoft.Extensions.Internal.Transport. Serviced packages
+    may otherwise increase the referenced version. Avoid this because change reduces compatible runtime versions.
+    That's not a big deal within the shared framework but can cause problems for shipped packages. Leave test
+    projects and Ignitor alone because they may transitively reference newer netstandard assemblies and need a
+    net5.0 assembly with the same version. (This can happen in implementation projects but is less likely.)
+  -->
+  <Target Name="RemoveExtensionsCompileAssets"
+      AfterTargets="ResolvePackageAssets"
+      Condition=" '$(PkgMicrosoft_Extensions_Internal_Transport)' != '' AND
+          '$(IsServicingBuild)' == 'true' AND
+          '$(IsImplementationProject)' == 'true' AND
+          '$(MSBuildProjectName)' != 'Ignitor' AND
+          '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+          ($(_CompileTfmUsingReferenceAssemblies) OR
+           ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
+          Condition=" '%(NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
+              EXISTS('$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
+              $([System.String]::new('%(Directory)').Contains('$(TargetFramework)')) " />
+    </ItemGroup>
+  </Target>
 
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
