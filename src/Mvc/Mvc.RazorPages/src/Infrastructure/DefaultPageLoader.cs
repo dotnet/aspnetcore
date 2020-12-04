@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _globalFilters = mvcOptions.Value.Filters;
         }
 
-        private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
+        internal IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
         public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
             => LoadAsync(actionDescriptor, EndpointMetadataCollection.Empty);

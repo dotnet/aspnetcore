@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var page = endpoints[i].Metadata.GetMetadata<PageActionDescriptor>();
-                if (page != null)
+                if (page is not null and not CompiledPageActionDescriptor)
                 {
-                    // Found a page
+                    // Found an uncompiled page
                     return true;
                 }
             }

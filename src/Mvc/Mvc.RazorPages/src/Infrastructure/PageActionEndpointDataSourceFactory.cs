@@ -11,20 +11,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly PageActionEndpointDataSourceIdProvider _dataSourceIdProvider;
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly ActionEndpointFactory _endpointFactory;
+        private readonly PageLoader _pageLoader;
 
         public PageActionEndpointDataSourceFactory(
             PageActionEndpointDataSourceIdProvider dataSourceIdProvider,
             IActionDescriptorCollectionProvider actions,
+            PageLoader pageLoader,
             ActionEndpointFactory endpointFactory)
         {
             _dataSourceIdProvider = dataSourceIdProvider;
             _actions = actions;
+            _pageLoader = pageLoader;
             _endpointFactory = endpointFactory;
         }
 
         public PageActionEndpointDataSource Create(OrderedEndpointsSequenceProvider orderProvider)
         {
-            return new PageActionEndpointDataSource(_dataSourceIdProvider, _actions, _endpointFactory, orderProvider);
+            return new PageActionEndpointDataSource(_dataSourceIdProvider, _actions, _endpointFactory, _pageLoader, orderProvider);
         }
     }
 }
