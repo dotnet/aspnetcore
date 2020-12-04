@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private readonly ILogger _logger;
         private readonly UrlGroup _sourceQueueUrlGroup;
+        private bool _disposed;
         /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
@@ -36,9 +37,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <inheritdoc />
         public void Dispose()
         {
-            _sourceQueueUrlGroup.UnSetDelegationProperty(Queue, throwOnError: false);
-            Queue.UrlGroup?.Dispose();
-            Queue?.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            try
+            {
+                _sourceQueueUrlGroup.UnSetDelegationProperty(Queue, throwOnError: false);
+            }
+            catch (ObjectDisposedException) { /* Server may have been shutdown */ }
+            Queue.UrlGroup.Dispose();
+            Queue.Dispose();
         }
     }
 }
