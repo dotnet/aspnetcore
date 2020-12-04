@@ -178,6 +178,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The awaits will manage stack depth for us.
         private async Task ProcessRequestsWorker()
         {
+            // Allocate and accept context per loop and reuse it for all accepts
+            using var acceptContext = new AsyncAcceptContext(Listener);
+
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (!Stopping && workerIndex <= _maxAccepts)
             {
@@ -185,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 RequestContext requestContext;
                 try
                 {
-                    requestContext = await Listener.AcceptAsync();
+                    requestContext = await Listener.AcceptAsync(acceptContext);
                     // Assign the message pump to this request context
                     requestContext.MessagePump = this;
                 }
