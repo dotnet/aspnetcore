@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     context = application.CreateContext(featureContext.Features);
                     try
                     {
-                        await application.ProcessRequestAsync(context).SupressContext();
+                        await application.ProcessRequestAsync(context);
                         await featureContext.CompleteAsync();
                     }
                     finally
