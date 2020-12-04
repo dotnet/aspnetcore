@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private protected override ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory)
         {
-            return new PageActionEndpointDataSource(new PageActionEndpointDataSourceIdProvider(), actions, endpointFactory, new OrderedEndpointsSequenceProvider());
+            return new PageActionEndpointDataSource(new PageActionEndpointDataSourceIdProvider(), actions, endpointFactory, Mock.Of<PageLoader>(), new OrderedEndpointsSequenceProvider());
         }
 
         protected override ActionDescriptor CreateActionDescriptor(
