@@ -144,7 +144,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
-                ProcessRequestsWorker();
+                // Ignore the result
+                _ = ProcessRequestsWorker();
             }
         }
 
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // When we start listening for the next request on one thread, we may need to be sure that the
         // completion continues on another thread as to not block the current request processing.
         // The awaits will manage stack depth for us.
-        private async void ProcessRequestsWorker()
+        private async Task ProcessRequestsWorker()
         {
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (!Stopping && workerIndex <= _maxAccepts)
