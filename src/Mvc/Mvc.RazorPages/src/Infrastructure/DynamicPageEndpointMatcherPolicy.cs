@@ -181,19 +181,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 for (var j = 0; j < loadedEndpoints.Count; j++)
                 {
                     var metadata = loadedEndpoints[j].Metadata;
-                    var pageActionDescriptor = metadata.GetMetadata<PageActionDescriptor>();
-
-                    CompiledPageActionDescriptor compiled;
-                    if (_loader is DefaultPageLoader defaultPageLoader)
+                    var actionDescriptor = metadata.GetMetadata<PageActionDescriptor>();
+                    if (actionDescriptor is CompiledPageActionDescriptor)
                     {
-                        compiled = await defaultPageLoader.LoadAsync(pageActionDescriptor, endpoint.Metadata);
+                        // Nothing to do here. The endpoint already represents a compiled page.
                     }
                     else
                     {
-                        compiled = await _loader.LoadAsync(pageActionDescriptor);
+                        // We're working with a runtime-compiled page and have to Load it.
+                        var compiled = actionDescriptor.CompiledPageDescriptor ??
+                            await _loader.LoadAsync(actionDescriptor, endpoint.Metadata);
+                        loadedEndpoints[j] = compiled.Endpoint;
                     }
-
-                    loadedEndpoints[j] = compiled.Endpoint;
                 }
 
                 // Expand the list of endpoints

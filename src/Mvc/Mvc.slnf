@@ -9,6 +9,7 @@
       "src\\Mvc\\test\\WebSites\\ApiExplorerWebSite\\ApiExplorerWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\VersioningWebSite\\VersioningWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\TagHelpersWebSite\\TagHelpersWebSite.csproj",
+      "src\\Mvc\\test\\WebSites\\RoutingWebSite\\Mvc.RoutingWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\FilesWebSite\\FilesWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\ApplicationModelWebSite\\ApplicationModelWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\HtmlGenerationWebSite\\HtmlGenerationWebSite.csproj",

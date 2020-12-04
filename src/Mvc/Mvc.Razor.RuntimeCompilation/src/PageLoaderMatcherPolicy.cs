@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var page = endpoints[i].Metadata.GetMetadata<PageActionDescriptor>();
-                if (page != null)
+                if (page is not null and not CompiledPageActionDescriptor)
                 {
-                    // Found a page
+                    // Found an uncompiled page
                     return true;
                 }
             }
@@ -76,34 +76,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
-                    if (page.CompiledPageDescriptor != null)
-                    {
-                        candidates.ReplaceEndpoint(i, page.CompiledPageDescriptor.Endpoint, candidate.Values);
-                        continue;
-                    }
-
                     // We found an endpoint instance that has a PageActionDescriptor, but not a
                     // CompiledPageActionDescriptor. Update the CandidateSet.
-                    Task<CompiledPageActionDescriptor> compiled;
-                    if (_loader is DefaultPageLoader defaultPageLoader)
-                    {
-                        compiled = defaultPageLoader.LoadAsync(page, endpoint.Metadata);
-                    }
-                    else
-                    {
-                        compiled = _loader.LoadAsync(page);
-                    }
+                    var compiled = _loader.LoadAsync(page, endpoint.Metadata);
 
                     if (compiled.IsCompletedSuccessfully)
                     {
-                        page.CompiledPageDescriptor = compiled.Result;
                         candidates.ReplaceEndpoint(i, compiled.Result.Endpoint, candidate.Values);
                     }
                     else
                     {
                         // In the most common case, GetOrAddAsync will return a synchronous result.
                         // Avoid going async since this is a fairly hot path.
-                        return ApplyAsyncAwaited(page, candidates, compiled, i);
+                        return ApplyAsyncAwaited(candidates, compiled, i);
                     }
                 }
             }
@@ -111,10 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return Task.CompletedTask;
         }
 
-        private async Task ApplyAsyncAwaited(PageActionDescriptor previousPage, CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
+        private async Task ApplyAsyncAwaited(CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
         {
             var compiled = await actionDescriptorTask;
-            previousPage.CompiledPageDescriptor = compiled;
 
             candidates.ReplaceEndpoint(index, compiled.Endpoint, candidates[index].Values);
 
@@ -131,8 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
-                    compiled = await _loader.LoadAsync(page);
-                    page.CompiledPageDescriptor = compiled;
+                    compiled = await _loader.LoadAsync(page, endpoint.Metadata);
 
                     candidates.ReplaceEndpoint(i, compiled.Endpoint, candidates[i].Values);
                 }
