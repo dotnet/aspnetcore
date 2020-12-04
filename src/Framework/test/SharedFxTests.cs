@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
 
-            var version = Version.Parse(TestData.GetMicrosoftNETCoreAppPackageVersion());
+            var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+            var version = Version.Parse(versionStringWithoutPrereleaseTag);
             var dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
