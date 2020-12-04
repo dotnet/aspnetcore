@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (Exception ex)
                     {
+                        server.SendError(asyncContext._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
                         asyncContext._mrvts.SetException(ex);
                     }
                     finally
