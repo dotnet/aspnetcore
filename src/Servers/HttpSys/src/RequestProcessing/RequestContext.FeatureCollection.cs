@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -16,12 +17,11 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class FeatureContext :
+    internal partial class RequestContext :
         IHttpRequestFeature,
         IHttpRequestBodyDetectionFeature,
         IHttpConnectionFeature,
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpResetFeature,
         IHttpSysRequestDelegationFeature
     {
-        private RequestContext _requestContext;
         private IFeatureCollection _features;
         private bool _enableResponseCaching;
 
@@ -62,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private string _traceIdentitfier;
         private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
-        private CancellationToken _disconnectToken;
         private Stream _responseStream;
         private PipeWriter _pipeWriter;
         private bool _bodyCompleted;
@@ -76,37 +74,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private bool _responseStarted;
         private bool _completed;
 
-        internal FeatureContext(RequestContext requestContext)
-        {
-            _requestContext = requestContext;
-            _features = new FeatureCollection(new StandardFeatureCollection(this));
-            _enableResponseCaching = _requestContext.Server.Options.EnableResponseCaching;
-
-            // Pre-initialize any fields that are not lazy at the lower level.
-            _requestHeaders = Request.Headers;
-            _httpMethod = Request.Method;
-            _path = Request.Path;
-            _pathBase = Request.PathBase;
-            _query = Request.QueryString;
-            _rawTarget = Request.RawUrl;
-            _scheme = Request.Scheme;
-
-            if (requestContext.Server.Options.Authentication.AutomaticAuthentication)
-            {
-                _user = _requestContext.User;
-            }
-
-            _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
-            _responseHeaders = Response.Headers;
-        }
-
-        internal IFeatureCollection Features => _features;
-
-        internal object RequestContext => _requestContext;
-
-        private Request Request => _requestContext.Request;
-
-        private Response Response => _requestContext.Response;
+        internal IFeatureCollection Features => _features; 
 
         [Flags]
         // Fields that may be lazy-initialized
@@ -124,6 +92,35 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             ClientCertificate = 0x100,
             TraceIdentifier = 0x200,
         }
+
+        public void InitializeFeatures()
+        {
+            _initialized = true;
+
+            Request = new Request(this);
+            Response = new Response(this);
+
+            _features = new FeatureCollection(new StandardFeatureCollection(this));
+            _enableResponseCaching = Server.Options.EnableResponseCaching;
+
+            // Pre-initialize any fields that are not lazy at the lower level.
+            _requestHeaders = Request.Headers;
+            _httpMethod = Request.Method;
+            _path = Request.Path;
+            _pathBase = Request.PathBase;
+            _query = Request.QueryString;
+            _rawTarget = Request.RawUrl;
+            _scheme = Request.Scheme;
+
+            if (Server.Options.Authentication.AutomaticAuthentication)
+            {
+                _user = User;
+            }
+
+            _responseStream = new ResponseStream(Response.Body, OnResponseStart);
+            _responseHeaders = Response.Headers;
+        }
+
 
         private bool IsNotInitialized(Fields field)
         {
@@ -311,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
-                    var method = _requestContext.Server.Options.ClientCertificateMethod;
+                    var method = Server.Options.ClientCertificateMethod;
                     if (method == ClientCertificateMethod.AllowCertificate)
                     {
                         _clientCert = Request.ClientCertificate;
@@ -337,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (IsNotInitialized(Fields.ClientCertificate))
             {
-                var method = _requestContext.Server.Options.ClientCertificateMethod;
+                var method = Server.Options.ClientCertificateMethod;
                 if (method != ClientCertificateMethod.NoCertificate)
                 {
                     // Check if a cert was already available on the connection.
@@ -482,8 +479,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         void IHttpResetFeature.Reset(int errorCode)
         {
-            _requestContext.SetResetCode(errorCode);
-            _requestContext.Abort();
+            SetResetCode(errorCode);
+            Abort();
         }
 
         internal async Task CompleteAsync()
@@ -513,10 +510,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.RequestAborted))
                 {
-                    _disconnectToken = _requestContext.DisconnectToken;
+                    _disconnectToken = DisconnectToken;
                     SetInitialized(Fields.RequestAborted);
                 }
-                return _disconnectToken;
+                return _disconnectToken.Value;
             }
             set
             {
@@ -525,14 +522,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        void IHttpRequestLifetimeFeature.Abort() => _requestContext.Abort();
+        void IHttpRequestLifetimeFeature.Abort() => Abort();
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => _requestContext.IsUpgradableRequest;
+        bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
         async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
             await OnResponseStart();
-            return await _requestContext.UpgradeAsync();
+            return await UpgradeAsync();
         }
 
         ClaimsPrincipal IHttpAuthenticationFeature.User
@@ -547,7 +544,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.TraceIdentifier))
                 {
-                    _traceIdentitfier = _requestContext.TraceIdentifier.ToString();
+                    _traceIdentitfier = TraceIdentifier.ToString();
                     SetInitialized(Fields.TraceIdentifier);
                 }
                 return _traceIdentitfier;
@@ -561,8 +558,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         bool IHttpBodyControlFeature.AllowSynchronousIO
         {
-            get => _requestContext.AllowSynchronousIO;
-            set => _requestContext.AllowSynchronousIO = value;
+            get => AllowSynchronousIO;
+            set => AllowSynchronousIO = value;
         }
 
         bool IHttpMaxRequestBodySizeFeature.IsReadOnly => Request.HasRequestBodyStarted;
@@ -634,13 +631,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // We don't have to worry too much about what Http.Sys supports, caching is a best-effort feature.
                 // If there's something about the request or response that prevents it from caching then the response
                 // will complete normally without caching.
-                _requestContext.Response.CacheTtl = GetCacheTtl(_requestContext);
+                Response.CacheTtl = GetCacheTtl();
             }
         }
 
-        private static TimeSpan? GetCacheTtl(RequestContext requestContext)
+        private TimeSpan? GetCacheTtl()
         {
-            var response = requestContext.Response;
+            var response = Response;
             // A 304 response is supposed to have the same headers as its associated 200 response, including Cache-Control, but the 304 response itself
             // should not be cached. Otherwise Http.Sys will serve the 304 response to all requests without checking conditional headers like If-None-Match.
             if (response.StatusCode == StatusCodes.Status304NotModified)
@@ -720,7 +717,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public void DelegateRequest(DelegationRule destination)
         {
-            _requestContext.Delegate(destination);
+            Delegate(destination);
             _responseStarted = true;
         }
     }
