@@ -233,9 +233,11 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async stateExists(url: string) {
+        const stateHash = new URLSearchParams(new URL(url).hash).get('state');
         const stateParam = new URLSearchParams(new URL(url).search).get('state');
-        if (stateParam && this._userManager.settings.stateStore) {
-            return await this._userManager.settings.stateStore.get(stateParam);
+        const state = stateHash ?? stateParam;
+        if (state && this._userManager.settings.stateStore) {
+            return await this._userManager.settings.stateStore.get(state);
         } else {
             return undefined;
         }
