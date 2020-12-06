@@ -143,9 +143,22 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         private static string EnsureText(XElement element)
         {
-            if (element.Elements().Count() == 0 &&
+            var nodeCount = 0;
+            var elementCount = 0;
+
+            foreach (var node in element.Nodes())
+            {
+                nodeCount++;
+
+                if (node is XElement)
+                {
+                    elementCount++;
+                }
+            }
+
+            if (elementCount == 0 &&
                 !element.IsEmpty &&
-                element.Nodes().Count() == 1 &&
+                nodeCount == 1 &&
                 element.FirstNode.NodeType == XmlNodeType.Text)
             {
                 return element.Value;
