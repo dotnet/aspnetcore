@@ -189,6 +189,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 try
                 {
                     requestContext = await Listener.AcceptAsync(acceptContext);
+
+                    if (!Listener.ValidateRequest(requestContext) || !Listener.ValidateAuth(requestContext))
+                    {
+                        // If either of these is false then a response has already been sent to the client, so we can accept the next request
+                        continue;
+                    }
                 }
                 catch (Exception exception)
                 {
