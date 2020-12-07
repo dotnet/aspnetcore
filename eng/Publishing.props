@@ -4,9 +4,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallersAndChecksums</PublishDependsOnTargets>
+    <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallersAndChecksumsAndProductVersion</PublishDependsOnTargets>
 
     <_UploadPathRoot>aspnetcore</_UploadPathRoot>
+    <ProductVersionFileName>productVersion.txt</ProductVersionFileName>
+    <ProductVersionFileLocation>$(ArtifactsShippingPackagesDir)$(ProductVersionFileName)</ProductVersionFileLocation>
   </PropertyGroup>
 
   <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
@@ -31,7 +33,9 @@
     <_ChecksumsToPublish Include="$(ArtifactsDir)**\*.sha512" />
   </ItemGroup>
 
-  <Target Name="_PublishInstallersAndChecksums">
+  <Target 
+    Name="_PublishInstallersAndChecksumsAndProductVersion"
+    DependsOnTargets="_WriteProductVersionFile">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
       and npm project. We use SignalR.Npm.FunctionalTests.npmproj because it is non-shipping (we need a non-stable
@@ -69,6 +73,36 @@
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
+
+      <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)">
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
     </ItemGroup>
+  </Target>
+
+  <Target Name="_WriteProductVersionFile">
+    <!--
+      This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
+      and npm project. We use Microsoft.AspNetCore.App.Runtime.csproj because it is shipping (we need a stable
+      version string to use for productVersion.txt).
+    -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_ProductVersion>@(_ResolvedPackageVersionInfo->'%(PackageVersion)')</_ProductVersion>
+    </PropertyGroup>
+
+    <!-- Generate productVersion.txt containing the value of $(PackageVersion) -->
+    <WriteLinesToFile
+      File="$(ProductVersionFileLocation)"
+      Lines="$(_ProductVersion)"
+      Overwrite="true"
+      Encoding="ASCII" />
   </Target>
 </Project>
