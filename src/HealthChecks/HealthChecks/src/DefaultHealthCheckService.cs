@@ -158,15 +158,26 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
         {
             // Scan the list for duplicate names to provide a better error if there are duplicates.
-            var duplicateNames = registrations
-                .GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
 
-            if (duplicateNames.Count > 0)
+            StringBuilder? builder = null;
+            var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var registration in registrations)
             {
-                throw new ArgumentException($"Duplicate health checks were registered with the name(s): {string.Join(", ", duplicateNames)}", nameof(registrations));
+                if (!distinctRegistrations.Add(registration.Name))
+                {
+                    if (builder is null)
+                    {
+                        builder = new StringBuilder("Duplicate health checks were registered with the name(s): ");
+                    }
+
+                    builder.Append(registration.Name).Append(", ");
+                }
+            }
+
+            if (builder is not null)
+            {
+                throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
             }
         }
 
