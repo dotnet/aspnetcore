@@ -4,7 +4,7 @@
 namespace Microsoft.Net.Http.Headers
 {
     /// <summary>
-    /// Defines cnstants for well-known HTTP headers.
+    /// Defines constants for well-known HTTP headers.
     /// </summary>
     public static class HeaderNames
     {
