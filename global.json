@@ -29,7 +29,7 @@
     "xcopy-msbuild": "16.5.0-alpha"
   },
   "msbuild-sdks": {
-    "Yarn.MSBuild": "1.15.2",
+    "Yarn.MSBuild": "1.22.10",
     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.20601.2",
     "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20601.2"
   }
