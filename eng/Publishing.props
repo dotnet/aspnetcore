@@ -93,11 +93,11 @@
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
-      <_ProductVersion>@(_ResolvedPackageVersionInfo->'%(PackageVersion)')</_ProductVersion>
+      <_ProductVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</_ProductVersion>
     </PropertyGroup>
 
     <!-- Generate productVersion.txt containing the value of $(PackageVersion) -->
