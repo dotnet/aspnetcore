@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
 
             // Adds the compression headers for HEAD requests even if the body was not used.
-            if (HttpMethods.IsHead(_context.Request.Method) && !_compressionChecked)
+            if (!_compressionChecked && HttpMethods.IsHead(_context.Request.Method))
             {
-                InitializeCompression();
+                InitializeCompressionHeaders();
             }
         }
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-        private void InitializeCompression()
+        private void InitializeCompressionHeaders()
         {
             if (_provider.ShouldCompressResponse(_context))
             {
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 _compressionChecked = true;
 
-                InitializeCompression();
+                InitializeCompressionHeaders();
 
                 if (_compressionProvider != null)
                 {
