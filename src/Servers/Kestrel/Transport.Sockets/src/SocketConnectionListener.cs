@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 try
                 {
-                    Debug.Assert(_listenSocket != null, "BindAsync must have been called.");
+                    Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
                     var acceptSocket = await _listenSocket.AcceptAsync();
 
