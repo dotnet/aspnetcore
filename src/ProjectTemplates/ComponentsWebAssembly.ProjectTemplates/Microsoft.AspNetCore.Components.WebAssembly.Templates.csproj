@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>false</IsShippingPackage>
     <Description>Templates for ASP.NET Core Blazor WebAssembly projects.</Description>
     <PackageTags>$(PackageTags);blazor;spa</PackageTags>
     <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
