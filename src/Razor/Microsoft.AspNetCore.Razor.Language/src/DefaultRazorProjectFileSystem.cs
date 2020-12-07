@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultRazorProjectItem("/", filePath, relativePhysicalPath, fileKind, new FileInfo(absolutePath), cssScope: null);
         }
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")] // Remove after .NET 6.
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

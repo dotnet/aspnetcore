@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

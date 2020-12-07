@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         public IFileProvider FileProvider => _fileProvider.FileProvider;
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);
