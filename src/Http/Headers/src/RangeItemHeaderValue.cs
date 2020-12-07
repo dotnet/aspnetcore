@@ -9,11 +9,23 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents a byte range in a Range header value.
+    /// <para>
+    /// The <see cref="RangeItemHeaderValue"/> class provides support for a byte range in a <c>Range</c> as defined
+    /// in <see href="https://tools.ietf.org/html/rfc2616">RFC 2616</see>.
+    /// </para>
+    /// </summary>
     public class RangeItemHeaderValue
     {
         private long? _from;
         private long? _to;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RangeItemHeaderValue"/> class.
+        /// </summary>
+        /// <param name="from">The position at which to start sending data.</param>
+        /// <param name="to">The position at which to stop sending data.</param>
         public RangeItemHeaderValue(long? from, long? to)
         {
             if (!from.HasValue && !to.HasValue)
@@ -37,16 +49,23 @@ namespace Microsoft.Net.Http.Headers
             _to = to;
         }
 
+        /// <summary>
+        /// Gets the position at which to start sending data.
+        /// </summary>
         public long? From
         {
             get { return _from; }
         }
 
+        /// <summary>
+        /// Gets the position at which to stop sending data.
+        /// </summary>
         public long? To
         {
             get { return _to; }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (!_from.HasValue)
@@ -61,16 +80,13 @@ namespace Microsoft.Net.Http.Headers
                 _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
-            if (obj is RangeItemHeaderValue other)
-            {
-                return ((_from == other._from) && (_to == other._to));
-            }
-
-            return false;
+            return obj is RangeItemHeaderValue other && ((_from == other._from) && (_to == other._to));
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             if (!_from.HasValue)
@@ -101,8 +117,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Empty segments are allowed, so skip all delimiter-only segments (e.g. ", ,").
-            var separatorFound = false;
-            var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, out separatorFound);
+            var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, out var separatorFound);
             // It's OK if we didn't find leading separator characters. Ignore 'separatorFound'.
 
             if (current == input.Length)
@@ -110,10 +125,9 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            RangeItemHeaderValue? range = null;
             while (true)
             {
-                var rangeLength = GetRangeItemLength(input, current, out range);
+                var rangeLength = GetRangeItemLength(input, current, out var range);
 
                 if (rangeLength == 0)
                 {

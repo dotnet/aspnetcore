@@ -11,6 +11,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Provides utilities to parse and modify HTTP header valeus.
+    /// </summary>
     public static class HeaderUtilities
     {
         private static readonly int _int64MaxStringLength = 19;
@@ -577,16 +580,35 @@ namespace Microsoft.Net.Http.Headers
             return new string(charBuffer, position, _int64MaxStringLength - position);
         }
 
+        /// <summary>
+        ///Attempts to parse the specified <paramref name="input"/> as a <see cref="DateTimeOffset"/> value.
+        /// </summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="result">The parsed value.</param>
+        /// <returns>
+        /// <see langword="true" /> if <paramref name="input"/> can be parsed as a date, otherwise <see langword="false" />.
+        /// </returns>
         public static bool TryParseDate(StringSegment input, out DateTimeOffset result)
         {
             return HttpRuleParser.TryStringToDate(input, out result);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime)
         {
-            return FormatDate(dateTime, false);
+            return FormatDate(dateTime, quoted: false);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier and optionally quotes it.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <param name="quoted">Determines if the formatted date should be quoted.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime, bool quoted)
         {
             if (quoted)
@@ -601,6 +623,11 @@ namespace Microsoft.Net.Http.Headers
             return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Removes quotes from the specified <paramref name="input"/> if quoted.
+        /// </summary>
+        /// <param name="input">The input to remove quotes from.</param>
+        /// <returns>The value without quotes.</returns>
         public static StringSegment RemoveQuotes(StringSegment input)
         {
             if (IsQuoted(input))
@@ -610,6 +637,11 @@ namespace Microsoft.Net.Http.Headers
             return input;
         }
 
+        /// <summary>
+        /// Determines if the specified <paramref name="input"/> is quoted.
+        /// </summary>
+        /// <param name="input">The value to inspect.</param>
+        /// <returns><see langword="true"/> if the value is quoted, otherwise <see langword="false"/>.</returns>
         public static bool IsQuoted(StringSegment input)
         {
             return !StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"';
