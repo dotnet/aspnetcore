@@ -166,10 +166,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             {
                 if (!distinctRegistrations.Add(registration.Name))
                 {
-                    if (builder is null)
-                    {
-                        builder = new StringBuilder("Duplicate health checks were registered with the name(s): ");
-                    }
+                    builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
 
                     builder.Append(registration.Name).Append(", ");
                 }
