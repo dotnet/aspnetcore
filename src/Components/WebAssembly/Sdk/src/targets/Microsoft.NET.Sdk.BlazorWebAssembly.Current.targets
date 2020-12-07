@@ -631,6 +631,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="_FailIfReferencingAspNetCoreApp" BeforeTargets="ResolveRuntimePackAssets">
+    <Error
+      Code="BLAZORSDK1001"
+      Text="The project references the ASP.NET Core shared framework, which is not supported by Blazor WebAssembly apps. Remove the framework reference if directly referenced, or the package reference that adds the framework reference."
+      Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'" />
+  </Target>
+
   <!--
     This is a hook to import a set of targets after the Blazor WebAssembly targets. By default this is unused.
   -->

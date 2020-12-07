@@ -335,6 +335,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
         }
 
+        [Fact]
+        public async Task Build_WithAspNetCoreFrameworkReference_Fails()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm-fxref");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+            Assert.BuildError(result, "BLAZORSDK1001");
+        }
+
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
         {
             return JsonSerializer.Deserialize<BootJsonData>(
