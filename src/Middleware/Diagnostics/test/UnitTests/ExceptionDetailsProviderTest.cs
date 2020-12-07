@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
@@ -28,7 +26,7 @@ namespace Microsoft.Extensions.Internal
                     "TestFiles/SourceFile.txt"
                 };
 
-                if (!(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
+                if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }

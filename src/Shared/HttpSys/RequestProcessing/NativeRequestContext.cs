@@ -25,15 +25,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private IMemoryOwner<byte> _backingBuffer;
         private MemoryHandle _memoryHandle;
         private int _bufferAlignment;
-        private SafeNativeOverlapped _nativeOverlapped;
         private bool _permanentlyPinned;
         private bool _disposed;
 
         // To be used by HttpSys
-        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped, MemoryPool<Byte> memoryPool, uint? bufferSize, ulong requestId)
+        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId)
         {
-            _nativeOverlapped = nativeOverlapped;
-
             // TODO:
             // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
             // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
@@ -69,8 +66,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _bufferAlignment = 0;
             _permanentlyPinned = true;
         }
-
-        internal SafeNativeOverlapped NativeOverlapped => _nativeOverlapped;
 
         internal HttpApiTypes.HTTP_REQUEST* NativeRequest
         {
@@ -130,8 +125,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _memoryHandle.Dispose();
             _memoryHandle = default;
             _nativeRequest = null;
-            _nativeOverlapped?.Dispose();
-            _nativeOverlapped = null;
         }
 
         public virtual void Dispose()
@@ -140,7 +133,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 _disposed = true;
                 Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
-                _nativeOverlapped?.Dispose();
                 _memoryHandle.Dispose();
                 _backingBuffer.Dispose();
             }

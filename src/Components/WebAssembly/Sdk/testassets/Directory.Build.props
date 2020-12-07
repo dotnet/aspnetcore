@@ -10,13 +10,6 @@
   <Import Project="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props" />
 
   <PropertyGroup>
-    <!--
-      In the case that a user is building a sample directly the MicrosoftNetCompilersToolsetPackagerVersion will not be provided.
-      We'll fall back to whatever the current SDK provides in regards to Roslyn's Microsoft.Net.Compilers.Toolset.
-    -->
-    <BuildingTestAppsIndependently>false</BuildingTestAppsIndependently>
-    <BuildingTestAppsIndependently Condition="'$(MicrosoftNetCompilersToolsetVersion)' == ''">true</BuildingTestAppsIndependently>
-
     <!-- Do not resolve Reference ItemGroup since it has a different semantic meaning in Razor test apps -->
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
 

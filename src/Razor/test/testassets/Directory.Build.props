@@ -2,21 +2,17 @@
   <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
 
   <PropertyGroup>
-    <!--
-      In the case that a user is building a sample directly the MicrosoftNetCompilersToolsetPackagerVersion will not be provided.
-      We'll fall back to whatever the current SDK provides in regards to Roslyn's Microsoft.Net.Compilers.Toolset.
-    -->
-    <BuildingTestAppsIndependently>false</BuildingTestAppsIndependently>
-    <BuildingTestAppsIndependently Condition="'$(MicrosoftNetCompilersToolsetVersion)' == ''">true</BuildingTestAppsIndependently>
-
     <!-- Do not resolve Reference ItemGroup since it has a different semantic meaning in Razor test apps -->
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
 
     <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
 
-    <RepoRoot Condition="'$(BuildingTestAppsIndependently)' == 'true' AND '$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'global.json'))\</RepoRoot>
+    <RepoRoot Condition=" '$(RepoRoot)' == '' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'global.json'))\</RepoRoot>
     <RazorSdkArtifactsDirectory>$(RepoRoot)artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
+
+    <!-- Build these test projects against the incoming Microsoft.NETCore.App framework. -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\Versions.props" />
@@ -41,14 +37,13 @@
     <!-- Have the SDK treat the MvcShim as an MVC assembly -->
     <_MvcAssemblyName Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetVersion)"
-        PrivateAssets="all"
-        IsImplicitlyDefined="true" />
-  </ItemGroup>
+
+  <Import Project="$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" Exists('$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.props') " />
+  <PropertyGroup>
+    <!-- Some tests expect assets to build successfully despite warnings. Override GenerateFiles setting. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
 
   <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
-
 </Project>

@@ -3,6 +3,9 @@
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Provides HTTP header quality factors.
+    /// </summary>
     public static class HeaderQuality
     {
         /// <summary>

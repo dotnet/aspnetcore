@@ -249,7 +249,7 @@ function with_retries {
       return 0
     fi
 
-    timeout=$((2**$retries-1))
+    timeout=$((3**$retries-1))
     echo "Failed to execute '$@'. Waiting $timeout seconds before next attempt ($retries out of $maxRetries)." 1>&2
     sleep $timeout
   done
@@ -271,10 +271,14 @@ function GetDotNetInstallScript {
 
     # Use curl if available, otherwise use wget
     if command -v curl > /dev/null; then
-      with_retries curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
-        local exit_code=$?
-        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
-        ExitWithExitCode $exit_code
+      # first, try directly, if this fails we will retry with verbose logging
+      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+        echo "curl failed; will now retry with verbose logging."
+        with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
+          local exit_code=$?
+          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+          ExitWithExitCode $exit_code
+        }
       }
     else
       with_retries wget -v -O "$install_script" "$install_script_url" || {

@@ -21,8 +21,7 @@
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) ">true</IsTestAssetProject>
-    <IsSampleProject Condition=" $(RepoRelativeProjectDir.Contains('sample')) OR
-        $(RepoRelativeProjectDir.Contains('Sample')) ">true</IsSampleProject>
+    <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
@@ -101,11 +100,11 @@
 
   <!-- Warnings and errors -->
   <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Ensure API docs are available. -->
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+
     <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
-    <!-- For CI builds, ensure API docs are available. -->
-    <NoWarn Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
@@ -216,6 +215,7 @@
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />

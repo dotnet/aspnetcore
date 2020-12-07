@@ -1,8 +1,0 @@
-<Project>
-<!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository -->
-  <PropertyGroup>
-    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
-  </PropertyGroup>
-  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\${DefaultNetCoreTargetFramework}\Microsoft.NET.Sdk.BlazorWebAssembly.props" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
-
-</Project>

@@ -1,23 +1,4 @@
 <Project>
   <Import Project="RazorTest.Introspection.targets" />
-
-  <PropertyGroup>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</RuntimeFrameworkVersion>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 5.0 -->
-    <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
-      />
-    <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp5.0'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
-      />
-  </ItemGroup>
+  <Import Project="$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" Exists('$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.targets') " />
 </Project>

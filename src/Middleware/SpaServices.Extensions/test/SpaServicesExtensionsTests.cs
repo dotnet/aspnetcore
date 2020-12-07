@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         private string GetPlatformSpecificWaitCommand()
-            => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "waitWindows" : "wait";
+            => OperatingSystem.IsWindows() ? "waitWindows" : "wait";
 
         private IApplicationBuilder GetApplicationBuilder(IServiceProvider serviceProvider = null)
         {

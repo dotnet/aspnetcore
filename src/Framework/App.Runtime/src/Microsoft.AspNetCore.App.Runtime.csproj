@@ -176,14 +176,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GenerateSharedFxDepsFile;
       GenerateSharedFxVersionsFiles;
       Crossgen;
-      _ResolveSharedFrameworkContent;
       IncludeFrameworkListFile;
+      _ResolveSharedFrameworkContent;
+      _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
-      _InstallFrameworkIntoLocalDotNet;
     </CoreBuildDependsOn>
     <CrossGenDependsOn>
       ResolveReferences;
@@ -485,8 +485,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
   <!-- This workaround is not needed in source build -->
-  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
-          Name="_InstallFrameworkIntoLocalDotNet"
+  <Target Name="_InstallFrameworkIntoLocalDotNet"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
+          Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
 
@@ -497,9 +498,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateInternalSharedFxArchive"
+          DependsOnTargets="_BatchCopyToSharedFrameworkLayout"
           Inputs="@(SharedFxContent)"
           Outputs="$(InternalArchiveOutputPath)">
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
     <ZipDirectory
       SourceDirectory="$(SharedFrameworkLayoutRoot)"
       DestinationFile="$(InternalArchiveOutputPath)"
@@ -509,11 +510,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(InternalArchiveOutputPath) ."
       WorkingDirectory="$(SharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
   </Target>
 
   <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
-  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
-          Name="_CreateRedistSharedFxArchive"
+  <Target Name="_CreateRedistSharedFxArchive"
+          DependsOnTargets="_DownloadAndExtractDotNetRuntime;_BatchCopyToRedistLayout"
+          Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistArchiveOutputPath)" />

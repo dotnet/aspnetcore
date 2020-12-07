@@ -2,121 +2,141 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class AsyncAcceptContext : TaskCompletionSource<RequestContext>, IDisposable
+    internal unsafe class AsyncAcceptContext : IValueTaskSource<RequestContext>, IDisposable
     {
-        internal static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(IOWaitCallback);
+        private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
+        private readonly PreAllocatedOverlapped _preallocatedOverlapped;
+        private NativeOverlapped* _overlapped;
 
-        private NativeRequestContext _nativeRequestContext;
+        // mutable struct; do not make this readonly
+        private ManualResetValueTaskSourceCore<RequestContext> _mrvts = new()
+        {
+            // We want to run continuations on the IO threads
+            RunContinuationsAsynchronously = false
+        };
+
+        private RequestContext _requestContext;
 
         internal AsyncAcceptContext(HttpSysListener server)
         {
             Server = server;
-            AllocateNativeRequest();
+            _preallocatedOverlapped = new(IOCallback, state: this, pinData: null);
         }
 
         internal HttpSysListener Server { get; }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by callback")]
+        internal ValueTask<RequestContext> AcceptAsync()
+        {
+            _mrvts.Reset();
+
+            AllocateNativeRequest();
+
+            uint statusCode = QueueBeginGetContext();
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+                statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            {
+                // some other bad error, possible(?) return values are:
+                // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
+                return ValueTask.FromException<RequestContext>(new HttpSysException((int)statusCode));
+            }
+
+            return new ValueTask<RequestContext>(this, _mrvts.Version);
+        }
+
         private static void IOCompleted(AsyncAcceptContext asyncContext, uint errorCode, uint numBytes)
         {
-            bool complete = false;
+            var complete = false;
+            // This is important to stash a ref to as it's a mutable struct
+            ref var mrvts = ref asyncContext._mrvts;
+            var requestContext = asyncContext._requestContext;
+            var requestId = requestContext.RequestId;
+
             try
             {
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    asyncContext.TrySetException(new HttpSysException((int)errorCode));
-                    complete = true;
+                    mrvts.SetException(new HttpSysException((int)errorCode));
+                    return;
                 }
-                else
-                {
-                    HttpSysListener server = asyncContext.Server;
-                    if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-                    {
-                        // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
-                        // points to it we need to hook up our authentication handling code here.
-                        try
-                        {
-                            if (server.ValidateRequest(asyncContext._nativeRequestContext) && server.ValidateAuth(asyncContext._nativeRequestContext))
-                            {
-                                RequestContext requestContext = new RequestContext(server, asyncContext._nativeRequestContext);
-                                asyncContext.TrySetResult(requestContext);
-                                complete = true;
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            server.SendError(asyncContext._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
-                            throw;
-                        }
-                        finally
-                        {
-                            // The request has been handed to the user, which means this code can't reuse the blob.  Reset it here.
-                            if (complete)
-                            {
-                                asyncContext._nativeRequestContext = null;
-                            }
-                            else
-                            {
-                                asyncContext.AllocateNativeRequest(size: asyncContext._nativeRequestContext.Size);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //  (uint)backingBuffer.Length - AlignmentPadding
-                        asyncContext.AllocateNativeRequest(numBytes, asyncContext._nativeRequestContext.RequestId);
-                    }
 
-                    // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                    if (!complete)
+                HttpSysListener server = asyncContext.Server;
+                if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                {
+                    // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
+                    // points to it we need to hook up our authentication handling code here.
+                    try
                     {
-                        uint statusCode = asyncContext.QueueBeginGetContext();
-                        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                            statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                        if (server.ValidateRequest(requestContext) && server.ValidateAuth(requestContext))
                         {
-                            // someother bad error, possible(?) return values are:
-                            // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                            asyncContext.TrySetException(new HttpSysException((int)statusCode));
+                            // It's important that we clear the request context before we set the result
+                            // we want to reuse the acceptContext object for future accepts.
+                            asyncContext._requestContext = null;
+
+                            // Initialize features here once we're successfully validated the request
+                            // TODO: In the future defer this work to the thread pool so we can get off the IO thread
+                            // as quickly as possible
+                            requestContext.InitializeFeatures();
+
+                            mrvts.SetResult(requestContext);
+
                             complete = true;
                         }
                     }
-                    if (!complete)
+                    catch (Exception ex)
                     {
-                        return;
+                        server.SendError(requestId, StatusCodes.Status400BadRequest);
+                        mrvts.SetException(ex);
+                    }
+                    finally
+                    {
+                        if (!complete)
+                        {
+                            asyncContext.AllocateNativeRequest(size: requestContext.Size);
+                        }
                     }
                 }
-
-                if (complete)
+                else
                 {
-                    asyncContext.Dispose();
+                    //  (uint)backingBuffer.Length - AlignmentPadding
+                    asyncContext.AllocateNativeRequest(numBytes, requestId);
+                }
+
+                // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
+                if (!complete)
+                {
+                    uint statusCode = asyncContext.QueueBeginGetContext();
+
+                    if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+                        statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                    {
+                        // someother bad error, possible(?) return values are:
+                        // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
+                        mrvts.SetException(new HttpSysException((int)statusCode));
+                    }
                 }
             }
             catch (Exception exception)
             {
-                // Logged by caller
-                asyncContext.TrySetException(exception);
-                asyncContext.Dispose();
+                mrvts.SetException(exception);
             }
         }
 
         private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            // take the ListenerAsyncResult object from the state
-            var asyncResult = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
-            IOCompleted(asyncResult, errorCode, numBytes);
+            var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            IOCompleted(acceptContext, errorCode, numBytes);
         }
 
-        internal uint QueueBeginGetContext()
+        private uint QueueBeginGetContext()
         {
             uint statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
             bool retry;
@@ -126,21 +146,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 uint bytesTransferred = 0;
                 statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
-                    _nativeRequestContext.RequestId,
+                    _requestContext.RequestId,
                     // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
                     // if the request sends header+body in a single TCP packet 
                     (uint)HttpApiTypes.HTTP_FLAGS.NONE,
-                    _nativeRequestContext.NativeRequest,
-                    _nativeRequestContext.Size,
+                    _requestContext.NativeRequest,
+                    _requestContext.Size,
                     &bytesTransferred,
-                    _nativeRequestContext.NativeOverlapped);
+                    _overlapped);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _nativeRequestContext.RequestId != 0)
+                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _requestContext.RequestId != 0)
                 {
                     // we might get this if somebody stole our RequestId,
                     // set RequestId to 0 and start all over again with the buffer we just allocated
                     // BUGBUG: how can someone steal our request ID?  seems really bad and in need of fix.
-                    _nativeRequestContext.RequestId = 0;
+                    _requestContext.RequestId = 0;
                     retry = true;
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
@@ -162,18 +182,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return statusCode;
         }
 
-        internal void AllocateNativeRequest(uint? size = null, ulong requestId = 0)
+        private void AllocateNativeRequest(uint? size = null, ulong requestId = 0)
         {
-            _nativeRequestContext?.ReleasePins();
-            _nativeRequestContext?.Dispose();
+            _requestContext?.ReleasePins();
+            _requestContext?.Dispose();
 
-            // We can't reuse overlapped objects
             var boundHandle = Server.RequestQueue.BoundHandle;
-            var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
-                boundHandle.AllocateNativeOverlapped(IOCallback, this, pinData: null));
+            if (_overlapped != null)
+            {
+                boundHandle.FreeNativeOverlapped(_overlapped);
+            }
 
-            // nativeRequest
-            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, Server.MemoryPool, size, requestId);
+            _requestContext = new RequestContext(Server, size, requestId);
+            _overlapped = boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped);
         }
 
         public void Dispose()
@@ -185,12 +206,36 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (disposing)
             {
-                if (_nativeRequestContext != null)
+                if (_requestContext != null)
                 {
-                    _nativeRequestContext.ReleasePins();
-                    _nativeRequestContext.Dispose();
+                    _requestContext.ReleasePins();
+                    _requestContext.Dispose();
+                    _requestContext = null;
+
+                    var boundHandle = Server.RequestQueue.BoundHandle;
+
+                    if (_overlapped != null)
+                    {
+                        boundHandle.FreeNativeOverlapped(_overlapped);
+                        _overlapped = null;
+                    }
                 }
             }
+        }
+
+        public RequestContext GetResult(short token)
+        {
+            return _mrvts.GetResult(token);
+        }
+
+        public ValueTaskSourceStatus GetStatus(short token)
+        {
+            return _mrvts.GetStatus(token);
+        }
+
+        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        {
+            _mrvts.OnCompleted(continuation, state, token, flags);
         }
     }
 }
