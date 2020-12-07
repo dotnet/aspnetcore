@@ -74,14 +74,16 @@
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
-      <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)">
+      <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
     </ItemGroup>
   </Target>
 
-  <Target Name="_WriteProductVersionFile">
+  <Target 
+    Name="_WriteProductVersionFile"
+    Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
       and npm project. We use Microsoft.AspNetCore.App.Runtime.csproj because it is shipping (we need a stable
