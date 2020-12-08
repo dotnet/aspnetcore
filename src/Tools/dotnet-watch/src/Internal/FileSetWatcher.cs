@@ -32,13 +32,13 @@ namespace Microsoft.DotNet.Watcher.Internal
             var tcs = new TaskCompletionSource<FileItem?>();
             cancellationToken.Register(() => tcs.TrySetResult(null));
 
-            Action<string> callback = path =>
+            void callback(string path)
             {
                 if (_fileSet.TryGetValue(path, out var fileItem))
                 {
                     tcs.TrySetResult(fileItem);
                 }
-            };
+            }
 
             _fileWatcher.OnFileChange += callback;
             startedWatching();

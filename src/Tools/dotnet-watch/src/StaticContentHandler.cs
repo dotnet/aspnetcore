@@ -12,17 +12,18 @@ namespace Microsoft.DotNet.Watcher.Tools
     public class StaticContentHandler
     {
         private static readonly byte[] UpdateCssMessage = Encoding.UTF8.GetBytes("UpdateStaticFile||");
+        private static readonly int UpdateCssMessageLength = UpdateCssMessage.Length;
 
         internal static async ValueTask TryHandleFileAction(BrowserRefreshServer browserRefreshServer, FileItem fileItem, CancellationToken cancellationToken)
         {
             var filePath = fileItem.StaticWebAssetPath;
-            var bytesToRent = UpdateCssMessage.Length + Encoding.UTF8.GetMaxByteCount(filePath.Length + 2);
+            var bytesToRent = UpdateCssMessageLength + Encoding.UTF8.GetMaxByteCount(filePath.Length);
             var bytes = ArrayPool<byte>.Shared.Rent(bytesToRent);
 
             try
             {
                 UpdateCssMessage.CopyTo(bytes.AsSpan());
-                var length = UpdateCssMessage.Length;
+                var length = UpdateCssMessageLength;
                 length += Encoding.UTF8.GetBytes(filePath, bytes.AsSpan(length));
 
                 await browserRefreshServer.SendMessage(bytes.AsMemory(0, length), cancellationToken);

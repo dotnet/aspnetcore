@@ -100,13 +100,11 @@ namespace Microsoft.DotNet.Watcher
 
                     _reporter.Output("Started");
 
-                    bool waitForFileChanges;
                     Task<FileItem?> fileSetTask;
                     Task finishedTask;
-                    do
-                    {
-                        waitForFileChanges = false;
 
+                    while (true)
+                    {
                         fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                         finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
@@ -116,16 +114,14 @@ namespace Microsoft.DotNet.Watcher
                         {
                             _reporter.Verbose($"Handling file change event for static content {file.FilePath}.");
 
-                            waitForFileChanges = true;
                             // If we can handle the file change without a browser refresh, do it.
                             await StaticContentHandler.TryHandleFileAction(context.BrowserRefreshServer, file, combinedCancellationSource.Token);
-                            continue;
                         }
                         else
                         {
                             break;
                         }
-                    } while (waitForFileChanges);
+                    }
 
                     // Regardless of the which task finished first, make sure everything is cancelled
                     // and wait for dotnet to exit. We don't want orphan processes
