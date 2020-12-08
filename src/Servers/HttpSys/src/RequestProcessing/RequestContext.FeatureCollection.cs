@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             TraceIdentifier = 0x200,
         }
 
-        public void InitializeFeatures()
+        protected internal void InitializeFeatures()
         {
             _initialized = true;
 

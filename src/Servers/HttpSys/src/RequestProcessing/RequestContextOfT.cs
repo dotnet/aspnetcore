@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             try
             {
+                InitializeFeatures();
+
                 if (messagePump.Stopping)
                 {
                     SetFatalResponse(503);

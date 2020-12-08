@@ -293,17 +293,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
                 return false;
             }
-            return true;
-        }
 
-        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
-        {
             if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
             {
                 SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
                     AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
                 return false;
             }
+
             return true;
         }
 
