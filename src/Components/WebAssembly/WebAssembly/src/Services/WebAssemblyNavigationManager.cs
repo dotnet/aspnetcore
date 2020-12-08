@@ -26,10 +26,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             Uri = uri;
             NotifyLocationChanged(isInterceptedLink);
         }
+
+        /// <inheritdoc />
+        protected override void NavigateToCore(string uri, bool forceLoad)
+        {
+            NavigateToCore(uri, forceLoad ? NavigationOptions.ForceLoad : NavigationOptions.None);
+        }
+
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, options.ForceLoad, options.Replace);
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) != 0, (options & NavigationOptions.Replace) != 0);
         }
     }
 }

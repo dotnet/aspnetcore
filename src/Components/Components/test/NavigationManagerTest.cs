@@ -108,7 +108,10 @@ namespace Microsoft.AspNetCore.Components
                 base.Initialize(baseUri, uri);
             }
 
-            protected override void NavigateToCore(string uri, NavigationOptions options) => throw new NotImplementedException();
+            protected override void NavigateToCore(string uri, bool forceLoad)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

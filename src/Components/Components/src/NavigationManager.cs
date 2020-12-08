@@ -90,27 +90,12 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        // 5.0 BACKCOMPAT OVERLOAD -- DO NOT TOUCH
-        public void NavigateTo(string uri, bool forceLoad)
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        public void NavigateTo(string uri, bool forceLoad = false)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
         {
-            NavigateTo(uri, forceLoad, false);
-        }
-
-        /// <summary>
-        /// Navigates to the specified URI.
-        /// </summary>
-        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
-        /// (as returned by <see cref="BaseUri"/>).</param>
-        /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        /// <param name="replace">If true, will replace the uri in the current browser history state, instead of pushing the new uri onto the browser history stack.</param>
-        public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
             AssertInitialized();
-            NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad, Replace = replace });
+            NavigateToCore(uri, forceLoad);
         }
 
         /// <summary>
@@ -118,17 +103,9 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
-        /// <param name="options">Add additional navigation options <see cref="NavigationOptions"/>.</param>
+        /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
         public void NavigateTo(string uri, NavigationOptions options)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
             AssertInitialized();
             NavigateToCore(uri, options);
         }
@@ -139,16 +116,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. Override NavigateToCore(string uri, NavigationOptions options) instead)")]
-        protected virtual void NavigateToCore(string uri, bool forceLoad) => throw new System.NotImplementedException();
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
 
         /// <summary>
         /// Navigates to the specified URI.
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
-        /// <param name="options">Add additional navigation options <see cref="NavigationOptions"/>.</param>
-        protected abstract void NavigateToCore(string uri, NavigationOptions options);
+        /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
+        protected virtual void NavigateToCore(string uri, NavigationOptions options) =>
+            throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before these values are used for the first time.

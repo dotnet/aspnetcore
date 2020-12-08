@@ -241,7 +241,6 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 Uri = uri;
                 NotifyLocationChanged(intercepted);
             }
-            protected override void NavigateToCore(string uri, NavigationOptions options) => throw new NotImplementedException();
         }
 
         internal sealed class TestNavigationInterception : INavigationInterception

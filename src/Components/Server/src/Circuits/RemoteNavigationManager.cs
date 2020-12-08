@@ -65,29 +65,35 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <inheritdoc />
+        protected override void NavigateToCore(string uri, bool forceLoad)
+        {
+            NavigateToCore(uri, forceLoad ? NavigationOptions.ForceLoad : NavigationOptions.None);
+        }
+
+        /// <inheritdoc />
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
-            Log.RequestingNavigation(_logger, uri, options.ForceLoad, options.Replace);
+            Log.RequestingNavigation(_logger, uri, options);
 
             if (_jsRuntime == null)
             {
                 var absoluteUriString = ToAbsoluteUri(uri).ToString();
                 throw new NavigationException(absoluteUriString);
             }
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, options.ForceLoad, options.Replace);
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) !=0, (options & NavigationOptions.Replace) !=0);
         }
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, bool, bool, Exception> _requestingNavigation =
-                LoggerMessage.Define<string, bool, bool>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with forceLoad={ForceLoad} and replace={Replace}");
+            private static readonly Action<ILogger, string, NavigationOptions, Exception> _requestingNavigation =
+                LoggerMessage.Define<string, NavigationOptions>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with options={options}");
 
             private static readonly Action<ILogger, string, bool, Exception> _receivedLocationChangedNotification =
                 LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(2, "ReceivedLocationChangedNotification"), "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}");
 
-            public static void RequestingNavigation(ILogger logger, string uri, bool forceLoad, bool replace)
+            public static void RequestingNavigation(ILogger logger, string uri, NavigationOptions options)
             {
-                _requestingNavigation(logger, uri, forceLoad, replace, null);
+                _requestingNavigation(logger, uri, options, null);
             }
 
             public static void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted)

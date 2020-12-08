@@ -600,6 +600,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public TestNavigationManager() =>
             Initialize("https://www.example.com/base/", "https://www.example.com/base/add-product");
 
-        protected override void NavigateToCore(string uri, NavigationOptions options) => throw new NotImplementedException();
+        protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotImplementedException();
     }
 }
