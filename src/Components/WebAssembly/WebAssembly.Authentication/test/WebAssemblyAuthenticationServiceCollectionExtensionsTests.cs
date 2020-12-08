@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 Initialize("https://www.example.com/base/", "https://www.example.com/base/counter");
             }
 
-            protected override void NavigateToCore(string uri, NavigationOptions options) => throw new NotImplementedException();
+            protected override void NavigateToCore(string uri, bool forceLoad) => throw new System.NotImplementedException();
         }
 
         private class TestAuthenticationState : RemoteAuthenticationState

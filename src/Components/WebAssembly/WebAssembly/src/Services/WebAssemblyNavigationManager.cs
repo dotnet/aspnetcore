@@ -27,6 +27,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             Uri = uri;
             NotifyLocationChanged(isInterceptedLink);
         }
+
+        /// <inheritdoc />
+        protected override void NavigateToCore(string uri, bool forceLoad)
+        {
+            NavigateToCore(uri, forceLoad ? NavigationOptions.ForceLoad : NavigationOptions.None);
+        }
+
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
@@ -35,12 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options.ForceLoad, options.Replace);
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) != 0, (options & NavigationOptions.Replace) != 0);
         }
     }
 }
