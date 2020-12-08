@@ -116,6 +116,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
 
+                        if (verbose.HasValue())
+                        {
+                            var listener = new ReporterEventListener(reporter);
+                            listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Verbose);
+                        }
+
                         if (clean.HasValue())
                         {
                             if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() ||
