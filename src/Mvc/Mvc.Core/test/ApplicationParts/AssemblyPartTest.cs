@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void AssemblyPart_Name_ReturnsAssemblyName()
         {
             // Arrange
-            var part = new AssemblyPart(typeof(AssemblyPartTest).GetTypeInfo().Assembly);
+            var part = new AssemblyPart(typeof(AssemblyPartTest).Assembly);
 
             // Act
             var name = part.Name;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void AssemblyPart_Types_ReturnsDefinedTypes()
         {
             // Arrange
-            var assembly = typeof(AssemblyPartTest).GetTypeInfo().Assembly;
+            var assembly = typeof(AssemblyPartTest).Assembly;
             var part = new AssemblyPart(assembly);
 
             // Act
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void AssemblyPart_Assembly_ReturnsAssembly()
         {
             // Arrange
-            var assembly = typeof(AssemblyPartTest).GetTypeInfo().Assembly;
+            var assembly = typeof(AssemblyPartTest).Assembly;
             var part = new AssemblyPart(assembly);
 
             // Act & Assert

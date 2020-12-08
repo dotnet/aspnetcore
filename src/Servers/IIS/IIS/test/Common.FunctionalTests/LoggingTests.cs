@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.Net50)
+                .WithTfms(Tfm.Default)
                 .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels();
 
         public static TestMatrix InprocessTestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.Net50)
+                .WithTfms(Tfm.Default)
                 .WithApplicationTypes(ApplicationType.Portable)
                 .WithHostingModels(HostingModel.InProcess);
 
@@ -184,7 +184,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(InprocessTestVariants))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2200")]
         public async Task CheckUTF8File(TestVariant variant)
         {
             var path = "CheckConsoleFunctions";

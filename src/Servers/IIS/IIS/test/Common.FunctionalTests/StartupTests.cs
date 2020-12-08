@@ -122,7 +122,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
         public async Task StartsWithDotnetInstallLocation()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -182,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.Net50)
+                .WithTfms(Tfm.Default)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 
@@ -990,6 +989,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27178")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
@@ -1002,12 +1002,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await AssertFailsToStart(deploymentResult);
+
+            StopServer();
+
             var expectedString = new string('a', 30000);
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27858")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdOutWrites")]

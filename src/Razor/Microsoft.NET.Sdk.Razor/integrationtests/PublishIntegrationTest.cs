@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Publish", "/p:NoBuild=true");
 
             Assert.BuildFailed(result);
-            Assert.BuildError(result, "MSB3030"); // Could not copy the file "obj/Debug/net5.0/SimpleMvc.dll because it couldn't be found.
+            Assert.BuildError(result, "MSB3030"); // Could not copy the file "obj/Debug/net6.0/SimpleMvc.dll because it couldn't be found.
 
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");

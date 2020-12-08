@@ -714,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            var logMessage = Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            var logMessage = Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
 
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 11).",
@@ -750,7 +750,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            var logMessage = Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            var logMessage = Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 11).",
                 logMessage.Exception.Message);
@@ -788,7 +788,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            var logMessage = Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            var logMessage = Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 5).",
                 logMessage.Exception.Message);
@@ -823,7 +823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            var logMessage = Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            var logMessage = Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 5).",
                 logMessage.Exception.Message);
@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            var error = TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
+            var error = LogMessages.Where(message => message.LogLevel == LogLevel.Error);
             Assert.Equal(2, error.Count());
             Assert.All(error, message => message.Message.Equals(CoreStrings.FormatTooFewBytesWritten(0, 5)));
         }
@@ -1062,7 +1062,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
+            Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
         }
 
         // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1098,7 +1098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
+            Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
         }
 
         // https://tools.ietf.org/html/rfc7230#section-3.3.3
@@ -1134,7 +1134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
+            Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
         }
 
         [Fact]
@@ -1758,7 +1758,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
+            Assert.Contains(LogMessages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
 #pragma warning restore CS0618 // Type or member is obsolete
         }
@@ -1809,7 +1809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // Time out after 10 seconds
                     for (int i = 0; i < 10 && !foundMessage; i++)
                     {
-                        while (TestApplicationErrorLogger.Messages.TryDequeue(out var message))
+                        while (LogMessages.TryDequeue(out var message))
                         {
 #pragma warning disable CS0618 // Type or member is obsolete
                             if (message.EventId.Id == 17 && message.LogLevel <= LogLevel.Debug && message.Exception is BadHttpRequestException
@@ -1875,7 +1875,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
+            Assert.Contains(LogMessages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
 #pragma warning restore CS0618 // Type or member is obsolete
         }
@@ -2192,7 +2192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             Assert.False(onStartingCalled);
-            Assert.Equal(2, TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error).Count());
+            Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
         }
 
 
@@ -2251,7 +2251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // since they are called LIFO order and the other one failed.
             Assert.False(callback1Called);
             Assert.Equal(2, callback2CallCount);
-            Assert.Equal(2, TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error).Count());
+            Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
         }
 
         [Fact]
@@ -2387,7 +2387,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             // All OnCompleted callbacks should be called even if they throw.
-            Assert.Equal(2, TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error).Count());
+            Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
             Assert.True(onCompletedCalled1);
             Assert.True(onCompletedCalled2);
         }
@@ -2430,7 +2430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             Assert.True(onStartingCalled);
-            Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
         }
 
         [Fact]
@@ -2471,7 +2471,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             Assert.True(onStartingCalled);
-            Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
         }
 
 
@@ -2503,7 +2503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
+            Assert.Empty(LogMessages.Where(message => message.LogLevel == LogLevel.Error));
         }
 
         [Fact]
@@ -2551,12 +2551,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Single(TestApplicationErrorLogger.Messages.Where(m => m.Message.Contains(CoreStrings.ConnectionAbortedByApplication)));
+            Assert.Single(LogMessages.Where(m => m.Message.Contains(CoreStrings.ConnectionAbortedByApplication)));
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24164")]
-        [Repeat(100)]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -2586,7 +2584,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Single(TestApplicationErrorLogger.Messages.Where(m => m.Message.Contains("The connection was aborted by the application via IConnectionLifetimeFeature.Abort().")));
+            Assert.Single(LogMessages.Where(m => m.Message.Contains("The connection was aborted by the application via IConnectionLifetimeFeature.Abort().")));
         }
 
         [Fact]

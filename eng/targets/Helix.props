@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" />
+    <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" Exclude="$(RepoRoot)eng\helix\content\*.in" />
   </ItemGroup>
 
 </Project>

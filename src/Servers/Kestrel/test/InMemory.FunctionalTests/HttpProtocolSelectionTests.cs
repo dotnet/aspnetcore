@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error
+            Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error
                 && message.EventId.Id == 0
                 && message.Message == expectedErrorMessage);
         }

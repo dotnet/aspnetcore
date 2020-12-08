@@ -9,9 +9,11 @@
     <SdkOutputPath>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</SdkOutputPath>
 
     <!-- Allow assemblies outside of lib in the package -->
-    <NoWarn>$(NoWarn.Replace('1591', ''));NU5100</NoWarn>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- No need to track public APIs of these MSBuild tasks. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
 
     <IsShipping>false</IsShipping>
   </PropertyGroup>

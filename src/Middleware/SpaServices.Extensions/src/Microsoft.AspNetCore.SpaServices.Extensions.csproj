@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

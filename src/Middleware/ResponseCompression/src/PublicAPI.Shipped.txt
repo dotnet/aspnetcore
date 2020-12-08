@@ -1,1 +1,56 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ResponseCompressionBuilderExtensions
+Microsoft.AspNetCore.Builder.ResponseCompressionServicesExtensions
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.SupportsFlush.get -> bool
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.BrotliCompressionProviderOptions() -> void
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
+Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions.Level.set -> void
+Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection
+Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection.CompressionProviderCollection() -> void
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider.SupportsFlush.get -> bool
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.GzipCompressionProviderOptions() -> void
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
+Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions.Level.set -> void
+Microsoft.AspNetCore.ResponseCompression.ICompressionProvider
+Microsoft.AspNetCore.ResponseCompression.ICompressionProvider.SupportsFlush.get -> bool
+Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.ResponseCompressionDefaults() -> void
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionMiddleware
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.EnableForHttps.get -> bool
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.EnableForHttps.set -> void
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.ResponseCompressionOptions() -> void
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider
+~Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.BrotliCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions> options) -> void
+~Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.CreateStream(System.IO.Stream outputStream) -> System.IO.Stream
+~Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider.EncodingName.get -> string
+~Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection.Add(System.Type providerType) -> void
+~Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection.Add<TCompressionProvider>() -> void
+~Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider.CreateStream(System.IO.Stream outputStream) -> System.IO.Stream
+~Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider.EncodingName.get -> string
+~Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider.GzipCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions> options) -> void
+~Microsoft.AspNetCore.ResponseCompression.ICompressionProvider.CreateStream(System.IO.Stream outputStream) -> System.IO.Stream
+~Microsoft.AspNetCore.ResponseCompression.ICompressionProvider.EncodingName.get -> string
+~Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider.CheckRequestAcceptsCompression(Microsoft.AspNetCore.Http.HttpContext context) -> bool
+~Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider.GetCompressionProvider(Microsoft.AspNetCore.Http.HttpContext context) -> Microsoft.AspNetCore.ResponseCompression.ICompressionProvider
+~Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider.ShouldCompressResponse(Microsoft.AspNetCore.Http.HttpContext context) -> bool
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionMiddleware.ResponseCompressionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider provider) -> void
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.ExcludedMimeTypes.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.ExcludedMimeTypes.set -> void
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.MimeTypes.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.MimeTypes.set -> void
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions.Providers.get -> Microsoft.AspNetCore.ResponseCompression.CompressionProviderCollection
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider.CheckRequestAcceptsCompression(Microsoft.AspNetCore.Http.HttpContext context) -> bool
+~Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider.ResponseCompressionProvider(System.IServiceProvider services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions> options) -> void
+~static Microsoft.AspNetCore.Builder.ResponseCompressionBuilderExtensions.UseResponseCompression(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~static Microsoft.AspNetCore.Builder.ResponseCompressionServicesExtensions.AddResponseCompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static Microsoft.AspNetCore.Builder.ResponseCompressionServicesExtensions.AddResponseCompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ResponseCompression.ResponseCompressionOptions> configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static readonly Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.MimeTypes -> System.Collections.Generic.IEnumerable<string>
+~virtual Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider.GetCompressionProvider(Microsoft.AspNetCore.Http.HttpContext context) -> Microsoft.AspNetCore.ResponseCompression.ICompressionProvider
+~virtual Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider.ShouldCompressResponse(Microsoft.AspNetCore.Http.HttpContext context) -> bool

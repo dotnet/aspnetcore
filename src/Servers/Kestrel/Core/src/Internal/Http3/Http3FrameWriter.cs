@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
-        private readonly MinDataRate _minResponseDataRate;
+        private readonly MinDataRate? _minResponseDataRate;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly Http3RawFrame _outgoingFrame;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
         {
             _outputWriter = output;
             _connectionContext = connectionContext;
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
 
-        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {

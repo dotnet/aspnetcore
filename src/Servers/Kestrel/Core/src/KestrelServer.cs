@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public KestrelServerOptions Options => _innerKestrelServer.Options;
 
         /// <inheritdoc />
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
             return _innerKestrelServer.StartAsync(application, cancellationToken);
         }

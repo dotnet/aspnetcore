@@ -42,11 +42,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(RepoRoot)eng\common\dotnet-install-scripts\*">
-      <TargetPath>eng\common\dotnet-install-scripts\%(Filename)%(Extension)</TargetPath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </ContentWithTargetPath>
   </ItemGroup>
 
   <!--
@@ -97,6 +92,7 @@
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>
@@ -116,6 +112,42 @@
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
 
+    <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
+        DestinationFiles="$(PublishDir)Directory.Build.props"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+    <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
+        DestinationFiles="$(PublishDir)Directory.Build.targets"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' != 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+
+    <!--
+      Use the shared framework and ref/ assemblies copied to the Helix agents and expanded by RunTests. Unfortunately,
+      tests of Microsoft.NET.Sdk.Web templates will not reference the just-built Microsoft.NET.Sdk.Razor. Adding a
+      package reference for that would confuse tests of Microsoft.NET.Sdk templates.
+    -->
+    <Copy SourceFiles="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props"
+        DestinationFiles="$(PublishDir)Directory.Build.props"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.props') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+    <Copy SourceFiles="$(ArtifactsBinDir)GenerateFiles\Directory.Build.targets"
+        DestinationFiles="$(PublishDir)Directory.Build.targets"
+        Condition="! EXISTS('$(PublishDir)Directory.Build.targets') AND '$(TestDependsOnAspNetRuntime)' == 'true'"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
@@ -129,9 +161,10 @@
         <!--
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
+          Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreBrowserDebugHostTransportVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreBrowserDebugHostTransportVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

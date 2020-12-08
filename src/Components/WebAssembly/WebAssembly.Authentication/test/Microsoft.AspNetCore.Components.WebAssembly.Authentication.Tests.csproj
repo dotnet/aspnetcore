@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\WebAssembly\test\TestWebAssemblyJSRuntimeInvoker.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
+    <Compile Include="..\..\WebAssembly\test\TestJSUnmarshalledRuntime.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
   </ItemGroup>
 
 </Project>

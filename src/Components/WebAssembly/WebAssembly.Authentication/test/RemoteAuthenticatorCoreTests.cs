@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var jsRuntime = new TestJsRuntime();
             var authenticationServiceMock = new TestRemoteAuthenticationService(
                 jsRuntime,
-                Mock.Of<IOptions<RemoteAuthenticationOptions<OidcProviderOptions>>>(),
+                Mock.Of<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>(),
                 navigationManager);
 
             remoteAuthenticator.SignOutManager = new TestSignOutSessionStateManager();
@@ -740,7 +740,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             public TestRemoteAuthenticationService(
                 IJSRuntime jsRuntime,
-                IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> options,
+                IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>> options,
                 TestNavigationManager navigationManager) :
                 base(jsRuntime, options, navigationManager, new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
             {

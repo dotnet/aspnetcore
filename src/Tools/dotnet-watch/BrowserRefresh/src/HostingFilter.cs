@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             return app =>
             {
+                app.Map(WebSocketScriptInjection.WebSocketScriptUrl, app1 => app1.UseMiddleware<BrowserScriptMiddleware>());
                 app.UseMiddleware<BrowserRefreshMiddleware>();
                 next(app);
             };

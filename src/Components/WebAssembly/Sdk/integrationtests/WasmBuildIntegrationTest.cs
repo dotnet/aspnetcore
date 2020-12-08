@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.dll");
 
             var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorhosted.StaticWebAssets.xml");
-            Assert.FileContains(result, staticWebAssets, Path.Combine("net5.0", "wwwroot"));
+            Assert.FileContains(result, staticWebAssets, Path.Combine("net6.0", "wwwroot"));
             Assert.FileContains(result, staticWebAssets, Path.Combine("razorclasslibrary", "wwwroot"));
             Assert.FileContains(result, staticWebAssets, Path.Combine("blazorwasm", "wwwroot"));
         }

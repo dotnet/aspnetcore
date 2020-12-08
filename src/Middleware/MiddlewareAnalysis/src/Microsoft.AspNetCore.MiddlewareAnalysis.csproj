@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>ASP.NET Core middleware for analyzing middleware in the request pipeline with System.Diagnostics.DiagnosticSource.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;diagnostics</PackageTags>
     <Nullable>enable</Nullable>

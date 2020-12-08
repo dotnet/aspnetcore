@@ -68,10 +68,6 @@ fi
 runtime_source_feed=${runtime_source_feed:-''}
 runtime_source_feed_key=${runtime_source_feed_key:-''}
 
-# Determines if dotnet-install.sh comes from the eng/common folder or the internet
-# (default = public version)
-use_default_dotnet_install=${use_default_dotnet_install:-false}
-
 # Resolve any symlinks in the given path.
 function ResolvePath {
   local path=$1
@@ -253,7 +249,7 @@ function with_retries {
       return 0
     fi
 
-    timeout=$((2**$retries-1))
+    timeout=$((3**$retries-1))
     echo "Failed to execute '$@'. Waiting $timeout seconds before next attempt ($retries out of $maxRetries)." 1>&2
     sleep $timeout
   done
@@ -271,30 +267,27 @@ function GetDotNetInstallScript {
   if [[ ! -a "$install_script" ]]; then
     mkdir -p "$root"
 
-    if [[ "$use_default_dotnet_install" == true ]]; then
-      echo "Downloading '$install_script_url'"
+    echo "Downloading '$install_script_url'"
 
-      # Use curl if available, otherwise use wget
-      if command -v curl > /dev/null; then
-        with_retries curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+    # Use curl if available, otherwise use wget
+    if command -v curl > /dev/null; then
+      # first, try directly, if this fails we will retry with verbose logging
+      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+        echo "curl failed; will now retry with verbose logging."
+        with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
           local exit_code=$?
           Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
           ExitWithExitCode $exit_code
         }
-      else
-        with_retries wget -v -O "$install_script" "$install_script_url" || {
-          local exit_code=$?
-          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
-          ExitWithExitCode $exit_code
-        }
-      fi
+      }
     else
-      # Use a special version of the script from eng/common that understands the existence of a "productVersion.txt" in a dotnet path.
-      # See https://github.com/dotnet/arcade/issues/6047 for details
-      cp $repo_root/eng/common/dotnet-install-scripts/dotnet-install.sh $install_script
+      with_retries wget -v -O "$install_script" "$install_script_url" || {
+        local exit_code=$?
+        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+        ExitWithExitCode $exit_code
+      }
     fi
   fi
-
   # return value
   _GetDotNetInstallScript="$install_script"
 }

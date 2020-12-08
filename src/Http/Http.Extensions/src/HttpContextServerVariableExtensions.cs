@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http
         /// <c>null</c> if the server does not support the <see cref="IServerVariablesFeature"/> feature.
         /// May return null or empty if the variable does not exist or is not set.
         /// </returns>
-        public static string GetServerVariable(this HttpContext context, string variableName)
+        public static string? GetServerVariable(this HttpContext context, string variableName)
         {
             var feature = context.Features.Get<IServerVariablesFeature>();
 

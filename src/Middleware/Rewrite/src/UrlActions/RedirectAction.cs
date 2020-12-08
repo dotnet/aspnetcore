@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
                 return;
             }
 
-            if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
+            if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && pattern[0] != '/')
             {
                 pattern = '/' + pattern;
             }

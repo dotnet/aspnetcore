@@ -5,7 +5,6 @@
     <Description>ASP.NET Core middleware for automatically applying culture information to HTTP requests. Culture information can be specified in the HTTP header, query string, cookie, or custom source.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;localization</PackageTags>
     <IsPackable>false</IsPackable>

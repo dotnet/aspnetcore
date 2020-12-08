@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.Net50)
+                .WithTfms(Tfm.Default)
                 .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels();
 

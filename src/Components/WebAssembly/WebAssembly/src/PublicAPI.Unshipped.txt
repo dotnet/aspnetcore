@@ -1,74 +1,42 @@
 ﻿#nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.Parameters.get -> Microsoft.AspNetCore.Components.ParameterView
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.RootComponentMappingCollection() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Dispose() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Reload() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.WebAssemblyHostConfiguration() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.Default = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.ForceCache = 4 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.NoCache = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.NoStore = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.OnlyIfCached = 5 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache.Reload = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.Include = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.Omit = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials.SameOrigin = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.Cors = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.Navigate = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.NoCors = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.SameOrigin = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
-Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods
-Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.ComponentType.get -> System.Type
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type componentType, string selector) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type componentType, string selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.Selector.get -> string
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add(System.Type componentType, string selector) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add(System.Type componentType, string selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add<TComponent>(string selector) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.AddRange(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping> items) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.RunAsync() -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.Services.get -> System.IServiceProvider
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Build() -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Configuration.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.ConfigureContainer<TBuilder>(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TBuilder> factory, System.Action<TBuilder> configure = null) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.HostEnvironment.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.RootComponents.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Add(Microsoft.Extensions.Configuration.IConfigurationSource source) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Build() -> Microsoft.Extensions.Configuration.IConfigurationRoot
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.GetReloadToken() -> Microsoft.Extensions.Primitives.IChangeToken
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.GetSection(string key) -> Microsoft.Extensions.Configuration.IConfigurationSection
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string key].get -> string
-~Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string key].set -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LazyAssemblyLoader(Microsoft.JSInterop.IJSRuntime jsRuntime) -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LoadAssembliesAsync(System.Collections.Generic.IEnumerable<string> assembliesToLoad) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Reflection.Assembly>>
-~static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.CreateDefault(string[] args = null) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder
-~static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsDevelopment(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment hostingEnvironment) -> bool
-~static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsEnvironment(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment hostingEnvironment, string environmentName) -> bool
-~static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsProduction(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment hostingEnvironment) -> bool
-~static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsStaging(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment hostingEnvironment) -> bool
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCache(this System.Net.Http.HttpRequestMessage requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache requestCache) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCredentials(this System.Net.Http.HttpRequestMessage requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials requestCredentials) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestIntegrity(this System.Net.Http.HttpRequestMessage requestMessage, string integrity) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestMode(this System.Net.Http.HttpRequestMessage requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode requestMode) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage requestMessage, string name, object value) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor eventDescriptor, string eventArgsJson) -> System.Threading.Tasks.Task
-~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.ComponentType.get -> System.Type!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type! componentType, string! selector) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.Selector.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add(System.Type! componentType, string! selector) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.Add<TComponent>(string! selector) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection.AddRange(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping>! items) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.RunAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost.Services.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Build() -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Configuration.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.ConfigureContainer<TBuilder>(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TBuilder>! factory, System.Action<TBuilder>? configure = null) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.HostEnvironment.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.RootComponents.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Add(Microsoft.Extensions.Configuration.IConfigurationSource! source) -> Microsoft.Extensions.Configuration.IConfigurationBuilder!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.Build() -> Microsoft.Extensions.Configuration.IConfigurationRoot!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.GetReloadToken() -> Microsoft.Extensions.Primitives.IChangeToken!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.GetSection(string! key) -> Microsoft.Extensions.Configuration.IConfigurationSection!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].set -> void
+Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LazyAssemblyLoader(Microsoft.JSInterop.IJSRuntime! jsRuntime) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LoadAssembliesAsync(System.Collections.Generic.IEnumerable<string!>! assembliesToLoad) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!>!
+static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.CreateDefault(string![]? args = null) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
+static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsDevelopment(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment) -> bool
+static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsEnvironment(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment, string! environmentName) -> bool
+static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsProduction(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment) -> bool
+static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostEnvironmentExtensions.IsStaging(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment! hostingEnvironment) -> bool
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCache(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCache requestCache) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestCredentials(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestCredentials requestCredentials) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestIntegrity(this System.Net.Http.HttpRequestMessage! requestMessage, string! integrity) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestMode(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode requestMode) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage! requestMessage, string! name, object! value) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor! eventDescriptor, string! eventArgsJson) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, bool isInterceptedLink) -> void

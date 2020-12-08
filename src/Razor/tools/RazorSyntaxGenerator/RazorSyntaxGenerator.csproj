@@ -6,8 +6,9 @@
     <AssemblyName>dotnet-razorsyntaxgenerator</AssemblyName>
     <PackageId>RazorSyntaxGenerator</PackageId>
     <OutputType>Exe</OutputType>
-    <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>false</IsPackable>
+    <!-- No need to track public APIs of this tool. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
 </Project>

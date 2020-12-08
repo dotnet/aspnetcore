@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware, params object?[] args)
         {
-            if (typeof(IMiddleware).GetTypeInfo().IsAssignableFrom(middleware.GetTypeInfo()))
+            if (typeof(IMiddleware).IsAssignableFrom(middleware))
             {
                 // IMiddleware doesn't support passing args directly since it's
                 // activated from the container

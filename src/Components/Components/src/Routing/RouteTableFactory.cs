@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -121,62 +120,63 @@ namespace Microsoft.AspNetCore.Components
 
             var xTemplate = x.Template;
             var yTemplate = y.Template;
-            if (xTemplate.Segments.Length != y.Template.Segments.Length)
+            var minSegments = Math.Min(xTemplate.Segments.Length, yTemplate.Segments.Length);
+            var currentResult = 0;
+            for (var i = 0; i < minSegments; i++)
             {
-                return xTemplate.Segments.Length < y.Template.Segments.Length ? -1 : 1;
-            }
-            else
-            {
-                for (var i = 0; i < xTemplate.Segments.Length; i++)
+                var xSegment = xTemplate.Segments[i];
+                var ySegment = yTemplate.Segments[i];
+
+                var xRank = GetRank(xSegment);
+                var yRank = GetRank(ySegment);
+
+                currentResult = xRank.CompareTo(yRank);
+
+                // If they are both literals we can disambiguate
+                if ((xRank, yRank) == (0, 0))
                 {
-                    var xSegment = xTemplate.Segments[i];
-                    var ySegment = yTemplate.Segments[i];
-                    if (!xSegment.IsParameter && ySegment.IsParameter)
-                    {
-                        return -1;
-                    }
-                    if (xSegment.IsParameter && !ySegment.IsParameter)
-                    {
-                        return 1;
-                    }
-
-                    if (xSegment.IsParameter)
-                    {
-                        // Always favor non-optional parameters over optional ones
-                        if (!xSegment.IsOptional && ySegment.IsOptional)
-                        {
-                            return -1;
-                        }
-
-                        if (xSegment.IsOptional && !ySegment.IsOptional)
-                        {
-                            return 1;
-                        }
-
-                        if (xSegment.Constraints.Length > ySegment.Constraints.Length)
-                        {
-                            return -1;
-                        }
-                        else if (xSegment.Constraints.Length < ySegment.Constraints.Length)
-                        {
-                            return 1;
-                        }
-                    }
-                    else
-                    {
-                        var comparison = string.Compare(xSegment.Value, ySegment.Value, StringComparison.OrdinalIgnoreCase);
-                        if (comparison != 0)
-                        {
-                            return comparison;
-                        }
-                    }
+                    currentResult = StringComparer.OrdinalIgnoreCase.Compare(xSegment.Value, ySegment.Value);
                 }
 
+                if (currentResult != 0)
+                {
+                    break;
+                }
+            }
+
+            if (currentResult == 0)
+            {
+                currentResult = xTemplate.Segments.Length.CompareTo(yTemplate.Segments.Length);
+            }
+
+            if (currentResult == 0)
+            {
                 throw new InvalidOperationException($@"The following routes are ambiguous:
 '{x.Template.TemplateText}' in '{x.Handler.FullName}'
 '{y.Template.TemplateText}' in '{y.Handler.FullName}'
 ");
             }
+
+            return currentResult;
+        }
+
+        private static int GetRank(TemplateSegment xSegment)
+        {
+            return xSegment switch
+            {
+                // Literal
+                { IsParameter: false } => 0,
+                // Parameter with constraints
+                { IsParameter: true, IsCatchAll: false, Constraints: { Length: > 0 } } => 1,
+                // Parameter without constraints
+                { IsParameter: true, IsCatchAll: false, Constraints: { Length: 0 } } => 2,
+                // Catch all parameter with constraints
+                { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => 3,
+                // Catch all parameter without constraints
+                { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => 4,
+                // The segment is not correct
+                _ => throw new InvalidOperationException($"Unknown segment definition '{xSegment}.")
+            };
         }
 
         private readonly struct Key : IEquatable<Key>

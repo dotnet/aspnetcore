@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
     <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net5.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net6.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
     <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
@@ -72,7 +72,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
 
-    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net5.0 applications and RazorLangVersion 5 or above -->
+    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
     <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
   </PropertyGroup>
 
@@ -724,12 +724,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AllPublishItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <!-- .Views.dll and .Views.pdb were part of the single file bundle in 3.1 apps. Lets keep this unchanged. -->
+        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
       <AllPublishItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
     </ItemGroup>
 

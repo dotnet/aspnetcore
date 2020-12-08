@@ -54,10 +54,6 @@
            Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
            the nupkgs pushed. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true'" />
-      <!-- Linux x64 is built in 3 stages: Build the base packages, layout, and archive. Then build deb and rpm installers.
-           The first and last segments will both publish the layout (they share artifacts). Only publish this during the first pass. -->
-      <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.tar.gz" Condition="'$(BuildRuntimeArchive)' == 'false'" />
-      <_ChecksumsToPublish Remove="$(ArtifactsDir)installers\**\*.tar.gz.sha512" Condition="'$(BuildRuntimeArchive)' == 'false'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <PublishFlatContainer>true</PublishFlatContainer>

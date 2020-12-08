@@ -1,27 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.RewriteBuilderExtensions
-Microsoft.AspNetCore.Rewrite.ApacheModRewriteOptionsExtensions
-Microsoft.AspNetCore.Rewrite.IISUrlRewriteOptionsExtensions
-Microsoft.AspNetCore.Rewrite.IRule
-Microsoft.AspNetCore.Rewrite.RewriteContext
-Microsoft.AspNetCore.Rewrite.RewriteContext.Result.get -> Microsoft.AspNetCore.Rewrite.RuleResult
-Microsoft.AspNetCore.Rewrite.RewriteContext.Result.set -> void
-Microsoft.AspNetCore.Rewrite.RewriteContext.RewriteContext() -> void
-Microsoft.AspNetCore.Rewrite.RewriteMiddleware
-Microsoft.AspNetCore.Rewrite.RewriteOptions
-Microsoft.AspNetCore.Rewrite.RewriteOptions.RewriteOptions() -> void
-Microsoft.AspNetCore.Rewrite.RewriteOptionsExtensions
-Microsoft.AspNetCore.Rewrite.RuleResult
-Microsoft.AspNetCore.Rewrite.RuleResult.ContinueRules = 0 -> Microsoft.AspNetCore.Rewrite.RuleResult
-Microsoft.AspNetCore.Rewrite.RuleResult.EndResponse = 1 -> Microsoft.AspNetCore.Rewrite.RuleResult
-Microsoft.AspNetCore.Rewrite.RuleResult.SkipRemainingRules = 2 -> Microsoft.AspNetCore.Rewrite.RuleResult
 Microsoft.AspNetCore.Rewrite.IRule.ApplyRule(Microsoft.AspNetCore.Rewrite.RewriteContext! context) -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
-~Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.set -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.get -> Microsoft.Extensions.Logging.ILogger
-~Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.set -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
-~Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.set -> void
 Microsoft.AspNetCore.Rewrite.RewriteMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 ~Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions!>! options) -> void
 Microsoft.AspNetCore.Rewrite.RewriteOptions.Rules.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule!>!

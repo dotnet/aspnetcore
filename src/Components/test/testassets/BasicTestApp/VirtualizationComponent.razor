@@ -28,6 +28,15 @@
     </div>
 </p>
 
+<p>
+    Slightly incorrect item size:<br />
+    <div id="incorrect-size-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize Items="@fixedItems" ItemSize="50">
+            <div @key="context" class="incorrect-size-item" style="height: 49px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+        </Virtualize>
+    </div>
+</p>
+
 <p id="viewport-as-root">
     Viewport as root:<br />
     <Virtualize Items="@fixedItems" ItemSize="itemSize">

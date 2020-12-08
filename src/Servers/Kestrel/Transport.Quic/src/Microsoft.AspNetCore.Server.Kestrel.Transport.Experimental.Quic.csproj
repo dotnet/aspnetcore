@@ -7,6 +7,7 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs -->
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Net.Experimental.MsQuic" />
   </ItemGroup>
 
 </Project>

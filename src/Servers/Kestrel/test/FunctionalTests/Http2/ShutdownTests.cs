@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(TestApplicationErrorLogger)
+            var mockKestrelTrace = new Mock<KestrelTrace>(Logger)
             {
                 CallBase = true
             };
@@ -92,9 +92,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await stopTask.DefaultTimeout();
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished "));
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("Request finished "));
+            Assert.Contains(LogMessages, m => m.Message.Contains("is closing."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         }
 
         [ConditionalFact]
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 MemoryPoolFactory = memoryPoolFactory.Create
             };
 
-            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+            ThrowOnUngracefulShutdown = false;
 
             // Abortive shutdown leaves one request hanging
             await using (var server = new TestServer(async context =>
@@ -136,14 +136,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
                 // Wait for the graceful shutdown log before canceling the token passed to StopAsync and triggering an ungraceful shutdown.
                 // Otherwise, graceful shutdown might be skipped causing there to be no corresponding log. https://github.com/dotnet/aspnetcore/issues/6556
-                var closingMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closing.")).DefaultTimeout();
+                var closingMessageTask = WaitForLogMessage(m => m.Message.Contains("is closing.")).DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
                 var stopServerTask = server.StopAsync(cts.Token).DefaultTimeout();
 
                 await closingMessageTask;
 
-                var closedMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closed. The last processed stream ID was 1.")).DefaultTimeout();
+                var closedMessageTask = WaitForLogMessage(m => m.Message.Contains("is closed. The last processed stream ID was 1.")).DefaultTimeout();
                 cts.Cancel();
 
                 // Wait for "is closed" message as this is logged from a different thread and aborting
@@ -153,10 +153,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await stopServerTask;
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
-            Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
+            Assert.Contains(LogMessages, m => m.Message.Contains("is closing."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
+            Assert.DoesNotContain(LogMessages, m => m.Message.Contains("Request finished in"));
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }

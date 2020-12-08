@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27398")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();

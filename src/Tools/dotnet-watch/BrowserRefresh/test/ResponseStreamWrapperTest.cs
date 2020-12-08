@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
 
             Assert.False(response.Content.Headers.TryGetValues("Content-Length", out _), "We shouldn't send a Content-Length header.");
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
 
             Assert.False(response.Content.Headers.TryGetValues("Content-Length", out _), "We shouldn't send a Content-Length header.");
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
 
             Assert.False(response.Content.Headers.TryGetValues("Content-Length", out _), "We shouldn't send a Content-Length header.");
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
 
             Assert.False(response.Content.Headers.TryGetValues("Content-Length", out _), "We shouldn't send a Content-Length header.");
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh.Tests
 
             Assert.False(response.Content.Headers.TryGetValues("Content-Length", out _), "We shouldn't send a Content-Length header.");
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("dotnet-watch browser reload script", content);
+            Assert.Contains(WebSocketScriptInjection.InjectedScript, content);
         }
 
         [Fact]
