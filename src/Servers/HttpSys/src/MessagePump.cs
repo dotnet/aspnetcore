@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpSysListener Listener { get; }
 
-        internal IHttpApplication<object> Application { get; set; }
+        internal IRequestContextFactory RequestContextFactory { get; set; }
 
         public IFeatureCollection Features { get; }
 
@@ -118,12 +118,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             // else // Attaching to an existing queue, don't add a default.
 
-            // Can't call Start twice
-            Debug.Assert(Application == null);
+            // Can't start twice
+            Debug.Assert(RequestContextFactory != null);
 
             Debug.Assert(application != null);
 
-            Application = new ApplicationWrapper<TContext>(application);
+            RequestContextFactory = new ApplicationRequestContextFactory<TContext>(application, this);
 
             Listener.Start();
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private async Task ProcessRequestsWorker()
         {
             // Allocate and accept context per loop and reuse it for all accepts
-            using var acceptContext = new AsyncAcceptContext(Listener);
+            using var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
 
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (!Stopping && workerIndex <= _maxAccepts)
@@ -189,8 +189,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 try
                 {
                     requestContext = await Listener.AcceptAsync(acceptContext);
-                    // Assign the message pump to this request context
-                    requestContext.MessagePump = this;
                 }
                 catch (Exception exception)
                 {
@@ -267,31 +265,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _shutdownSignal.TrySetResult(null);
 
             Listener.Dispose();
-        }
-
-        private class ApplicationWrapper<TContext> : IHttpApplication<object>
-        {
-            private readonly IHttpApplication<TContext> _application;
-
-            public ApplicationWrapper(IHttpApplication<TContext> application)
-            {
-                _application = application;
-            }
-
-            public object CreateContext(IFeatureCollection contextFeatures)
-            {
-                return _application.CreateContext(contextFeatures);
-            }
-
-            public void DisposeContext(object context, Exception exception)
-            {
-                _application.DisposeContext((TContext)context, exception);
-            }
-
-            public Task ProcessRequestAsync(object context)
-            {
-                return _application.ProcessRequestAsync((TContext)context);
-            }
         }
     }
 }
