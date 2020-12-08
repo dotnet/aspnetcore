@@ -122,13 +122,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var requestContext = await server.AcceptAsync(acceptContext);
 
-                    if (server.ValidateRequest(requestContext) && server.ValidateAuth(requestContext))
+                    if (server.ValidateRequest(requestContext))
                     {
                         requestContext.InitializeFeatures();
                         return requestContext;
                     }
-
-                    continue;
                 }
             }
 

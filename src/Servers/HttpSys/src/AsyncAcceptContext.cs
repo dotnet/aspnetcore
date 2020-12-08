@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
         private readonly PreAllocatedOverlapped _preallocatedOverlapped;
+        private readonly IRequestContextFactory _requestContextFactory;
+
         private NativeOverlapped* _overlapped;
 
         // mutable struct; do not make this readonly
@@ -23,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         };
 
         private RequestContext _requestContext;
-        private readonly IRequestContextFactory _requestContextFactory;
 
         internal AsyncAcceptContext(HttpSysListener server, IRequestContextFactory requestContextFactory)
         {
