@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             public TestNavigationManager(string baseUrl, string currentUrl) => Initialize(baseUrl, currentUrl);
 
-            protected override void NavigateToCore(string uri, NavigationOptions options)
+            protected override void NavigateToCore(string uri, bool forceLoad)
                 => Uri = System.Uri.IsWellFormedUriString(uri, UriKind.Absolute) ? uri : new Uri(new Uri(BaseUri), uri).ToString();
         }
 
