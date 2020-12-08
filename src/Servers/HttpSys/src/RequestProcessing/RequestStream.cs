@@ -2,24 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class RequestStream : Stream
+    internal class RequestStream : Stream, IValueTaskSource<(uint, uint)>
     {
+        private ManualResetValueTaskSourceCore<(uint, uint)> _mrvts = new();
+
         private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
 
-        private RequestContext _requestContext;
-        private uint _dataChunkOffset;
-        private int _dataChunkIndex;
+        private readonly RequestStreamOverlapped _overlapped;
+        private readonly RequestContext _requestContext;
+
         private long? _maxSize;
         private long _totalRead;
         private bool _closed;
@@ -28,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             _requestContext = httpContext;
             _maxSize = _requestContext.Server.Options.MaxRequestBodySize;
+            _overlapped = new RequestStreamOverlapped(this);
         }
 
         internal RequestContext RequestContext
@@ -96,82 +100,76 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _requestContext.Abort();
         }
 
-        private void ValidateReadBuffer(byte[] buffer, int offset, int size)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
-            }
-            if (size <= 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size", size, string.Empty);
-            }
-        }
-
-        public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
+        public override int Read(byte[] buffer, int offset, int count)
         {
             if (!RequestContext.AllowSynchronousIO)
             {
                 throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
             }
 
-            ValidateReadBuffer(buffer, offset, size);
+            ValidateBufferArguments(buffer, offset, count);
             CheckSizeLimit();
+
             if (_closed)
             {
                 return 0;
             }
-            // TODO: Verbose log parameters
 
-            uint dataRead = 0;
+            return ReadCore(buffer.AsSpan(offset, count));
+        }
 
-            if (_dataChunkIndex != -1)
+        public override int Read(Span<byte> buffer)
+        {
+            if (!RequestContext.AllowSynchronousIO)
             {
-                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
+                throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
             }
 
-            if (_dataChunkIndex == -1 && dataRead == 0)
+            CheckSizeLimit();
+
+            if (_closed)
             {
-                uint statusCode = 0;
-                uint extraDataRead = 0;
-
-                // the http.sys team recommends that we limit the size to 128kb
-                if (size > MaxReadSize)
-                {
-                    size = MaxReadSize;
-                }
-
-                fixed (byte* pBuffer = buffer)
-                {
-                    // issue unmanaged blocking call
-
-                    uint flags = 0;
-
-                    statusCode =
-                        HttpApi.HttpReceiveRequestEntityBody(
-                            RequestQueueHandle,
-                            RequestId,
-                            flags,
-                            (IntPtr)(pBuffer + offset),
-                            (uint)size,
-                            out extraDataRead,
-                            SafeNativeOverlapped.Zero);
-
-                    dataRead += extraDataRead;
-                }
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
-                {
-                    Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhileRead, exception, "Read");
-                    Abort();
-                    throw exception;
-                }
-                UpdateAfterRead(statusCode, dataRead);
+                return 0;
             }
+
+            return ReadCore(buffer);
+        }
+
+        private unsafe int ReadCore(Span<byte> buffer)
+        {
+            // the http.sys team recommends that we limit the size to 128kb
+            if (buffer.Length > MaxReadSize)
+            {
+                buffer = buffer.Slice(0, MaxReadSize);
+            }
+
+            uint statusCode;
+            uint dataRead;
+
+            fixed (byte* pBuffer = buffer)
+            {
+                // issue unmanaged blocking call
+                statusCode =
+                    HttpApi.HttpReceiveRequestEntityBody(
+                        RequestQueueHandle,
+                        RequestId,
+                        flags: 0,
+                        (IntPtr)pBuffer,
+                        (uint)buffer.Length,
+                        out dataRead,
+                        null);
+            }
+
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            {
+                Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
+                Logger.LogError(LoggerEventIds.ErrorWhileRead, exception, "Read");
+                Abort();
+                throw exception;
+            }
+
+            UpdateAfterRead(statusCode, dataRead);
+
             if (TryCheckSizeLimit((int)dataRead, out var ex))
             {
                 throw ex;
@@ -183,160 +181,63 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void UpdateAfterRead(uint statusCode, uint dataRead)
         {
+            // REVIEW: We should avoid auto disposing like this
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF || dataRead == 0)
             {
                 Dispose();
             }
         }
 
-        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            ValidateReadBuffer(buffer, offset, size);
-            CheckSizeLimit();
-            if (_closed)
-            {
-                RequestStreamAsyncResult result = new RequestStreamAsyncResult(this, state, callback);
-                result.Complete(0);
-                return result;
-            }
-            // TODO: Verbose log parameters
-
-            RequestStreamAsyncResult asyncResult = null;
-
-            uint dataRead = 0;
-            if (_dataChunkIndex != -1)
-            {
-                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
-
-                if (dataRead > 0)
-                {
-                    asyncResult = new RequestStreamAsyncResult(this, state, callback, buffer, offset, 0);
-                    asyncResult.Complete((int)dataRead);
-                    return asyncResult;
-                }
-            }
-
-            uint statusCode = 0;
-
-            // the http.sys team recommends that we limit the size to 128kb
-            if (size > MaxReadSize)
-            {
-                size = MaxReadSize;
-            }
-
-            asyncResult = new RequestStreamAsyncResult(this, state, callback, buffer, offset, dataRead);
-            uint bytesReturned;
-
-            try
-            {
-                uint flags = 0;
-
-                statusCode =
-                    HttpApi.HttpReceiveRequestEntityBody(
-                        RequestQueueHandle,
-                        RequestId,
-                        flags,
-                        asyncResult.PinnedBuffer,
-                        (uint)size,
-                        out bytesReturned,
-                        asyncResult.NativeOverlapped);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, e, "BeginRead");
-                asyncResult.Dispose();
-                throw;
-            }
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
-            {
-                asyncResult.Dispose();
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
-                {
-                    asyncResult = new RequestStreamAsyncResult(this, state, callback, dataRead);
-                    asyncResult.Complete((int)bytesReturned);
-                }
-                else
-                {
-                    Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, exception, "BeginRead");
-                    Abort();
-                    throw exception;
-                }
-            }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                        HttpSysListener.SkipIOCPCallbackOnSuccess)
-            {
-                // IO operation completed synchronously - callback won't be called to signal completion.
-                asyncResult.IOCompleted(statusCode, bytesReturned);
-            }
-            return asyncResult;
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException("asyncResult");
-            }
-            RequestStreamAsyncResult castedAsyncResult = asyncResult as RequestStreamAsyncResult;
-            if (castedAsyncResult == null || castedAsyncResult.RequestStream != this)
-            {
-                throw new ArgumentException(Resources.Exception_WrongIAsyncResult, "asyncResult");
-            }
-            if (castedAsyncResult.EndCalled)
-            {
-                throw new InvalidOperationException(Resources.Exception_EndCalledMultipleTimes);
-            }
-            castedAsyncResult.EndCalled = true;
-            // wait & then check for errors
-            // Throws on failure
-            var dataRead = castedAsyncResult.Task.GetAwaiter().GetResult();
-            // TODO: Verbose log #dataRead.
-            return dataRead;
+            return TaskToApm.End<int>(asyncResult);
         }
 
-        public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            ValidateReadBuffer(buffer, offset, size);
+            ValidateBufferArguments(buffer, offset, count);
+
             CheckSizeLimit();
             if (_closed)
             {
-                return Task.FromResult<int>(0);
+                return Task.FromResult(0);
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
                 return Task.FromCanceled<int>(cancellationToken);
             }
-            // TODO: Verbose log parameters
 
-            RequestStreamAsyncResult asyncResult = null;
+            return ReadAsyncCore(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        }
 
-            uint dataRead = 0;
-            if (_dataChunkIndex != -1)
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            CheckSizeLimit();
+            if (_closed)
             {
-                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
-                if (dataRead > 0)
-                {
-                    UpdateAfterRead(UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS, dataRead);
-                    if (TryCheckSizeLimit((int)dataRead, out var exception))
-                    {
-                        return Task.FromException<int>(exception);
-                    }
-                    // TODO: Verbose log #dataRead
-                    return Task.FromResult<int>((int)dataRead);
-                }
+                return ValueTask.FromResult(0);
             }
 
-            uint statusCode = 0;
-            offset += (int)dataRead;
-            size -= (int)dataRead;
-
-            // the http.sys team recommends that we limit the size to 128kb
-            if (size > MaxReadSize)
+            if (cancellationToken.IsCancellationRequested)
             {
-                size = MaxReadSize;
+                return ValueTask.FromCanceled<int>(cancellationToken);
+            }
+
+            return ReadAsyncCore(buffer, cancellationToken);
+        }
+
+        public async ValueTask<int> ReadAsyncCore(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            // the http.sys team recommends that we limit the size to 128kb
+            if (buffer.Length > MaxReadSize)
+            {
+                buffer = buffer.Slice(0, MaxReadSize);
             }
 
             var cancellationRegistration = default(CancellationTokenRegistration);
@@ -345,68 +246,74 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
             }
 
-            asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, dataRead, cancellationRegistration);
-            uint bytesReturned;
+            uint dataRead = 0;
+            uint statusCode = 0;
+
+            // Pin the user buffer
+            var handle = buffer.Pin();
 
             try
             {
-                uint flags = 0;
-
-                statusCode =
-                    HttpApi.HttpReceiveRequestEntityBody(
-                        RequestQueueHandle,
-                        RequestId,
-                        flags,
-                        asyncResult.PinnedBuffer,
-                        (uint)size,
-                        out bytesReturned,
-                        asyncResult.NativeOverlapped);
+                using (cancellationRegistration)
+                {
+                    (statusCode, dataRead) = await ReadEntityBodyAsync(handle, buffer.Length);
+                }
             }
             catch (Exception e)
             {
-                asyncResult.Dispose();
                 Abort();
                 Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, e, "ReadAsync");
                 throw;
             }
+            finally
+            {
+                handle.Dispose();
+            }
 
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
-                asyncResult.Dispose();
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
-                {
-                    uint totalRead = dataRead + bytesReturned;
-                    UpdateAfterRead(statusCode, totalRead);
-                    if (TryCheckSizeLimit((int)totalRead, out var exception))
-                    {
-                        return Task.FromException<int>(exception);
-                    }
-                    // TODO: Verbose log totalRead
-                    return Task.FromResult<int>((int)totalRead);
-                }
-                else
-                {
-                    Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, exception, "ReadAsync");
-                    Abort();
-                    throw exception;
-                }
+                var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
+                Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, exception, "ReadAsync");
+                Abort();
+                throw exception;
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                        HttpSysListener.SkipIOCPCallbackOnSuccess)
+
+            UpdateAfterRead(statusCode, dataRead);
+
+            if (TryCheckSizeLimit((int)dataRead, out var ex))
             {
-                // IO operation completed synchronously - callback won't be called to signal completion.
-                asyncResult.Dispose();
-                uint totalRead = dataRead + bytesReturned;
-                UpdateAfterRead(statusCode, totalRead);
-                if (TryCheckSizeLimit((int)totalRead, out var exception))
-                {
-                    return Task.FromException<int>(exception);
-                }
-                // TODO: Verbose log
-                return Task.FromResult<int>((int)totalRead);
+                throw ex;
             }
-            return asyncResult.Task;
+
+            // TODO: Verbose log dump data read
+            return (int)dataRead;
+        }
+
+        private ValueTask<(uint, uint)> ReadEntityBodyAsync(MemoryHandle handle, int length)
+        {
+            uint dataRead;
+            uint statusCode;
+
+            unsafe
+            {
+                statusCode = HttpApi.HttpReceiveRequestEntityBody(
+                        RequestQueueHandle,
+                        RequestId,
+                        flags: 0,
+                        (IntPtr)handle.Pointer,
+                        (uint)length,
+                        out dataRead,
+                        _overlapped.NativeOverlapped);
+            }
+
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            {
+                _mrvts.Reset();
+
+                return new ValueTask<(uint, uint)>(this, _mrvts.Version);
+            }
+
+            return ValueTask.FromResult((statusCode, dataRead));
         }
 
         public override void Write(byte[] buffer, int offset, int size)
@@ -447,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         // Called after each read.
-        internal bool TryCheckSizeLimit(int bytesRead, out Exception exception)
+        private bool TryCheckSizeLimit(int bytesRead, out Exception exception)
         {
             _totalRead += bytesRead;
             if (_maxSize.HasValue && _totalRead > _maxSize.Value)
@@ -466,10 +373,76 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             try
             {
                 _closed = true;
+
+                _overlapped.Dispose();
             }
             finally
             {
                 base.Dispose(disposing);
+            }
+        }
+
+        private void OnIOCompleted(uint numBytes, uint errorCode)
+        {
+            _mrvts.SetResult((errorCode, numBytes));
+        }
+
+        (uint, uint) IValueTaskSource<(uint, uint)>.GetResult(short token)
+        {
+            return _mrvts.GetResult(token);
+        }
+
+        ValueTaskSourceStatus IValueTaskSource<(uint, uint)>.GetStatus(short token)
+        {
+            return _mrvts.GetStatus(token);
+        }
+
+        void IValueTaskSource<(uint, uint)>.OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        {
+            _mrvts.OnCompleted(continuation, state, token, flags);
+        }
+
+        // This can't be the same class as the stream because it's already deriving from Stream
+        private unsafe class RequestStreamOverlapped : Overlapped, IDisposable
+        {
+            private static readonly IOCompletionCallback IOCompletionCallback = static (uint errorCode, uint numBytes, NativeOverlapped* pOVERLAP) =>
+            {
+                var overlapped = (RequestStreamOverlapped)Unpack(pOVERLAP);
+                overlapped.Stream.OnIOCompleted(numBytes, errorCode);
+            };
+
+            private bool _disposed;
+
+            public RequestStreamOverlapped(RequestStream requestStream)
+            {
+                Stream = requestStream;
+                NativeOverlapped = UnsafePack(IOCompletionCallback, userData: null);
+            }
+
+            public RequestStream Stream { get; }
+
+            public NativeOverlapped* NativeOverlapped { get; }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!_disposed)
+                {
+                    Free(NativeOverlapped);
+                    _disposed = true;
+                }
+            }
+
+            ~RequestStreamOverlapped()
+            {
+                // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+                Dispose(disposing: false);
+            }
+
+            public void Dispose()
+            {
+                // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
             }
         }
     }

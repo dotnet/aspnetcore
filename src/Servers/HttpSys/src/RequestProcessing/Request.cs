@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
                     }
                 }
-                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
                 {
                     PathBase = pathBase;
                     Path = path;
@@ -421,10 +421,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
         */
-        internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
-        {
-            return RequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
-        }
 
         // should only be called from RequestContext
         internal void Dispose()
