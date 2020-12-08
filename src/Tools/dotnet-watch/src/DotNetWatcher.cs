@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Watcher
 
         public async ValueTask DisposeAsync()
         {
-           foreach (var filter in _filters)
+            foreach (var filter in _filters)
             {
                 if (filter is IAsyncDisposable asyncDisposable)
                 {

@@ -32,7 +32,7 @@ setTimeout(function () {
       if (styleElement && styleElement.parentNode) {
         if (styleElement.loading) {
           // A file change notification may be triggered for the same file before the browser
-          // finishes processing a previous update. In this case, it's easiest to igore later updates
+          // finishes processing a previous update. In this case, it's easiest to ignore later updates
           return;
         }
 
@@ -53,7 +53,7 @@ setTimeout(function () {
         location.reload();
       }
     } else {
-      console.debug('Unknown browser-refresh message received:', message.data);
+      console.debug('Unknown browser-refresh message received: ', message.data);
     }
   }
 
