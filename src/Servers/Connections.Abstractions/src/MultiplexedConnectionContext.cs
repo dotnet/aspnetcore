@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default);
+        public abstract ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates an outbound connection 

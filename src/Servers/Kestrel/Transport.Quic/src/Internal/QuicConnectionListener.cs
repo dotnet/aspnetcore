@@ -26,6 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
         {
+            if (options.Alpn == null)
+            {
+                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
+            }
+
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
@@ -46,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public EndPoint EndPoint { get; set; }
 
-        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext?> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
             try
             {

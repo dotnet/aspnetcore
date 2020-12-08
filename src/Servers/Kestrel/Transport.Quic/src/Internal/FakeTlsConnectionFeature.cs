@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         {
         }
 
-        public X509Certificate2 ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public X509Certificate2? ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
