@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CustomBasePathApp\CustomBasePathApp.csproj" />
     <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
   </ItemGroup>
 

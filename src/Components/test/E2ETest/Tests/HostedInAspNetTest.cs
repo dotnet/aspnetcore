@@ -38,6 +38,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanLoadSecondApp()
+        {
+            Navigate("/app/");
+            WaitUntilLoaded();
+            Assert.Equal("App loaded on custom path", Browser.Title);
+            Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
+        }
+
+        [Fact]
         public void ServesStaticAssetsFromClientAppWebRoot()
         {
             var javascriptExecutor = (IJavaScriptExecutor)Browser;

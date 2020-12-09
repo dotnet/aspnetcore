@@ -39,6 +39,7 @@ namespace HostedInAspNet.Server
                 app.UseWebAssemblyDebugging();
             }
 
+            app.UseBlazorFrameworkFiles("/app");
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
@@ -46,6 +47,7 @@ namespace HostedInAspNet.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapFallbackToFile("/app/{**slug:nonfile}", "app/index.html");
                 endpoints.MapFallbackToFile("index.html");
             });
         }
