@@ -16,8 +16,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int RequestPropertyInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
+        private readonly ILogger _logger;
+
         private ServerSession _serverSession;
-        private ILogger _logger;
         private bool _disposed;
         private bool _created;
 
@@ -40,8 +41,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Id = urlGroupId;
         }
 
-        internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url)
+        internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url, ILogger logger)
         {
+            _logger = logger;
+
             ulong urlGroupId = 0;
             _created = false;
             var statusCode = HttpApi.HttpFindUrlGroupId(
