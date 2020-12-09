@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
@@ -18,14 +17,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     public class ProjectToolScenario : IDisposable
     {
         private static readonly string TestProjectSourceRoot = Path.Combine(AppContext.BaseDirectory, "TestProjects");
-        private readonly ITestOutputHelper _logger;
+        private readonly ITestOutputHelper? _logger;
 
         public ProjectToolScenario()
             : this(null)
         {
         }
 
-        public ProjectToolScenario(ITestOutputHelper logger)
+        public ProjectToolScenario(ITestOutputHelper? logger)
         {
             WorkFolder = Path.Combine(AppContext.BaseDirectory, "tmp", Path.GetRandomFileName());
             DotNetWatchPath = Path.Combine(AppContext.BaseDirectory, "tool", "dotnet-watch.dll");
@@ -73,7 +72,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private async Task ExecuteCommandAsync(string project, TimeSpan timeout, params string[] arguments)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             project = Path.Combine(WorkFolder, project);
             _logger?.WriteLine($"Project directory: '{project}'");
 
@@ -97,10 +96,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             void OnData(object sender, DataReceivedEventArgs args)
               => _logger?.WriteLine(args.Data ?? string.Empty);
 
-            void OnExit(object sender, EventArgs args)
+            void OnExit(object? sender, EventArgs args)
             {
                 _logger?.WriteLine($"Process exited {process.Id}");
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
             }
 
             process.ErrorDataReceived += OnData;
@@ -152,7 +151,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     .Assembly
                     .GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(s => s.Key == "ArtifactsBinDir")
-                    .Value;
+                    .Value!;
                 var directoryBuildFilesDirectory = Path.Combine(artifactsBinDirectory, "GenerateFiles");
 
                 foreach (var filename in new[] {"Directory.Build.props", "Directory.Build.targets"})
