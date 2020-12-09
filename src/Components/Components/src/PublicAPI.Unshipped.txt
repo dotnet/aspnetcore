@@ -7,10 +7,13 @@ Microsoft.AspNetCore.Components.DynamicComponent.Parameters.set -> void
 Microsoft.AspNetCore.Components.DynamicComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.DynamicComponent.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.DynamicComponent.Type.set -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
+*REMOVED*Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
 Microsoft.AspNetCore.Components.NavigationOptions
-Microsoft.AspNetCore.Components.NavigationOptions.None = 0 -> Microsoft.AspNetCore.Components.NavigationOptions
 Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad = 1 -> Microsoft.AspNetCore.Components.NavigationOptions
+Microsoft.AspNetCore.Components.NavigationOptions.None = 0 -> Microsoft.AspNetCore.Components.NavigationOptions
 Microsoft.AspNetCore.Components.NavigationOptions.Replace = 2 -> Microsoft.AspNetCore.Components.NavigationOptions
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void

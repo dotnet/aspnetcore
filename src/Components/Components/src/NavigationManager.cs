@@ -89,12 +89,21 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
+        public void NavigateTo(string uri)
+            => NavigateTo(uri, forceLoad: false);
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
-        public void NavigateTo(string uri, bool forceLoad = false)
-#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        public void NavigateTo(string uri, bool forceLoad)
         {
             AssertInitialized();
+
+            // For back-compatibility, we must call the (string, bool) overload of NavigateToCore from here,
+            // because that's the only overload guaranteed to be implemented in subclasses.
             NavigateToCore(uri, forceLoad);
         }
 
