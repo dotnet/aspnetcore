@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private ServerSession _serverSession;
         private ILogger _logger;
         private bool _disposed;
+        private bool _created;
 
         internal unsafe UrlGroup(ServerSession serverSession, ILogger logger)
         {
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _logger = logger;
 
             ulong urlGroupId = 0;
+            _created = true;
             var statusCode = HttpApi.HttpCreateUrlGroup(
                 _serverSession.Id.DangerousGetServerSessionId(), &urlGroupId, 0);
 
@@ -41,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url)
         {
             ulong urlGroupId = 0;
+            _created = false;
             var statusCode = HttpApi.HttpFindUrlGroupId(
                 url.FullPrefix, requestQueue.Handle, &urlGroupId);
 
@@ -138,14 +141,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             _disposed = true;
 
-            Debug.Assert(Id != 0, "HttpCloseUrlGroup called with invalid url group id");
-
-            uint statusCode = HttpApi.HttpCloseUrlGroup(Id);
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            if (_created)
             {
-                _logger.LogError(LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {0}" , statusCode);
+
+                Debug.Assert(Id != 0, "HttpCloseUrlGroup called with invalid url group id");
+
+                uint statusCode = HttpApi.HttpCloseUrlGroup(Id);
+
+                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                {
+                    _logger.LogError(LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {0}", statusCode);
+                }
+
             }
+
             Id = 0;
         }
 
