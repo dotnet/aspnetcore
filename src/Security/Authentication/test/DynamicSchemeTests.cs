@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Authentication
                 id.AddClaim(new Claim(ClaimTypes.NameIdentifier, Scheme.Name, ClaimValueTypes.String, Scheme.Name));
                 if (Options.Instance != null)
                 {
-                    id.AddClaim(new Claim("Count", Options.Instance.Count.ToString()));
+                    id.AddClaim(new Claim("Count", Options.Instance.Count.ToString(CultureInfo.InvariantCulture)));
                 }
                 principal.AddIdentity(id);
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, new AuthenticationProperties(), Scheme.Name)));

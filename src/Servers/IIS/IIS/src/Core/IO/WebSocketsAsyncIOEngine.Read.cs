@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO
@@ -11,7 +12,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         internal class WebSocketReadOperation : AsyncIOOperation
         {
-            public static readonly NativeMethods.PFN_WEBSOCKET_ASYNC_COMPLETION ReadCallback = (httpContext, completionInfo, completionContext) =>
+            [UnmanagedCallersOnly]
+            public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
                 var context = (WebSocketReadOperation)GCHandle.FromIntPtr(completionContext).Target;
 
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 continuation.Invoke();
 
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
-            };
+            }
 
             private readonly WebSocketsAsyncIOEngine _engine;
             private GCHandle _thisHandle;
@@ -44,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                     _requestHandler,
                     (byte*)_inputHandle.Pointer,
                     _memory.Length,
-                    ReadCallback,
+                    &ReadCallback,
                     (IntPtr)_thisHandle,
                     out bytes,
                     out var completionExpected);

@@ -10,24 +10,24 @@ namespace System.Net.Http.HPack
     internal class EncoderHeaderEntry
     {
         // Header name and value
-        public string Name;
-        public string Value;
+        public string? Name;
+        public string? Value;
 
         // Chained list of headers in the same bucket
-        public EncoderHeaderEntry Next;
+        public EncoderHeaderEntry? Next;
         public int Hash;
 
         // Compute dynamic table index
         public int Index;
 
         // Doubly linked list
-        public EncoderHeaderEntry Before;
-        public EncoderHeaderEntry After;
+        public EncoderHeaderEntry? Before;
+        public EncoderHeaderEntry? After;
 
         /// <summary>
         /// Initialize header values. An entry will be reinitialized when reused.
         /// </summary>
-        public void Initialize(int hash, string name, string value, int index, EncoderHeaderEntry next)
+        public void Initialize(int hash, string name, string value, int index, EncoderHeaderEntry? next)
         {
             Debug.Assert(name != null);
             Debug.Assert(value != null);
@@ -41,7 +41,7 @@ namespace System.Net.Http.HPack
 
         public uint CalculateSize()
         {
-            return (uint)HeaderField.GetLength(Name.Length, Value.Length);
+            return (uint)HeaderField.GetLength(Name!.Length, Value!.Length);
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace System.Net.Http.HPack
         /// </summary>
         public void Remove()
         {
-            Before.After = After;
-            After.Before = Before;
+            Before!.After = After;
+            After!.Before = Before;
             Before = null;
             After = null;
             Next = null;
@@ -66,8 +66,8 @@ namespace System.Net.Http.HPack
         {
             After = existingEntry;
             Before = existingEntry.Before;
-            Before.After = this;
-            After.Before = this;
+            Before!.After = this;
+            After!.Before = this;
         }
     }
 }

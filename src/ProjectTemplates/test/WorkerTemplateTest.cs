@@ -34,6 +34,7 @@ namespace Templates.Test
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]
         [InlineData("C#")]
         [InlineData("F#")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25404")]
         public async Task WorkerTemplateAsync(string language)
         {
             var project = await ProjectFactory.GetOrCreateProject(

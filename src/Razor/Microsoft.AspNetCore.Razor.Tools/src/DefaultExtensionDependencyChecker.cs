@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 foreach (var reference in item.References)
                 {
-                    if (_ignoredAssemblies.Any(n => reference.Name.StartsWith(n)))
+                    if (_ignoredAssemblies.Any(n => reference.Name.StartsWith(n, StringComparison.Ordinal)))
                     {
                         // This is on the allow list, keep going.
                         continue;

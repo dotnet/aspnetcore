@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Components.BindConverter
 Microsoft.AspNetCore.Components.BindElementAttribute
 Microsoft.AspNetCore.Components.BindElementAttribute.BindElementAttribute(string! element, string? suffix, string! valueAttribute, string! changeAttribute) -> void
@@ -395,7 +395,6 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.C
 static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<System.EventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
 static Microsoft.AspNetCore.Components.MarkupString.explicit operator Microsoft.AspNetCore.Components.MarkupString(string! value) -> Microsoft.AspNetCore.Components.MarkupString
 static Microsoft.AspNetCore.Components.ParameterView.Empty.get -> Microsoft.AspNetCore.Components.ParameterView
-static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 static readonly Microsoft.AspNetCore.Components.EventCallback.Empty -> Microsoft.AspNetCore.Components.EventCallback
 static readonly Microsoft.AspNetCore.Components.EventCallback.Factory -> Microsoft.AspNetCore.Components.EventCallbackFactory!
 static readonly Microsoft.AspNetCore.Components.EventCallback<TValue>.Empty -> Microsoft.AspNetCore.Components.EventCallback<TValue>
@@ -411,7 +410,6 @@ virtual Microsoft.AspNetCore.Components.ComponentBase.SetParametersAsync(Microso
 virtual Microsoft.AspNetCore.Components.ComponentBase.ShouldRender() -> bool
 virtual Microsoft.AspNetCore.Components.NavigationManager.EnsureInitialized() -> void
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
-virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ProcessPendingRender() -> void
 virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
@@ -429,3 +427,5 @@ virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Co
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.MarkupContent.get -> string
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
 ~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

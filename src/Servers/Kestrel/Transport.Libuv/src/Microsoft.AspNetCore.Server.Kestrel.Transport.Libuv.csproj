@@ -6,6 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- This package is obsolete in 5.0, will be removed in 6.0 -->
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
   </PropertyGroup>
 

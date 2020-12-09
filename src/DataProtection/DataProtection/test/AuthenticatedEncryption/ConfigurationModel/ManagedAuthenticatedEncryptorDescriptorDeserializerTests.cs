@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -30,7 +31,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            string xml = string.Format(@"
+            string xml = string.Format(
+                CultureInfo.InvariantCulture,
+                @"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='192' />
                   <validation algorithm='{1}' />
@@ -64,7 +67,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            string xml = string.Format(@"
+            string xml = string.Format(
+                CultureInfo.InvariantCulture,
+                @"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='192' />
                   <validation algorithm='{1}' />

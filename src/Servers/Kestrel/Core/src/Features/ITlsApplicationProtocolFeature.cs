@@ -5,8 +5,14 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
 {
+    /// <summary>
+    /// Feature to set access the TLS application protocol
+    /// </summary>
     public interface ITlsApplicationProtocolFeature
     {
+        /// <summary>
+        /// Gets the <see cref="ReadOnlyMemory{T}"/> represeting the application protocol.
+        /// </summary>
         ReadOnlyMemory<byte> ApplicationProtocol { get; }
     }
 }

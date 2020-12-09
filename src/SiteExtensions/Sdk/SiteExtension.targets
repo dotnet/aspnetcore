@@ -84,9 +84,9 @@
              Properties="
               __DummyTarget=Restore;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
@@ -96,9 +96,9 @@
              Properties="
               PublishDir=%(_HostingStartupPackageReference.WorkingDirectory)\p;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               IncludeMainProjectInDepsFile=false" />

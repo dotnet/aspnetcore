@@ -106,8 +106,11 @@ namespace Microsoft.AspNetCore.Testing
 
             if (_messageFilter?.Invoke(logMessage) == true)
             {
-                _messageFilterTcs.TrySetResult(logMessage);
+                var localTcs = _messageFilterTcs;
+                // need to set tcs to null before calling TrySetResult
+                // to prevent the next WaitForMessage possibly throwing for a non-null tcs
                 _messageFilterTcs = null;
+                localTcs.TrySetResult(logMessage);
             }
         }
 

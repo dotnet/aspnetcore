@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             else if (objectValue is IntPtr)
             {
-                return "0x" + ((IntPtr)objectValue).ToString("x");
+                return "0x" + ((IntPtr)objectValue).ToString("x", CultureInfo.InvariantCulture);
             }
             else
             {

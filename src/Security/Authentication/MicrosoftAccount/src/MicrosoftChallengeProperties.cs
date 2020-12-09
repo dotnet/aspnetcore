@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// <summary>
         /// The parameter key for the "response_mode" argument being used for a challenge request.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public static readonly string ResponseModeKey = "response_mode";
 
         /// <summary>
@@ -55,6 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// Gets or sets the value for the <c>response_mode</c> parameter used for a challenge request. The response mode specifies the method
         /// that should be used to send the resulting token back to the app. Can be one of the following: <c>query</c>, <c>fragment</c>, <c>form_post</c>.
         /// </summary>
+        [Obsolete("This parameter is not supported in MicrosoftAccountHandler.")]
         public string ResponseMode
         {
             get => GetParameter<string>(ResponseModeKey);

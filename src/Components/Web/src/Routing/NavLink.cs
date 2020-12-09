@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var href = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
             {
-                href = Convert.ToString(obj);
+                href = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
             _hrefAbsolute = href == null ? null : NavigationManger.ToAbsoluteUri(href).AbsoluteUri;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _class = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
-                _class = Convert.ToString(obj);
+                _class = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
             UpdateCssClass();

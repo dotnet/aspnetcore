@@ -25,14 +25,18 @@ set "PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin"
 echo Set path to: "%PATH%"
 echo.
 
-echo "InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
-powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
-echo.
-
 IF [%$feedCred%] == [] (
+    echo "InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
+    echo.
+
     echo "InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true '' '' $true"
     powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true '' '' $true"
 ) else (
+    echo "InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true https://dotnetclimsrc.blob.core.windows.net/dotnet ... $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred% $true"
+    echo.
+
     echo "InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet ... $true"
     powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred% $true"
 )

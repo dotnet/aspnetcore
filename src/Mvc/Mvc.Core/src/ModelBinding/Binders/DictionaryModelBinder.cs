@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         // again in case this scope is binding a complex type and rewriting
                         // landed on ".key.propertyName" or in case this scope is binding another collection and an
                         // IKeyRewriterValueProvider implementation was first (hiding the original "[key][next key]").
-                        if (kvp.Value.EndsWith("]"))
+                        if (kvp.Value.EndsWith(']'))
                         {
                             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, kvp.Key);
                         }

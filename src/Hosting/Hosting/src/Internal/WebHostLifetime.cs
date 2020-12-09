@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Hosting
             Console.CancelKeyPress -= CancelKeyPress;
         }
 
-        private void CancelKeyPress(object sender, ConsoleCancelEventArgs eventArgs)
+        private void CancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
         {
             Shutdown();
             // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
             eventArgs.Cancel = true;
         }
 
-        private void ProcessExit(object sender, EventArgs eventArgs)
+        private void ProcessExit(object? sender, EventArgs eventArgs)
         {
             Shutdown();
             if (_exitedGracefully)

@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private static string DateTimeOffsetToFilenameSafeString(DateTimeOffset dateTime)
         {
             // similar to the XML format for dates, but with punctuation stripped
-            return dateTime.UtcDateTime.ToString("yyyyMMddTHHmmssFFFFFFFZ");
+            return dateTime.UtcDateTime.ToString("yyyyMMddTHHmmssFFFFFFFZ", CultureInfo.InvariantCulture);
         }
 
         public IReadOnlyCollection<IKey> GetAllKeys()

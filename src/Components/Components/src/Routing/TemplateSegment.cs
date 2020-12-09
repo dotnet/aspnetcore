@@ -36,38 +36,38 @@ namespace Microsoft.AspNetCore.Components.Routing
                 if (Value.IndexOf(':') < 0)
                 {
 
-                    // Set the IsOptional flag to true for segments that contain
-                    // a parameter with no type constraints but optionality set
-                    // via the '?' token.
+                // Set the IsOptional flag to true for segments that contain
+                // a parameter with no type constraints but optionality set
+                // via the '?' token.
                     var questionMarkIndex = Value.IndexOf('?');
                     if (questionMarkIndex == Value.Length - 1)
-                    {
-                        IsOptional = true;
-                        Value = Value[0..^1];
-                    }
-                    // If the `?` optional marker shows up in the segment but not at the very end,
-                    // then throw an error.
-                    else if (questionMarkIndex >= 0)
-                    {
-                        throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}'. '?' character can only appear at the end of parameter name.");
-                    }
-
-                    Constraints = Array.Empty<RouteConstraint>();
-                }
-                else
                 {
-                    var tokens = Value.Split(':');
-                    if (tokens[0].Length == 0)
-                    {
-                        throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}' has no name before the constraints list.");
-                    }
+                    IsOptional = true;
+                        Value = Value[0..^1];
+                }
+                // If the `?` optional marker shows up in the segment but not at the very end,
+                // then throw an error.
+                    else if (questionMarkIndex >= 0)
+                {
+                    throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}'. '?' character can only appear at the end of parameter name.");
+                }
 
-                    Value = tokens[0];
-                    IsOptional = tokens[^1].EndsWith("?");
+                Constraints = Array.Empty<RouteConstraint>();
+            }
+            else
+            {
+                var tokens = Value.Split(':');
+                if (tokens[0].Length == 0)
+                {
+                    throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}' has no name before the constraints list.");
+                }
+
+                Value = tokens[0];
+                    IsOptional = tokens[^1].EndsWith('?');
                     if (IsOptional)
                     {
                         tokens[^1] = tokens[^1][0..^1];
-                    }
+            }
 
                     Constraints = new RouteConstraint[tokens.Length - 1];
                     for (var i = 1; i < tokens.Length; i++)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public bool IsParameter { get; }
 
-        public bool IsOptional { get; }
+        public bool IsOptional { get;  }
 
         public bool IsCatchAll { get; }
 

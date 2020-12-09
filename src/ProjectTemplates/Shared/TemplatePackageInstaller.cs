@@ -32,11 +32,13 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
@@ -129,7 +131,7 @@ namespace Templates.Test.Helpers
                 foreach (var command in lines.Where(l => l.Contains("dotnet new") && l.Contains(packageName, StringComparison.OrdinalIgnoreCase)))
                 {
                     var uninstallCommand = command.TrimStart();
-                    Debug.Assert(uninstallCommand.StartsWith("dotnet new"));
+                    Debug.Assert(uninstallCommand.StartsWith("dotnet new", StringComparison.Ordinal));
                     uninstallCommand = uninstallCommand.Substring("dotnet new".Length);
                     await RunDotNetNew(output, uninstallCommand);
                 }

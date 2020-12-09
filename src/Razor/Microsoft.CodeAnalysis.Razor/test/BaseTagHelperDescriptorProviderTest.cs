@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -34,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var results =
              context.Results
                 .Where(c => c.AssemblyName != "Microsoft.AspNetCore.Razor.Test.ComponentShim")
-                .Where(c => !c.DisplayName.StartsWith("Microsoft.AspNetCore.Components.Web"))
+                .Where(c => !c.DisplayName.StartsWith("Microsoft.AspNetCore.Components.Web", StringComparison.Ordinal))
                 .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.Bind")
                 .OrderBy(c => c.Name)
                 .ToArray();

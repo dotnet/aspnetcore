@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
@@ -33,7 +35,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;Windows.81.Amd64.Open;All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
         public async Task GrpcTemplate()
         {
             var project = await ProjectFactory.GetOrCreateProject("grpc", Output);
@@ -102,6 +105,29 @@ namespace Templates.Test
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", project, aspNetProcess.Process));
                 }
             }
+        }
+
+        /// <summary>
+        /// Skip test if running on Alpine Linux (which uses musl instead of glibc)
+        /// </summary>
+        private class SkipOnAlpineAttribute : Attribute, ITestCondition
+        {
+            public SkipOnAlpineAttribute(string issueUrl = "")
+            {
+                IssueUrl = issueUrl;
+            }
+
+            public string IssueUrl { get; }
+
+            public bool IsMet { get; } = !IsAlpine;
+
+            public string SkipReason => "Test cannot run on Alpine Linux.";
+
+            // This logic is borrowed from https://github.com/dotnet/runtime/blob/6a5a78bec9a6e14b4aa52cd5ac558f6cf5c6a211/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.Unix.cs
+            private static bool IsAlpine { get; } =
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists("/etc/os-release") &&
+                File.ReadAllLines("/etc/os-release").Any(line =>
+                    line.StartsWith("ID=", StringComparison.Ordinal) && line.Substring(3).Trim('"', '\'') == "alpine");
         }
     }
 }

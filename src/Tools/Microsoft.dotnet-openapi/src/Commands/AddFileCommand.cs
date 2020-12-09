@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             foreach (var sourceFile in _sourceFileArg.Values)
             {
-                if (!ApprovedExtensions.Any(e => sourceFile.EndsWith(e)))
+                if (!ApprovedExtensions.Any(e => sourceFile.EndsWith(e, StringComparison.Ordinal)))
                 {
                     await Warning.WriteLineAsync($"The extension for the given file '{sourceFile}' should have been one of: {string.Join(",", ApprovedExtensions)}.");
                     await Warning.WriteLineAsync($"The reference has been added, but may fail at build-time if the format is not correct.");

@@ -235,5 +235,11 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.Http2MaxConcurrentStreamsReached(connectionId);
             _trace2.Http2MaxConcurrentStreamsReached(connectionId);
         }
+
+        public void InvalidResponseHeaderRemoved()
+        {
+            _trace1.InvalidResponseHeaderRemoved();
+            _trace2.InvalidResponseHeaderRemoved();
+        }
     }
 }

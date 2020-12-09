@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+#nullable enable
+
 namespace System.Buffers
 {
     /// <summary>
@@ -89,7 +91,7 @@ namespace System.Buffers
                 MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
             }
 
-            if (_blocks.TryDequeue(out MemoryPoolBlock block))
+            if (_blocks.TryDequeue(out var block))
             {
                 // block successfully taken from the stack - return it
 
@@ -112,7 +114,7 @@ namespace System.Buffers
             _slabs.Push(slab);
 
             // Get the address for alignment
-            IntPtr basePtr = Marshal.UnsafeAddrOfPinnedArrayElement(slab.PinnedArray, 0);
+            IntPtr basePtr = Marshal.UnsafeAddrOfPinnedArrayElement(slab.PinnedArray!, 0);
             // Page align the blocks
             var offset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
             // Ensure page aligned
@@ -121,7 +123,7 @@ namespace System.Buffers
             var blockCount = (_slabLength - offset) / _blockSize;
             Interlocked.Add(ref _totalAllocatedBlocks, blockCount);
 
-            MemoryPoolBlock block = null;
+            MemoryPoolBlock? block = null;
 
             for (int i = 0; i < blockCount; i++)
             {
@@ -138,7 +140,7 @@ namespace System.Buffers
                 offset += _blockSize;
             }
 
-            return block;
+            return block!;
         }
 
         /// <summary>
@@ -195,7 +197,7 @@ namespace System.Buffers
 
                 if (disposing)
                 {
-                    while (_slabs.TryPop(out MemoryPoolSlab slab))
+                    while (_slabs.TryPop(out var slab))
                     {
                         // dispose managed state (managed objects).
                         slab.Dispose();
@@ -203,7 +205,7 @@ namespace System.Buffers
                 }
 
                 // Discard blocks in pool
-                while (_blocks.TryDequeue(out MemoryPoolBlock block))
+                while (_blocks.TryDequeue(out var block))
                 {
                     GC.SuppressFinalize(block);
                 }

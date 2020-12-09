@@ -3,31 +3,31 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    [Collection(IISTestSiteCollection.Name)]
-    public class NewHandlerTests : FixtureLoggedTest
+    [Collection(PublishedSitesCollection.Name)]
+    public class NewHandlerTests : IISFunctionalTestBase
     {
-        private readonly IISTestSiteFixture _fixture;
-
-        public NewHandlerTests(IISTestSiteFixture fixture) : base(fixture)
+        public NewHandlerTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task CheckNewHandlerIsUsed()
         {
-            var response = await _fixture.Client.GetAsync("/HelloWorld");
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            var result = await DeployAsync(deploymentParameters);
+            var response = await result.HttpClient.GetAsync("/HelloWorld");
 
             Assert.True(response.IsSuccessStatusCode);
 
-            _fixture.DeploymentResult.HostProcess.Refresh();
-            var handles = _fixture.DeploymentResult.HostProcess.Modules;
+            result.HostProcess.Refresh();
+            var handles = result.HostProcess.Modules;
 
             foreach (ProcessModule handle in handles)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     return;
                 }
             }
-            throw new XunitException($"Could not find aspnetcorev2.dll loaded in process {_fixture.DeploymentResult.HostProcess.ProcessName}");
+            throw new XunitException($"Could not find aspnetcorev2.dll loaded in process {result.HostProcess.ProcessName}");
         }
     }
 }

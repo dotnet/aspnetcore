@@ -132,14 +132,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _multiplexedContext = new TestMultiplexedConnectionContext(this);
 
-            var httpConnectionContext = new Http3ConnectionContext
-            {
-                ConnectionContext = _multiplexedContext,
-                ConnectionFeatures = features,
-                ServiceContext = _serviceContext,
-                MemoryPool = _memoryPool,
-                TimeoutControl = _mockTimeoutControl.Object
-            };
+            var httpConnectionContext = new Http3ConnectionContext(
+                connectionId: "TestConnectionId",
+                connectionContext: _multiplexedContext,
+                connectionFeatures: features,
+                serviceContext: _serviceContext,
+                memoryPool: _memoryPool,
+                localEndPoint: null,
+                remoteEndPoint: null);
+            httpConnectionContext.TimeoutControl = _mockTimeoutControl.Object;
 
             _connection = new Http3Connection(httpConnectionContext);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                
+
                 StreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair, this);
             }
 
@@ -375,7 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 if (expectedErrorMessage != null)
                 {
-                    Assert.Contains(_testBase.TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                    Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
                 }
             }
         }

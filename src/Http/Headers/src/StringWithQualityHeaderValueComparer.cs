@@ -20,6 +20,9 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
+        /// <summary>
+        /// Gets the default instance of <see cref="StringWithQualityHeaderValueComparer"/>.
+        /// </summary>
         public static StringWithQualityHeaderValueComparer QualityComparer { get; } = new StringWithQualityHeaderValueComparer();
 
         /// <summary>

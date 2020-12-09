@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Constructs the <see cref="StaticFileResponseContext"/>.
         /// </summary>
         [Obsolete("Use the constructor that passes in the HttpContext and IFileInfo parameters: StaticFileResponseContext(HttpContext context, IFileInfo file)", false)]
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public StaticFileResponseContext()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
         }
 

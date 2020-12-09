@@ -29,21 +29,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get { return handle == IntPtr.Zero; }
         }
 
-        public void ReinitializeNativeOverlapped()
-        {
-            IntPtr handleSnapshot = handle;
-
-            if (handleSnapshot != IntPtr.Zero)
-            {
-                unsafe
-                {
-                    ((NativeOverlapped*)handleSnapshot)->InternalHigh = IntPtr.Zero;
-                    ((NativeOverlapped*)handleSnapshot)->InternalLow = IntPtr.Zero;
-                    ((NativeOverlapped*)handleSnapshot)->EventHandle = IntPtr.Zero;
-                }
-            }
-        }
-
         protected override bool ReleaseHandle()
         {
             IntPtr oldHandle = Interlocked.Exchange(ref handle, IntPtr.Zero);

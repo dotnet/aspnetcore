@@ -632,6 +632,8 @@ Microsoft.AspNetCore.Mvc.ModelMetadataTypeAttribute
 Microsoft.AspNetCore.Mvc.MvcOptions
 Microsoft.AspNetCore.Mvc.MvcOptions.AllowEmptyInputInBodyModelBinding.get -> bool
 Microsoft.AspNetCore.Mvc.MvcOptions.AllowEmptyInputInBodyModelBinding.set -> void
+Microsoft.AspNetCore.Mvc.MvcOptions.EnableActionInvokers.get -> bool
+Microsoft.AspNetCore.Mvc.MvcOptions.EnableActionInvokers.set -> void
 Microsoft.AspNetCore.Mvc.MvcOptions.EnableEndpointRouting.get -> bool
 Microsoft.AspNetCore.Mvc.MvcOptions.EnableEndpointRouting.set -> void
 Microsoft.AspNetCore.Mvc.MvcOptions.MaxIAsyncEnumerableBufferLimit.get -> int

@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Test.proj";
+            context.ChangedFile = new FileItem("Test.proj");
             context.RequiresMSBuildRevaluation = true;
             context.Iteration++;
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -122,19 +122,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                 Iteration = 0,
                 ProcessSpec = new ProcessSpec
                 {
-                    Arguments = new[] { "run", "-f", "net5.0", "--", "foo=bar" },
+                    Arguments = new[] { "run", "-f", "net6.0", "--", "foo=bar" },
                 }
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
             await filter.ProcessAsync(context, default);
 
             // Assert
-            Assert.Equal(new[] { "run", "--no-restore", "-f", "net5.0", "--", "foo=bar" }, context.ProcessSpec.Arguments);
+            Assert.Equal(new[] { "run", "--no-restore", "-f", "net6.0", "--", "foo=bar" }, context.ProcessSpec.Arguments);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
