@@ -28,11 +28,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // For the first run experience we don't need to know if the certificate can be exported.
             return true;
 #else
-            using var key = c.GetRSAPrivateKey();
-            return (key is RSACryptoServiceProvider rsaPrivateKey &&
-                    rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
-                (key is RSACng cngPrivateKey &&
-                    cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport);
+            try
+            {
+                using var key = c.GetRSAPrivateKey();
+                return (key is RSACryptoServiceProvider rsaPrivateKey &&
+                        rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
+                       (key is RSACng cngPrivateKey &&
+                        cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport);
+            }
+            catch (CryptographicException)
+            {
+                // Although undocumented, GetRSAPrivateKey may, under unidentified circumstances,
+                // throw a "Keyset does not exist" CryptographicException
+                return false;
+            }
 #endif
         }
 
