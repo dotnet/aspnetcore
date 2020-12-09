@@ -228,9 +228,9 @@ class MsalAuthorizeService implements AuthorizeService {
     async completeSignIn() {
         // Make sure that the redirect handler has completed execution before
         // completing sign in.
-        var state = await this._redirectCallback;
-        if (state) {
-            return this.success(state.state);
+        var authenticationResult = await this._redirectCallback;
+        if (authenticationResult) {
+            return authenticationResult;
         }
         return this.operationCompleted();
     }
@@ -254,7 +254,9 @@ class MsalAuthorizeService implements AuthorizeService {
 
     async completeSignOut(url: string) {
         const logoutStateId = sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
-        const logoutState = this.retrieveState(logoutStateId, /*isLogout*/ true);
+        const updatedUrl = new URL(url);
+        updatedUrl.search = `?state=${logoutStateId}`;
+        const logoutState = await this.retrieveState(updatedUrl.href, null, /*isLogout*/ true);
 
         sessionStorage.removeItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
 
@@ -286,9 +288,19 @@ class MsalAuthorizeService implements AuthorizeService {
         return base64UrlIdentifier;
     }
 
-    retrieveState<T>(state: string | null, isLogout: boolean = false): T | undefined {
+    retrieveState<T>(url: string | null, providedState: string | null = null, isLogout: boolean = false): T | undefined {
+        let stateFromUrl;
+        // Parse the state key from the `search` query parameter in the URL if provided
+        if (url) {
+            const parsedUrl = new URL(url);
+            stateFromUrl = parsedUrl.searchParams && parsedUrl.searchParams.getAll('state');
+        }
+
+        // Chose  the provided state from MSAL. Otherwise, choose the state computed from the URL
+        const state = providedState || stateFromUrl;
+
         if (!state) {
-            return;
+            return undefined;
         }
 
         const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${state}`;
@@ -324,10 +336,12 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     private handleResult(result: Msal.AuthenticationResult | null) {
-        if (result?.state) {
-            return this.success(this.retrieveState(result.state));
+        if (result) {
+            this._account = result.account;
+            return this.success(this.retrieveState(null, result.state));
+        } else {
+            return this.operationCompleted();
         }
-        return this.operationCompleted();
     }
 
     private getAccountState(state: string) {
