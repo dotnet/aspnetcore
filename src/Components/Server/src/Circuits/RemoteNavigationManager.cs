@@ -80,7 +80,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 var absoluteUriString = ToAbsoluteUri(uri).ToString();
                 throw new NavigationException(absoluteUriString);
             }
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) !=0, (options & NavigationOptions.Replace) !=0);
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri,
+                (options & NavigationOptions.ForceLoad) != 0,
+                (options & NavigationOptions.ReplaceHistoryEntry) != 0);
         }
 
         private static class Log

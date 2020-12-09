@@ -14,7 +14,7 @@ Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool f
 Microsoft.AspNetCore.Components.NavigationOptions
 Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad = 1 -> Microsoft.AspNetCore.Components.NavigationOptions
 Microsoft.AspNetCore.Components.NavigationOptions.None = 0 -> Microsoft.AspNetCore.Components.NavigationOptions
-Microsoft.AspNetCore.Components.NavigationOptions.Replace = 2 -> Microsoft.AspNetCore.Components.NavigationOptions
+Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry = 2 -> Microsoft.AspNetCore.Components.NavigationOptions
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
