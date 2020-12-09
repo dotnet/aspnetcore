@@ -5,7 +5,6 @@
   <PropertyGroup>
     <OutputNamePrefix>$(TargetingPackInstallerBaseName)-</OutputNamePrefix>
     <OutputNameSuffix>-win-$(Platform)</OutputNameSuffix>
-    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
     <OutputType>Package</OutputType>
@@ -71,6 +70,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
     <PackageFileName>$(OutputName)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
 
