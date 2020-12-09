@@ -42,7 +42,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) != 0, (options & NavigationOptions.Replace) != 0);
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri,
+                (options & NavigationOptions.ForceLoad) != 0,
+                (options & NavigationOptions.ReplaceHistoryEntry) != 0);
         }
     }
 }

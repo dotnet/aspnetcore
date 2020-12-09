@@ -81,7 +81,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            _jsRuntime.InvokeVoid(Interop.NavigateTo, uri, (options & NavigationOptions.ForceLoad) !=0, (options & NavigationOptions.Replace) !=0).Preserve();
+            _jsRuntime.InvokeVoid(Interop.NavigateTo, uri,
+                (options & NavigationOptions.ForceLoad) != 0,
+                (options & NavigationOptions.ReplaceHistoryEntry) != 0);
         }
 
         private static class Log

@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         None = 0,
         /// <summary>
-        ///bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.
+        /// Bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.
         /// </summary>
-        ForceLoad =1,
+        ForceLoad = 1,
         /// <summary>
         /// Indicates that the current history entry should be replaced, instead of pushing the new uri onto the browser history stack.
         /// </summary>
-        Replace = 2
+        ReplaceHistoryEntry = 2
     }
 }
