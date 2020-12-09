@@ -31,7 +31,7 @@ The following contains a description of each sub-directory in the `Components` d
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building a subset of the code](../../BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 **Note:** You also need to run the preceding `build` command in the command line before building in VS to ensure that the Web.JS dependency is built.
 
