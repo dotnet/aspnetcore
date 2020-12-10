@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                             bytes = certificate.Export(X509ContentType.Pkcs12, password);
                             break;
                         case CertificateKeyExportFormat.Pem:
-                            key = certificate.GetRSAPrivateKey()!; // TODO - what if PEM doesn't have a private key?
+                            key = certificate.GetRSAPrivateKey()!;
 
                             char[] pem;
                             if (password != null)

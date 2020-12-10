@@ -95,14 +95,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
             const string DSAOid = "1.2.840.10040.4.1";
             const string ECDsaOid = "1.2.840.10045.2.1";
 
+            // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
             var keyText = File.ReadAllText(keyPath);
-            return certificate.PublicKey.Oid.Value switch
+            switch (certificate.PublicKey.Oid.Value)
             {
-                RSAOid => AttachPemRSAKey(certificate, keyText, password),
-                ECDsaOid => AttachPemECDSAKey(certificate, keyText, password),
-                DSAOid => AttachPemDSAKey(certificate, keyText, password),
-                _ => throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value))
-            };
+                case RSAOid:
+                    {
+                        using var rsa = RSA.Create();
+                        ImportKeyFromFile(rsa, keyText, password);
+
+                        try
+                        {
+                            return certificate.CopyWithPrivateKey(rsa);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                        }
+                    }
+                case ECDsaOid:
+                    {
+                        using var ecdsa = ECDsa.Create();
+                        ImportKeyFromFile(ecdsa, keyText, password);
+
+                        try
+                        {
+                            return certificate.CopyWithPrivateKey(ecdsa);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                        }
+                    }
+                case DSAOid:
+                    {
+                        using var dsa = DSA.Create();
+                        ImportKeyFromFile(dsa, keyText, password);
+
+                        try
+                        {
+                            return certificate.CopyWithPrivateKey(dsa);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                        }
+                    }
+                default:
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
+            }
+        }
+
+        private static InvalidOperationException CreateErrorGettingPrivateKeyException(string keyPath, Exception ex)
+        {
+            return new InvalidOperationException($"Error getting private key from '{keyPath}'.", ex);
         }
 
         private static X509Certificate2? GetCertificate(string certificatePath)
@@ -115,49 +161,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
             return null;
         }
 
-        private static X509Certificate2 AttachPemRSAKey(X509Certificate2 certificate, string keyText, string? password)
+        private static void ImportKeyFromFile(AsymmetricAlgorithm asymmetricAlgorithm, string keyText, string? password)
         {
-            using var rsa = RSA.Create();
             if (password == null)
             {
-                rsa.ImportFromPem(keyText);
+                asymmetricAlgorithm.ImportFromPem(keyText);
             }
             else
             {
-                rsa.ImportFromEncryptedPem(keyText, password);
+                asymmetricAlgorithm.ImportFromEncryptedPem(keyText, password);
             }
-
-            return certificate.CopyWithPrivateKey(rsa);
-        }
-
-        private static X509Certificate2 AttachPemDSAKey(X509Certificate2 certificate, string keyText, string? password)
-        {
-            using var dsa = DSA.Create();
-            if (password == null)
-            {
-                dsa.ImportFromPem(keyText);
-            }
-            else
-            {
-                dsa.ImportFromEncryptedPem(keyText, password);
-            }
-
-            return certificate.CopyWithPrivateKey(dsa);
-        }
-
-        private static X509Certificate2 AttachPemECDSAKey(X509Certificate2 certificate, string keyText, string? password)
-        {
-            using var ecdsa = ECDsa.Create();
-            if (password == null)
-            {
-                ecdsa.ImportFromPem(keyText);
-            }
-            else
-            {
-                ecdsa.ImportFromEncryptedPem(keyText, password);
-            }
-
-            return certificate.CopyWithPrivateKey(ecdsa);
         }
 
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
