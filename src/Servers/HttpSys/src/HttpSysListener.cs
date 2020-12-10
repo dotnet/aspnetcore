@@ -287,17 +287,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal bool ValidateRequest(NativeRequestContext requestMemory)
         {
-            // Block potential DOS attacks
-            if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
+            try
             {
-                SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
-                return false;
-            }
+                // Block potential DOS attacks
+                if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
+                {
+                    SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                    return false;
+                }
 
-            if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+                if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+                {
+                    SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
+                        AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
+                    return false;
+                }
+            }
+            catch (Exception ex)
             {
-                SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
-                    AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
+                Logger.LogError(LoggerEventIds.RequestValidationFailed, ex, "Error validating request {RequestId}", requestMemory.RequestId);
                 return false;
             }
 
