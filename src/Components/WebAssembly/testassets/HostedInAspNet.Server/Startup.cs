@@ -70,7 +70,7 @@ namespace HostedInAspNet.Server
                     endpoints.MapFallbackToFile("/app/{**slug:nonfile}", "app/index.html");
                 }
 
-                if(!mapAlternativePathApp || mapAllApps)
+                if (mapAllApps || !mapAlternativePathApp)
                 {
                     endpoints.MapFallbackToFile("index.html");
                 }
