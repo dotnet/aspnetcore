@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting
         private const string LogPreamble = "Request starting ";
         private const string EmptyEntry = "-";
 
-        internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestStartingLog)state).ToString();
+        internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestStartingLog)state).ToString();
 
         private readonly HttpRequest _request;
 

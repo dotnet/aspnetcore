@@ -297,6 +297,7 @@
     If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+      '$(MSBuildProjectName)' != 'RepoTasks' AND
       ($(_CompileTfmUsingReferenceAssemblies) OR
        ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"

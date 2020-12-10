@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         // ConnectionWriteCallback: Reserved: 12
 
-        private static readonly Action<ILogger, string, Exception> _connectionError =
+        private static readonly Action<ILogger, string, Exception?> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
 
         private static readonly Action<ILogger, string, Exception?> _connectionReset =
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
     }
 }

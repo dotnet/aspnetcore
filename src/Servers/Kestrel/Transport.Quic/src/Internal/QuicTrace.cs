@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(NewConnection)), @"Connection id ""{ConnectionId}"" accepted.");
         private static readonly Action<ILogger, string, Exception?> _acceptedStream =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(NewStream)), @"Stream id ""{ConnectionId}"" accepted.");
-        private static readonly Action<ILogger, string, string, Exception> _connectionError =
+        private static readonly Action<ILogger, string, string, Exception?> _connectionError =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, string, Exception> _streamError =
+        private static readonly Action<ILogger, string, string, Exception?> _streamError =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
         private static readonly Action<ILogger, string, Exception?> _streamPause =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamPause)), @"Stream id ""{ConnectionId}"" paused.");
         private static readonly Action<ILogger, string, Exception?> _streamResume =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamResume)), @"Stream id ""{ConnectionId}"" resumed.");
-        private static readonly Action<ILogger, string, string, Exception> _streamShutdownWrite =
+        private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes, exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, string, Exception> _streamAborted =
+        private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" aborted by application, exception: ""{Reason}"".");
 
         private ILogger _logger;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
 
         public void NewConnection(string connectionId)

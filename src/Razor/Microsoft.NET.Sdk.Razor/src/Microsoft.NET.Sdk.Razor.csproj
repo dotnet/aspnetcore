@@ -17,6 +17,7 @@
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
 
+    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 
