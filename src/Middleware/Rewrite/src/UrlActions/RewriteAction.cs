@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
 
             // TODO PERF, substrings, object creation, etc.
-            if (pattern.IndexOf("://", StringComparison.Ordinal) >= 0)
+            if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) >= 0)
             {
                 string scheme;
                 HostString host;

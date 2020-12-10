@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <returns></returns>
         public static IServiceCollection AddWebSockets(this IServiceCollection services, Action<WebSocketOptions> configure)
         {
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             return services.Configure(configure);
         }
     }

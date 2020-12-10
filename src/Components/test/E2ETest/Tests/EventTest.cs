@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void PreventDefault_DotNotApplyByDefault()
         {
             var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1987")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27397")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();

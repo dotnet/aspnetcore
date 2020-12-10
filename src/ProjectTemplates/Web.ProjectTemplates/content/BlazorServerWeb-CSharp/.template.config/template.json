@@ -387,12 +387,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net5.0",
-          "description": "Target net5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "net5.0",
-      "defaultValue": "net5.0"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "copyrightYear": {
       "type": "generated",

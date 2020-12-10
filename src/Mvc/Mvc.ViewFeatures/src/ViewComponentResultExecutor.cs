@@ -19,6 +19,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{ViewComponentResult}"/> for <see cref="ViewComponentResult"/>.
+    /// </summary>
     public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult>
     {
         private readonly HtmlEncoder _htmlEncoder;
@@ -28,6 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
         private IHttpResponseStreamWriterFactory _writerFactory;
 
+        /// <summary>
+        /// This constructor is obsolete and will be removed in a future version.
+        /// </summary>
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ViewComponentResultExecutor(
             IOptions<MvcViewOptions> mvcHelperOptions,
@@ -39,6 +45,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="ViewComponentResultExecutor"/>
+        /// </summary>
+        /// <param name="mvcHelperOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="tempDataDictionaryFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref=" IHttpResponseStreamWriterFactory"/>.</param>
         public ViewComponentResultExecutor(
             IOptions<MvcViewOptions> mvcHelperOptions,
             ILoggerFactory loggerFactory,

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components
 
         public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string id = null;
+            string? id = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

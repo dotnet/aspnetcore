@@ -18,14 +18,6 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
-    <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
-    <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>
-    <InstallDir>$(ProductName)</InstallDir>
-
-    <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);Debug</DefineConstants>
-    <DefineConstants>$(DefineConstants);EmbedCab=$(EmbedCab)</DefineConstants>
-    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
-
     <!-- Set package version for SharedFx & TargetingPack wixproj's -->
     <!-- Everything built in those projects _except_ the final package & MSI are shipping assets. -->
     <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
@@ -33,6 +25,14 @@
         Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     <!-- Insert PackageVersion into OutputName for SharedFx & TargetingPack -->
     <OutputName Condition="'$(OutputNamePrefix)' != '' AND '$(OutputNameSuffix)' != ''">$(OutputNamePrefix)$(_GeneratedPackageVersion)$(OutputNameSuffix)$(TargetExt)</OutputName>
+    
+    <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
+    <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>
+    <InstallDir>$(ProductName)</InstallDir>
+
+    <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);Debug</DefineConstants>
+    <DefineConstants>$(DefineConstants);EmbedCab=$(EmbedCab)</DefineConstants>
+    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

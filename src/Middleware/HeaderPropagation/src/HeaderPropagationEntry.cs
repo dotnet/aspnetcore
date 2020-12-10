@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public HeaderPropagationEntry(
             string inboundHeaderName,
             string capturedHeaderName,
-            Func<HeaderPropagationContext, StringValues> valueFilter)
+            Func<HeaderPropagationContext, StringValues>? valueFilter)
         {
             if (inboundHeaderName == null)
             {
@@ -67,6 +67,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// values.
         /// </para>
         /// </remarks>
-        public Func<HeaderPropagationContext, StringValues> ValueFilter { get; }
+        public Func<HeaderPropagationContext, StringValues>? ValueFilter { get; }
     }
 }

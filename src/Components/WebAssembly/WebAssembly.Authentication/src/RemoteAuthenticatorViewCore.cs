@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             var fromQuery = QueryStringHelper.GetParameter(new Uri(Navigation.Uri).Query, "returnUrl");
-            if (!string.IsNullOrWhiteSpace(fromQuery) && !fromQuery.StartsWith(Navigation.BaseUri))
+            if (!string.IsNullOrWhiteSpace(fromQuery) && !fromQuery.StartsWith(Navigation.BaseUri, StringComparison.Ordinal))
             {
                 // This is an extra check to prevent open redirects.
                 throw new InvalidOperationException("Invalid return url. The return url needs to have the same origin as the current page.");

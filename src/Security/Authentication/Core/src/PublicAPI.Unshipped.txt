@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string?>?

@@ -4,7 +4,6 @@
     <Description>ASP.NET Core middleware that enables an application to support any standard OAuth 2.0 authentication workflow.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <IsPackable>false</IsPackable>

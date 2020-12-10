@@ -8,6 +8,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents an <c>If-Range</c> header value which can either be a date/time or an entity-tag value.
+    /// </summary>
     public class RangeConditionHeaderValue
     {
         private static readonly HttpHeaderParser<RangeConditionHeaderValue> Parser
@@ -21,12 +24,20 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="lastModified">A date value used to initialize the new instance.</param>
         public RangeConditionHeaderValue(DateTimeOffset lastModified)
         {
             _lastModified = lastModified;
         }
 
-        public RangeConditionHeaderValue(EntityTagHeaderValue? entityTag)
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="entityTag">An entity tag uniquely representing the requested resource.</param>
+        public RangeConditionHeaderValue(EntityTagHeaderValue entityTag)
         {
             if (entityTag == null)
             {
@@ -36,21 +47,32 @@ namespace Microsoft.Net.Http.Headers
             _entityTag = entityTag;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="entityTag">An entity tag uniquely representing the requested resource.</param>
         public RangeConditionHeaderValue(string? entityTag)
             : this(new EntityTagHeaderValue(entityTag))
         {
         }
 
+        /// <summary>
+        /// Gets the LastModified date from header.
+        /// </summary>
         public DateTimeOffset? LastModified
         {
             get { return _lastModified; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="EntityTagHeaderValue"/> from header.
+        /// </summary>
         public EntityTagHeaderValue? EntityTag
         {
             get { return _entityTag; }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (_entityTag == null)
@@ -60,6 +82,7 @@ namespace Microsoft.Net.Http.Headers
             return _entityTag.ToString();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as RangeConditionHeaderValue;
@@ -77,6 +100,7 @@ namespace Microsoft.Net.Http.Headers
             return _entityTag.Equals(other._entityTag);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             if (_entityTag == null)
@@ -87,12 +111,23 @@ namespace Microsoft.Net.Http.Headers
             return _entityTag.GetHashCode();
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="RangeConditionHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static RangeConditionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index)!;
         }
 
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="RangeConditionHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeConditionHeaderValue? parsedValue)
         {
             var index = 0;

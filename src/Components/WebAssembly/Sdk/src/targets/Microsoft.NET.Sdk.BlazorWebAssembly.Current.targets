@@ -33,10 +33,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
-    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net5.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net6.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net46</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tasks\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net6.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -283,8 +283,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">
     <PropertyGroup>
       <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
+      <_BlazorOutputContent>@(_BlazorOutputWithHash)</_BlazorOutputContent>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
+
+    <Error
+      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
+      Code="BLAZORSDK1001"
+      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"
@@ -515,6 +521,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
     </GetFileHash>
+
+    <PropertyGroup>
+      <_BlazorOutputContent>@(_BlazorPublishBootResourceWithHash)</_BlazorOutputContent>
+    </PropertyGroup>
+
+    <Error
+      Text="Unable to find %(BlazorWebAssemblyLazyLoad.Identity) to be lazy loaded later. Confirm that project or package references are included and the reference is used in the project."
+      Code="BLAZORSDK1001"
+      Condition="'@(BlazorWebAssemblyLazyLoad)' != '' And !($([System.String]::Copy('$(_BlazorOutputContent)').Contains('%(BlazorWebAssemblyLazyLoad.Identity)')))" />
 
     <GenerateBlazorWebAssemblyBootJson
       AssemblyPath="@(IntermediateAssembly)"

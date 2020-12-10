@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class PackIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
-        private static readonly string TFM = "net5.0";
+        private static readonly string TFM = "net6.0";
 
         public PackIntegrationTest(BuildServerTestFixture buildServer)
             : base(buildServer)

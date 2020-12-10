@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private bool RequiresMSBuildRevaluation(DotNetWatchContext context)
         {
             var changedFile = context.ChangedFile;
-            if (!string.IsNullOrEmpty(changedFile) && IsMsBuildFileExtension(changedFile))
+            if (changedFile != null && IsMsBuildFileExtension(changedFile.Value.FilePath))
             {
                 return true;
             }
@@ -85,9 +85,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
             foreach (var file in context.FileSet)
             {
-                if (!string.IsNullOrEmpty(file) && IsMsBuildFileExtension(file))
+                if (!string.IsNullOrEmpty(file.FilePath) && IsMsBuildFileExtension(file.FilePath))
                 {
-                    msbuildFiles.Add((file, GetLastWriteTimeUtcSafely(file)));
+                    msbuildFiles.Add((file.FilePath, GetLastWriteTimeUtcSafely(file.FilePath)));
                 }
             }
 

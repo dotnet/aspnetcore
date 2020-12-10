@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Xunit.Abstractions;
@@ -69,7 +70,9 @@ namespace Microsoft.Extensions.Logging.Testing
             // Buffer the message into a single string in order to avoid shearing the message when running across multiple threads.
             var messageBuilder = new StringBuilder();
 
-            var timestamp = _logStart.HasValue ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s" : DateTimeOffset.UtcNow.ToString("s");
+            var timestamp = _logStart.HasValue ?
+                $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3", CultureInfo.InvariantCulture)}s" :
+                DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture);
 
             var firstLinePrefix = $"| [{timestamp}] {_category} {logLevel}: ";
             var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -120,10 +121,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 switch (edit)
                 {
                     case InsertSelectorScopeEdit _:
-                        resultBuilder.AppendFormat("[{0}]", cssScope);
+                        resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "[{0}]", cssScope);
                         break;
                     case InsertKeyframesNameScopeEdit _:
-                        resultBuilder.AppendFormat("-{0}", cssScope);
+                        resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "-{0}", cssScope);
                         break;
                     case DeleteContentEdit deleteContentEdit:
                         previousInsertionPosition += deleteContentEdit.DeleteLength;

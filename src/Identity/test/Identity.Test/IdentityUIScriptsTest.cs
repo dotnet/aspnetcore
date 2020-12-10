@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
-            var isSha256 = scriptTag.Integrity.StartsWith("sha256");
+            var isSha256 = scriptTag.Integrity.StartsWith("sha256", StringComparison.Ordinal);
             var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
             using (var alg256 = SHA256.Create())

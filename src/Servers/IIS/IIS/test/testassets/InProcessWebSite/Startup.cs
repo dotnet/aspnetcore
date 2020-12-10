@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -134,7 +135,7 @@ namespace TestSite
 
         public async Task WaitingRequestCount(HttpContext context)
         {
-            await context.Response.WriteAsync(_waitingRequestCount.ToString());
+            await context.Response.WriteAsync(_waitingRequestCount.ToString(CultureInfo.InvariantCulture));
         }
 
         public Task CreateFile(HttpContext context)
@@ -361,7 +362,7 @@ namespace TestSite
         {
             var feature = ctx.Features.Get<IHttpResponseFeature>();
             feature.ReasonPhrase = ctx.Request.Query["reason"];
-            feature.StatusCode = int.Parse(ctx.Request.Query["code"]);
+            feature.StatusCode = int.Parse(ctx.Request.Query["code"], CultureInfo.InvariantCulture);
             if (ctx.Request.Query["writeBody"] == "True")
             {
                 await ctx.Response.WriteAsync(ctx.Request.Query["body"]);
@@ -370,12 +371,12 @@ namespace TestSite
 
         private async Task HelloWorld(HttpContext ctx)
         {
-            if (ctx.Request.Path.Value.StartsWith("/Path"))
+            if (ctx.Request.Path.Value.StartsWith("/Path", StringComparison.Ordinal))
             {
                 await ctx.Response.WriteAsync(ctx.Request.Path.Value);
                 return;
             }
-            if (ctx.Request.Path.Value.StartsWith("/Query"))
+            if (ctx.Request.Path.Value.StartsWith("/Query", StringComparison.Ordinal))
             {
                 await ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
                 return;
@@ -497,7 +498,7 @@ namespace TestSite
         private async Task ReadAndCountRequestBody(HttpContext ctx)
         {
             Interlocked.Increment(ref _requestsInFlight);
-            await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+            await ctx.Response.WriteAsync(_requestsInFlight.ToString(CultureInfo.InvariantCulture));
 
             var readBuffer = new byte[1];
             await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
@@ -985,7 +986,7 @@ namespace TestSite
 
         public Task Query(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
 
-        public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString() ?? "null");
+        public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString(CultureInfo.InvariantCulture) ?? "null");
 
         public Task Anonymous(HttpContext context) => context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
 
@@ -1039,21 +1040,21 @@ namespace TestSite
 
         private async Task ProcessId(HttpContext context)
         {
-            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
+            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
         }
 
         public async Task ANCM_HTTPS_PORT(HttpContext context)
         {
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
 
-            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString(CultureInfo.InvariantCulture) : "NOVALUE");
         }
 
         public async Task HTTPS_PORT(HttpContext context)
         {
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
 
-            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString(CultureInfo.InvariantCulture) : "NOVALUE");
         }
 
         public Task Latin1(HttpContext context)
@@ -1487,6 +1488,8 @@ namespace TestSite
             Assert.Equal("HTTP/2", httpContext.Request.Protocol);
 #if !FORWARDCOMPAT
             Assert.False(httpContext.Request.CanHaveBody());
+            var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            Assert.False(feature.IsUpgradableRequest);
 #endif
             Assert.Null(httpContext.Request.ContentLength);
             Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
@@ -1526,6 +1529,16 @@ namespace TestSite
         {
             var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
             maxRequestBodySizeFeature.MaxRequestBodySize = 2;
+            return Task.CompletedTask;
+        }
+
+        public Task OnCompletedThrows(HttpContext httpContext)
+        {
+            httpContext.Response.OnCompleted(() =>
+            {
+                throw new Exception();
+            });
+
             return Task.CompletedTask;
         }
 

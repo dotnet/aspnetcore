@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,7 @@ namespace HostedInAspNet.Server
                 // and that it was possible to override the loading mechanism
                 if (context.Request.Query.ContainsKey("customizedbootresource")
                     || context.Request.Headers.ContainsKey("customizedbootresource")
-                    || context.Request.Path.Value.EndsWith("/blazor.boot.json"))
+                    || context.Request.Path.Value.EndsWith("/blazor.boot.json", StringComparison.Ordinal))
                 {
                     bootResourceRequestLog.AddRequest(context.Request);
                 }

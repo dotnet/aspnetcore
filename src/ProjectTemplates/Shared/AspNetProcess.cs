@@ -174,7 +174,7 @@ namespace Templates.Test.Helpers
                 IHtmlAnchorElement anchor = (IHtmlAnchorElement)link;
                 if (string.Equals(anchor.Protocol, "about:"))
                 {
-                    Assert.True(anchor.PathName.EndsWith(expectedLink), $"Expected next link on {page.Url} to be {expectedLink} but it was {anchor.PathName}.");
+                    Assert.True(anchor.PathName.EndsWith(expectedLink, StringComparison.Ordinal), $"Expected next link on {page.Url} to be {expectedLink} but it was {anchor.PathName}.");
                     await AssertOk(anchor.PathName);
                 }
                 else

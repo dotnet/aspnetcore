@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
@@ -244,7 +245,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
 
-                pb.Documentation = string.Format(ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
+                pb.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });
         }
 
@@ -309,7 +310,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 }
                 else
                 {
-                    b.Documentation = string.Format(ComponentResources.ChildContentParameterName_Documentation, childContentName);
+                    b.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ChildContentParameterName_Documentation, childContentName);
                 }
             });
         }

@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -102,8 +101,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
         private X509KeyStorageFlags GetStorageFlags(KeyDefinition key)
         {
-            var defaultFlags = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-                UnsafeEphemeralKeySet : (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? X509KeyStorageFlags.PersistKeySet :
+            var defaultFlags = OperatingSystem.IsLinux() ?
+                UnsafeEphemeralKeySet : (OperatingSystem.IsMacOS() ? X509KeyStorageFlags.PersistKeySet :
                 X509KeyStorageFlags.DefaultKeySet);
 
             if (key.StorageFlags == null)

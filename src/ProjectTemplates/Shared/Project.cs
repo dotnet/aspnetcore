@@ -100,6 +100,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
+                Output.WriteLine("Acquired DotNetNewLock");
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return new ProcessResult(execution);
@@ -107,6 +108,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 DotNetNewLock.Release();
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -203,6 +205,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
+                Output.WriteLine("Acquired DotNetNewLock");
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
@@ -220,6 +223,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 DotNetNewLock.Release();
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -238,6 +242,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
+                Output.WriteLine("Acquired DotNetNewLock");
                 using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
                 await result.Exited;
                 return new ProcessResult(result);
@@ -245,6 +250,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 DotNetNewLock.Release();
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -252,7 +258,7 @@ namespace Templates.Test.Helpers
         public void AssertEmptyMigration(string migration)
         {
             var fullPath = Path.Combine(TemplateOutputDir, "Data/Migrations");
-            var file = Directory.EnumerateFiles(fullPath).Where(f => f.EndsWith($"{migration}.cs")).FirstOrDefault();
+            var file = Directory.EnumerateFiles(fullPath).Where(f => f.EndsWith($"{migration}.cs", StringComparison.Ordinal)).FirstOrDefault();
 
             Assert.NotNull(file);
             var contents = File.ReadAllText(file);
@@ -302,6 +308,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
+                Output.WriteLine("Acquired DotNetNewLock");
                 var result = ProcessEx.Run(
                     Output,
                     AppContext.BaseDirectory,
@@ -315,6 +322,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 DotNetNewLock.Release();
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 

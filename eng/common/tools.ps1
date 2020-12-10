@@ -57,7 +57,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# If specified, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
+# If specifies, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
 [string]$runtimeSourceFeed = if (Test-Path variable:runtimeSourceFeed) { $runtimeSourceFeed } else { $null }
 # Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
 [string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
@@ -677,14 +677,23 @@ function MSBuild-Core() {
   $exitCode = Exec-Process $buildTool.Path $cmdArgs
 
   if ($exitCode -ne 0) {
-    Write-PipelineTelemetryError -Category 'Build' -Message 'Build failed.'
+    # We should not Write-PipelineTaskError here because that message shows up in the build summary
+    # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+    Write-Host "Build failed with exit code $exitCode. Check errors above." -ForegroundColor Red
 
     $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
-    if ($buildLog -ne $null) {
+    if ($null -ne $buildLog) {
       Write-Host "See log: $buildLog" -ForegroundColor DarkGray
     }
 
-    ExitWithExitCode $exitCode
+    if ($ci) {
+      Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
+      # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+      # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+      ExitWithExitCode 0
+    } else {
+      ExitWithExitCode $exitCode
+    }
   }
 }
 

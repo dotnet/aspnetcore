@@ -196,7 +196,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

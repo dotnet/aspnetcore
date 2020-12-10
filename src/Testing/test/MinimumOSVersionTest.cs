@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Xunit;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Environment.OSVersion.Version.ToString().StartsWith("6.1"),
+                Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Environment.OSVersion.Version.ToString().StartsWith("6.1"),
+                Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
             Assert.NotNull(versionKey);
             var currentVersion = (string)versionKey.GetValue("CurrentBuildNumber");
             Assert.NotNull(currentVersion);
-            Assert.True(17134 <= int.Parse(currentVersion));
+            Assert.True(17134 <= int.Parse(currentVersion, CultureInfo.InvariantCulture));
         }
 
         [ConditionalFact]
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Testing
             Assert.NotNull(versionKey);
             var currentVersion = (string)versionKey.GetValue("CurrentBuildNumber");
             Assert.NotNull(currentVersion);
-            Assert.True(18363 <= int.Parse(currentVersion));
+            Assert.True(18363 <= int.Parse(currentVersion, CultureInfo.InvariantCulture));
         }
     }
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Environment.OSVersion.Version.ToString().StartsWith("6.1"),
+                Environment.OSVersion.Version.ToString().StartsWith("6.1", StringComparison.Ordinal),
                 "Test should not be running on Win7 or Win2008R2.");
         }
     }

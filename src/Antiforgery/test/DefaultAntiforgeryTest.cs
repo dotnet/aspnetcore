@@ -1186,7 +1186,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1224,7 +1224,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1258,7 +1258,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);

@@ -88,7 +88,7 @@ Examples:
             var optList = app.Option("--list", "Lists all discovered files without starting the watcher",
                 CommandOptionType.NoValue);
 
-            app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+            app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
 
             if (app.Execute(args) != 0)
             {

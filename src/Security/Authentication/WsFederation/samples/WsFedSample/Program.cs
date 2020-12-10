@@ -45,7 +45,7 @@ namespace WsFedSample
 
         private static X509Certificate2 LoadCertificate()
         {
-            var assembly = typeof(Startup).GetTypeInfo().Assembly;
+            var assembly = typeof(Startup).Assembly;
             var embeddedFileProvider = new EmbeddedFileProvider(assembly, "WsFedSample");
             var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
             using (var certificateStream = certificateFileInfo.CreateReadStream())

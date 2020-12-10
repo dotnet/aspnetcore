@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     // The client connection failing to close isn't fatal to the server process.  It is simply a client
                     // for which we can no longer communicate and that's okay because the Close method indicates we are
                     // done with the client already.
-                    var message = string.Format($"Pipe {Identifier}: Error closing pipe.");
+                    var message = $"Pipe {Identifier}: Error closing pipe.";
                     ServerLogger.LogException(ex, message);
                 }
             }

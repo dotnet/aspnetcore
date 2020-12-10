@@ -1,7 +1,7 @@
 <Project>
+  <Import Project="$(ArtifactsBinDir)GenerateFiles\Directory.Build.targets" />
+
   <PropertyGroup>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</RuntimeFrameworkVersion>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 </Project>

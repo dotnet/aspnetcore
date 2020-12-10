@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var formattedArguments = new string[arguments.Length];
             for (var i = 0; i < formattedArguments.Length; i++)
             {
-                formattedArguments[i] = Convert.ToString(arguments[i]);
+                formattedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
             }
 
             return formattedArguments;
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 logger,
                 context.ViewComponentDescriptor.DisplayName,
                 timespan.TotalMilliseconds,
-                Convert.ToString(result),
+                Convert.ToString(result, CultureInfo.InvariantCulture),
                 null);
         }
 

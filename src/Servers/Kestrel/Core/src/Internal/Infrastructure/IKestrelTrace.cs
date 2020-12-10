@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier);
 
-        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate);
+        void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier, double rate);
 
-        void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier);
+        void ResponseMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier);
 
         void ApplicationAbortedConnection(string connectionId, string traceIdentifier);
 
@@ -76,5 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2FrameSending(string connectionId, Http2Frame frame);
 
         void Http2MaxConcurrentStreamsReached(string connectionId);
+
+        void InvalidResponseHeaderRemoved();
     }
 }

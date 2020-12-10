@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Tools.Tests
 
             public TextWriter Out { get; }
             public TextWriter Error { get; }
-            public TextReader In { get; }
+            public TextReader? In { get; }
             public bool IsInputRedirected { get; }
             public bool IsOutputRedirected { get; }
             public bool IsErrorRedirected { get; }

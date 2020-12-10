@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -49,7 +50,7 @@ namespace XmlFormattersWebSite
 
                         if (errorMessage != null)
                         {
-                            allErrorMessages.Add(string.Format("{0}:{1}", key, errorMessage));
+                            allErrorMessages.Add(string.Format(CultureInfo.InvariantCulture, "{0}:{1}", key, errorMessage));
                         }
                     }
                 }

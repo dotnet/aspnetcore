@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Hosting
     internal static class MethodInfoExtensions
     {
         // This version of MethodInfo.Invoke removes TargetInvocationExceptions
-        public static object InvokeWithoutWrappingExceptions(this MethodInfo methodInfo, object obj, object[] parameters)
+        public static object? InvokeWithoutWrappingExceptions(this MethodInfo methodInfo, object? obj, object?[] parameters)
         {
             // These are the default arguments passed when methodInfo.Invoke(obj, parameters) are called. We do the same
             // here but specify BindingFlags.DoNotWrapExceptions to avoid getting TAE (TargetInvocationException)

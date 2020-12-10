@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// <summary>
     /// A factory abstraction for creating connections to an endpoint.
     /// </summary>
-    internal interface IMultiplexedConnectionFactory
+    public interface IMultiplexedConnectionFactory
     {
         /// <summary>
         /// Creates a new connection to an endpoint.
