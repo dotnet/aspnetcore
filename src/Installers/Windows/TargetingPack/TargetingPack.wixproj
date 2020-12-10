@@ -71,7 +71,7 @@
 
   <PropertyGroup>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
-    <PackageFileName>$(OutputName)</PackageFileName>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
 
     <!-- Suppresses building this project completely during servicing builds. -->

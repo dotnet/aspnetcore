@@ -80,7 +80,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>$(OutputName)</PackageFileName>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
