@@ -15,6 +15,7 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\Middleware\\HostFiltering\\src\\Microsoft.AspNetCore.HostFiltering.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\HttpSys\\samples\\HotAddSample\\HotAddSample.csproj",
       "src\\Servers\\HttpSys\\samples\\QueueSharing\\QueueSharing.csproj",
@@ -24,6 +25,7 @@
       "src\\Servers\\HttpSys\\test\\FunctionalTests\\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj",
       "src\\Servers\\HttpSys\\test\\Tests\\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
