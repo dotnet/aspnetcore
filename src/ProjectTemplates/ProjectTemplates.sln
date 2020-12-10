@@ -177,8 +177,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaSer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Runtime", "..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj", "{E4AF72F9-9F63-4965-ADEE-A67147E5FC31}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Templates", "ComponentsWebAssembly.ProjectTemplates\Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj", "{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1221,18 +1219,6 @@ Global
 		{E4AF72F9-9F63-4965-ADEE-A67147E5FC31}.Release|x64.Build.0 = Release|Any CPU
 		{E4AF72F9-9F63-4965-ADEE-A67147E5FC31}.Release|x86.ActiveCfg = Release|Any CPU
 		{E4AF72F9-9F63-4965-ADEE-A67147E5FC31}.Release|x86.Build.0 = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|x64.Build.0 = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Debug|x86.Build.0 = Debug|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|x64.ActiveCfg = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|x64.Build.0 = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|x86.ActiveCfg = Release|Any CPU
-		{5AE7B4C4-790D-4809-A5FE-D7303DFBC11B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
