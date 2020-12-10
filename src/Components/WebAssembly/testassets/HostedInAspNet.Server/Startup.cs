@@ -54,7 +54,7 @@ namespace HostedInAspNet.Server
                 app.UseBlazorFrameworkFiles("/app");
             }
 
-            if(!mapAlternativePathApp || mapAllApps) 
+            if (mapAllApps || !mapAlternativePathApp)
             {
                 app.UseBlazorFrameworkFiles();
             }
