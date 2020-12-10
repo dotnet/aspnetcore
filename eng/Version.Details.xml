@@ -94,8 +94,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -210,8 +210,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="5.0.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -247,8 +247,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -295,16 +295,16 @@
          All Runtime.$rid packages should have the same version.
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20575.16">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20610.7">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20575.16">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20610.7">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>681e2c3e1e8cbece1c796f7afc3c3a9bd9759d56</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
