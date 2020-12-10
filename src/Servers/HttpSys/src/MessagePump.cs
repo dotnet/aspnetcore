@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // else // Attaching to an existing queue, don't add a default.
 
             // Can't start twice
-            Debug.Assert(RequestContextFactory != null);
+            Debug.Assert(RequestContextFactory == null, "Start called twice!");
 
             Debug.Assert(application != null);
 
