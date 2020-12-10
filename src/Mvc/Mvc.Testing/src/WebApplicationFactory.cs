@@ -172,9 +172,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 return;
             }
 
-            // Where do we store the file that we read the JSON config from
-            var fromFile = File.Exists("AppManifest.json");
-            var contentRoot = fromFile ? GetContentRootFromFile("AppManifest.json") : GetContentRootFromAssembly();
+            var fromFile = File.Exists("MvcTestingAppManifest.json");
+            var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : GetContentRootFromAssembly();
 
             if (contentRoot != null)
             {

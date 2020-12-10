@@ -35,14 +35,14 @@
       </_ManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)AppManifest.json" Projects="@(_ManifestProjects)"/>
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
 
     <ItemGroup>
-      <ContentWithTargetPath Include="$(IntermediateOutputPath)AppManifest.json"
-        TargetPath="AppManifest.json"
+      <ContentWithTargetPath Include="$(IntermediateOutputPath)MvcTestingAppManifest.json"
+        TargetPath="MvcTestingAppManifest.json"
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="Never"/>
-      <FileWrites Include="$(IntermediateOutputPath)AppManifest.json" />
+      <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
     </ItemGroup>
   </Target>
 
