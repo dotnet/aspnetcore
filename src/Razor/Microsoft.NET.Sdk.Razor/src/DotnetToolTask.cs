@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string PipeName { get; set; }
 
-        protected override string ToolName => Path.GetDirectoryName(DotNetPath);
+        protected override string ToolName => "dotnet";
 
         // If we're debugging then make all of the stdout gets logged in MSBuild
         protected override MessageImportance StandardOutputLoggingImportance => DebugTool ? MessageImportance.High : base.StandardOutputLoggingImportance;
@@ -60,11 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     return _dotnetPath;
                 }
 
-                _dotnetPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
-                if (string.IsNullOrEmpty(_dotnetPath))
-                {
-                    throw new InvalidOperationException("DOTNET_HOST_PATH is not set");
-                }
+                _dotnetPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolExe;
 
                 return _dotnetPath;
             }
