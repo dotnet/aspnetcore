@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -10,6 +11,13 @@ namespace HostedInAspNet.Server
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -20,6 +28,8 @@ namespace HostedInAspNet.Server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, BootResourceRequestLog bootResourceRequestLog)
         {
+            var mapAlternativePathApp = Configuration.GetValue<bool>("UseAlternativeBasePath");
+            var mapAllApps = Configuration.GetValue<bool>("MapAllApps");
             app.Use((context, next) =>
             {
                 // This is used by E2E tests to verify that the correct resources were fetched,
@@ -39,14 +49,31 @@ namespace HostedInAspNet.Server
                 app.UseWebAssemblyDebugging();
             }
 
-            app.UseBlazorFrameworkFiles();
+            if (mapAllApps || mapAlternativePathApp)
+            {
+                app.UseBlazorFrameworkFiles("/app");
+            }
+
+            if (mapAllApps || !mapAlternativePathApp)
+            {
+                app.UseBlazorFrameworkFiles();
+            }
+
             app.UseStaticFiles();
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapFallbackToFile("index.html");
+                if (mapAllApps || mapAlternativePathApp)
+                {
+                    endpoints.MapFallbackToFile("/app/{**slug:nonfile}", "app/index.html");
+                }
+
+                if (mapAllApps || !mapAlternativePathApp)
+                {
+                    endpoints.MapFallbackToFile("index.html");
+                }
             });
         }
     }
