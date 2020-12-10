@@ -192,6 +192,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                     if (!Listener.ValidateRequest(requestContext))
                     {
+                        // Dispose the request
+                        requestContext.Dispose();
+
                         // If either of these is false then a response has already been sent to the client, so we can accept the next request
                         continue;
                     }

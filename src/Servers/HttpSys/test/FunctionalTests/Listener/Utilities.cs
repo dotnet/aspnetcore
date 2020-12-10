@@ -127,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                         requestContext.InitializeFeatures();
                         return requestContext;
                     }
+
+                    requestContext.Dispose();
                 }
             }
 

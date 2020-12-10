@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return acceptContext.AcceptAsync();
         }
 
-        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
+        internal bool ValidateRequest(NativeRequestContext requestMemory)
         {
             // Block potential DOS attacks
             if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
