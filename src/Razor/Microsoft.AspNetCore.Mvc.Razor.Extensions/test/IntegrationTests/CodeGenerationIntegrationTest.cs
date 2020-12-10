@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions")
         {
             Configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
+                RazorLanguageVersion.Latest,
                 "MVC-3.0",
                 new[] { new AssemblyExtension("MVC-3.0", typeof(ExtensionInitializer).Assembly) });
         }

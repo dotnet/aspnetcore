@@ -39,17 +39,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            // Respect @preservewhitespace directives
-            if (PreserveWhitespaceIsEnabled(documentNode))
+            var razorLanguageVersion = codeDocument.GetParserOptions().Version;
+            var useLegacyBehavior = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) < 0;
+            if (useLegacyBehavior)
             {
-                return;
-            }
+                // Prior to 5.0, the whitespace pass only applied to the BuildRenderTree method, and
+                // only removed the top-level leading and trailing whitespace
 
-            var @class = documentNode.FindPrimaryClass();
-            if (@class != null)
+                var method = documentNode.FindPrimaryMethod();
+                if (method != null)
+                {
+                    RemoveContiguousWhitespace(method.Children, TraversalDirection.Forwards);
+                    RemoveContiguousWhitespace(method.Children, TraversalDirection.Backwards);
+                }
+            }
+            else
             {
-                var visitor = new Visitor();
-                visitor.Visit(@class);
+                // From 5.0 onwards, the whitespace pass applies as broadly as possible. It removes leading
+                // and trailing whitespace from all methods, elements, and child component blocks. There's
+                // also a directive that can disable it.
+
+                // Respect @preservewhitespace directives
+                if (PreserveWhitespaceIsEnabled(documentNode))
+                {
+                    return;
+                }
+
+                var @class = documentNode.FindPrimaryClass();
+                if (@class != null)
+                {
+                    var visitor = new Visitor();
+                    visitor.Visit(@class);
+                }
             }
         }
 
