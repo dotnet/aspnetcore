@@ -27,6 +27,5 @@
 
   <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
-    <Content Include="AppManifest.json"/>
   </ItemGroup>
 </Project>

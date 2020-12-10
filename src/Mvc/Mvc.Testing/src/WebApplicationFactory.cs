@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Runtime.Serialization.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -186,8 +187,12 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         private string GetContentRootFromFile(string file) {
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(file);
-            var key = typeof(TEntryPoint).Assembly.GetName().Name;
+            var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>), new DataContractJsonSerializerSettings
+            {
+                UseSimpleDictionaryFormat = true
+            });
+            var data = (Dictionary<string, string>)serializer.ReadObject(File.Open(file, FileMode.Open));
+            var key = typeof(TEntryPoint).Assembly.GetName().FullName;
             return data[key];
         }
 
