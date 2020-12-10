@@ -1,26 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
+    public class MultipleHostedAppTest: ServerTestBase<AspNetSiteServerFixture>
     {
-        public HostedInAspNetTest(
+        public MultipleHostedAppTest(
             BrowserFixture browserFixture,
             AspNetSiteServerFixture serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
+            serverFixture.AdditionalArguments.AddRange(new[] { "--MapAllApps", "true" });
             serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;
         }
@@ -29,6 +27,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Navigate("/", noReload: true);
             WaitUntilLoaded();
+        }
+
+        [Fact]
+        public void CanLoadBlazorAppFromSubPath()
+        {
+            Navigate("/app/");
+            WaitUntilLoaded();
+            Assert.Equal("App loaded on custom path", Browser.Title);
+            Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
         }
 
         [Fact]

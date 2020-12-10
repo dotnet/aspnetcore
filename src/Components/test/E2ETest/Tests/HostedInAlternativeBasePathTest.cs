@@ -5,45 +5,35 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
+    public class HostedInAlternativeBasePathTest : ServerTestBase<AspNetSiteServerFixture>
     {
-        public HostedInAspNetTest(
+        public HostedInAlternativeBasePathTest(
             BrowserFixture browserFixture,
             AspNetSiteServerFixture serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
+            serverFixture.AdditionalArguments.AddRange(new[] { "--UseAlternativeBasePath", "true" });
             serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;
         }
 
         protected override void InitializeAsyncCore()
         {
-            Navigate("/", noReload: true);
+            Navigate("/app/", noReload: true);
             WaitUntilLoaded();
         }
 
         [Fact]
-        public void HasTitle()
+        public void CanLoadBlazorAppFromSubPath()
         {
-            Assert.Equal("Sample Blazor app", Browser.Title);
-        }
-
-        [Fact]
-        public void ServesStaticAssetsFromClientAppWebRoot()
-        {
-            var javascriptExecutor = (IJavaScriptExecutor)Browser;
-            var bootstrapTooltipType = javascriptExecutor
-                .ExecuteScript("return window.customJsWasLoaded;");
-            Assert.True((bool)bootstrapTooltipType);
+            Assert.Equal("App loaded on custom path", Browser.Title);
+            Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
         }
 
         private void WaitUntilLoaded()
