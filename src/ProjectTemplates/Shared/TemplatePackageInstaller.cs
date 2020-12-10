@@ -54,6 +54,7 @@ namespace Templates.Test.Helpers
             await ProcessLock.DotNetNewLock.WaitAsync();
             try
             {
+                output.WriteLine("Acquired DotNetNewLock");
                 if (!_haveReinstalledTemplatePackages)
                 {
                     if (Directory.Exists(CustomHivePath))
@@ -67,6 +68,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 ProcessLock.DotNetNewLock.Release();
+                output.WriteLine("Released DotNetNewLock");
             }
         }
 
