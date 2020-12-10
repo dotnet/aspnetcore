@@ -1,0 +1,24 @@
+﻿@page "/TestHistory"
+@inject NavigationManager NavigationManager
+
+<div id="test-info">This is the test history page.</div>
+
+<button id="do-other-navigation" @onclick=@(_ => NavigationManager.NavigateTo("Other"))>
+    Programmatic navigation (new overload)
+</button>
+
+<button id="do-other-navigation2" @onclick=@(_ => NavigationManager.NavigateTo("Other", false))>
+    Programmatic navigation
+</button>
+
+<button id="do-other-navigation-forced" @onclick=@(_ => NavigationManager.NavigateTo("Other", true))>
+    Programmatic navigation with force-load
+</button>
+
+<button id="do-other-navigation-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", NavigationOptions.ReplaceHistoryEntry))>
+    Programmatic navigation with history replace
+</button>
+
+<button id="do-other-navigation-forced-replacehistoryentry" @onclick=@(_ => NavigationManager.NavigateTo("Other", NavigationOptions.ReplaceHistoryEntry | NavigationOptions.ForceLoad))>
+    Programmatic navigation with force-load and history replace
+</button>
