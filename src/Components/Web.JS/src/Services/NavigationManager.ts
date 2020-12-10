@@ -80,7 +80,11 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);
   } else if (replace){
-    history.replaceState(null, '', absoluteUri)
+      if (forceLoad) {
+        location.replace(uri);
+      } else {
+        history.replaceState(null, '', absoluteUri)
+      }
   } else {
     // It's either an external URL, or forceLoad is requested, so do a full page load
     location.href = uri;
@@ -91,7 +95,7 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
-  // To avoid ugly flickering effects, we don't want to change the scroll position until the
+  // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
