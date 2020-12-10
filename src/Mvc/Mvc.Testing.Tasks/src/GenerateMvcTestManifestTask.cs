@@ -12,7 +12,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
 {
-    public class GenerateMvcTestManifest : Task
+    public class GenerateMvcTestManifestTask : Task
     {
         [Required]
         public string ManifestPath { get; set; }
@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
             var output = new Dictionary<string, string>();
 
             foreach (var project in Projects) {
-                var path = project.GetMetadata("Path");
-                var assemblyName = project.GetMetadata("Name");
-                output[assemblyName] = path;
+                var contentRoot = project.GetMetadata("ContentRoot");
+                var assemblyName = project.GetMetadata("Identity");
+                output[assemblyName] = contentRoot;
             }
 
             var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>), new DataContractJsonSerializerSettings
