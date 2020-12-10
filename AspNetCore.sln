@@ -1567,6 +1567,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Cachin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.StackExchangeRedis.Tests", "src\Caching\StackExchangeRedis\test\Microsoft.Extensions.Caching.StackExchangeRedis.Tests.csproj", "{14DBB385-A1B1-49B2-A737-4DF90E127E5A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IStartupInjectionAssemblyName", "src\Hosting\test\testassets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj", "{5FD94164-7D13-4618-93AD-7346B0EA0CDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -7503,6 +7505,18 @@ Global
 		{14DBB385-A1B1-49B2-A737-4DF90E127E5A}.Release|x64.Build.0 = Release|Any CPU
 		{14DBB385-A1B1-49B2-A737-4DF90E127E5A}.Release|x86.ActiveCfg = Release|Any CPU
 		{14DBB385-A1B1-49B2-A737-4DF90E127E5A}.Release|x86.Build.0 = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Debug|x86.Build.0 = Debug|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|x64.Build.0 = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|x86.ActiveCfg = Release|Any CPU
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -8286,6 +8300,7 @@ Global
 		{20CA28CC-FCDB-49F3-8452-5036E0BADCA7} = {43ED0D49-E29A-4B12-8D10-531E006038E5}
 		{3CC4AA4E-F7E6-4BAE-B2B7-BCEC9509F68D} = {A7B8F295-AD6E-42C1-A215-17337033EBE9}
 		{14DBB385-A1B1-49B2-A737-4DF90E127E5A} = {A7B8F295-AD6E-42C1-A215-17337033EBE9}
+		{5FD94164-7D13-4618-93AD-7346B0EA0CDD} = {C1409A8F-555A-4A88-B803-C6D3E8B6C3B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

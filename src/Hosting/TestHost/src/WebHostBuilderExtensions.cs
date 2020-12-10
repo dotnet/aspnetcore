@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.TestHost
 
                 directoryInfo = directoryInfo.Parent;
             }
-            while (directoryInfo.Parent != null);
+            while (directoryInfo!.Parent != null);
 
             throw new InvalidOperationException($"Solution root could not be located using application root {applicationBasePath}.");
         }
