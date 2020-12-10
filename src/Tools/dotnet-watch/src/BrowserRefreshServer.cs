@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +21,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class BrowserRefreshServer : IAsyncDisposable
     {
+        private readonly byte[] ReloadMessage = Encoding.UTF8.GetBytes("Reload");
+        private readonly byte[] WaitMessage = Encoding.UTF8.GetBytes("Wait");
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _taskCompletionSource;
         private IHost _refreshServer;
@@ -73,7 +76,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             await _taskCompletionSource.Task;
         }
 
-        public async Task SendMessage(byte[] messageBytes, CancellationToken cancellationToken = default)
+        public async virtual ValueTask SendMessage(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken = default)
         {
             if (_webSocket == null || _webSocket.CloseStatus.HasValue)
             {
@@ -105,5 +108,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             _taskCompletionSource.TrySetResult();
         }
+
+        public ValueTask ReloadAsync(CancellationToken cancellationToken) => SendMessage(ReloadMessage, cancellationToken);
+
+        public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken) => SendMessage(WaitMessage, cancellationToken);
     }
 }

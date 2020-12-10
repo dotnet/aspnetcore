@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -6,6 +6,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -14,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
         private readonly PreAllocatedOverlapped _preallocatedOverlapped;
+        private readonly IRequestContextFactory _requestContextFactory;
+
         private NativeOverlapped* _overlapped;
 
         // mutable struct; do not make this readonly
@@ -25,9 +26,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private RequestContext _requestContext;
 
-        internal AsyncAcceptContext(HttpSysListener server)
+        internal AsyncAcceptContext(HttpSysListener server, IRequestContextFactory requestContextFactory)
         {
             Server = server;
+            _requestContextFactory = requestContextFactory;
             _preallocatedOverlapped = new(IOCallback, state: this, pinData: null);
         }
 
@@ -53,7 +55,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static void IOCompleted(AsyncAcceptContext asyncContext, uint errorCode, uint numBytes)
         {
-            var complete = false;
             // This is important to stash a ref to as it's a mutable struct
             ref var mrvts = ref asyncContext._mrvts;
             var requestContext = asyncContext._requestContext;
@@ -71,48 +72,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 HttpSysListener server = asyncContext.Server;
                 if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
-                    // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
-                    // points to it we need to hook up our authentication handling code here.
-                    try
-                    {
-                        if (server.ValidateRequest(requestContext) && server.ValidateAuth(requestContext))
-                        {
-                            // It's important that we clear the request context before we set the result
-                            // we want to reuse the acceptContext object for future accepts.
-                            asyncContext._requestContext = null;
+                    // It's important that we clear the request context before we set the result
+                    // we want to reuse the acceptContext object for future accepts.
+                    asyncContext._requestContext = null;
 
-                            // Initialize features here once we're successfully validated the request
-                            // TODO: In the future defer this work to the thread pool so we can get off the IO thread
-                            // as quickly as possible
-                            requestContext.InitializeFeatures();
-
-                            mrvts.SetResult(requestContext);
-
-                            complete = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        server.SendError(requestId, StatusCodes.Status400BadRequest);
-                        mrvts.SetException(ex);
-                    }
-                    finally
-                    {
-                        if (!complete)
-                        {
-                            asyncContext.AllocateNativeRequest(size: requestContext.Size);
-                        }
-                    }
+                    mrvts.SetResult(requestContext);
                 }
                 else
                 {
                     //  (uint)backingBuffer.Length - AlignmentPadding
                     asyncContext.AllocateNativeRequest(numBytes, requestId);
-                }
 
-                // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                if (!complete)
-                {
+                    // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
                     uint statusCode = asyncContext.QueueBeginGetContext();
 
                     if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
@@ -193,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 boundHandle.FreeNativeOverlapped(_overlapped);
             }
 
-            _requestContext = new RequestContext(Server, size, requestId);
+            _requestContext = _requestContextFactory.CreateRequestContext(size, requestId);
             _overlapped = boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped);
         }
 

@@ -102,7 +102,7 @@ Microsoft.AspNetCore.Connections.IConnectionBuilder.Use(System.Func<Microsoft.As
 Microsoft.AspNetCore.Connections.IConnectionFactory
 Microsoft.AspNetCore.Connections.IConnectionFactory.ConnectAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
 Microsoft.AspNetCore.Connections.IConnectionListener
-Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Connections.IConnectionListener.EndPoint.get -> System.Net.EndPoint!
 Microsoft.AspNetCore.Connections.IConnectionListener.UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Connections.IConnectionListenerFactory

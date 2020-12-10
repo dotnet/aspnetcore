@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             TraceIdentifier = 0x200,
         }
 
-        public void InitializeFeatures()
+        protected internal void InitializeFeatures()
         {
             _initialized = true;
 
@@ -616,10 +616,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return;
             }
 
-            actions.Reverse();
             // Execute last to first. This mimics a stack unwind.
-            foreach (var actionPair in actions)
+            for (var i = actions.Count - 1; i >= 0; i--)
             {
+                var actionPair = actions[i];
                 await actionPair.Item1(actionPair.Item2);
             }
         }
@@ -707,10 +707,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return;
             }
 
-            actions.Reverse();
             // Execute last to first. This mimics a stack unwind.
-            foreach (var actionPair in actions)
+            for (var i = actions.Count - 1; i >= 0; i--)
             {
+                var actionPair = actions[i];
                 await actionPair.Item1(actionPair.Item2);
             }
         }

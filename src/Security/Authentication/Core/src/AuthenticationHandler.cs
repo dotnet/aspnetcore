@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         {
-            Logger = logger.CreateLogger(this.GetType().FullName);
+            Logger = logger.CreateLogger(this.GetType().FullName!);
             UrlEncoder = encoder;
             Clock = clock;
             OptionsMonitor = options;

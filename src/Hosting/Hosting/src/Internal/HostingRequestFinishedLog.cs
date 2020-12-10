@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Hosting
 
     internal class HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestFinishedLog)state).ToString();
+        internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestFinishedLog)state).ToString();
 
         private readonly HostingApplication.Context _context;
 

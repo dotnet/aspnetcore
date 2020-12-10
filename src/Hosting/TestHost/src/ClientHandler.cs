@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.Method = request.Method.ToString();
 
-                req.Scheme = request.RequestUri.Scheme;
+                req.Scheme = request.RequestUri!.Scheme;
 
                 var canHaveBody = false;
                 if (requestContent != null)

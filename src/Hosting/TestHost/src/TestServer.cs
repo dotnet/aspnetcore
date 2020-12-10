@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class TestServer : IServer
     {
-        private IWebHost _hostInstance;
+        private IWebHost? _hostInstance;
         private bool _disposed = false;
-        private ApplicationWrapper _application;
+        private ApplicationWrapper? _application;
 
         /// <summary>
         /// For use with IHostBuilder.

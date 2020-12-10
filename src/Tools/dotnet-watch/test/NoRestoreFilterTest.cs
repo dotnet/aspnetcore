@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Test.proj";
+            context.ChangedFile = new FileItem("Test.proj");
             context.RequiresMSBuildRevaluation = true;
             context.Iteration++;
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             await filter.ProcessAsync(context, default);
 
-            context.ChangedFile = "Program.cs";
+            context.ChangedFile = new FileItem("Program.cs");
             context.Iteration++;
 
             // Act

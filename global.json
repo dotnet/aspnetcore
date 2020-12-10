@@ -6,14 +6,14 @@
     "dotnet": "6.0.100-alpha.1.20523.3",
     "runtimes": {
       "dotnet/x64": [
-        "2.1.18",
+        "2.1.23",
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
-        "3.1.4"
+        "3.1.10"
       ]
     },
     "Git": "2.22.0",
@@ -30,7 +30,7 @@
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.22.10",
-    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.20601.2",
-    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20601.2"
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.20607.11",
+    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20607.11"
   }
 }

@@ -8,6 +8,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- Temporarily target the previous runtime until https://github.com/dotnet/sdk/pull/14574 is merged. -->
+    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>

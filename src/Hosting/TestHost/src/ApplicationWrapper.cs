@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal abstract Task ProcessRequestAsync(object context);
 
-        internal abstract void DisposeContext(object context, Exception exception);
+        internal abstract void DisposeContext(object context, Exception? exception);
     }
 
-    internal class ApplicationWrapper<TContext> : ApplicationWrapper, IHttpApplication<TContext>
+    internal class ApplicationWrapper<TContext> : ApplicationWrapper, IHttpApplication<TContext> where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
         private readonly Action _preProcessRequestAsync;
@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.TestHost
             return _application.CreateContext(features);
         }
 
-        internal override void DisposeContext(object context, Exception exception)
+        internal override void DisposeContext(object context, Exception? exception)
         {
             ((IHttpApplication<TContext>)this).DisposeContext((TContext)context, exception);
         }
 
-        void IHttpApplication<TContext>.DisposeContext(TContext context, Exception exception)
+        void IHttpApplication<TContext>.DisposeContext(TContext context, Exception? exception)
         {
             _application.DisposeContext(context, exception);
         }
