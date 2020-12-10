@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
             }
             while (_bufferCount < minCount)
             {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
             }
             while (_bufferCount < minCount)
             {

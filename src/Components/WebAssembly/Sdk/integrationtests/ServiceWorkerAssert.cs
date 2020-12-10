@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static AssetsManifestFile ReadServiceWorkerAssetsManifest(string assetsManifestResolvedPath)
         {
             var jsContents = File.ReadAllText(assetsManifestResolvedPath);
-            var jsonStart = jsContents.IndexOf("{");
-            var jsonLength = jsContents.LastIndexOf("}") - jsonStart + 1;
+            var jsonStart = jsContents.IndexOf('{');
+            var jsonLength = jsContents.LastIndexOf('}') - jsonStart + 1;
             var json = jsContents.Substring(jsonStart, jsonLength);
             return JsonSerializer.Deserialize<AssetsManifestFile>(json);
         }

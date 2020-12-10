@@ -75,6 +75,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public HttpMessageHandler BackchannelHttpHandler { get; set; }
 
         /// <summary>
+        /// The Backchannel used to retrieve metadata.
+        /// </summary>
+        public HttpClient Backchannel { get; set; } = default!;
+
+        /// <summary>
         /// Gets or sets the timeout when using the backchannel to make an http call.
         /// </summary>
         public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromMinutes(1);

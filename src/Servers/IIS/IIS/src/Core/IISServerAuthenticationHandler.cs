@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     /// <summary>
     /// The default authentication handler with IIS In-Process
     /// </summary>
+    [Obsolete("The IISServerAuthenticationHandler is obsolete and will be removed in a future release.")]
     public class IISServerAuthenticationHandler : IAuthenticationHandler
     {
         private HttpContext _context;

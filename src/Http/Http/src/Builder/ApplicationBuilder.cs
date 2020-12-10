@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
         private const string ServerFeaturesKey = "server.Features";
         private const string ApplicationServicesKey = "application.Services";
 
-        private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
+        private readonly List<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public ApplicationBuilder(IServiceProvider serviceProvider)
         {
@@ -99,9 +99,9 @@ namespace Microsoft.AspNetCore.Builder
                 return Task.CompletedTask;
             };
 
-            foreach (var component in _components.Reverse())
+            for (var c = _components.Count - 1; c >= 0; c--)
             {
-                app = component(app);
+                app = _components[c](app);
             }
 
             return app;

@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var parameterBuilder = new StringBuilder();
             foreach (var signaturePart in signatureParts)
             {
-                parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
+                parameterBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
             }
             parameterBuilder.Length--;
             var parameterString = parameterBuilder.ToString();
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 var queryStringBuilder = new StringBuilder("?");
                 foreach (var queryParam in queryParameters)
                 {
-                    queryStringBuilder.AppendFormat("{0}={1}&", queryParam.Key, queryParam.Value);
+                    queryStringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
                 }
                 queryStringBuilder.Length--;
                 queryString = queryStringBuilder.ToString();
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             authorizationHeaderBuilder.Append("OAuth ");
             foreach (var authorizationPart in authorizationParts)
             {
-                authorizationHeaderBuilder.AppendFormat("{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+                authorizationHeaderBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
             }
             authorizationHeaderBuilder.Length--;
 

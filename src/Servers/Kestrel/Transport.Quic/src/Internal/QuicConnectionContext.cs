@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _closeTask = _connection.CloseAsync(errorCode: Error);
         }
 
-        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             return null;
         }
 
-        public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
             QuicStream quicStream;
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -195,6 +196,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         private string GenerateQrCodeUri(string email, string unformattedKey)
         {
             return string.Format(
+                CultureInfo.InvariantCulture,
                 AuthenticatorUriFormat,
                 _urlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
                 _urlEncoder.Encode(email),

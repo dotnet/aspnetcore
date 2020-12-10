@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Builder
         private static RequestDelegate CreateRequestDelegate(
             IEndpointRouteBuilder endpoints,
             string filePath,
-            StaticFileOptions options = null)
+            StaticFileOptions? options = null)
         {
             var app = endpoints.CreateApplicationBuilder();
             app.Use(next => context =>

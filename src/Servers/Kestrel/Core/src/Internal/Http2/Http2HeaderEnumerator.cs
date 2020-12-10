@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private HeadersType _headersType;
         private HttpResponseHeaders.Enumerator _headersEnumerator;
         private HttpResponseTrailers.Enumerator _trailersEnumerator;
-        private IEnumerator<KeyValuePair<string, StringValues>> _genericEnumerator;
+        private IEnumerator<KeyValuePair<string, StringValues>>? _genericEnumerator;
         private StringValues.Enumerator _stringValuesEnumerator;
         private bool _hasMultipleValues;
         private KnownHeaderType _knownHeaderType;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else
             {
-                return _genericEnumerator.MoveNext()
+                return _genericEnumerator!.MoveNext()
                     ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, default)
                     : false;
             }
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else
             {
-                _genericEnumerator.Reset();
+                _genericEnumerator!.Reset();
             }
             _stringValuesEnumerator = default;
             _knownHeaderType = default;

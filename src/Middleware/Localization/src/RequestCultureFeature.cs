@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Localization
         /// </summary>
         /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
         /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
-        public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider provider)
+        public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider? provider)
         {
             if (requestCulture == null)
             {
@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Localization
         public RequestCulture RequestCulture { get; }
 
         /// <inheritdoc />
-        public IRequestCultureProvider Provider { get; }
+        public IRequestCultureProvider? Provider { get; }
     }
 }

@@ -15,6 +15,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestHttp1Connection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestKestrelTrace.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestContextFactory.cs" />
     <Compile Include="..\..\Transport.Sockets\src\Internal\IOQueue.cs" Link="Internal\IOQueue.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />

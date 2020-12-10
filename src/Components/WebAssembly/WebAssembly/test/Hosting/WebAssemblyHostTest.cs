@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CanExitBasedOnCancellationToken()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
             host.CultureProvider = new TestSatelliteResourcesLoader();
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CallingTwiceCausesException()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
             host.CultureProvider = new TestSatelliteResourcesLoader();
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
             host.CultureProvider = new TestSatelliteResourcesLoader();
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
         {
             internal TestSatelliteResourcesLoader()
-                : base(WebAssemblyJSRuntimeInvoker.Instance, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
+                : base(DefaultWebAssemblyJSRuntime.Instance, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
             {
             }
 

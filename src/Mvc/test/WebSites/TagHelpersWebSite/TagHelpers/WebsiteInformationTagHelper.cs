@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TagHelpersWebSite.Models;
 
@@ -15,14 +16,15 @@ namespace TagHelpersWebSite.TagHelpers
         {
             output.TagName = "section";
             output.PostContent.AppendHtml(string.Format(
+                CultureInfo.InvariantCulture,
                 "<p><strong>Version:</strong> {0}</p>" + Environment.NewLine +
                 "<p><strong>Copyright Year:</strong> {1}</p>" + Environment.NewLine +
                 "<p><strong>Approved:</strong> {2}</p>" + Environment.NewLine +
                 "<p><strong>Number of tags to show:</strong> {3}</p>" + Environment.NewLine,
-                Info.Version.ToString(),
-                Info.CopyrightYear.ToString(),
-                Info.Approved.ToString(),
-                Info.TagsToShow.ToString()));
+                Info.Version,
+                Info.CopyrightYear,
+                Info.Approved,
+                Info.TagsToShow));
             output.TagMode = TagMode.StartTagAndEndTag;
         }
     }

@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HstsLoggingExtensions
     {
-        private static readonly Action<ILogger, Exception> _notSecure;
-        private static readonly Action<ILogger, string, Exception> _excludedHost;
-        private static readonly Action<ILogger, Exception> _addingHstsHeader;
+        private static readonly Action<ILogger, Exception?> _notSecure;
+        private static readonly Action<ILogger, string, Exception?> _excludedHost;
+        private static readonly Action<ILogger, Exception?> _addingHstsHeader;
 
         static HstsLoggingExtensions()
         {

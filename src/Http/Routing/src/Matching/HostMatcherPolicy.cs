@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -471,7 +472,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public override string ToString()
             {
-                return $"{Host}:{Port?.ToString() ?? WildcardHost}";
+                return $"{Host}:{Port?.ToString(CultureInfo.InvariantCulture) ?? WildcardHost}";
             }
         }
     }

@@ -146,7 +146,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_InRelease_Works()
         {
             // Arrange
@@ -419,7 +418,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -453,7 +451,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task Publish_HostedApp_DefaultSettings_Works()
         {
             // Arrange
@@ -515,7 +512,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange

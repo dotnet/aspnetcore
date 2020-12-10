@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                 };
 
                 app.HelpOption();
-                app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+                app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
                 var verbose = app.VerboseOption();
 
                 app.Command("create", command =>

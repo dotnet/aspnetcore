@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Session
                             }
                             Assert.True(value.HasValue);
                             context.Session.SetInt32("Key", value.Value + 1);
-                            return context.Response.WriteAsync(value.Value.ToString());
+                            return context.Response.WriteAsync(value.Value.ToString(CultureInfo.InvariantCulture));
                         });
                     })
                     .ConfigureServices(services =>
@@ -244,7 +245,7 @@ namespace Microsoft.AspNetCore.Session
                                 Assert.False(value.HasValue);
                                 value = 2;
                             }
-                            return context.Response.WriteAsync(value.Value.ToString());
+                            return context.Response.WriteAsync(value.Value.ToString(CultureInfo.InvariantCulture));
                         });
                     })
                     .ConfigureServices(
@@ -303,7 +304,7 @@ namespace Microsoft.AspNetCore.Session
                                 Assert.False(value.HasValue);
                                 value = 2;
                             }
-                            return context.Response.WriteAsync(value.Value.ToString());
+                            return context.Response.WriteAsync(value.Value.ToString(CultureInfo.InvariantCulture));
                         });
                     })
                     .ConfigureServices(services =>
@@ -406,7 +407,7 @@ namespace Microsoft.AspNetCore.Session
                                 Assert.False(value.HasValue);
                                 value = 2;
                             }
-                            return context.Response.WriteAsync(value.Value.ToString());
+                            return context.Response.WriteAsync(value.Value.ToString(CultureInfo.InvariantCulture));
                         });
                     })
                     .ConfigureServices(services =>
@@ -683,7 +684,8 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var message = Assert.Single(sink.Writes);
+            Assert.NotEmpty(sink.Writes);
+            var message = sink.Writes.First();
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
         }
@@ -731,7 +733,8 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var message = Assert.Single(sink.Writes);
+            Assert.NotEmpty(sink.Writes);
+            var message = sink.Writes.First();
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
         }

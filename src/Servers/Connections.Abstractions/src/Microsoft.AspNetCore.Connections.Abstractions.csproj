@@ -23,7 +23,7 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' ">
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
     <!--
       Dependency (a transitive reference) was removed in 5.0. Suppression can be
       removed after 5.0 RTM is released.

@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.Localization
                 }
 
                 var format = GetStringSafely(name, null);
-                var value = string.Format(format ?? name, arguments);
+                var value = string.Format(CultureInfo.CurrentCulture, format ?? name, arguments);
 
                 return new LocalizedString(name, value, resourceNotFound: format == null, searchedLocation: _resourceBaseName);
             }
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.Localization
 
             try
             {
-                return culture == null ? _resourceManager.GetString(name) : _resourceManager.GetString(name, culture);
+                return _resourceManager.GetString(name, culture);
             }
             catch (MissingManifestResourceException)
             {

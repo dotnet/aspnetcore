@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 
@@ -118,6 +119,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.CaseSensitive = true;
                 builder.Documentation = string.Format(
+                    CultureInfo.CurrentCulture,
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     attributeName,
                     eventArgType);
@@ -176,6 +178,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.BindAttribute(a =>
                 {
                     a.Documentation = string.Format(
+                        CultureInfo.CurrentCulture,
                         ComponentResources.EventHandlerTagHelper_Documentation,
                         attributeName,
                         eventArgType);
@@ -201,7 +204,8 @@ namespace Microsoft.CodeAnalysis.Razor
                         {
                             parameter.Name = "preventDefault";
                             parameter.TypeName = typeof(bool).FullName;
-                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_PreventDefault_Documentation, attributeName);
+                            parameter.Documentation = string.Format(
+                                CultureInfo.CurrentCulture, ComponentResources.EventHandlerTagHelper_PreventDefault_Documentation, attributeName);
 
                             parameter.SetPropertyName("PreventDefault");
                         });
@@ -213,7 +217,8 @@ namespace Microsoft.CodeAnalysis.Razor
                         {
                             parameter.Name = "stopPropagation";
                             parameter.TypeName = typeof(bool).FullName;
-                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_StopPropagation_Documentation, attributeName);
+                            parameter.Documentation = string.Format(
+                                CultureInfo.CurrentCulture, ComponentResources.EventHandlerTagHelper_StopPropagation_Documentation, attributeName);
 
                             parameter.SetPropertyName("StopPropagation");
                         });

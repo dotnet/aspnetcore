@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
                 {
-                    message = message + Environment.NewLine + ex.Message;
+                    if (ex != null)
+                    {
+                        message = message + Environment.NewLine + ex.Message;
+                    }
                 }
             }
 
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Hosting
             private readonly string _path;
             private readonly string _traceIdentifier;
 
-            private string _cachedToString;
+            private string? _cachedToString;
 
             public int Count
             {

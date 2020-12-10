@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage? message)
         {
             if (!BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return true;
         }
 
-        private HubMessage ParseMessage(ref MessagePackReader reader, IInvocationBinder binder)
+        private HubMessage? ParseMessage(ref MessagePackReader reader, IInvocationBinder binder)
         {
             var itemCount = reader.ReadArrayHeader();
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             var target = ReadString(ref reader, "target");
 
-            object[] arguments = null;
+            object[]? arguments;
             try
             {
                 var parameterTypes = binder.GetParameterTypes(target);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
 
-            string[] streams = null;
+            string[]? streams = null;
             // Previous clients will send 5 items, so we check if they sent a stream array or not
             if (itemCount > 5)
             {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var invocationId = ReadInvocationId(ref reader);
             var target = ReadString(ref reader, "target");
 
-            object[] arguments = null;
+            object[] arguments;
             try
             {
                 var parameterTypes = binder.GetParameterTypes(target);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
 
-            string[] streams = null;
+            string[]? streams = null;
             // Previous clients will send 5 items, so we check if they sent a stream array or not
             if (itemCount > 5)
             {
@@ -148,8 +148,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var invocationId = ReadInvocationId(ref reader);
             var resultKind = ReadInt32(ref reader, "resultKind");
 
-            string error = null;
-            object result = null;
+            string? error = null;
+            object? result = null;
             var hasResult = false;
 
             switch (resultKind)
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CloseMessage(error, allowReconnect);
         }
 
-        private Dictionary<string, string> ReadHeaders(ref MessagePackReader reader)
+        private Dictionary<string, string>? ReadHeaders(ref MessagePackReader reader)
         {
             var headerCount = ReadMapLength(ref reader, "headers");
             if (headerCount > 0)
@@ -219,10 +219,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private string[] ReadStreamIds(ref MessagePackReader reader)
+        private string[]? ReadStreamIds(ref MessagePackReader reader)
         {
             var streamIdCount = ReadArrayLength(ref reader, "streamIds");
-            List<string> streams = null;
+            List<string>? streams = null;
 
             if (streamIdCount > 0)
             {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         protected abstract object DeserializeObject(ref MessagePackReader reader, Type type, string field);
 
-        private T ApplyHeaders<T>(IDictionary<string, string> source, T destination) where T : HubInvocationMessage
+        private T ApplyHeaders<T>(IDictionary<string, string>? source, T destination) where T : HubInvocationMessage
         {
             if (source != null && source.Count > 0)
             {
@@ -374,10 +374,18 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 writer.Write(message.InvocationId);
             }
             writer.Write(message.Target);
-            writer.WriteArrayHeader(message.Arguments.Length);
-            foreach (var arg in message.Arguments)
+
+            if (message.Arguments is null)
             {
-                WriteArgument(arg, ref writer);
+                writer.WriteArrayHeader(0);
+            }
+            else
+            {
+                writer.WriteArrayHeader(message.Arguments.Length);
+                foreach (var arg in message.Arguments)
+                {
+                    WriteArgument(arg, ref writer);
+                }
             }
 
             WriteStreamIds(message.StreamIds, ref writer);
@@ -392,10 +400,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.Write(message.InvocationId);
             writer.Write(message.Target);
 
-            writer.WriteArrayHeader(message.Arguments.Length);
-            foreach (var arg in message.Arguments)
+            if (message.Arguments is null)
             {
-                WriteArgument(arg, ref writer);
+                writer.WriteArrayHeader(0);
+            }
+            else
+            {
+                writer.WriteArrayHeader(message.Arguments.Length);
+                foreach (var arg in message.Arguments)
+                {
+                    WriteArgument(arg, ref writer);
+                }
             }
 
             WriteStreamIds(message.StreamIds, ref writer);
@@ -410,7 +425,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteArgument(message.Item, ref writer);
         }
 
-        private void WriteArgument(object argument, ref MessagePackWriter writer)
+        private void WriteArgument(object? argument, ref MessagePackWriter writer)
         {
             if (argument == null)
             {
@@ -424,7 +439,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         protected abstract void Serialize(ref MessagePackWriter writer, Type type, object value);
 
-        private void WriteStreamIds(string[] streamIds, ref MessagePackWriter writer)
+        private void WriteStreamIds(string[]? streamIds, ref MessagePackWriter writer)
         {
             if (streamIds != null)
             {
@@ -493,7 +508,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.Write(HubProtocolConstants.PingMessageType);
         }
 
-        private void PackHeaders(IDictionary<string, string> headers, ref MessagePackWriter writer)
+        private void PackHeaders(IDictionary<string, string>? headers, ref MessagePackWriter writer)
         {
             if (headers != null)
             {

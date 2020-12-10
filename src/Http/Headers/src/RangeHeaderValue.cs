@@ -10,6 +10,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents a <c>Range</c> header value.
+    /// <para>
+    /// The <see cref="RangeHeaderValue"/> class provides support for the Range header as defined in
+    /// <see href="https://tools.ietf.org/html/rfc2616">RFC 2616</see>.
+    /// </para>
+    /// </summary>
     public class RangeHeaderValue
     {
         private static readonly HttpHeaderParser<RangeHeaderValue> Parser
@@ -18,11 +25,19 @@ namespace Microsoft.Net.Http.Headers
         private StringSegment _unit;
         private ICollection<RangeItemHeaderValue>? _ranges;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeHeaderValue"/>.
+        /// </summary>
         public RangeHeaderValue()
         {
             _unit = HeaderUtilities.BytesUnit;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="from">The position at which to start sending data.</param>
+        /// <param name="to">The position at which to stop sending data.</param>
         public RangeHeaderValue(long? from, long? to)
         {
             // convenience ctor: "Range: bytes=from-to"
@@ -30,6 +45,10 @@ namespace Microsoft.Net.Http.Headers
             Ranges.Add(new RangeItemHeaderValue(from, to));
         }
 
+        /// <summary>
+        /// Gets or sets the unit from the header.
+        /// </summary>
+        /// <value>Defaults to <c>bytes</c>.</value>
         public StringSegment Unit
         {
             get { return _unit; }
@@ -40,6 +59,9 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets the ranges specified in the header.
+        /// </summary>
         public ICollection<RangeItemHeaderValue> Ranges
         {
             get
@@ -52,6 +74,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -78,6 +101,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as RangeHeaderValue;
@@ -91,6 +115,7 @@ namespace Microsoft.Net.Http.Headers
                 HeaderUtilities.AreEqualCollections(Ranges, other.Ranges);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_unit);
@@ -103,12 +128,23 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="RangeHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static RangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index)!;
         }
 
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="RangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="RangeHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeHeaderValue parsedValue)
         {
             var index = 0;

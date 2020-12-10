@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -2059,7 +2060,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private static string CreateRouteGroup(int order, string template)
         {
-            return string.Format("{0}&{1}", order, template);
+            return string.Format(CultureInfo.InvariantCulture, "{0}&{1}", order, template);
         }
 
         private static DefaultInlineConstraintResolver CreateConstraintResolver()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
     /// Default implementation for <see cref="IResponseCachingFeature" />
     public class ResponseCachingFeature : IResponseCachingFeature
     {
-        private string[] _varyByQueryKeys;
+        private string[]? _varyByQueryKeys;
 
         /// <inheritdoc />
-        public string[] VaryByQueryKeys
+        public string[]? VaryByQueryKeys
         {
             get
             {

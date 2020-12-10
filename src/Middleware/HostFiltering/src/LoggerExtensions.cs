@@ -8,25 +8,25 @@ namespace Microsoft.AspNetCore.HostFiltering
 {
     internal static class LoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _wildcardDetected =
+        private static readonly Action<ILogger, Exception?> _wildcardDetected =
             LoggerMessage.Define(LogLevel.Debug, new EventId(0, "WildcardDetected"), "Wildcard detected, all requests with hosts will be allowed.");
 
-        private static readonly Action<ILogger, string, Exception> _allowedHosts =
+        private static readonly Action<ILogger, string, Exception?> _allowedHosts =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AllowedHosts"), "Allowed hosts: {Hosts}");
 
-        private static readonly Action<ILogger, Exception> _allHostsAllowed =
+        private static readonly Action<ILogger, Exception?> _allHostsAllowed =
             LoggerMessage.Define(LogLevel.Trace, new EventId(2, "AllHostsAllowed"), "All hosts are allowed.");
 
-        private static readonly Action<ILogger, string, Exception> _requestRejectedMissingHost =
+        private static readonly Action<ILogger, string, Exception?> _requestRejectedMissingHost =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(3, "RequestRejectedMissingHost"), "{Protocol} request rejected due to missing or empty host header.");
 
-        private static readonly Action<ILogger, string, Exception> _requestAllowedMissingHost =
+        private static readonly Action<ILogger, string, Exception?> _requestAllowedMissingHost =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "RequestAllowedMissingHost"), "{Protocol} request allowed with missing or empty host header.");
 
-        private static readonly Action<ILogger, string, Exception> _allowedHostMatched =
+        private static readonly Action<ILogger, string, Exception?> _allowedHostMatched =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "AllowedHostMatched"), "The host '{Host}' matches an allowed host.");
 
-        private static readonly Action<ILogger, string, Exception> _noAllowedHostMatched =
+        private static readonly Action<ILogger, string, Exception?> _noAllowedHostMatched =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(6, "NoAllowedHostMatched"), "The host '{Host}' does not match an allowed host.");
 
         public static void WildcardDetected(this ILogger logger) => _wildcardDetected(logger, null);

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
     public class Docker
     {
-        private static readonly string _exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+        private static readonly string _exeSuffix = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
         private static readonly string _dockerContainerName = "redisTestContainer";
         private static readonly string _dockerMonitorContainerName = _dockerContainerName + "Monitor";

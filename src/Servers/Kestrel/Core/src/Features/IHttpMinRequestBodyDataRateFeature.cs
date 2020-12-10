@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
         /// This feature is not supported for HTTP/2 requests except to disable it entirely by setting <see cref="MinDataRate"/> to <see langword="null"/> 
         /// Instead, use <see cref="KestrelServerLimits.MinRequestBodyDataRate"/> for server-wide configuration which applies to both HTTP/2 and HTTP/1.x.
         /// </summary>
-        MinDataRate MinDataRate { get; set; }
+        MinDataRate? MinDataRate { get; set; }
     }
 }

@@ -276,11 +276,22 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Merge an attribute.
+        /// </summary>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
         public void MergeAttribute(string key, string value)
         {
             MergeAttribute(key, value, replaceExisting: false);
         }
 
+        /// <summary>
+        /// Merge an attribute.
+        /// </summary>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <param name="replaceExisting">Whether to replace an existing value.</param>
         public void MergeAttribute(string key, string value, bool replaceExisting)
         {
             if (string.IsNullOrEmpty(key))
@@ -294,11 +305,24 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Merge an attribute dictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The key type.</typeparam>
+        /// <typeparam name="TValue">The value type.</typeparam>
+        /// <param name="attributes">The attributes.</param>
         public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue> attributes)
         {
             MergeAttributes(attributes, replaceExisting: false);
         }
 
+        /// <summary>
+        /// Merge an attribute dictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The key type.</typeparam>
+        /// <typeparam name="TValue">The value type.</typeparam>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="replaceExisting">Whether to replace existing attributes.</param>
         public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue> attributes, bool replaceExisting)
         {
             // Perf: Avoid allocating enumerator for `attributes` if possible

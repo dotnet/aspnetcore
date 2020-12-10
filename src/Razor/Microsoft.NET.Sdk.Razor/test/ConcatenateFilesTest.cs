@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25623")]
-        public void BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
+        public async System.Threading.Tasks.Task BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange
             var expectedFile = Path.Combine(Directory.GetCurrentDirectory(), $"{Guid.NewGuid():N}.css");
@@ -382,6 +382,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }),
             };
 
+            await System.Threading.Tasks.Task.Delay(1000);
             taskInstance.Execute();
 
             // Assert
@@ -389,7 +390,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(File.Exists(expectedFile));
             var actualContents = File.ReadAllText(expectedFile);
             Assert.Equal(UpdatedBundleContent, actualContents, ignoreLineEndingDifferences: true);
-
             Assert.NotEqual(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
     }

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -1470,7 +1471,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private OperationCanceledException GetOperationCanceledException(string message, Exception innerException, CancellationToken cancellationToken)
         {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP
             return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else
             return new OperationCanceledException(message, innerException);
@@ -1977,6 +1978,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public bool TryAcquireConnectionLock()
             {
+                if (OperatingSystem.IsBrowser())
+                {
+                    return _connectionLock.WaitAsync(0).Result;
+                }
                 return _connectionLock.Wait(0);
             }
 

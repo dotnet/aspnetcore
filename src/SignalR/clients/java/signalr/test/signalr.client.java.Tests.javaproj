@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixAlpine>true</SkipHelixAlpine>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>

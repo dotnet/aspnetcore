@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -268,6 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var json = "{\"id\":9000,\"FullName\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",
@@ -290,6 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var json = "{\"id\":9000,\"full_name\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
+                CultureInfo.InvariantCulture,
                 @"<script type=""text/javascript"">
     var json = {0};
 </script>",

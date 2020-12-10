@@ -179,6 +179,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [Repeat]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26330")]
         public async Task ReaderThrowsCanceledException()
         {
             var readIsAsyncCompletionSource = CreateTaskCompletionSource();
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1817")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27400")]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();

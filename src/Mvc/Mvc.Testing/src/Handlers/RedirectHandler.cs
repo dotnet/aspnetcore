@@ -134,14 +134,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             HttpContent originalContent)
         {
             var location = response.Headers.Location;
-            if (!location.IsAbsoluteUri)
+            if (location != null)
             {
-                location = new Uri(
-                    new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
+                if (!location.IsAbsoluteUri)
+                {
+                    location = new Uri(
+                        new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
+                        location);
+                }
+
+                redirect.RequestUri = location;
             }
 
-            redirect.RequestUri = location;
             if (!ShouldKeepVerb(response))
             {
                 redirect.Method = HttpMethod.Get;

@@ -1,0 +1,9 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\HttpClientFactory\\Polly\\src\\Microsoft.Extensions.Http.Polly.csproj",
+      "src\\HttpClientFactory\\Polly\\test\\Microsoft.Extensions.Http.Polly.Tests.csproj"
+    ]
+  }
+}

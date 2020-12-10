@@ -21,16 +21,27 @@ namespace TestSite
 {
     public partial class Startup
     {
-
-        private void WebsocketRequest(IApplicationBuilder app)
+        private void WebSocketNotUpgradable(IApplicationBuilder app)
         {
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("test");
+            app.Run(context => {
+
+                var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.False(upgradeFeature.IsUpgradableRequest);
+                return Task.CompletedTask;
             });
         }
 
-        private void WebReadBeforeUpgrade(IApplicationBuilder app)
+        private void WebSocketUpgradable(IApplicationBuilder app)
+        {
+            app.Run(context => {
+
+                var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.True(upgradeFeature.IsUpgradableRequest);
+                return Task.CompletedTask;
+            });
+        }
+
+        private void WebSocketReadBeforeUpgrade(IApplicationBuilder app)
         {
             app.Run(async context => {
 

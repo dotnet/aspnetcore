@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
             // it has to end with a trailing slash
-            return result.EndsWith("/") ? result : result += "/";
+            return result.EndsWith('/') ? result : result += "/";
         }
     }
 }

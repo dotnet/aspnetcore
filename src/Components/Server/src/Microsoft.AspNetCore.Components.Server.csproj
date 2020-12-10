@@ -6,7 +6,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS0436;$(NoWarn.Replace('1591', ''))</NoWarn>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
     <DefineConstants>$(DefineConstants);ENABLE_UNSAFE_MSGPACK;SPAN_BUILTIN;MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>
     <IsPackable>false</IsPackable>
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>

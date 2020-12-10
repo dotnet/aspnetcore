@@ -119,13 +119,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             addresses.InternalCollection.Add("http://localhost:5000");
             var options = new KestrelServerOptions();
 
-            var addressBindContext = new AddressBindContext
-            {
-                ServerAddressesFeature = addresses,
-                ServerOptions = options,
-                Logger = NullLogger.Instance,
-                CreateBinding = endpoint => throw new AddressInUseException("already in use"),
-            };
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                NullLogger.Instance,
+                endpoint => throw new AddressInUseException("already in use"));
 
             await Assert.ThrowsAsync<IOException>(() =>
                 AddressBinder.BindAsync(options.ListenOptions, addressBindContext));
@@ -145,12 +143,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var ipV6Attempt = false;
             var ipV4Attempt = false;
 
-            var addressBindContext = new AddressBindContext
-            {
-                ServerAddressesFeature = addresses,
-                ServerOptions = options,
-                Logger = logger,
-                CreateBinding = endpoint =>
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                endpoint =>
                 {
                     if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)
                     {
@@ -164,8 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     }
 
                     return Task.CompletedTask;
-                },
-            };
+                });
 
             await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
 
@@ -199,17 +195,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var endpoints = new List<ListenOptions>();
 
-            var addressBindContext = new AddressBindContext
-            {
-                ServerAddressesFeature = addresses,
-                ServerOptions = options,
-                Logger = logger,
-                CreateBinding = listenOptions =>
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                listenOptions =>
                 {
                     endpoints.Add(listenOptions);
                     return Task.CompletedTask;
-                },
-            };
+                });
 
             await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
 
