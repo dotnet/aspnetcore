@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             }
             else
             {
-                return type.AssemblyQualifiedName;
+                return type.AssemblyQualifiedName!;
             }
         }
     }

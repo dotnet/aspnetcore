@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             _logger = loggerFactory.CreateLogger<ManagedAuthenticatedEncryptorFactory>();
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as ManagedAuthenticatedEncryptorDescriptor;
             if (descriptor == null)
@@ -34,9 +35,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal ManagedAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("configuration")]
+        internal ManagedAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            ManagedAuthenticatedEncryptorConfiguration configuration)
+            ManagedAuthenticatedEncryptorConfiguration? configuration)
         {
             if (configuration == null)
             {
@@ -58,7 +60,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.ValidationAlgorithmType));
             }
 
-            _logger.UsingManagedKeyedHashAlgorithm(configuration.ValidationAlgorithmType.FullName);
+            _logger.UsingManagedKeyedHashAlgorithm(configuration.ValidationAlgorithmType.FullName!);
             if (configuration.ValidationAlgorithmType == typeof(HMACSHA256))
             {
                 return () => new HMACSHA256();
@@ -86,11 +88,11 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
             }
 
-            _logger.UsingManagedSymmetricAlgorithm(configuration.EncryptionAlgorithmType.FullName);
+            _logger.UsingManagedSymmetricAlgorithm(configuration.EncryptionAlgorithmType.FullName!);
 
             if (configuration.EncryptionAlgorithmType == typeof(Aes))
             {
-                Func<Aes> factory = null;
+                Func<Aes>? factory = null;
                 if (OSVersionUtil.IsWindows())
                 {
                     // If we're on desktop CLR and running on Windows, use the FIPS-compliant implementation.
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             /// </summary>
             public static Func<T> CreateFactory<T>(Type implementation)
             {
-                return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))).Creator;
+                return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
             }
 
             private interface IActivator<out T>

@@ -77,8 +77,10 @@
         by compiling the annotations (as internal types).
         The code block that follows sets it up so projects in this repo that target ns2.0 or netfx can compile when Nullable is configured.
         Based on https://github.com/dotnet/runtime/blob/93b6c449d4f31ddd7d573d1d3769e681d5ebceb9/src/libraries/Directory.Build.targets#L215-L222
+
+        SuppressNullableAttributesImport to disable. Used when attributes are already present from another project because of InternalsVisibleTo.
      -->
-    <When Condition="'$(Nullable)' != '' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
         <NoWarn>$(NoWarn);nullable</NoWarn>
