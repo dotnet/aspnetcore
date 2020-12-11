@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             SendGoAway();
 
-            // Close connection here.
+            // Abort with no exception to close the connection.
             _context.ConnectionContext.Abort();
         }
 
@@ -280,37 +280,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
             }
-            finally
-            {
-                // Abort all streams as connection has shutdown.
-                // TODO I think we don't need to be calling abort here?
-                lock (_streams)
-                {
-                    if (_aborted)
-                    {
-                        foreach (var stream in _streams.Values)
-                        {
-                            // Don't think we should abort everything here.
-                            stream.Abort(_abortedException);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var stream in _streams.Values)
-                        {
-                            stream.OnInputOrOutputCompleted();
-                        }
-                    }
-
-                    ControlStream?.OnInputOrOutputCompleted();
-                    EncoderStream?.OnInputOrOutputCompleted();
-                    DecoderStream?.OnInputOrOutputCompleted();
-                }
-
-                OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-
-                await controlTask;
-            }
         }
 
         private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
@@ -320,7 +289,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync();
         }
-
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
@@ -359,6 +327,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 //OutboundControlStream.OnInputOrOutputCompleted();
             }
         }
+
+            // Abort all streams as connection has shutdown.
+            // TODO I think we don't need to be calling abort here?
+            //lock (_streams)
+            //{
+            //    if (_aborted)
+            //    {
+            //        foreach (var stream in _streams.Values)
+            //        {
+            //            // Don't think we should abort everything here.
+            //            stream.Abort(_abortedException);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        foreach (var stream in _streams.Values)
+            //        {
+            //            stream.OnInputOrOutputCompleted();
+            //        }
+            //    }
+
+            //    ControlStream?.OnInputOrOutputCompleted();
+            //    EncoderStream?.OnInputOrOutputCompleted();
+            //    DecoderStream?.OnInputOrOutputCompleted();
+            //}
+
+            //OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+
+            //await controlTask;
 
         public void ApplyMaxHeaderListSize(long value)
         {
