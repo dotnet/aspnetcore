@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
@@ -389,14 +390,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 null,
                 "Unknown",
                 "Invalid",
-                "OPTIONS",
-                "GET",
-                "HEAD",
-                "POST",
-                "PUT",
-                "DELETE",
-                "TRACE",
-                "CONNECT",
+                HttpMethods.Options,
+                HttpMethods.Get,
+                HttpMethods.Head,
+                HttpMethods.Post,
+                HttpMethods.Put,
+                HttpMethods.Delete,
+                HttpMethods.Trace,
+                HttpMethods.Connect,
                 "TRACK",
                 "MOVE",
                 "COPY",

@@ -42,6 +42,7 @@
     <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
