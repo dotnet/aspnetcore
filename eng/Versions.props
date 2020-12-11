@@ -244,11 +244,11 @@
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <CommandLineParserPackageVersion>2.3.0</CommandLineParserPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <GoogleProtobufPackageVersion>3.13.0</GoogleProtobufPackageVersion>
-    <GrpcAspNetCorePackageVersion>2.32.0</GrpcAspNetCorePackageVersion>
-    <GrpcAuthPackageVersion>2.32.0</GrpcAuthPackageVersion>
-    <GrpcNetClientPackageVersion>2.32.0</GrpcNetClientPackageVersion>
-    <GrpcToolsPackageVersion>2.32.0</GrpcToolsPackageVersion>
+    <GoogleProtobufPackageVersion>3.14.0</GoogleProtobufPackageVersion>
+    <GrpcAspNetCorePackageVersion>2.34.0</GrpcAspNetCorePackageVersion>
+    <GrpcAuthPackageVersion>2.34.0</GrpcAuthPackageVersion>
+    <GrpcNetClientPackageVersion>2.34.0</GrpcNetClientPackageVersion>
+    <GrpcToolsPackageVersion>2.34.0</GrpcToolsPackageVersion>
     <IdentityServer4AspNetIdentityPackageVersion>4.1.0</IdentityServer4AspNetIdentityPackageVersion>
     <IdentityServer4EntityFrameworkPackageVersion>4.1.0</IdentityServer4EntityFrameworkPackageVersion>
     <IdentityServer4PackageVersion>4.1.0</IdentityServer4PackageVersion>
