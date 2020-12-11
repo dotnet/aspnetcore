@@ -341,7 +341,7 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
