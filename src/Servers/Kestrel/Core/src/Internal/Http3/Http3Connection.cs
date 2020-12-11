@@ -328,35 +328,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-            // Abort all streams as connection has shutdown.
-            // TODO I think we don't need to be calling abort here?
-            //lock (_streams)
-            //{
-            //    if (_aborted)
-            //    {
-            //        foreach (var stream in _streams.Values)
-            //        {
-            //            // Don't think we should abort everything here.
-            //            stream.Abort(_abortedException);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        foreach (var stream in _streams.Values)
-            //        {
-            //            stream.OnInputOrOutputCompleted();
-            //        }
-            //    }
-
-            //    ControlStream?.OnInputOrOutputCompleted();
-            //    EncoderStream?.OnInputOrOutputCompleted();
-            //    DecoderStream?.OnInputOrOutputCompleted();
-            //}
-
-            //OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-
-            //await controlTask;
-
         public void ApplyMaxHeaderListSize(long value)
         {
         }
