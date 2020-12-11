@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,10 +50,13 @@ namespace Microsoft.Extensions.FileProviders.Embedded
             {
                 if (!_length.HasValue)
                 {
-                    using (var stream = _assembly.GetManifestResourceStream(_resourcePath))
+                    using var stream = _assembly.GetManifestResourceStream(_resourcePath);
+                    if (stream == null)
                     {
-                        _length = stream.Length;
+                        throw new InvalidOperationException($"Couldn't get resource at '{_resourcePath}'.");
                     }
+
+                    _length = stream.Length;
                 }
                 return _length.Value;
             }
@@ -62,7 +65,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded
         /// <summary>
         /// Always null.
         /// </summary>
-        public string PhysicalPath => null;
+        public string? PhysicalPath => null;
 
         /// <summary>
         /// The name of embedded file
@@ -83,6 +86,10 @@ namespace Microsoft.Extensions.FileProviders.Embedded
         public Stream CreateReadStream()
         {
             var stream = _assembly.GetManifestResourceStream(_resourcePath);
+            if (stream == null)
+            {
+                throw new InvalidOperationException($"Couldn't get resource at '{_resourcePath}'.");
+            }
             if (!_length.HasValue)
             {
                 _length = stream.Length;
