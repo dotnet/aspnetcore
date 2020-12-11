@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define(LogLevel.Warning, new EventId(41, "InvalidResponseHeaderRemoved"),
                 "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.");
         
-        private static readonly Action<ILogger, string, long, Exception> _http3ConnectionClosed =
+        private static readonly Action<ILogger, string, long, Exception?> _http3ConnectionClosed =
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(41, nameof(Http3ConnectionClosed)),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _http3ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
         }
 
-        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
 
         public virtual bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);

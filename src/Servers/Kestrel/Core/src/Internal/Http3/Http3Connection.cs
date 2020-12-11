@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : ITimeoutHandler
     {
-        public Http3ControlStream OutboundControlStream { get; set; }
-
+        public Http3ControlStream? OutboundControlStream { get; set; }
         public Http3ControlStream? ControlStream { get; set; }
         public Http3ControlStream? EncoderStream { get; set; }
         public Http3ControlStream? DecoderStream { get; set; }
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
-        private ConnectionAbortedException _abortedException = null;
+        private ConnectionAbortedException _abortedException = new ConnectionAbortedException();
         private readonly object _protocolSelectionLock = new object();
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
@@ -93,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((Http3Connection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).StopProcessingNextRequest(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).StopProcessingStreams(), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
@@ -185,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+        internal async Task InnerProcessStreamsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             // An endpoint MAY avoid creating an encoder stream if it's not going to
             // be used(for example if its encoder doesn't wish to use the dynamic
@@ -228,7 +227,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         streamContext.LocalEndPoint as IPEndPoint,
                         streamContext.RemoteEndPoint as IPEndPoint,
                         streamContext.Transport,
-                        streamContext);
+                        streamContext,
+                        _serverSettings);
                     httpConnectionContext.TimeoutControl = _context.TimeoutControl;
 
                     if (!quicStreamFeature.CanWrite)
@@ -297,9 +297,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
                     }
 
-                    _inboundControlStream?.OnInputOrOutputCompleted();
-                    _inboundEncoderStream?.OnInputOrOutputCompleted();
-                    _inboundDecoderStream?.OnInputOrOutputCompleted();
+                    ControlStream?.OnInputOrOutputCompleted();
+                    EncoderStream?.OnInputOrOutputCompleted();
+                    DecoderStream?.OnInputOrOutputCompleted();
                 }
 
                 OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
@@ -379,9 +379,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                if (_inboundControlStream == null)
+                if (ControlStream == null)
                 {
-                    _inboundControlStream = stream;
+                    ControlStream = stream;
                     return true;
                 }
                 return false;
@@ -392,9 +392,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                if (_inboundEncoderStream == null)
+                if (EncoderStream == null)
                 {
-                    _inboundEncoderStream = stream;
+                    EncoderStream = stream;
                     return true;
                 }
                 return false;
@@ -405,9 +405,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                if (_inboundDecoderStream == null)
+                if (DecoderStream == null)
                 {
-                    _inboundDecoderStream = stream;
+                    DecoderStream = stream;
                     return true;
                 }
                 return false;
