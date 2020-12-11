@@ -12,20 +12,34 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
 {
+    /// <summary>
+    /// Generate a JSON file mapping assemblies to content root paths.
+    /// </summary>
     public class GenerateMvcTestManifestTask : Task
     {
+        /// <summary>
+        /// The path to output the manifest file to.
+        /// </summary>
         [Required]
         public string ManifestPath { get; set; }
 
+        /// <summary>
+        /// A list of content root paths and assembly names to generate the
+        /// manifest from.
+        /// </summary>
         [Required]
         public ITaskItem[] Projects { get; set; }
 
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public override bool Execute()
         {
             using var fileStream = File.Create(ManifestPath);
             var output = new Dictionary<string, string>();
 
-            foreach (var project in Projects) {
+            foreach (var project in Projects)
+            {
                 var contentRoot = project.GetMetadata("ContentRoot");
                 var assemblyName = project.GetMetadata("Identity");
                 output[assemblyName] = contentRoot;

@@ -166,7 +166,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _server = CreateServer(builder);
         }
 
-        private void SetContentRoot(IWebHostBuilder builder) {
+        private void SetContentRoot(IWebHostBuilder builder)
+        {
             if (SetContentRootFromSetting(builder))
             {
                 return;
@@ -185,7 +186,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
         }
 
-        private string GetContentRootFromFile(string file) {
+        private string GetContentRootFromFile(string file)
+        {
             var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>), new DataContractJsonSerializerSettings
             {
                 UseSimpleDictionaryFormat = true
