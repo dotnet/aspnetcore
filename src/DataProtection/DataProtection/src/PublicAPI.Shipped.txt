@@ -201,7 +201,7 @@ Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFla
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.DpapiNGXmlDecryptor() -> void
-Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.DpapiNGXmlDecryptor(System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.DpapiNGXmlDecryptor(System.IServiceProvider? services) -> void
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor.DpapiNGXmlEncryptor(string! protectionDescriptorRule, Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags flags, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!

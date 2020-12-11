@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of a <see cref="DpapiNGXmlDecryptor"/>.
         /// </summary>
         public DpapiNGXmlDecryptor()
-            : this(services: null!) // TODO: Won't this always NRE? service.GetLogger is called in other ctor
+            : this(services: null)
         {
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of a <see cref="DpapiNGXmlDecryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiNGXmlDecryptor(IServiceProvider services)
+        public DpapiNGXmlDecryptor(IServiceProvider? services)
         {
             CryptoUtil.AssertPlatformIsWindows8OrLater();
 
