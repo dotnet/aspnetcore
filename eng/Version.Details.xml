@@ -272,7 +272,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
+      <Sha>0260401cbe92144b5f4e70e31765828a14885e60</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -296,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
+      <Sha>0260401cbe92144b5f4e70e31765828a14885e60</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.2-servicing.20611.9">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.2-servicing.20611.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
+      <Sha>0260401cbe92144b5f4e70e31765828a14885e60</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.2-servicing.20611.9">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.2-servicing.20611.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
+      <Sha>0260401cbe92144b5f4e70e31765828a14885e60</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
