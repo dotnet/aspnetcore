@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Rewrite
     {
         protected Pattern? Url { get; set; }
 
-        //protected UrlAction(Pattern url)
-        //{
-        //    Url = url;
-        //}
-
         public abstract void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences);
     }
 }
