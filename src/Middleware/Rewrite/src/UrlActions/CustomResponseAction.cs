@@ -11,15 +11,15 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
     internal class CustomResponseAction : UrlAction
     {
         public int StatusCode { get; }
-        public string StatusReason { get; set; }
-        public string StatusDescription { get; set; }
+        public string? StatusReason { get; set; }
+        public string? StatusDescription { get; set; }
 
         public CustomResponseAction(int statusCode)
         {
             StatusCode = statusCode;
         }
 
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
         {
             var response = context.HttpContext.Response;
             response.StatusCode = StatusCode;

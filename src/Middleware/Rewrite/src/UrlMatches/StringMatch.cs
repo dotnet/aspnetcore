@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
                 case StringOperationType.LessEqual:
                     return string.Compare(input, _value, _stringComparison) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
-                    return null;
+                    return null!; // TODO - What should happen here?
             }
         }
     }

@@ -149,13 +149,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         private MatchResults CreateRewriteMapRuleMatch(string input)
         {
             var match = Regex.Match(input, "([^/]*)/?(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
 
         private MatchResults CreateRewriteMapConditionMatch(string input)
         {
             var match = Regex.Match(input, "(.+)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
     }
 }

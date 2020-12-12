@@ -16,12 +16,12 @@ Microsoft.AspNetCore.Rewrite.RuleResult.ContinueRules = 0 -> Microsoft.AspNetCor
 Microsoft.AspNetCore.Rewrite.RuleResult.EndResponse = 1 -> Microsoft.AspNetCore.Rewrite.RuleResult
 Microsoft.AspNetCore.Rewrite.RuleResult.SkipRemainingRules = 2 -> Microsoft.AspNetCore.Rewrite.RuleResult
 ~Microsoft.AspNetCore.Rewrite.IRule.ApplyRule(Microsoft.AspNetCore.Rewrite.RewriteContext context) -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
-~Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.set -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.get -> Microsoft.Extensions.Logging.ILogger
-~Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.set -> void
-~Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
-~Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.set -> void
+Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Rewrite.RewriteContext.HttpContext.set -> void
+Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.AspNetCore.Rewrite.RewriteContext.Logger.set -> void
+Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider!
+Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.set -> void
 ~Microsoft.AspNetCore.Rewrite.RewriteMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions> options) -> void
 ~Microsoft.AspNetCore.Rewrite.RewriteOptions.Rules.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule>

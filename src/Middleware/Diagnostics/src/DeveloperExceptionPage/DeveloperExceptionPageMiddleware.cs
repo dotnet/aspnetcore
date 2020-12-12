@@ -165,10 +165,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             HttpContext context,
             ICompilationException compilationException)
         {
-            var model = new CompilationErrorPageModel
-            {
-                Options = _options,
-            };
+            var model = new CompilationErrorPageModel(_options);
 
             var errorPage = new CompilationErrorPage
             {
