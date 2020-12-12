@@ -270,9 +270,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="5.0.0">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    <Dependency Name="System.Text.Json" Version="5.0.1">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -294,17 +294,17 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.1">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.1-servicing.20610.11">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.2-servicing.20611.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.1-servicing.20610.11">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.2-servicing.20611.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
