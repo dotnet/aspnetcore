@@ -94,8 +94,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -210,8 +210,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="5.0.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -247,8 +247,8 @@
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>aeea2adcd2799435d315fd80d3a6007dddbc55fe</Sha>
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>b02e13abab3d6f499751af2ad1ae6333fb4e633d</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
