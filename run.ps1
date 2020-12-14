@@ -94,8 +94,8 @@ param(
     [string]$ConfigFile = $null,
     [switch]$CI,
     [string]$Projects,
-    [string]$PackageVersionPropsUrl = $null,
-    [string]$AccessTokenSuffix = $null,
+    [string]$PackageVersionPropsUrl = $env:PB_PackageVersionPropsUrl,
+    [string]$AccessTokenSuffix = $env:PB_AccessTokenSuffix,
     [string]$RestoreSources = $null,
     [string]$AssetRootUrl = $null,
     [string]$ProductBuildId = $null,
@@ -218,34 +218,35 @@ if (!$LockFile) { $LockFile = Join-Path $Path 'korebuild-lock.txt' }
 if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
+[string[]] $ProdConArgs = @()
+
 if ($PackageVersionPropsUrl) {
     $IntermediateDir = Join-Path $PSScriptRoot 'obj'
     $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
     New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
     Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
-    $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
-}
-
-if ($RestoreSources) {
-    $MSBuildArguments += "-p:DotNetAdditionalRestoreSources=$RestoreSources"
-}
-
-if ($AssetRootUrl) {
-    $MSBuildArguments += "-p:DotNetAssetRootUrl=$AssetRootUrl"
+    $ProdConArgs += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
 }
 
 if ($AccessTokenSuffix) {
-    $MSBuildArguments += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
-}
-
-if ($ProductBuildId) {
-    $MSBuildArguments += "-p:DotNetProductBuildId=$ProductBuildId"
+    $ProdConArgs += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
 }
 
 if ($Projects) {
     $MSBuildArguments += "-p:Projects=$Projects"
     $MSBuildArguments += "-p:_ProjectsOnly=true"
 }
+
+# PipeBuild parameters
+$ProdConArgs += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
+$ProdConArgs += "-p:DotNetAdditionalRestoreSources=${env:PB_RestoreSource}"
+$ProdConArgs += "-p:DotNetProductBuildId=${env:ProductBuildId}"
+$ProdConArgs += "-p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
+$ProdConArgs += "-p:PublishType=${env:PB_PublishType}"
+$ProdConArgs += "-p:SkipTests=${env:PB_SkipTests}"
+$ProdConArgs += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
+$ProdConArgs += "-p:SignType=${env:PB_SignType}"
+$ProdConArgs += "-p:PublishBlobFeedKey=${env:PB_PublishBlobFeedKey}"
 
 # Execute
 
@@ -254,7 +255,7 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
-    Invoke-KoreBuildCommand $Command @MSBuildArguments
+    Invoke-KoreBuildCommand $Command @ProdConArgs @MSBuildArguments
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore

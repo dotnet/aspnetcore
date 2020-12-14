@@ -1,7 +1,13 @@
 <Project>
 
   <PropertyGroup>
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(BuildNumber)</Version>
+    <!-- Ugly hack - Wix doesn't accept build numbers larger than 65535, and AzDo's BuildIds are larger than that.
+         The largest we ever got on TeamCity was 31363, so we want to be in the range of 31364 - 65535. To achieve this we take the
+         AzDO build number modulo 34172 (65545 - 31363 = 34172), and add 31364 to that to give us a number in the desired range. -->
+    <InstallerBuildNumber>$(BuildNumber)</InstallerBuildNumber>
+    <InstallerBuildNumberModulo Condition="'$(BuildNumber)' != 't000'">$([MSBuild]::Modulo($(BuildNumber), 34172))</InstallerBuildNumberModulo>
+    <InstallerBuildNumber Condition="'$(BuildNumber)' != 't000'">$([MSBuild]::Add($(InstallerBuildNumberModulo), 31364))</InstallerBuildNumber>
+    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(InstallerBuildNumber)</Version>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
