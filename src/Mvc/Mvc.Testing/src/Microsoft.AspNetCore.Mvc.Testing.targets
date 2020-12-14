@@ -46,7 +46,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CopyAditionalFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
+  <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
     <ItemGroup>
       <DepsFilePaths
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"

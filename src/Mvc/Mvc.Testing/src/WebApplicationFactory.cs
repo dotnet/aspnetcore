@@ -188,11 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private string GetContentRootFromFile(string file)
         {
-            var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>), new DataContractJsonSerializerSettings
-            {
-                UseSimpleDictionaryFormat = true
-            });
-            var data = (Dictionary<string, string>)serializer.ReadObject(File.Open(file, FileMode.Open));
+            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllText(file));
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
             return data[key];
         }
