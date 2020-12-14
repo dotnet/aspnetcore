@@ -126,9 +126,8 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool IsSignedIn(ClaimsPrincipal principal)
         {
             if (principal == null)
-            {
                 throw new ArgumentNullException(nameof(principal));
-            }
+
             return principal?.Identities != null &&
                 principal.Identities.Any(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
         }
@@ -179,13 +178,10 @@ namespace Microsoft.AspNetCore.Identity
             {
                 claims = new List<Claim>();
                 if (authenticationMethod != null)
-                {
                     claims.Add(authenticationMethod);
-                }
+
                 if (amr != null)
-                {
                     claims.Add(amr);
-                }
             }
 
             await SignInWithClaimsAsync(user, auth?.Properties, claims);
@@ -293,14 +289,12 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task<TUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
         {
             if (principal == null || principal.Identity?.Name == null)
-            {
                 return null;
-            }
+
             var user = await UserManager.FindByIdAsync(principal.Identity.Name);
             if (await ValidateSecurityStampAsync(user, principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType)))
-            {
                 return user;
-            }
+
             Logger.LogDebug(5, "Failed to validate a security stamp.");
             return null;
         }
@@ -331,9 +325,7 @@ namespace Microsoft.AspNetCore.Identity
             bool isPersistent, bool lockoutOnFailure)
         {
             if (user == null)
-            {
                 throw new ArgumentNullException(nameof(user));
-            }
 
             var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
             return attempt.Succeeded
@@ -356,9 +348,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
-            {
                 return SignInResult.Failed;
-            }
 
             return await PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
@@ -375,9 +365,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task<SignInResult> CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure)
         {
             if (user == null)
-            {
                 throw new ArgumentNullException(nameof(user));
-            }
 
             var error = await PreSignInCheck(user);
             if (error != null)
@@ -390,9 +378,7 @@ namespace Microsoft.AspNetCore.Identity
                 var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
                 // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
                 if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
-                {
                     await ResetLockout(user);
-                }
 
                 return SignInResult.Success;
             }
@@ -403,9 +389,7 @@ namespace Microsoft.AspNetCore.Identity
                 // If lockout is requested, increment access failed count which might lock out the user
                 await UserManager.AccessFailedAsync(user);
                 if (await UserManager.IsLockedOutAsync(user))
-                {
                     return await LockedOut(user);
-                }
             }
             return SignInResult.Failed;
         }
@@ -458,21 +442,16 @@ namespace Microsoft.AspNetCore.Identity
         {
             var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
             if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-            {
                 return SignInResult.Failed;
-            }
+
             var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
             if (user == null)
-            {
                 return SignInResult.Failed;
-            }
 
             var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(user, recoveryCode);
             if (result.Succeeded)
-            {
                 await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent: false, rememberClient: false);
                 return SignInResult.Success;
-            }
 
             // We don't protect against brute force attacks since codes are expected to be random.
             return SignInResult.Failed;
@@ -495,9 +474,7 @@ namespace Microsoft.AspNetCore.Identity
             // Cleanup two factor user id cookie
             await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
             if (rememberClient)
-            {
                 await RememberTwoFactorClientAsync(user);
-            }
             await SignInWithClaimsAsync(user, isPersistent, claims);
         }
 
@@ -519,15 +496,11 @@ namespace Microsoft.AspNetCore.Identity
             }
             var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
             if (user == null)
-            {
                 return SignInResult.Failed;
-            }
 
             var error = await PreSignInCheck(user);
             if (error != null)
-            {
                 return error;
-            }
 
             if (await UserManager.VerifyTwoFactorTokenAsync(user, Options.Tokens.AuthenticatorTokenProvider, code))
             {
@@ -558,15 +531,12 @@ namespace Microsoft.AspNetCore.Identity
             }
             var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
             if (user == null)
-            {
                 return SignInResult.Failed;
-            }
 
             var error = await PreSignInCheck(user);
             if (error != null)
-            {
                 return error;
-            }
+
             if (await UserManager.VerifyTwoFactorTokenAsync(user, provider, code))
             {
                 await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
@@ -586,9 +556,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var info = await RetrieveTwoFactorInfoAsync();
             if (info == null)
-            {
                 return null;
-            }
 
             return await UserManager.FindByIdAsync(info.UserId);
         }
@@ -617,15 +585,12 @@ namespace Microsoft.AspNetCore.Identity
         {
             var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
             if (user == null)
-            {
                 return SignInResult.Failed;
-            }
 
             var error = await PreSignInCheck(user);
             if (error != null)
-            {
                 return error;
-            }
+
             return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
         }
 
@@ -650,29 +615,22 @@ namespace Microsoft.AspNetCore.Identity
             var auth = await Context.AuthenticateAsync(IdentityConstants.ExternalScheme);
             var items = auth?.Properties?.Items;
             if (auth?.Principal == null || items == null || !items.ContainsKey(LoginProviderKey))
-            {
                 return null;
-            }
 
             if (expectedXsrf != null)
             {
                 if (!items.ContainsKey(XsrfKey))
-                {
                     return null;
-                }
+
                 var userId = items[XsrfKey] as string;
                 if (userId != expectedXsrf)
-                {
                     return null;
-                }
             }
 
             var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
             var provider = items[LoginProviderKey] as string;
             if (providerKey == null || provider == null)
-            {
                 return null;
-            }
 
             var providerDisplayName = (await GetExternalAuthenticationSchemesAsync()).FirstOrDefault(p => p.Name == provider)?.DisplayName
                                       ?? provider;
@@ -699,17 +657,13 @@ namespace Microsoft.AspNetCore.Identity
             {
                 var user = await UserManager.FindByLoginAsync(externalLogin.LoginProvider, externalLogin.ProviderKey);
                 if (user == null)
-                {
                     return IdentityResult.Failed();
-                }
 
                 foreach (var token in externalLogin.AuthenticationTokens)
                 {
                     var result = await UserManager.SetAuthenticationTokenAsync(user, externalLogin.LoginProvider, token.Name, token.Value);
                     if (!result.Succeeded)
-                    {
                         return result;
-                    }
                 }
             }
 
@@ -728,9 +682,8 @@ namespace Microsoft.AspNetCore.Identity
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             properties.Items[LoginProviderKey] = provider;
             if (userId != null)
-            {
                 properties.Items[XsrfKey] = userId;
-            }
+
             return properties;
         }
 
@@ -745,9 +698,8 @@ namespace Microsoft.AspNetCore.Identity
             var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
             identity.AddClaim(new Claim(ClaimTypes.Name, userId));
             if (loginProvider != null)
-            {
                 identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
-            }
+
             return new ClaimsPrincipal(identity);
         }
 
@@ -792,17 +744,14 @@ namespace Microsoft.AspNetCore.Identity
             }
             // Cleanup external cookie
             if (loginProvider != null)
-            {
                 await Context.SignOutAsync(IdentityConstants.ExternalScheme);
-            }
+
             if (loginProvider == null)
-            {
                 await SignInWithClaimsAsync(user, isPersistent, new Claim[] { new Claim("amr", "pwd") });
-            }
+
             else
-            {
                 await SignInAsync(user, isPersistent, loginProvider);
-            }
+
             return SignInResult.Success;
         }
 
@@ -849,13 +798,11 @@ namespace Microsoft.AspNetCore.Identity
         protected virtual async Task<SignInResult> PreSignInCheck(TUser user)
         {
             if (!await CanSignInAsync(user))
-            {
                 return SignInResult.NotAllowed;
-            }
+
             if (await IsLockedOut(user))
-            {
                 return await LockedOut(user);
-            }
+
             return null;
         }
 
@@ -867,9 +814,8 @@ namespace Microsoft.AspNetCore.Identity
         protected virtual Task ResetLockout(TUser user)
         {
             if (UserManager.SupportsUserLockout)
-            {
                 return UserManager.ResetAccessFailedCountAsync(user);
-            }
+
             return Task.CompletedTask;
         }
 
