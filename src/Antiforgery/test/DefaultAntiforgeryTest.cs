@@ -348,6 +348,41 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, no-store, must-revalidate, private")]
+        [InlineData("Pragma", "no-cache")]
+        public void GetAndStoreTokens_ExistingNoCachingHeaders_NotOverriden(string headerName, string headerValue)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new Mock<ILoggerFactory>();
+            loggerFactory
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
+                .Returns(new TestLogger("test logger", testSink, enabled: true));
+            var services = new ServiceCollection();
+            services.AddSingleton(loggerFactory.Object);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(
+                new AntiforgeryOptions(),
+                useOldCookie: true,
+                isOldCookieValid: true,
+                antiforgeryFeature: antiforgeryFeature);
+            var antiforgery = GetAntiforgery(context);
+            context.HttpContext.Response.Headers[headerName] = headerValue;
+
+            // Act
+            var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
+
+            // Assert
+            Assert.Equal(headerValue, context.HttpContext.Response.Headers[headerName]);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
+        }
+
         [Fact]
         public void GetAndStoreTokens_NoExistingCookieToken_Saved()
         {
@@ -1250,7 +1285,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData("Cache-Control", "no-cache")]
+        [InlineData("Cache-Control", "no-cache, no-store")]
         [InlineData("Pragma", "no-cache")]
         public void GetAndStoreTokens_DoesNotLogsWarning_ForNoCacheHeaders_AlreadyPresent(string headerName, string headerValue)
         {
