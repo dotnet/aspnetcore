@@ -108,7 +108,8 @@ namespace CodeGenerator
                 "Request-Id",
                 "Correlation-Context",
                 "TraceParent",
-                "TraceState"
+                "TraceState",
+                "Baggage"
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
