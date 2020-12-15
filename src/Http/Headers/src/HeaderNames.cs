@@ -64,6 +64,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>Authorization</c> HTTP header name.</summary>
         public static readonly string Authorization = "Authorization";
 
+        /// <summary>Gets the <c>baggage</c> HTTP header name.</summary>
+        public static readonly string Baggage = "baggage";
+
         /// <summary>Gets the <c>Cache-Control</c> HTTP header name.</summary>
         public static readonly string CacheControl = "Cache-Control";
 
