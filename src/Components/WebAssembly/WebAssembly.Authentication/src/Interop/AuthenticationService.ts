@@ -169,7 +169,7 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    async completeSignIn(url: string) {
+    async completeSignIn (url: string) {
         const requiresLogin = await this.loginRequired(url);
         const stateExists = await this.stateExists(url);
         try {
@@ -232,10 +232,12 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private async stateExists(url: string) {
-        const stateHash = new URLSearchParams(new URL(url).hash).get('state');
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
-        const state = stateHash ?? stateParam;
+    private async stateExists(urlString: string) {
+        const url = new URL(urlString);
+        const responseMode = this._userManager.settings.response_mode;
+        const urlSearchParams = (responseMode === "query" ) ? (new URLSearchParams(url.search)) : (new URLSearchParams(url.hash));
+        const state = urlSearchParams.get('state');
+
         if (state && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(state);
         } else {
