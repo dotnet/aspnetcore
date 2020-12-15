@@ -1,10 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
@@ -639,39 +640,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3StreamErrorLessDataThanLength);
-        }
-
-        [Fact]
-        public async Task GoAwayReceived()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            };
-
-            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
-
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
-            // Need to figure out how to trigger goaway from server?
-            // Trigger ConnectionClose
-
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
-
-            var responseHeaders = await requestStream.ExpectHeadersAsync();
-            var responseData = await requestStream.ExpectDataAsync();
-            Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
-        }
-
-        [Fact]
-        public async Task GracefulServerShutdownSendsGoawayClosesConnection()
-        {
-            await InitializeConnectionAsync(_echoApplication);
-            // Trigger server shutdown.
-            MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
-            Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
         }
     }
 }

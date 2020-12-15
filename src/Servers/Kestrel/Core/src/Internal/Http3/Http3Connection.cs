@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            // TODO figure out how to gracefully close next requests
+            Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
         }
 
         public void Abort(ConnectionAbortedException ex)
@@ -142,6 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
+                OnConnectionClosed();
                 SendGoAway();
                 _context.ConnectionContext.Abort(ex);
             }
@@ -275,7 +276,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (OperationCanceledException)
             {
-                Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
             }
         }
 
