@@ -35,4 +35,4 @@ Include the exception you get when facing this issue
 ### Further technical details
 - ASP.NET Core version
 - Include the output of `dotnet --info`
-- The IDE (VS / VS Code/ VS4Mac) you're running on, and it's version
+- The IDE (VS / VS Code/ VS4Mac) you're running on, and its version
