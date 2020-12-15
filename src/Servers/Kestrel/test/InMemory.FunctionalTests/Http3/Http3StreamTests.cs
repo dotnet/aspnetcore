@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
@@ -662,6 +663,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+        }
+
+        [Fact]
+        public async Task GracefulServerShutdownSendsGoawayClosesConnection()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+            // Trigger server shutdown.
+            MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
+            Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
         }
     }
 }

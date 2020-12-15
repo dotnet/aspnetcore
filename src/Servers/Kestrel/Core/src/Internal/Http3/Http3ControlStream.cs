@@ -75,8 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void OnInputOrOutputCompleted()
         {
             TryClose();
-            // this closes input, don't abort?
-            //_frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         }
 
         private bool TryClose()
@@ -87,7 +85,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 
@@ -166,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
 
-                await HandleEncodingTask();
+                await HandleEncodingDecodingTask();
             }
             else if (streamType == DecoderStream)
             {
@@ -174,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
-                await HandleDecodingTask();
+                await HandleEncodingDecodingTask();
             }
             else
             {
@@ -219,25 +216,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async ValueTask HandleEncodingTask()
+        private async ValueTask HandleEncodingDecodingTask()
         {
-            // Noop encoding task. Settings make it so we don't need to read content of encoder and decoder.
+            // Noop encoding and decoding task. Settings make it so we don't need to read content of encoder and decoder.
             // An endpoint MUST allow its peer to create an encoder stream and a
             // decoder stream even if the connection's settings prevent their use.
 
-            while (_isClosed == 0)
-            {
-                var result = await Input.ReadAsync();
-                var readableBuffer = result.Buffer;
-                Input.AdvanceTo(readableBuffer.End);
-            }
-        }
-
-        private async ValueTask HandleDecodingTask()
-        {
-            // Noop encoding task. Settings make it so we don't need to read content of encoder and decoder.
-            // An endpoint MUST allow its peer to create an encoder stream and a
-            // decoder stream even if the connection's settings prevent their use.
             while (_isClosed == 0)
             {
                 var result = await Input.ReadAsync();

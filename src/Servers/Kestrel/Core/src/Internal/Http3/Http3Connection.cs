@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
-        private ConnectionAbortedException _abortedException = new ConnectionAbortedException();
         private readonly object _protocolSelectionLock = new object();
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
@@ -113,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
+            // Attempt to send goaway 
             SendGoAway();
 
             // Abort with no exception to close the connection.
@@ -127,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            // IDK what to actually do here yet.
             // TODO figure out how to gracefully close next requests
         }
 
@@ -143,7 +142,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
-                _abortedException = ex;
                 SendGoAway();
                 _context.ConnectionContext.Abort(ex);
             }
@@ -250,7 +248,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                     else
                     {
-
                         var streamId = streamIdFeature.StreamId;
 
                         lock (_sync)
@@ -323,8 +320,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
 
                 _haveSentGoAway = true;
-
-                //OutboundControlStream.OnInputOrOutputCompleted();
             }
         }
 

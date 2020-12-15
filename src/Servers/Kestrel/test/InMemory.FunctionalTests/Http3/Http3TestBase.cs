@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
         internal readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
         protected Task _connectionTask;
-        private TestMultiplexedConnectionContext _multiplexedContext;
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
         protected readonly RequestDelegate _noopApplication;
@@ -90,6 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
         }
 
+        public TestMultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
+
         public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             // Skip all heartbeat and lifetime notification feature registrations.
-            _connectionTask = _connection.InnerProcessStreamsAsync(new DummyApplication(application));
+            _connectionTask = _connection.ProcessStreamsAsync(new DummyApplication(application));
 
             await Task.CompletedTask;
         }
@@ -128,14 +129,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var limits = _serviceContext.ServerOptions.Limits;
 
-            var features = new FeatureCollection();
 
-            _multiplexedContext = new TestMultiplexedConnectionContext(this);
+            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
 
             var httpConnectionContext = new Http3ConnectionContext(
                 connectionId: "TestConnectionId",
-                connectionContext: _multiplexedContext,
-                connectionFeatures: features,
+                connectionContext: MultiplexedConnectionContext,
+                connectionFeatures: MultiplexedConnectionContext.Features,
                 serviceContext: _serviceContext,
                 memoryPool: _memoryPool,
                 localEndPoint: null,
@@ -145,6 +145,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _connection = new Http3Connection(httpConnectionContext);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => _connection.OnTimeout(r));
+        }
+
+        protected void ConnectionClosed()
+        {
+
         }
 
         private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
@@ -185,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async ValueTask<Http3ControlStream> CreateControlStream(int id)
         {
             var stream = new Http3ControlStream(this);
-            _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
+            MultiplexedConnectionContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
         }
@@ -193,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal ValueTask<Http3RequestStream> CreateRequestStream()
         {
             var stream = new Http3RequestStream(this, _connection);
-            _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
+            MultiplexedConnectionContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             return new ValueTask<Http3RequestStream>(stream);
         }
 
@@ -431,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private class TestMultiplexedConnectionContext : MultiplexedConnectionContext
+        public class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature
         {
             public readonly Channel<ConnectionContext> AcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
             {
@@ -444,6 +449,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public TestMultiplexedConnectionContext(Http3TestBase testBase)
             {
                 _testBase = testBase;
+                Features = new FeatureCollection();
+                Features.Set<IConnectionLifetimeNotificationFeature>(this);
+                Features.Set<IConnectionHeartbeatFeature>(this);
+                ConnectionClosedRequested = ConnectionClosingCts.Token;
             }
 
             public override string ConnectionId { get; set; }
@@ -451,13 +460,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override IFeatureCollection Features { get; }
 
             public override IDictionary<object, object> Items { get; set; }
+            public CancellationToken ConnectionClosedRequested { get; set; }
+
+            public CancellationTokenSource ConnectionClosingCts { get; set; } = new CancellationTokenSource();
 
             public override void Abort()
             {
+                Abort(new ConnectionAbortedException());
             }
 
             public override void Abort(ConnectionAbortedException abortReason)
             {
+                AcceptQueue.Writer.TryComplete();
             }
 
             public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
@@ -478,6 +492,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var stream = new Http3ControlStream(_testBase);
                 // TODO put these somewhere to be read.
                 return new ValueTask<ConnectionContext>(stream.StreamContext);
+            }
+
+            public void OnHeartbeat(Action<object> action, object state)
+            {
+            }
+
+            public void RequestClose()
+            {
+                throw new NotImplementedException();
             }
         }
 
