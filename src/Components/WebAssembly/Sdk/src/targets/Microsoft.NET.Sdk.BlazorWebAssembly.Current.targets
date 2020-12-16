@@ -463,7 +463,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </JoinItems>
 
     <PropertyGroup>
-      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' != '/'">wwwroot\$(StaticWebAssetBasePath.Replace('/', '\'))</_BlazorPublishOutputPath>
+      <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' != '/'">wwwroot\$(StaticWebAssetBasePath.Replace('/', '\').Trim('\'))\</_BlazorPublishOutputPath>
       <_BlazorPublishOutputPath Condition="'$(StaticWebAssetBasePath)' == '/'">wwwroot\</_BlazorPublishOutputPath>
       <_BlazorFrameworkPublishPath>$(_BlazorPublishOutputPath)_framework\</_BlazorFrameworkPublishPath>
     </PropertyGroup>

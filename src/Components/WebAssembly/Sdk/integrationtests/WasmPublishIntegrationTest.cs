@@ -251,14 +251,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             VerifyCompression(result, blazorPublishDirectory);
         }
 
-        [Fact]
-        public async Task Publish_WithStaticWebBasePathWorks()
+        [Theory]
+        [InlineData("different-path")]
+        [InlineData("/different-path")]
+        [InlineData("different-path/")]
+        [InlineData("/different-path/")]
+        public async Task Publish_WithStaticWebBasePathWorks(string basePath)
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorwasm", "razorclasslibrary");
             project.AddProjectFileContent(
-@"<PropertyGroup>
-    <StaticWebAssetBasePath>different-path/</StaticWebAssetBasePath>
+$@"<PropertyGroup>
+    <StaticWebAssetBasePath>{basePath}</StaticWebAssetBasePath>
 </PropertyGroup>");
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
@@ -299,14 +303,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 staticWebAssetsBasePath: "different-path");
         }
 
-        [Fact]
-        public async Task Publish_Hosted_WithStaticWebBasePathWorks()
+        [Theory]
+        [InlineData("different-path")]
+        [InlineData("/different-path")]
+        [InlineData("different-path/")]
+        [InlineData("/different-path/")]
+        public async Task Publish_Hosted_WithStaticWebBasePathWorks(string basePath)
         {
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", });
             var wasmProject = project.GetSibling("blazorwasm");
             wasmProject.AddProjectFileContent(
-@"<PropertyGroup>
-    <StaticWebAssetBasePath>different-path/</StaticWebAssetBasePath>
+$@"<PropertyGroup>
+    <StaticWebAssetBasePath>{basePath}</StaticWebAssetBasePath>
 </PropertyGroup>");
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
