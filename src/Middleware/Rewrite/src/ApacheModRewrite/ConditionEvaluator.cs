@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 {
@@ -42,14 +43,15 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 
                 if (condResult.Success && trackAllCaptures && prevBackReferences != null)
                 {
-                    prevBackReferences.Add(currentBackReferences!);
+                    prevBackReferences.Add(condResult.BackReferences);
                     currentBackReferences = prevBackReferences;
                 }
 
                 prevBackReferences = currentBackReferences;
             }
 
-            return new MatchResults(condResult!.Success, prevBackReferences);
+            Debug.Assert(condResult != null, "ConditionEvaluator must be passed at least one condition to evaluate.");
+            return new MatchResults(condResult.Success, prevBackReferences);
         }
     }
 }

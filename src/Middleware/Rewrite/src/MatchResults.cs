@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Rewrite
@@ -16,6 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite
             BackReferences = backReferences;
         }
 
+        [MemberNotNullWhen(true, nameof(BackReferences))]
         public bool Success { get; }
         public BackReferenceCollection? BackReferences { get; }
     }
