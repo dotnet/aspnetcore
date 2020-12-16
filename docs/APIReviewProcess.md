@@ -4,6 +4,7 @@ Starting in 5.0, certain areas within the dotnet/aspnetcore and dotnet/extension
 API changes to the following areas are required to go follow this process:
 
 * area-azure
+* area-blazor
 * area-hosting
 * area-installers
 * area-middleware

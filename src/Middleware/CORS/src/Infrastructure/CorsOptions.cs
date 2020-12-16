@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         /// <param name="name">The name of the policy to lookup.</param>
         /// <returns>The <see cref="CorsPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
-        public CorsPolicy GetPolicy(string name)
+        public CorsPolicy? GetPolicy(string name)
         {
             if (name == null)
             {

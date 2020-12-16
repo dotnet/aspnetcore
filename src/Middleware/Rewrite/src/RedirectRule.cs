@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite
                     return;
                 }
 
-                if (newPath.IndexOf("://", StringComparison.Ordinal) == -1 && newPath[0] != '/')
+                if (newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && newPath[0] != '/')
                 {
                     newPath = '/' + newPath;
                 }

@@ -180,3 +180,27 @@ function Write-PipelinePrependPath {
     echo "##vso[task.prependpath]$prepend_path"
   fi
 }
+
+function Write-PipelineSetResult {
+  local result=''
+  local message=''
+
+  while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    case "$opt" in
+      -result|-r)
+        result=$2
+        shift
+        ;;
+      -message|-m)
+        message=$2
+        shift
+        ;;
+    esac
+    shift
+  done
+
+  if [[ "$ci" == true ]]; then
+    echo "##vso[task.complete result=$result;]$message"
+  fi
+}

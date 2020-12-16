@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TagHelpersWebSite
@@ -10,7 +11,7 @@ namespace TagHelpersWebSite
     {
         public IViewComponentResult Invoke(JacketColor jacketColor)
         {
-            var colorReplacement = string.Format("<span style='color:{0}'>#</span>", jacketColor);
+            var colorReplacement = string.Format(CultureInfo.InvariantCulture, "<span style='color:{0}'>#</span>", jacketColor);
 
             var resultString = DanString
                 .Replace("#", colorReplacement)

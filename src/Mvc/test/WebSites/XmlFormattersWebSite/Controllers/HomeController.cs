@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -21,7 +22,7 @@ namespace XmlFormattersWebSite
                 };
             }
 
-            return Content(dummyObject.SampleInt.ToString());
+            return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
         }
 
         // Cannot use 'SerializableError' here as it sanitizes exceptions in model state with generic error message.

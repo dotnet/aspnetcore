@@ -17,6 +17,7 @@
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
 
+    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 
@@ -29,7 +30,7 @@
       Targets="Publish"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir;SelfContained" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
       ReferenceOutputAssembly="false"

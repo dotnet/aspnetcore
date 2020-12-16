@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     .GetOrAdd("aspNetCore");
 
                 // Expand path to dotnet because IIS process would not inherit PATH variable
-                if (aspNetCore.Attribute("processPath")?.Value.StartsWith("dotnet") == true)
+                if (aspNetCore.Attribute("processPath")?.Value.StartsWith("dotnet", StringComparison.Ordinal) == true)
                 {
                     aspNetCore.SetAttributeValue("processPath", DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture));
                 }
@@ -296,8 +296,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
                 var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
 
-                redirectionSection.Attributes["enabled"].Value = true;
+                if ((bool)redirectionSection.Attributes["enabled"].Value)
+                {
+                    // redirection wasn't removed before starting another site.
+                    redirectionSection.Attributes["enabled"].Value = false;
+                    var redirectedFilePath = (string)redirectionSection.Attributes["path"].Value;
+                    Logger.LogWarning($"Name of redirected file: {redirectedFilePath}");
+
+                    serverManager.CommitChanges();
+
+                    throw new InvalidOperationException("Redirection is enabled between test runs.");
+                }
+
                 redirectionSection.Attributes["path"].Value = _configPath;
+
+                redirectionSection.Attributes["enabled"].Value = true;
+
+                Logger.LogInformation("applicationhost.config path {configPath}", _configPath);
 
                 serverManager.CommitChanges();
             });

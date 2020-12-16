@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Logger.LogTrace(LoggerEventIds.ListenerStopping,"Stopping the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerStopping, "Stopping the listener.");
 
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
@@ -277,55 +277,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Accept a request from the incoming request queue.
         /// </summary>
-        public Task<RequestContext> AcceptAsync()
+        internal ValueTask<RequestContext> AcceptAsync(AsyncAcceptContext acceptContext)
         {
-            AsyncAcceptContext acceptContext = null;
+            CheckDisposed();
+            Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
+
+            return acceptContext.AcceptAsync();
+        }
+
+        internal bool ValidateRequest(NativeRequestContext requestMemory)
+        {
             try
             {
-                CheckDisposed();
-                Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
-                // prepare the ListenerAsyncResult object (this will have it's own
-                // event that the user can wait on for IO completion - which means we
-                // need to signal it when IO completes)
-                acceptContext = new AsyncAcceptContext(this);
-                uint statusCode = acceptContext.QueueBeginGetContext();
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                // Block potential DOS attacks
+                if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
                 {
-                    // some other bad error, possible(?) return values are:
-                    // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                    acceptContext.Dispose();
-                    throw new HttpSysException((int)statusCode);
+                    SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                    return false;
+                }
+
+                if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+                {
+                    SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
+                        AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
+                    return false;
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                Logger.LogError(LoggerEventIds.AcceptError, exception, "AcceptAsync");
-                throw;
-            }
-
-            return acceptContext.Task;
-        }
-
-        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
-        {
-            // Block potential DOS attacks
-            if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                Logger.LogError(LoggerEventIds.RequestValidationFailed, ex, "Error validating request {RequestId}", requestMemory.RequestId);
                 return false;
             }
-            return true;
-        }
 
-        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
-        {
-            if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
-                    AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
-                return false;
-            }
             return true;
         }
 

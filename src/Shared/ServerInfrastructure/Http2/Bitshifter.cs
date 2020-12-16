@@ -4,6 +4,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteUInt24BigEndian(Span<byte> destination, uint value)
         {
-            Debug.Assert(value <= 0xFF_FF_FF, value.ToString());
+            Debug.Assert(value <= 0xFF_FF_FF, value.ToString(CultureInfo.InvariantCulture));
             destination[0] = (byte)((value & 0xFF_00_00) >> 16);
             destination[1] = (byte)((value & 0x00_FF_00) >> 8);
             destination[2] = (byte)(value & 0x00_00_FF);
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteUInt31BigEndian(Span<byte> destination, uint value, bool preserveHighestBit)
         {
-            Debug.Assert(value <= 0x7F_FF_FF_FF, value.ToString());
+            Debug.Assert(value <= 0x7F_FF_FF_FF, value.ToString(CultureInfo.InvariantCulture));
 
             if (preserveHighestBit)
             {

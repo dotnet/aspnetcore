@@ -48,11 +48,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             {
                 // Example: IEnumerable<SerializableError>
                 var declaredType = context.DeclaredType;
-                var declaredTypeInfo = declaredType.GetTypeInfo();
 
                 // We only wrap interfaces types(ex: IEnumerable<T>, IQueryable<T>, IList<T> etc.) and not
                 // concrete types like List<T>, Collection<T> which implement IEnumerable<T>.
-                if (declaredType != null && declaredTypeInfo.IsInterface && declaredTypeInfo.IsGenericType)
+                if (declaredType != null && declaredType.IsInterface && declaredType.IsGenericType)
                 {
                     var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
                         declaredType,

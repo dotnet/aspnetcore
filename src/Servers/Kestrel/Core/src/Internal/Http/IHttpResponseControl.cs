@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
         ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
         void CancelPendingFlush();
-        Task CompleteAsync(Exception exception = null);
+        Task CompleteAsync(Exception? exception = null);
     }
 }

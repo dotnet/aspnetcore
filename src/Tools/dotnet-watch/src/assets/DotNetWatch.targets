@@ -13,13 +13,13 @@ them to a file.
     <PropertyGroup>
       <_IsMicrosoftNETCoreApp31OrNewer Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
         $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.1'))">true</_IsMicrosoftNETCoreApp31OrNewer>
-
-      <_IsMicrosoftNETCoreApp31OrNewer Condition="'$(_IsMicrosoftNETCoreApp31OrNewer)' == ''">false</_IsMicrosoftNETCoreApp31OrNewer>
     </PropertyGroup>
 
     <ItemGroup>
-      <_WatchListLine Include="$(_IsMicrosoftNETCoreApp31OrNewer)" />
-      <_WatchListLine Include="%(Watch.FullPath)" />
+      <_WatchListLine Include="-isnetcoreapp31" Condition="'$(_IsMicrosoftNETCoreApp31OrNewer)' == 'true'"/>
+      <_WatchListLine Include="-f:%(Watch.FullPath)" Condition="'%(Watch.WatchAction)'==''" />
+      <_WatchListLine Include="-c:%(Watch.FullPath)" Condition="'%(Watch.WatchAction)'!=''" />
+      <_WatchListLine Include="-s:%(Watch.StaticWebAssetPath)" Condition="'%(Watch.WatchAction)'!=''" />
     </ItemGroup>
 
     <WriteLinesToFile Overwrite="true"
@@ -65,15 +65,27 @@ Returns: @(Watch)
 
     <Error Text="TargetFramework should be set" Condition="'$(TargetFramework)' == '' "/>
 
+    <PropertyGroup Condition="'$(_DotNetWatchUseStaticWebAssetBasePath)' == 'true'">
+      <_DotNetWatchStaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' != ''">$(StaticWebAssetBasePath)/</_DotNetWatchStaticWebAssetBasePath>
+      <_DotNetWatchStaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)/</_DotNetWatchStaticWebAssetBasePath>
+    </PropertyGroup>
+
     <ItemGroup>
       <Watch Include="%(Compile.FullPath)" Condition="'%(Compile.Watch)' != 'false'" />
       <Watch Include="%(EmbeddedResource.FullPath)" Condition="'%(EmbeddedResource.Watch)' != 'false'"/>
+      <!-- In RazorSDK (Blazor, RCL, and Web) targeting apps also watch content files under wwwroot -->
+      <Watch Include="%(Content.FullPath)"
+             Condition="'$(UsingMicrosoftNETSdkRazor)'=='true' AND '$(DotNetWatchContentFiles)'!='false' AND '%(Content.Watch)' != 'false' AND $([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))"
+             WatchAction="BrowserRefresh"
+             StaticWebAssetPath="$(_DotNetWatchStaticWebAssetBasePath)$([System.String]::Copy('%(Identity)').Replace('\','/').Substring(8))" />
+
       <Watch Include="$(MSBuildProjectFullPath)" />
       <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false'" />
     </ItemGroup>
 
     <MSBuild Projects="@(_WatchProjects)"
              Targets="_CollectWatchItems"
+             Properties="_DotNetWatchUseStaticWebAssetBasePath=true"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="Watch" />
     </MSBuild>

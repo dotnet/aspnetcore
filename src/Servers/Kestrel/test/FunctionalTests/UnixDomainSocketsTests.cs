@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -128,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
 #if LIBUV
         [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28067")]
 #else
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
 #endif
@@ -185,9 +187,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         var httpResponse = Encoding.ASCII.GetString(readBuffer, 0, read);
                         int httpStatusStart = httpResponse.IndexOf(' ') + 1;
+                        Assert.False(httpStatusStart == 0, $"Space not found in '{httpResponse}'.");
                         int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
+                        Assert.False(httpStatusEnd == -1, $"Second space not found in '{httpResponse}'.");
 
-                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart));
+                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart), CultureInfo.InvariantCulture);
                         Assert.Equal(httpStatus, StatusCodes.Status200OK);
 
                     }

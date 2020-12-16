@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
-                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
+                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
                         .Configure(app => { app.Run(_app); });
                 })
                 .ConfigureServices(services =>

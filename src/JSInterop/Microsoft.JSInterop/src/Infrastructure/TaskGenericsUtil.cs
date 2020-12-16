@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -91,7 +92,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 // If necessary, attempt a cast
                 var typedResult = result is T resultT
                     ? resultT
-                    : (T)Convert.ChangeType(result, typeof(T));
+                    : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture);
 
                 typedTcs.SetResult(typedResult!);
             }

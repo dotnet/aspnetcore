@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private readonly QuicTransportContext _context;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
         private readonly IQuicTrace _log;
-        private string _connectionId;
+        private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
-        private volatile Exception _shutdownReason;
+        private volatile Exception? _shutdownReason;
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _shutdownLock = new object();
 
@@ -34,11 +34,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _connection = connection;
             _context = context;
             _log = context.Log;
+            MemoryPool = connection.MemoryPool;
 
             ConnectionClosed = _streamClosedTokenSource.Token;
 
-            var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
-            var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
+            var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
+            var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
 
             // TODO should we allow these PipeScheduler to be configurable here?
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         private async Task DoReceive()
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
@@ -221,8 +222,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         private async Task DoSend()
         {
-            Exception shutdownReason = null;
-            Exception unexpectedError = null;
+            Exception? shutdownReason = null;
+            Exception? unexpectedError = null;
 
             try
             {
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             Output.CancelPendingRead();
         }
 
-        private async ValueTask ShutdownWrite(Exception shutdownReason)
+        private async ValueTask ShutdownWrite(Exception? shutdownReason)
         {
             try
             {

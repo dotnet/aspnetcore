@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Replace(forgeryToken, "{0}");
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            expectedContent = string.Format(expectedContent, forgeryToken);
+            expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
             Assert.Equal(
                 expectedContent.Trim(),
                 responseContent,

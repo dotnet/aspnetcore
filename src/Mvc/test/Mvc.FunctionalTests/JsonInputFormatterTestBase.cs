@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
+            Assert.Equal(sampleInputInt.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
         }
 
         [Theory]
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
+            Assert.Equal(expectedSampleIntValue.ToString(CultureInfo.InvariantCulture), responseBody);
         }
 
         [Theory]
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
+            Assert.Equal(expectedSampleIntValue.ToString(CultureInfo.InvariantCulture), responseBody);
         }
     }
 }

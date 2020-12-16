@@ -10,6 +10,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// A string header value with an optional quality.
+    /// </summary>
     public class StringWithQualityHeaderValue
     {
         private static readonly HttpHeaderParser<StringWithQualityHeaderValue> SingleValueParser
@@ -25,6 +28,10 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="StringWithQualityHeaderValue"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="StringSegment"/> used to initialize the new instance.</param>
         public StringWithQualityHeaderValue(StringSegment value)
         {
             HeaderUtilities.CheckValidToken(value, nameof(value));
@@ -32,6 +39,11 @@ namespace Microsoft.Net.Http.Headers
             _value = value;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="StringWithQualityHeaderValue"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="StringSegment"/> used to initialize the new instance.</param>
+        /// <param name="quality">The quality factor.</param>
         public StringWithQualityHeaderValue(StringSegment value, double quality)
         {
             HeaderUtilities.CheckValidToken(value, nameof(value));
@@ -45,16 +57,17 @@ namespace Microsoft.Net.Http.Headers
             _quality = quality;
         }
 
-        public StringSegment Value
-        {
-            get { return _value; }
-        }
+        /// <summary>
+        /// Gets the string header value.
+        /// </summary>
+        public StringSegment Value => _value;
 
-        public double? Quality
-        {
-            get { return _quality; }
-        }
+        /// <summary>
+        /// Gets the quality factor.
+        /// </summary>
+        public double? Quality => _quality;
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (_quality.HasValue)
@@ -65,6 +78,7 @@ namespace Microsoft.Net.Http.Headers
             return _value.ToString();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as StringWithQualityHeaderValue;
@@ -92,6 +106,7 @@ namespace Microsoft.Net.Http.Headers
             return !other._quality.HasValue;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value);
@@ -104,33 +119,66 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
+        /// <summary>
+        /// Parses the specified <paramref name="input"/> as a <see cref="StringWithQualityHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <returns>The parsed value.</returns>
         public static StringWithQualityHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index)!;
         }
 
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="StringWithQualityHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParse(StringSegment input, [NotNullWhen(true)] out StringWithQualityHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="StringWithQualityHeaderValue"/> values.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static IList<StringWithQualityHeaderValue> ParseList(IList<string>? input)
         {
             return MultipleValueParser.ParseValues(input);
         }
 
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="StringWithQualityHeaderValue"/> values using string parsing rules.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string>? input)
         {
             return MultipleValueParser.ParseStrictValues(input);
         }
 
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="StringWithQualityHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParseList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
         }
 
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="StringWithQualityHeaderValue"/> using string parsing rules.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParseStrictList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);

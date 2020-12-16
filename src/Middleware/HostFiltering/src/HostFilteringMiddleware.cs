@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         private readonly ILogger<HostFilteringMiddleware> _logger;
         private readonly IOptionsMonitor<HostFilteringOptions> _optionsMonitor;
         private HostFilteringOptions _options;
-        private IList<StringSegment> _allowedHosts;
+        private IList<StringSegment>? _allowedHosts;
         private bool? _allowAnyNonEmptyHost;
 
         /// <summary>
@@ -80,6 +81,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         {
             if (_allowAnyNonEmptyHost == true || _allowedHosts?.Count > 0)
             {
+                Debug.Assert(_allowedHosts != null);
                 return _allowedHosts;
             }
 

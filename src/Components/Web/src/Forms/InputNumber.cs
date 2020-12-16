@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }

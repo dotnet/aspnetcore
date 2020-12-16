@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HttpsLoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _redirectingToHttps;
-        private static readonly Action<ILogger, int, Exception> _portLoadedFromConfig;
-        private static readonly Action<ILogger, Exception> _failedToDeterminePort;
-        private static readonly Action<ILogger, Exception> _failedMultiplePorts;
-        private static readonly Action<ILogger, int, Exception> _portFromServer;
+        private static readonly Action<ILogger, string, Exception?> _redirectingToHttps;
+        private static readonly Action<ILogger, int, Exception?> _portLoadedFromConfig;
+        private static readonly Action<ILogger, Exception?> _failedToDeterminePort;
+        private static readonly Action<ILogger, Exception?> _failedMultiplePorts;
+        private static readonly Action<ILogger, int, Exception?> _portFromServer;
 
         static HttpsLoggingExtensions()
         {

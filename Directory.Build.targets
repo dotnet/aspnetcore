@@ -18,6 +18,11 @@
          '$(IsSpecificationTestProject)' == 'true')">true</ExcludeFromBuild>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Ignore API doc requirements for test assets -->
+    <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Label="Resx settings">
     <GenerateResxSource Condition="$(GenerateResxSource) == ''">true</GenerateResxSource>
     <GenerateResxSourceEmitFormatMethods Condition="$(GenerateResxSourceEmitFormatMethods) == ''">true</GenerateResxSourceEmitFormatMethods>
@@ -32,8 +37,8 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
-    <SiteExtensionPackageVersion>$(VersionPrefix)</SiteExtensionPackageVersion>
-    <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
+    <SiteExtensionVersion>$(VersionPrefix)</SiteExtensionVersion>
+    <SiteExtensionVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionVersion>
 
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
 
@@ -44,7 +49,7 @@
     <TargetingPackVersion>$(SharedFxVersion)</TargetingPackVersion>
     <TargetingPackVersion Condition=" ! $(IsTargetingPackBuilding) ">$(TargetingPackVersionPrefix)</TargetingPackVersion>
 
-    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
+    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -146,34 +151,20 @@
 
   <PropertyGroup>
     <KnownAppHostPackOrFrameworkReferenceTfm>$(DefaultNetCoreTargetFramework)</KnownAppHostPackOrFrameworkReferenceTfm>
-    <KnownAppHostPackOrFrameworkReferenceTfm Condition=" '$(TargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
-      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">netcoreapp$(TargetFrameworkVersion.TrimStart('vV'))</KnownAppHostPackOrFrameworkReferenceTfm>
+    <_DefaultTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(DefaultNetCoreTargetFramework)'))</_DefaultTargetFrameworkIdentifier>
+    <_DefaultTargetFrameworkVersionNoV>$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))</_DefaultTargetFrameworkVersionNoV>
+    <KnownAppHostPackOrFrameworkReferenceTfm Condition=" '$(_DefaultTargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(_DefaultTargetFrameworkVersionNoV)', '5.0')) ">netcoreapp$(_DefaultTargetFrameworkVersionNoV)</KnownAppHostPackOrFrameworkReferenceTfm>
+
+    <!-- Do not update the Microsoft.AspNetCore.App KnownFrameworkReference item unless requested. -->
+    <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
+    <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
+      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <KnownFrameworkReference Update="Microsoft.NETCore.App">
-      <!-- Always update the 'latest version', whether the repo is servicing or not. -->
-      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
-      <!-- Only update the default runtime version for preview builds. -->
-      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
-      <!-- Only update the targeting pack version for preview builds. -->
-      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
-    </KnownFrameworkReference>
-
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
-
-    <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' == 'true' AND '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true'" Update="Microsoft.AspNetCore.App">
-      <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
-      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(TargetingPackVersion)</TargetingPackVersion>
-    </KnownFrameworkReference>
-
-    <!-- Track compiler separately from Arcade.-->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
-        PrivateAssets="all"
-        IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">
@@ -190,6 +181,7 @@
   </Target>
 
   <Import Project="eng\Workarounds.targets" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />

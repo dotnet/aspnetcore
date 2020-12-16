@@ -12,19 +12,19 @@ namespace Microsoft.AspNetCore.StaticFiles
     /// </summary>
     internal static class LoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _methodNotSupported;
-        private static Action<ILogger, string, string, Exception> _fileServed;
-        private static Action<ILogger, string, Exception> _pathMismatch;
-        private static Action<ILogger, string, Exception> _fileTypeNotSupported;
-        private static Action<ILogger, string, Exception> _fileNotFound;
-        private static Action<ILogger, string, Exception> _fileNotModified;
-        private static Action<ILogger, string, Exception> _preconditionFailed;
-        private static Action<ILogger, int, string, Exception> _handled;
-        private static Action<ILogger, string, Exception> _rangeNotSatisfiable;
-        private static Action<ILogger, StringValues, string, Exception> _sendingFileRange;
-        private static Action<ILogger, StringValues, string, Exception> _copyingFileRange;
-        private static Action<ILogger, Exception> _writeCancelled;
-        private static Action<ILogger, Exception> _endpointMatched;
+        private static Action<ILogger, string, Exception?> _methodNotSupported;
+        private static Action<ILogger, string, string, Exception?> _fileServed;
+        private static Action<ILogger, string, Exception?> _pathMismatch;
+        private static Action<ILogger, string, Exception?> _fileTypeNotSupported;
+        private static Action<ILogger, string, Exception?> _fileNotFound;
+        private static Action<ILogger, string, Exception?> _fileNotModified;
+        private static Action<ILogger, string, Exception?> _preconditionFailed;
+        private static Action<ILogger, int, string, Exception?> _handled;
+        private static Action<ILogger, string, Exception?> _rangeNotSatisfiable;
+        private static Action<ILogger, StringValues, string, Exception?> _sendingFileRange;
+        private static Action<ILogger, StringValues, string, Exception?> _copyingFileRange;
+        private static Action<ILogger, Exception?> _writeCancelled;
+        private static Action<ILogger, Exception?> _endpointMatched;
 
         static LoggerExtensions()
         {

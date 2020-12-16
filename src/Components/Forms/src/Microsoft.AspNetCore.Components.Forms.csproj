@@ -6,7 +6,6 @@
     <Description>Forms and validation support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

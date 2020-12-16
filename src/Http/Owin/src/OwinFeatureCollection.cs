@@ -206,13 +206,13 @@ namespace Microsoft.AspNetCore.Owin
 
         int IHttpConnectionFeature.RemotePort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         int IHttpConnectionFeature.LocalPort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.LocalPort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Owin
         private bool SupportsInterface(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+            if (key.IsAssignableFrom(GetType()))
             {
                 // Check for conditional features
                 if (key == typeof(ITlsConnectionFeature))

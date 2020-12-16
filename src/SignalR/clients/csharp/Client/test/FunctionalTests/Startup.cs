@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 return context =>
                 {
-                    if (context.Request.Path.Value.EndsWith("/negotiate"))
+                    if (context.Request.Path.Value.EndsWith("/negotiate", StringComparison.Ordinal))
                     {
                         context.Response.Cookies.Append("fromNegotiate", "a value");
                     }

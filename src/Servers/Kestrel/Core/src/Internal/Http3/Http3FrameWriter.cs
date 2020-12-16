@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
-        private readonly MinDataRate _minResponseDataRate;
+        private readonly MinDataRate? _minResponseDataRate;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly Http3RawFrame _outgoingFrame;
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
         {
             _outputWriter = output;
             _connectionContext = connectionContext;
@@ -240,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
 
-        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {
@@ -299,17 +298,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public void Complete()
+        public ValueTask CompleteAsync()
         {
             lock (_writeLock)
             {
                 if (_completed)
                 {
-                    return;
+                    return default;
                 }
 
                 _completed = true;
-                _outputWriter.Complete();
+                return _outputWriter.CompleteAsync();
             }
         }
 
@@ -325,7 +324,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _aborted = true;
                 _connectionContext.Abort(error);
 
-                Complete();
+                if (_completed)
+                {
+                    return;
+                }
+
+                _completed = true;
+                _outputWriter.Complete();
             }
         }
 

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.TestHost
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
-            if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+            if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
             {
                 pathBase = new PathString(pathBase.Value[..^1]); // All but the last character
             }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.Method = request.Method.ToString();
 
-                req.Scheme = request.RequestUri.Scheme;
+                req.Scheme = request.RequestUri!.Scheme;
 
                 var canHaveBody = false;
                 if (requestContent != null)

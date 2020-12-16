@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
             => key.Replace("__", ConfigurationPath.KeyDelimiter);
 
         private static string TrimNewLine(string value)
-            => value.EndsWith(Environment.NewLine)
+            => value.EndsWith(Environment.NewLine, StringComparison.Ordinal)
                 ? value.Substring(0, value.Length - Environment.NewLine.Length)
                 : value;
 

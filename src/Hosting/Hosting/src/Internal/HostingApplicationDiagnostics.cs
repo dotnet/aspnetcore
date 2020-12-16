@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RequestEnd(HttpContext httpContext, Exception exception, HostingApplication.Context context)
+        public void RequestEnd(HttpContext httpContext, Exception? exception, HostingApplication.Context context)
         {
             // Local cache items resolved multiple items, in order of use so they are primed in cpu pipeline when used
             var startTimestamp = context.StartTimestamp;
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Hosting
         private void LogRequestStarting(HostingApplication.Context context)
         {
             // IsEnabled is checked in the caller, so if we are here just log
-            var startLog = new HostingRequestStartingLog(context.HttpContext);
+            var startLog = new HostingRequestStartingLog(context.HttpContext!);
             context.StartLog = startLog;
 
             _logger.Log(
@@ -266,7 +266,11 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
+                if (baggage.Length == 0)
+                {
+                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                }
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
                 // An order could be important if baggage has two items with the same key (that is allowed by the contract)

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var maxPathString = Environment.GetEnvironmentVariable(MaxPathLengthEnvironmentVariableName);
             var defaultMaxPath = 245;
-            return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString);
+            return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString, CultureInfo.InvariantCulture);
         }
 
         private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, Assembly assembly, IServiceProvider serviceProvider)
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Testing
             var scope = logger.BeginScope("Test: {testName}", testName);
 
             _globalLogger.LogInformation("Starting test {testName}", testName);
-            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s"));
+            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s", CultureInfo.InvariantCulture));
 
             return new Disposable(() =>
             {
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Testing
             logger.LogInformation("Global Test Logging initialized at {logStart}. "
                 + "Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property "
                 + "or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.",
-                logStart.ToString("s"));
+                logStart.ToString("s", CultureInfo.InvariantCulture));
             return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
@@ -292,8 +293,8 @@ namespace Microsoft.AspNetCore.Testing
                     propertyFactory.CreateProperty(
                         "TimestampOffset",
                         _logStart.HasValue
-                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"
-                            : DateTimeOffset.UtcNow.ToString("s")));
+                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3", CultureInfo.InvariantCulture)}s"
+                            : DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture)));
         }
 
         private class Disposable : IDisposable

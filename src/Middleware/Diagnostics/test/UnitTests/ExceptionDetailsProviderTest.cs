@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
@@ -27,7 +26,7 @@ namespace Microsoft.Extensions.Internal
                     "TestFiles/SourceFile.txt"
                 };
 
-                if (!(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
+                if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }
@@ -112,8 +111,8 @@ namespace Microsoft.Extensions.Internal
         {
             // Arrange
             var provider = new EmbeddedFileProvider(
-                GetType().GetTypeInfo().Assembly,
-                baseNamespace: $"{typeof(ExceptionDetailsProviderTest).GetTypeInfo().Assembly.GetName().Name}.Resources");
+                GetType().Assembly,
+                baseNamespace: $"{typeof(ExceptionDetailsProviderTest).Assembly.GetName().Name}.Resources");
 
             // Act
             var exceptionDetailProvider = new ExceptionDetailsProvider(provider, logger: null, sourceCodeLineCount: 6);
@@ -279,7 +278,7 @@ namespace Microsoft.Extensions.Internal
         {
             var start = fromLine;
             var count = toLine - fromLine + 1;
-            return Enumerable.Range(start, count).Select(i => string.Format("Line{0}", i));
+            return Enumerable.Range(start, count).Select(i => string.Format(CultureInfo.InvariantCulture, "Line{0}", i));
         }
 
         private class TestFileProvider : IFileProvider

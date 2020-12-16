@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private long _consumedBytes;
+        internal bool ClientDisconnected { get; private set; }
 
         /// <summary>
         /// Reads data from the Input pipe to the user.
@@ -224,6 +225,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 shouldScheduleCancellation = _abortedCts != null;
                 _requestAborted = true;
+            }
+
+            lock (_contextLock)
+            {
+                ClientDisconnected = clientDisconnect;
             }
 
             if (clientDisconnect)

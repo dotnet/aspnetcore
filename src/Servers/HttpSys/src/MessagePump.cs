@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpSysListener Listener { get; }
 
-        internal IHttpApplication<object> Application { get; set; }
+        internal IRequestContextFactory RequestContextFactory { get; set; }
 
         public IFeatureCollection Features { get; }
 
@@ -118,12 +118,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             // else // Attaching to an existing queue, don't add a default.
 
-            // Can't call Start twice
-            Contract.Assert(Application == null);
+            // Can't start twice
+            Debug.Assert(RequestContextFactory == null, "Start called twice!");
 
-            Contract.Assert(application != null);
+            Debug.Assert(application != null);
 
-            Application = new ApplicationWrapper<TContext>(application);
+            RequestContextFactory = new ApplicationRequestContextFactory<TContext>(application, this);
 
             Listener.Start();
 
@@ -134,7 +134,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _serverAddresses.Addresses.Add(prefix.FullPrefix);
             }
 
-            ActivateRequestProcessingLimits();
+            // Dispatch to get off the SynchronizationContext and use UnsafeQueueUserWorkItem to avoid capturing the ExecutionContext
+            ThreadPool.UnsafeQueueUserWorkItem(state => state.ActivateRequestProcessingLimits(), this, preferLocal: false);
 
             return Task.CompletedTask;
         }
@@ -143,7 +144,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
-                ProcessRequestsWorker();
+                // Ignore the result
+                _ = ProcessRequestsWorker();
             }
         }
 
@@ -174,8 +176,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // When we start listening for the next request on one thread, we may need to be sure that the
         // completion continues on another thread as to not block the current request processing.
         // The awaits will manage stack depth for us.
-        private async void ProcessRequestsWorker()
+        private async Task ProcessRequestsWorker()
         {
+            // Allocate and accept context per loop and reuse it for all accepts
+            using var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
+
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (!Stopping && workerIndex <= _maxAccepts)
             {
@@ -183,13 +188,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 RequestContext requestContext;
                 try
                 {
-                    requestContext = await Listener.AcceptAsync().SupressContext();
-                    // Assign the message pump to this request context
-                    requestContext.MessagePump = this;
+                    requestContext = await Listener.AcceptAsync(acceptContext);
+
+                    if (!Listener.ValidateRequest(requestContext))
+                    {
+                        // Dispose the request
+                        requestContext.Dispose();
+
+                        // If either of these is false then a response has already been sent to the client, so we can accept the next request
+                        continue;
+                    }
                 }
                 catch (Exception exception)
                 {
-                    Contract.Assert(Stopping);
+                    Debug.Assert(Stopping);
                     if (Stopping)
                     {
                         _logger.LogDebug(LoggerEventIds.AcceptErrorStopping, exception, "Failed to accept a request, the server is stopping.");
@@ -262,31 +274,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _shutdownSignal.TrySetResult(null);
 
             Listener.Dispose();
-        }
-
-        private class ApplicationWrapper<TContext> : IHttpApplication<object>
-        {
-            private readonly IHttpApplication<TContext> _application;
-
-            public ApplicationWrapper(IHttpApplication<TContext> application)
-            {
-                _application = application;
-            }
-
-            public object CreateContext(IFeatureCollection contextFeatures)
-            {
-                return _application.CreateContext(contextFeatures);
-            }
-
-            public void DisposeContext(object context, Exception exception)
-            {
-                _application.DisposeContext((TContext)context, exception);
-            }
-
-            public Task ProcessRequestAsync(object context)
-            {
-                return _application.ProcessRequestAsync((TContext)context);
-            }
         }
     }
 }
