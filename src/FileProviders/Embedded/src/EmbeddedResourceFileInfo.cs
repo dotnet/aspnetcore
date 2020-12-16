@@ -50,12 +50,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded
             {
                 if (!_length.HasValue)
                 {
-                    using var stream = _assembly.GetManifestResourceStream(_resourcePath);
-                    if (stream == null)
-                    {
-                        throw new InvalidOperationException($"Couldn't get resource at '{_resourcePath}'.");
-                    }
-
+                    using var stream = GetManifestResourceStream();
                     _length = stream.Length;
                 }
                 return _length.Value;
@@ -85,14 +80,21 @@ namespace Microsoft.Extensions.FileProviders.Embedded
         /// <inheritdoc />
         public Stream CreateReadStream()
         {
+            var stream = GetManifestResourceStream();
+            if (!_length.HasValue)
+            {
+                _length = stream.Length;
+            }
+
+            return stream;
+        }
+
+        private Stream GetManifestResourceStream()
+        {
             var stream = _assembly.GetManifestResourceStream(_resourcePath);
             if (stream == null)
             {
                 throw new InvalidOperationException($"Couldn't get resource at '{_resourcePath}'.");
-            }
-            if (!_length.HasValue)
-            {
-                _length = stream.Length;
             }
 
             return stream;

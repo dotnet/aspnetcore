@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
             if (segment.Equals("..", StringComparison.Ordinal))
             {
-                return Parent!;
+                return Parent ?? UnknownPath;
             }
 
             foreach (var child in Children)
