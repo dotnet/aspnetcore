@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Same(item, value);
         }
 
-        [Fact")]
+        [Fact]
         public void TempData_LoadAndSaveAreCaseInsensitive()
         {
             // Arrange
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.True(tempData.ContainsKey("bar"));
         }
 
-        [Fact)]
+        [Fact]
         public void TempData_RemovalOfKeysAreCaseInsensitive()
         {
             var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
