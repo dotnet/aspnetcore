@@ -28,7 +28,7 @@
       </ItemGroup>
     </Target>
 
-  <Target Name="_AddContentRootForProjectReferences" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveMvcTestProjectReferences">
+  <Target Name="_AddContentRootForProjectReferences" BeforeTargets="PrepareResources" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup>
       <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
         <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
