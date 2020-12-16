@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-        Include="..\..\Mvc.Testing.Tasks\src\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj"
+    <Reference
+        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
         Targets="Publish"
         ReferenceOutputAssembly="false"
         SkipGetTargetFrameworkProperties="true"
