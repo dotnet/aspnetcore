@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, Exception?> _notAllConnectionsAborted =
             LoggerMessage.Define(LogLevel.Debug, new EventId(21, "NotAllConnectionsAborted"), "Some connections failed to abort during server shutdown.");
 
-        private static readonly Action<ILogger, TimeSpan, TimeSpan, DateTimeOffset, Exception?> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, "HeartbeatSlow"), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
+        private static readonly Action<ILogger, DateTimeOffset, TimeSpan, TimeSpan, Exception?> _heartbeatSlow =
+            LoggerMessage.Define<DateTimeOffset, TimeSpan, TimeSpan>(LogLevel.Warning, new EventId(22, "HeartbeatSlow"), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
 
         private static readonly Action<ILogger, string, Exception?> _applicationNeverCompleted =
             LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, "ApplicationNeverCompleted"), @"Connection id ""{ConnectionId}"" application never completed");
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public virtual void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _heartbeatSlow(_logger, heartbeatDuration, interval, now, null);
+            _heartbeatSlow(_logger, now, heartbeatDuration, interval, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
