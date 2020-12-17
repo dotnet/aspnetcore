@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
@@ -11,6 +11,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>files;filesystem</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
