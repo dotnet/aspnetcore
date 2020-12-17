@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     [SupportedOSPlatform("windows")]
     public class RegistryXmlRepository : IXmlRepository
     {
-        private static readonly Lazy<RegistryKey> _defaultRegistryKeyLazy = new Lazy<RegistryKey>(GetDefaultHklmStorageKey);
+        private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
         private readonly ILogger _logger;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// This property can return null if no suitable default registry key can
         /// be found, such as the case when this application is not hosted inside IIS.
         /// </remarks>
-        public static RegistryKey DefaultRegistryKey => _defaultRegistryKeyLazy.Value;
+        public static RegistryKey? DefaultRegistryKey => _defaultRegistryKeyLazy.Value;
 
         /// <summary>
         /// The registry key into which key material will be written.
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
-        private static RegistryKey GetDefaultHklmStorageKey()
+        private static RegistryKey? GetDefaultHklmStorageKey()
         {
             try
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                     var aspnetAutoGenKeysBaseKeyName = string.Format(
                         CultureInfo.InvariantCulture,
                         @"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{0}",
-                        WindowsIdentity.GetCurrent().User.Value);
+                        WindowsIdentity.GetCurrent()!.User!.Value);
 
                     var aspnetBaseKey = hklmBaseKey.OpenSubKey(aspnetAutoGenKeysBaseKeyName, writable: true);
                     if (aspnetBaseKey != null)
@@ -125,12 +125,12 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 || ('a' <= c && c <= 'z')));
         }
 
-        private XElement ReadElementFromRegKey(RegistryKey regKey, string valueName)
+        private XElement? ReadElementFromRegKey(RegistryKey regKey, string valueName)
         {
             _logger.ReadingDataFromRegistryKeyValue(regKey, valueName);
 
             var data = regKey.GetValue(valueName) as string;
-            return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
+            return (!string.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
         }
 
         public virtual void StoreElement(XElement element, string friendlyName)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             _loggerFactory = loggerFactory;
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as AuthenticatedEncryptorDescriptor;
             if (descriptor == null)
@@ -37,9 +38,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal IAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("authenticatedConfiguration")]
+        internal IAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            AuthenticatedEncryptorConfiguration authenticatedConfiguration)
+            AuthenticatedEncryptorConfiguration? authenticatedConfiguration)
         {
             if (authenticatedConfiguration == null)
             {

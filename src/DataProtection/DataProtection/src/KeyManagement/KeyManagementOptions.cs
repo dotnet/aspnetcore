@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// The <see cref="AlgorithmConfiguration"/> instance that can be used to create
         /// the <see cref="IAuthenticatedEncryptorDescriptor"/> instance.
         /// </summary>
-        public AlgorithmConfiguration AuthenticatedEncryptorConfiguration { get; set; }
+        public AlgorithmConfiguration? AuthenticatedEncryptorConfiguration { get; set; }
 
         /// <summary>
         /// The list of <see cref="IKeyEscrowSink"/> to store the key material in.
@@ -152,12 +152,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <summary>
         /// The <see cref="IXmlRepository"/> to use for storing and retrieving XML elements.
         /// </summary>
-        public IXmlRepository XmlRepository { get; set; }
+        public IXmlRepository? XmlRepository { get; set; }
 
         /// <summary>
         /// The <see cref="IXmlEncryptor"/> to use for encrypting XML elements.
         /// </summary>
-        public IXmlEncryptor XmlEncryptor { get; set; }
+        public IXmlEncryptor? XmlEncryptor { get; set; }
 
         /// <summary>
         /// The list of <see cref="IAuthenticatedEncryptorFactory"/> that will be used for creating

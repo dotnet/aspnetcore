@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             _logger = loggerFactory.CreateLogger<CngCbcAuthenticatedEncryptorFactory>();
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as CngCbcAuthenticatedEncryptorDescriptor;
             if (descriptor == null)
@@ -40,9 +41,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         }
 
         [SupportedOSPlatform("windows")]
-        internal CbcAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("configuration")]
+        internal CbcAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            CngCbcAuthenticatedEncryptorConfiguration configuration)
+            CngCbcAuthenticatedEncryptorConfiguration? configuration)
         {
             if (configuration == null)
             {
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
 
             _logger.OpeningCNGAlgorithmFromProviderWithHMAC(configuration.HashAlgorithm, configuration.HashAlgorithmProvider);
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             // Special-case cached providers
             if (configuration.HashAlgorithmProvider == null)
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             _logger.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
 
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             // Special-case cached providers
             if (configuration.EncryptionAlgorithmProvider == null)

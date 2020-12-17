@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 
         IAuthenticatedEncryptorDescriptor DeserializeDescriptorFromKeyElement(XElement keyElement);
 
-        void RevokeSingleKey(Guid keyId, DateTimeOffset revocationDate, string reason);
+        void RevokeSingleKey(Guid keyId, DateTimeOffset revocationDate, string? reason);
     }
 }

@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate to resolve.</param>
         /// <returns>The resolved <see cref="X509Certificate2"/>, or null if the certificate cannot be found.</returns>
-        X509Certificate2 ResolveCertificate(string thumbprint);
+        X509Certificate2? ResolveCertificate(string thumbprint);
     }
 }

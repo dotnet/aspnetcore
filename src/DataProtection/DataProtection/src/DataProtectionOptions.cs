@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.DataProtection
         /// If two different applications need to share protected payloads, they should
         /// ensure that this property is set to the same value across both applications.
         /// </remarks>
-        public string ApplicationDiscriminator { get; set; }
+        public string? ApplicationDiscriminator { get; set; }
     }
 }
