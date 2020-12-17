@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlMatches
             var success = pathMatch != Negate;
             if (success)
             {
-                return new MatchResults { Success = success, BackReferences = new BackReferenceCollection(pattern) };
+                return new MatchResults(success, new BackReferenceCollection(pattern));
             }
             else
             {

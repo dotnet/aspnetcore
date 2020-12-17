@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Rewrite
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Rewrite
             return Index;
         }
 
-        public string Capture()
+        public string? Capture()
         {
             // TODO make this return a range rather than a string.
             if (_mark.HasValue)

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -165,10 +163,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             HttpContext context,
             ICompilationException compilationException)
         {
-            var model = new CompilationErrorPageModel
-            {
-                Options = _options,
-            };
+            var model = new CompilationErrorPageModel(_options);
 
             var errorPage = new CompilationErrorPage
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
         }
 
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
         {
-            var pattern = Url.Evaluate(context, ruleBackReferences, conditionBackReferences);
+            var pattern = Url!.Evaluate(context, ruleBackReferences, conditionBackReferences);
             var request = context.HttpContext.Request;
 
             if (string.IsNullOrEmpty(pattern))
