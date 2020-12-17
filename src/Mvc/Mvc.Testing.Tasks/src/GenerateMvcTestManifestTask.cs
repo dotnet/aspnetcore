@@ -30,9 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
         [Required]
         public ITaskItem[] Projects { get; set; }
 
-        /// <summary>
         /// <inheritdoc />
-        /// </summary>
         public override bool Execute()
         {
             using var fileStream = File.Create(ManifestPath);

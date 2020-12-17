@@ -188,9 +188,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private string GetContentRootFromFile(string file)
         {
-            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllText(file));
+            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file));
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
-            return data[key];
+            try
+            {
+                return data[key];
+            } catch
+            {
+                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+            }
+
         }
 
         private string GetContentRootFromAssembly()

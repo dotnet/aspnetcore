@@ -19,7 +19,7 @@
   <ItemGroup>
     <Reference
         Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
-        Targets="Publish"
+        Targets="Build"
         ReferenceOutputAssembly="false"
         SkipGetTargetFrameworkProperties="true"
         UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
