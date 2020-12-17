@@ -143,7 +143,6 @@ namespace Microsoft.AspNetCore
                 "Microsoft.Net.Http.Headers",
                 "Microsoft.Win32.SystemEvents",
                 "System.Diagnostics.EventLog",
-                "System.Diagnostics.EventLog.Messages",
                 "System.Drawing.Common",
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
