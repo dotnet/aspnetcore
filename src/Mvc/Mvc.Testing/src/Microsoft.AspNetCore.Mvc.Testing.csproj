@@ -17,6 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference
+        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
+        Targets="Build"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
 </Project>
