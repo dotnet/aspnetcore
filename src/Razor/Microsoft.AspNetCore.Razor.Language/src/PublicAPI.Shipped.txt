@@ -1382,12 +1382,9 @@ virtual Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext.I
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind, bool optional) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
 ~static Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor.CreateToken(Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind kind, bool optional, string name, string description) -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenDescriptor
-~static Microsoft.AspNetCore.Razor.Language.Extensions.FunctionsDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.FunctionsDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
-~static Microsoft.AspNetCore.Razor.Language.Extensions.InheritsDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.InheritsDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.NamespaceDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
-~static Microsoft.AspNetCore.Razor.Language.Extensions.SectionDirective.Register(Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.Extensions.SectionDirective.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
 ~static Microsoft.AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(string filePath) -> string
 ~static Microsoft.AspNetCore.Razor.Language.FileKinds.GetFileKindFromFilePath(string filePath) -> string
