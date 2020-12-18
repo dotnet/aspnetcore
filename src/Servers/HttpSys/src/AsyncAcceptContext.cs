@@ -53,58 +53,53 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return new ValueTask<RequestContext>(this, _mrvts.Version);
         }
 
-        private static void IOCompleted(AsyncAcceptContext asyncContext, uint errorCode, uint numBytes)
+        private void IOCompleted(uint errorCode, uint numBytes)
         {
-            // This is important to stash a ref to as it's a mutable struct
-            ref var mrvts = ref asyncContext._mrvts;
-            var requestContext = asyncContext._requestContext;
-            var requestId = requestContext.RequestId;
-
             try
             {
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    mrvts.SetException(new HttpSysException((int)errorCode));
+                    _mrvts.SetException(new HttpSysException((int)errorCode));
                     return;
                 }
 
-                HttpSysListener server = asyncContext.Server;
                 if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
+                    var requestContext = _requestContext;
                     // It's important that we clear the request context before we set the result
                     // we want to reuse the acceptContext object for future accepts.
-                    asyncContext._requestContext = null;
+                    _requestContext = null;
 
-                    mrvts.SetResult(requestContext);
+                    _mrvts.SetResult(requestContext);
                 }
                 else
                 {
                     //  (uint)backingBuffer.Length - AlignmentPadding
-                    asyncContext.AllocateNativeRequest(numBytes, requestId);
+                    AllocateNativeRequest(numBytes, _requestContext.RequestId);
 
                     // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                    uint statusCode = asyncContext.QueueBeginGetContext();
+                    uint statusCode = QueueBeginGetContext();
 
                     if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                         statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
                     {
                         // someother bad error, possible(?) return values are:
                         // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                        mrvts.SetException(new HttpSysException((int)statusCode));
+                        _mrvts.SetException(new HttpSysException((int)statusCode));
                     }
                 }
             }
             catch (Exception exception)
             {
-                mrvts.SetException(exception);
+                _mrvts.SetException(exception);
             }
         }
 
         private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
             var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
-            IOCompleted(acceptContext, errorCode, numBytes);
+            acceptContext.IOCompleted(errorCode, numBytes);
         }
 
         private uint QueueBeginGetContext()
@@ -146,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     && HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
                     // IO operation completed synchronously - callback won't be called to signal completion.
-                    IOCompleted(this, statusCode, bytesTransferred);
+                    IOCompleted(statusCode, bytesTransferred);
                 }
             }
             while (retry);
