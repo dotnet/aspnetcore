@@ -1489,7 +1489,9 @@ namespace TestSite
 #if !FORWARDCOMPAT
             Assert.False(httpContext.Request.CanHaveBody());
             var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
-            Assert.False(feature.IsUpgradableRequest);
+            // The upgrade feature won't be present if WebSockets aren't enabled in IIS.
+            // IsUpgradableRequest should always return false for HTTP/2.
+            Assert.False(feature?.IsUpgradableRequest ?? false);
 #endif
             Assert.Null(httpContext.Request.ContentLength);
             Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
