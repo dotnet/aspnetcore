@@ -186,5 +186,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 base.VisitDirective(node);
             }
         }
+
+        #region Obsolete
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
+        public static void Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            builder.AddDirective(Directive);
+            builder.Features.Add(new Pass());
+        }
+        #endregion
     }
 }

@@ -26,5 +26,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             builder.AddDirective(Directive, FileKinds.Legacy, FileKinds.Component);
             builder.Features.Add(new FunctionsDirectivePass());
         }
+
+        #region Obsolete
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
+        public static void Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddDirective(Directive);
+            builder.Features.Add(new FunctionsDirectivePass());
+        }
+        #endregion
     }
 }
