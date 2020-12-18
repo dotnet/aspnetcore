@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal Task WriteGoAway(long id)
+        internal ValueTask<FlushResult> WriteGoAway(long id)
         {
             _outgoingFrame.PrepareGoAway();
 
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var buffer = _outputWriter.GetSpan(8);
             VariableLengthIntegerHelper.WriteInteger(buffer, id);
             _outputWriter.Advance(length);
-            return _outputWriter.FlushAsync().AsTask();
+            return _outputWriter.FlushAsync();
         }
 
         private void WriteHeaderUnsynchronized()

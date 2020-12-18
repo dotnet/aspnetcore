@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             await _frameWriter.WriteStreamIdAsync(id);
         }
 
-        internal async ValueTask SendGoAway(long id)
+        internal ValueTask<FlushResult> SendGoAway(long id)
         {
-            await _frameWriter.WriteGoAway(id);
+            return _frameWriter.WriteGoAway(id);
         }
 
         internal async ValueTask SendSettingsFrameAsync()

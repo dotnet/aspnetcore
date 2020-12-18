@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Pipelines;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -19,24 +22,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : ITimeoutHandler
     {
-        public Http3ControlStream? OutboundControlStream { get; set; }
-        public Http3ControlStream? ControlStream { get; set; }
-        public Http3ControlStream? EncoderStream { get; set; }
-        public Http3ControlStream? DecoderStream { get; set; }
-
         internal readonly Dictionary<long, Http3Stream> _streams = new Dictionary<long, Http3Stream>();
 
         private long _highestOpenedStreamId; // TODO lock to access
-        private volatile bool _haveSentGoAway;
-        private readonly object _sync = new object();
+        private readonly object _sync = new object(); 
         private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
         private readonly object _protocolSelectionLock = new object();
+        private int _gracefulCloseInitiator;
+        private int _isClosed;
+        private bool _gracefulCloseStarted;
+        private int _activeRequestCount = 0;
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
+        private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
+
 
         public Http3Connection(Http3ConnectionContext context)
         {
@@ -69,6 +72,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
+        public Http3ControlStream? OutboundControlStream { get; set; }
+        public Http3ControlStream? ControlStream { get; set; }
+        public Http3ControlStream? EncoderStream { get; set; }
+        public Http3ControlStream? DecoderStream { get; set; }
 
         public async Task ProcessStreamsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
@@ -91,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((Http3Connection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).OnServerShutdown(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state!).StopProcessingNextRequest(), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state!).OnConnectionClosed(), this);
@@ -104,7 +111,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public void OnServerShutdown()
+        public void StopProcessingNextRequest()
+            => StopProcessingNextRequest(serverInitiated: true);
+
+        public void StopProcessingNextRequest(bool serverInitiated)
         {
             bool previousState;
             lock (_protocolSelectionLock)
@@ -112,11 +122,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            // Attempt to send goaway 
-            SendGoAway();
+            if (!previousState)
+            {
+                var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
 
-            // Abort with no exception to close the connection.
-            _context.ConnectionContext.Abort();
+                if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
+                {
+                    // Abort accept async loop to initiate graceful shutdown
+                    // TODO aborting connection isn't graceful due to runtime issue, will drop data on streams
+                    // Either we need to swap to using a cts here or fix runtime to gracefully close connection.
+                    // await all stream being completed here.
+                    _multiplexedContext.Abort();
+                }
+            }
         }
 
         public void OnConnectionClosed()
@@ -127,7 +145,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
+            if (!previousState)
+            {
+                TryClose();
+                _multiplexedContext.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            }
+        }
+
+        private bool TryClose()
+        {
+            if (Interlocked.Exchange(ref _isClosed, 1) == 0)
+            {
+                Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
+                return true;
+            }
+
+            return false;
         }
 
         public void Abort(ConnectionAbortedException ex)
@@ -142,9 +175,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
-                OnConnectionClosed();
-                SendGoAway();
-                _context.ConnectionContext.Abort(ex);
+                if (TryClose())
+                {
+                    SendGoAway(_highestOpenedStreamId);
+                }
+
+                _multiplexedContext.Abort(ex);
             }
         }
 
@@ -160,6 +196,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
             var now = _systemClock.UtcNowUnsynchronized;
             _timeoutControl.Tick(now);
+
+            // TODO cancel process stream loop to update logic.
         }
 
         public void OnTimeout(TimeoutReason reason)
@@ -171,10 +209,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    SendGoAway();
+                    SendGoAway(_highestOpenedStreamId);
                     break;
                 case TimeoutReason.TimeoutFeature:
-                    SendGoAway();
+                    SendGoAway(_highestOpenedStreamId);
                     break;
                 case TimeoutReason.RequestHeaders:
                 case TimeoutReason.ReadDataRate:
@@ -197,92 +235,198 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // the maximum capacity of the dynamic table to zero.
 
             // Don't create Encoder and Decoder as they aren't used now.
+            Exception? error = null;
+
             var controlTask = CreateControlStream(application);
 
             _timeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
 
             try
             {
-                while (true)
+                while (_isClosed == 0)
                 {
+                    // TODO implement way to unblock loop for one call to accept async to update state.
+                    // Use cts for now, update to custom awaitable or different solution in the future.
                     var streamContext = await _multiplexedContext.AcceptAsync();
-
-                    if (streamContext == null)
+                    try
                     {
-                        // Done accepting streams.
-                        break;
-                    }
-
-                    var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
-                    var streamIdFeature = streamContext.Features.Get<IStreamIdFeature>();
-
-                    Debug.Assert(quicStreamFeature != null);
-                    Debug.Assert(streamIdFeature != null);
-
-                    var httpConnectionContext = new Http3StreamContext(
-                        streamContext.ConnectionId,
-                        protocols: default,
-                        connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
-                        _context.ServiceContext,
-                        streamContext.Features,
-                        _context.MemoryPool,
-                        streamContext.LocalEndPoint as IPEndPoint,
-                        streamContext.RemoteEndPoint as IPEndPoint,
-                        streamContext.Transport,
-                        streamContext,
-                        _serverSettings);
-                    httpConnectionContext.TimeoutControl = _context.TimeoutControl;
-
-                    if (!quicStreamFeature.CanWrite)
-                    {
-                        lock (_sync)
+                        if (streamContext == null)
                         {
-                            // Goaway has already been sent, don't accept new control streams.
-                            if (_haveSentGoAway)
+                            break;
+                        }
+
+                        var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
+                        var streamIdFeature = streamContext.Features.Get<IStreamIdFeature>();
+
+                        Debug.Assert(quicStreamFeature != null);
+                        Debug.Assert(streamIdFeature != null);
+
+                        var httpConnectionContext = new Http3StreamContext(
+                            streamContext.ConnectionId,
+                            protocols: default,
+                            connectionContext: null!, // TODO connection context is null here. Should we set it to anything?
+                            _context.ServiceContext,
+                            streamContext.Features,
+                            _context.MemoryPool,
+                            streamContext.LocalEndPoint as IPEndPoint,
+                            streamContext.RemoteEndPoint as IPEndPoint,
+                            streamContext.Transport,
+                            streamContext,
+                            _serverSettings);
+                        httpConnectionContext.TimeoutControl = _context.TimeoutControl;
+
+                        if (!quicStreamFeature.CanWrite)
+                        {
+                            // Unidirectional stream
+                            var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+                            ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+                        }
+                        else
+                        {
+                            var streamId = streamIdFeature.StreamId;
+
+                            HighestStreamId = streamId;
+
+                            var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
+                            var stream = http3Stream;
+                            lock (_streams)
                             {
-                                continue;
+                                _activeRequestCount++;
+                                _streams[streamId] = http3Stream;
                             }
+                            KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
+                            ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                         }
-                        // Unidirectional stream
-                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
-                        ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
-                    else
+                    finally
                     {
-                        var streamId = streamIdFeature.StreamId;
-
-                        lock (_sync)
-                        {
-                            // Goaway has already been sent and stream id is higher than highest streamid.
-                            // Don't accept stream
-                            if (_haveSentGoAway && streamId > HighestStreamId)
-                            {
-                                continue;
-                            }
-                        }
-
-                        HighestStreamId = streamId;
-
-                        var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
-                        var stream = http3Stream;
-                        lock (_streams)
-                        {
-                            _streams[streamId] = http3Stream;
-                        }
-                        KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
-                        ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+                        UpdateConnectionState();
                     }
                 }
             }
-            catch (OperationCanceledException)
+            catch (ConnectionResetException ex)
             {
+                lock (_streams)
+                {
+                    if (_activeRequestCount > 0)
+                    {
+                        Log.RequestProcessingError(_context.ConnectionId, ex);
+                    }
+                }
+                error = ex;
+            }
+            catch (IOException ex)
+            {
+                Log.RequestProcessingError(_context.ConnectionId, ex);
+                error = ex;
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                Log.RequestProcessingError(_context.ConnectionId, ex);
+                error = ex;
+            }
+            catch (Http3ConnectionException ex)
+            {
+                // TODO Connection error code?
+                Log.Http3ConnectionError(_context.ConnectionId, ex);
+                error = ex;
+            }
+            catch (Exception ex)
+            {
+                error = ex;
+            }
+            finally
+            {
+                var connectionError = error as ConnectionAbortedException
+                    ?? new ConnectionAbortedException(CoreStrings.Http3ConnectionFaulted, error!);
+
+                try
+                {
+                    if (TryClose())
+                    {
+                        // This throws when connection is shut down.
+                        // TODO how to make it so we can distinguish between Abort from server vs client?
+                        // Different exception catches?
+                        await SendGoAway(_highestOpenedStreamId);
+                    }
+
+                    foreach (var stream in _streams.Values)
+                    {
+                        stream.Abort(connectionError);
+                    }
+
+                    while (_activeRequestCount > 0)
+                    {
+                        await _streamCompletionAwaitable;
+                    }
+
+                    _timeoutControl.CancelTimeout();
+                }
+                catch
+                {
+                    Abort(connectionError);
+                    throw;
+                }
+            }
+        }
+
+        private void UpdateConnectionState()
+        {
+            if (_isClosed != 0)
+            {
+                return;
+            }
+
+            int activeRequestCount;
+            lock (_streams)
+            {
+                activeRequestCount = _activeRequestCount;
+            }
+
+            if (_gracefulCloseInitiator != GracefulCloseInitiator.None && !_gracefulCloseStarted)
+            {
+                _gracefulCloseStarted = true;
+
+                Log.Http3ConnectionClosing(_context.ConnectionId);
+
+                // TODO add way to check active stream count?
+                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && activeRequestCount > 0)
+                {
+                    // Go away with largest streamid to initiate graceful shutdown.
+                    SendGoAway(VariableLengthIntegerHelper.EightByteLimit);
+                }
+            }
+
+            if (activeRequestCount == 0)
+            {
+                if (_gracefulCloseStarted)
+                {
+                    if (TryClose())
+                    {
+                        SendGoAway(_highestOpenedStreamId);
+                    }
+                }
+                else
+                {
+                    // TODO should keep-alive timeout be a thing for HTTP/3? MsQuic currently tracks this for us?
+                    if (_timeoutControl.TimerReason == TimeoutReason.None)
+                    {
+                        _timeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    }
+
+                    // Only reason should be keep-alive.
+                    Debug.Assert(_timeoutControl.TimerReason == TimeoutReason.KeepAlive);
+                }
             }
         }
 
         private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            OutboundControlStream = stream;
+            lock (_sync)
+            {
+                OutboundControlStream = stream;
+            }
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync();
         }
@@ -309,18 +453,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
         }
 
-        private void SendGoAway()
+        private ValueTask<FlushResult> SendGoAway(long id)
         {
             lock (_sync)
             {
                 if (OutboundControlStream != null)
                 {
-                    // TODO need to await this somewhere or allow this to be called elsewhere?
-                    OutboundControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
+                    return OutboundControlStream.SendGoAway(id);
                 }
-
-                _haveSentGoAway = true;
             }
+            return new ValueTask<FlushResult>();
         }
 
         public void ApplyMaxHeaderListSize(long value)
@@ -333,16 +475,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal void ApplyMaxTableCapacity(long value)
         {
-            // TODO make sure this works
-            //_maxDynamicTableSize = value;
         }
 
         internal void RemoveStream(long streamId)
         {
             lock (_streams)
             {
+                _activeRequestCount--;
                 _streams.Remove(streamId);
             }
+
+            _streamCompletionAwaitable.Complete();
         }
 
         public bool SetInboundControlStream(Http3ControlStream stream)
@@ -382,6 +525,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 return false;
             }
+        }
+
+        private static class GracefulCloseInitiator
+        {
+            public const int None = 0;
+            public const int Server = 1;
+            public const int Client = 2;
         }
     }
 }

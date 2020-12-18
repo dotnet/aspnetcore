@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _maxRequestHeaderFieldSize = 8192;
 
         /// <summary>
-        /// Limits the size of the header compression table, in octets, the HPACK decoder on the server can use.
+        /// Limits the size of the header compression table, in octets, the QPACK decoder on the server can use.
         /// <para>
         /// Value must be greater than 0, defaults to 0
         /// </para>

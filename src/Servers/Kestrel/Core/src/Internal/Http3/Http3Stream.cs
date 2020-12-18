@@ -308,7 +308,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         protected override void OnRequestProcessingEnded()
         {
             Debug.Assert(_appCompleted != null);
-
             _appCompleted.SetResult();
         }
 
@@ -360,6 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
+            // catch ConnectionResetException here?
             catch (Http3StreamErrorException ex)
             {
                 error = ex;

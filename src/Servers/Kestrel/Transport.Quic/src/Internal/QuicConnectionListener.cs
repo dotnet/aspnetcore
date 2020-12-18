@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
             quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+            quicListenerOptions.IdleTimeout = TimeSpan.FromDays(1);
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();

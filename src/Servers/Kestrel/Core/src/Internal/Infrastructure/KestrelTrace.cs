@@ -5,6 +5,7 @@ using System;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -120,9 +121,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, Exception?> _invalidResponseHeaderRemoved =
             LoggerMessage.Define(LogLevel.Warning, new EventId(41, "InvalidResponseHeaderRemoved"),
                 "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.");
-        
+
+        private static readonly Action<ILogger, string, Exception> _http3ConnectionError =
+               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(42, "Http3ConnectionError"), @"Connection id ""{ConnectionId}"": HTTP/3 connection error.");
+
+        private static readonly Action<ILogger, string, Exception?> _http3ConnectionClosing =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(43, "Http3ConnectionClosing"),
+                @"Connection id ""{ConnectionId}"" is closing.");
+
         private static readonly Action<ILogger, string, long, Exception?> _http3ConnectionClosed =
-            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(41, nameof(Http3ConnectionClosed)),
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
         protected readonly ILogger _logger;
@@ -306,6 +314,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void InvalidResponseHeaderRemoved()
         {
             _invalidResponseHeaderRemoved(_logger, null);
+        }
+
+        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        {
+            _http3ConnectionError(_logger, connectionId, ex);
+        }
+
+        public void Http3ConnectionClosing(string connectionId)
+        {
+            _http3ConnectionClosing(_logger, connectionId, null);
         }
 
         public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
