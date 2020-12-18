@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Custom Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task AppException_AfterHeaders_ResetInternalError()
         {
             await new HostBuilder()
@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_BeforeResponse_Resets()
         {
             await new HostBuilder()
@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_BeforeResponse_Zero_Resets()
         {
             await new HostBuilder()
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_AfterResponseHeaders_Resets()
         {
             await new HostBuilder()
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_DuringResponseBody_Resets()
         {
             await new HostBuilder()
@@ -664,7 +664,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_BeforeRequestBody_Resets()
         {
             await new HostBuilder()
@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_DuringRequestBody_Resets()
         {
             await new HostBuilder()
@@ -714,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_AfterCompleteAsync_NoReset()
         {
             await new HostBuilder()
@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task Reset_CompleteAsyncDuringRequestBody_Resets()
         {
             await new HostBuilder()

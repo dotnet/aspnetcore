@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // Start timer
                 StartTimer();
 
+                Logger.LogInformation(Environment.OSVersion.ToString());
+
                 // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreappX.Y/
                 // and contentRoot points to the project directory so you get things like static assets.
                 // For a published app both point to the publish directory.
