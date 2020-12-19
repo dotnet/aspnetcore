@@ -142,6 +142,74 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 }).ConfigureAwait(false);
         }
 
+        public void Set(string key, ReadOnlyMemory<byte> value, DistributedCacheEntryOptions options)
+        {
+            Set(key, (RedisValue)value, options);
+        }
+
+        public async Task SetAsync(string key, ReadOnlyMemory<byte> value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
+        {
+            return SetAsync(key, (RedisValue)value, options, token);
+        }
+
+        public void Set(string key, RedisValue value, DistributedCacheEntryOptions options)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            Connect();
+
+            var creationTime = DateTimeOffset.UtcNow;
+
+            var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
+
+            var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+                new RedisValue[]
+                {
+                        absoluteExpiration?.Ticks ?? NotPresent,
+                        options.SlidingExpiration?.Ticks ?? NotPresent,
+                        GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
+                        value
+                });
+        }
+
+        public async Task SetAsync(string key, RedisValue value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            await ConnectAsync(token).ConfigureAwait(false);
+
+            var creationTime = DateTimeOffset.UtcNow;
+
+            var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
+
+            await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+                new RedisValue[]
+                {
+                        absoluteExpiration?.Ticks ?? NotPresent,
+                        options.SlidingExpiration?.Ticks ?? NotPresent,
+                        GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
+                        value
+                }).ConfigureAwait(false);
+        }
+
         public void Refresh(string key)
         {
             if (key == null)
