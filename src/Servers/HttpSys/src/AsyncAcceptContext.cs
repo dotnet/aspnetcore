@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
@@ -9,13 +10,12 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class AsyncAcceptContext : IValueTaskSource<RequestContext>, IDisposable
+    internal unsafe class AsyncAcceptContext : Overlapped, IValueTaskSource<RequestContext>, IDisposable
     {
         private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
-        private readonly PreAllocatedOverlapped _preallocatedOverlapped;
         private readonly IRequestContextFactory _requestContextFactory;
-
-        private NativeOverlapped* _overlapped;
+        private readonly NativeOverlapped* _overlapped;
+        private readonly SafeHandle _requestQueueHandle;
 
         // mutable struct; do not make this readonly
         private ManualResetValueTaskSourceCore<RequestContext> _mrvts = new()
@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal AsyncAcceptContext(HttpSysListener server, IRequestContextFactory requestContextFactory)
         {
-            Server = server;
+            _requestQueueHandle = server.RequestQueue.Handle;
             _requestContextFactory = requestContextFactory;
-            _preallocatedOverlapped = new(IOCallback, state: this, pinData: null);
+            _overlapped = UnsafePack(IOCallback, userData: null);
+            _overlapped->OffsetHigh = 0;
+            _overlapped->OffsetLow = 0;
         }
-
-        internal HttpSysListener Server { get; }
 
         internal ValueTask<RequestContext> AcceptAsync()
         {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            var acceptContext = (AsyncAcceptContext)Unpack(nativeOverlapped);
             acceptContext.IOCompleted(errorCode, numBytes);
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 retry = false;
                 uint bytesTransferred = 0;
                 statusCode = HttpApi.HttpReceiveHttpRequest(
-                    Server.RequestQueue.Handle,
+                    _requestQueueHandle,
                     _requestContext.RequestId,
                     // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
                     // if the request sends header+body in a single TCP packet 
@@ -153,14 +153,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _requestContext?.ReleasePins();
             _requestContext?.Dispose();
 
-            var boundHandle = Server.RequestQueue.BoundHandle;
-            if (_overlapped != null)
-            {
-                boundHandle.FreeNativeOverlapped(_overlapped);
-            }
-
             _requestContext = _requestContextFactory.CreateRequestContext(size, requestId);
-            _overlapped = boundHandle.AllocateNativeOverlapped(_preallocatedOverlapped);
         }
 
         public void Dispose()
@@ -179,11 +172,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _requestContext = null;
                 }
 
-                if (_overlapped != null)
-                {
-                    Server.RequestQueue.BoundHandle.FreeNativeOverlapped(_overlapped);
-                    _overlapped = null;
-                }
+                Free(_overlapped);
             }
         }
 
