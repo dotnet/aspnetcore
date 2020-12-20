@@ -37,11 +37,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ValueTask<RequestContext> AcceptAsync()
         {
-            _mrvts.Reset();
-
             AllocateNativeRequest();
 
-            uint statusCode = QueueBeginGetContext();
+            uint statusCode = QueueBeginGetContext(yieldOnSynchronousCompletion: true);
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                 statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
             {
@@ -50,7 +48,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return ValueTask.FromException<RequestContext>(new HttpSysException((int)statusCode));
             }
 
-            return new ValueTask<RequestContext>(this, _mrvts.Version);
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            {
+                _mrvts.Reset();
+
+                return new ValueTask<RequestContext>(this, _mrvts.Version);
+            }
+
+            var requestContext = _requestContext;
+            _requestContext = null;
+            return ValueTask.FromResult(requestContext);
         }
 
         private void IOCompleted(uint errorCode, uint numBytes)
@@ -102,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             acceptContext.IOCompleted(errorCode, numBytes);
         }
 
-        private uint QueueBeginGetContext()
+        private uint QueueBeginGetContext(bool yieldOnSynchronousCompletion = false)
         {
             uint statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
             bool retry;
@@ -140,6 +147,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS
                     && HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
+                    if (yieldOnSynchronousCompletion)
+                    {
+                        break;
+                    }
+
                     // IO operation completed synchronously - callback won't be called to signal completion.
                     IOCompleted(statusCode, bytesTransferred);
                 }
