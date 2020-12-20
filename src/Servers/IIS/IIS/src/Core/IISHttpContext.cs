@@ -216,9 +216,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             // ApplicationInitialization request might have trailing \0 character included in the length
             // check and skip it
-            if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
+            if (rawUrlInBytes.Length > 0 && rawUrlInBytes[^1] == 0)
             {
-                rawUrlInBytes = rawUrlInBytes.Slice(0, rawUrlInBytes.Length - 1);
+                rawUrlInBytes = rawUrlInBytes[0..^1];
             }
 
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
