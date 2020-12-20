@@ -20,7 +20,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
+    internal abstract partial class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
     {
         private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
         private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -507,12 +507,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
+            ResetHttp3Features();
         }
 
-        protected override void ApplicationAbort()
+        protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http3ErrorCode.InternalError);
+
+        private void ApplicationAbort(ConnectionAbortedException abortReason, Http3ErrorCode error)
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            Abort(abortReason, Http3ErrorCode.InternalError);
+            Abort(abortReason, error);
         }
 
         protected override string CreateRequestId()
