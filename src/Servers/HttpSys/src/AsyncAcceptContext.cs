@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal unsafe class AsyncAcceptContext : Overlapped, IValueTaskSource<RequestContext>, IDisposable
     {
-        private static readonly IOCompletionCallback IOCallback = IOWaitCallback;
+        private static readonly IOCompletionCallback IOCallback = static (uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped) =>
+        {
+            var acceptContext = (AsyncAcceptContext)Unpack(nativeOverlapped);
+            acceptContext.IOCompleted(errorCode, numBytes);
+        };
+
         private readonly IRequestContextFactory _requestContextFactory;
         private readonly NativeOverlapped* _overlapped;
         private readonly SafeHandle _requestQueueHandle;
@@ -37,6 +43,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ValueTask<RequestContext> AcceptAsync()
         {
+            _mrvts.Reset();
+
             AllocateNativeRequest();
 
             uint statusCode = QueueBeginGetContext(yieldOnSynchronousCompletion: true);
@@ -50,8 +58,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
             {
-                _mrvts.Reset();
-
                 return new ValueTask<RequestContext>(this, _mrvts.Version);
             }
 
@@ -62,51 +68,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private void IOCompleted(uint errorCode, uint numBytes)
         {
-            try
+            // Handle any errors
+            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+                errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
             {
-                if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
-                {
-                    _mrvts.SetException(new HttpSysException((int)errorCode));
-                    return;
-                }
+                _mrvts.SetException(new HttpSysException((int)errorCode));
+            }
+            else if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            {
+                var requestContext = _requestContext;
+                // It's important that we clear the request context before we set the result
+                // we want to reuse the acceptContext object for future accepts.
+                _requestContext = null;
 
-                if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-                {
-                    var requestContext = _requestContext;
-                    // It's important that we clear the request context before we set the result
-                    // we want to reuse the acceptContext object for future accepts.
-                    _requestContext = null;
+                _mrvts.SetResult(requestContext);
+            }
+            else
+            {
+                Debug.Assert(errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA, $"Making another request and the error code is not ERROR_MORE_DATA, {errorCode}");
 
-                    _mrvts.SetResult(requestContext);
-                }
-                else
+                try
                 {
-                    //  (uint)backingBuffer.Length - AlignmentPadding
+                    // We need to issue a new request because our buffer was too small the first time.
                     AllocateNativeRequest(numBytes, _requestContext.RequestId);
 
-                    // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                    uint statusCode = QueueBeginGetContext();
-
-                    if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                        statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
-                    {
-                        // someother bad error, possible(?) return values are:
-                        // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                        _mrvts.SetException(new HttpSysException((int)statusCode));
-                    }
+                    // Ignore the result here since the both sync and async cases should be handled by the call
+                    _ = QueueBeginGetContext();
+                }
+                catch (Exception exception)
+                {
+                    _mrvts.SetException(exception);
                 }
             }
-            catch (Exception exception)
-            {
-                _mrvts.SetException(exception);
-            }
-        }
-
-        private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
-        {
-            var acceptContext = (AsyncAcceptContext)Unpack(nativeOverlapped);
-            acceptContext.IOCompleted(errorCode, numBytes);
         }
 
         private uint QueueBeginGetContext(bool yieldOnSynchronousCompletion = false)
