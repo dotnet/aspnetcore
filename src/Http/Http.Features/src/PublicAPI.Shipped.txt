@@ -159,7 +159,7 @@ Microsoft.AspNetCore.Http.Features.IRequestCookiesFeature.Cookies.set -> void
 Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
 Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature.Cookies.get -> Microsoft.AspNetCore.Http.IResponseCookies!
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature
-Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string!
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].set -> void
 Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature
 Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature.RequestServices.get -> System.IServiceProvider!
