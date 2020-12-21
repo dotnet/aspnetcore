@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         {
             if (hr != HR_OK)
             {
-                throw Marshal.GetExceptionForHR(hr);
+                throw Marshal.GetExceptionForHR(hr)!;
             }
         }
     }

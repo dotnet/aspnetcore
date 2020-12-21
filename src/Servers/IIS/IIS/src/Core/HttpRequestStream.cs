@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -14,9 +15,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal class HttpRequestStream : ReadOnlyStream
     {
         private readonly IHttpBodyControlFeature _bodyControl;
-        private IISHttpContext _body;
+        private IISHttpContext? _body;
         private HttpStreamState _state;
-        private Exception _error;
+        private Exception? _error;
 
         public HttpRequestStream(IHttpBodyControlFeature bodyControl)
         {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             try
             {
+                Debug.Assert(_body != null, "Stream must be accepting reads.");
                 return await _body.ReadAsync(buffer, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
@@ -74,6 +76,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             try
             {
+                Debug.Assert(_body != null, "Stream must be accepting reads.");
                 await _body.CopyToAsync(destination, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
@@ -100,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _body = null;
         }
 
-        public void Abort(Exception error = null)
+        public void Abort(Exception? error = null)
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw a TaskCanceledException instead,

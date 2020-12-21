@@ -32,28 +32,28 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpResponseTrailersFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
         private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
 
-        private object _currentIHttpRequestFeature;
-        private object _currentIHttpRequestBodyDetectionFeature;
-        private object _currentIHttpResponseFeature;
-        private object _currentIHttpResponseBodyFeature;
-        private object _currentIHttpRequestIdentifierFeature;
-        private object _currentIServiceProvidersFeature;
-        private object _currentIHttpRequestLifetimeFeature;
-        private object _currentIHttpConnectionFeature;
-        private object _currentIHttpAuthenticationFeature;
-        private object _currentIQueryFeature;
-        private object _currentIFormFeature;
-        private object _currentIHttpUpgradeFeature;
-        private object _currentIResponseCookiesFeature;
-        private object _currentIItemsFeature;
-        private object _currentITlsConnectionFeature;
-        private object _currentIHttpWebSocketFeature;
-        private object _currentISessionFeature;
-        private object _currentIHttpBodyControlFeature;
-        private object _currentIServerVariablesFeature;
-        private object _currentIHttpMaxRequestBodySizeFeature;
-        private object _currentIHttpResponseTrailersFeature;
-        private object _currentIHttpResetFeature;
+        private object? _currentIHttpRequestFeature;
+        private object? _currentIHttpRequestBodyDetectionFeature;
+        private object? _currentIHttpResponseFeature;
+        private object? _currentIHttpResponseBodyFeature;
+        private object? _currentIHttpRequestIdentifierFeature;
+        private object? _currentIServiceProvidersFeature;
+        private object? _currentIHttpRequestLifetimeFeature;
+        private object? _currentIHttpConnectionFeature;
+        private object? _currentIHttpAuthenticationFeature;
+        private object? _currentIQueryFeature;
+        private object? _currentIFormFeature;
+        private object? _currentIHttpUpgradeFeature;
+        private object? _currentIResponseCookiesFeature;
+        private object? _currentIItemsFeature;
+        private object? _currentITlsConnectionFeature;
+        private object? _currentIHttpWebSocketFeature;
+        private object? _currentISessionFeature;
+        private object? _currentIHttpBodyControlFeature;
+        private object? _currentIServerVariablesFeature;
+        private object? _currentIHttpMaxRequestBodySizeFeature;
+        private object? _currentIHttpResponseTrailersFeature;
+        private object? _currentIHttpResetFeature;
 
         private void Initialize()
         {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentIHttpResetFeature = GetResetFeature();
         }
 
-        internal object FastFeatureGet(Type key)
+        internal object? FastFeatureGet(Type key)
         {
             if (key == IHttpRequestFeatureType)
             {
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return ExtraFeatureGet(key);
         }
 
-        internal void FastFeatureSet(Type key, object feature)
+        internal void FastFeatureSet(Type key, object? feature)
         {
             _featureRevision++;
 
@@ -287,98 +287,98 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
             };
-            ExtraFeatureSet(key, feature);
+            ExtraFeatureSet(key, feature!); // TODO: What happens if you set an extra feature with a null value?
         }
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
             if (_currentIHttpRequestFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature);
             }
             if (_currentIHttpRequestBodyDetectionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestBodyDetectionFeature, _currentIHttpRequestBodyDetectionFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestBodyDetectionFeature, _currentIHttpRequestBodyDetectionFeature);
             }
             if (_currentIHttpResponseFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature);
             }
             if (_currentIHttpResponseBodyFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseBodyFeatureType, _currentIHttpResponseBodyFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseBodyFeatureType, _currentIHttpResponseBodyFeature);
             }
             if (_currentIHttpRequestIdentifierFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, _currentIHttpRequestIdentifierFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, _currentIHttpRequestIdentifierFeature);
             }
             if (_currentIServiceProvidersFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature as global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature);
+                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature);
             }
             if (_currentIHttpRequestLifetimeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestLifetimeFeatureType, _currentIHttpRequestLifetimeFeature as global::Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestLifetimeFeatureType, _currentIHttpRequestLifetimeFeature);
             }
             if (_currentIHttpConnectionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature as global::Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature);
+                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature);
             }
             if (_currentIHttpAuthenticationFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, _currentIHttpAuthenticationFeature as global::Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature);
+                yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, _currentIHttpAuthenticationFeature);
             }
             if (_currentIQueryFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature as global::Microsoft.AspNetCore.Http.Features.IQueryFeature);
+                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature);
             }
             if (_currentIFormFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature as global::Microsoft.AspNetCore.Http.Features.IFormFeature);
+                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature);
             }
             if (_currentIHttpUpgradeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature as global::Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature);
             }
             if (_currentIResponseCookiesFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature as global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature);
+                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature);
             }
             if (_currentIItemsFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature as global::Microsoft.AspNetCore.Http.Features.IItemsFeature);
+                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature);
             }
             if (_currentITlsConnectionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, _currentITlsConnectionFeature as global::Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature);
+                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, _currentITlsConnectionFeature);
             }
             if (_currentIHttpWebSocketFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, _currentIHttpWebSocketFeature as global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature);
+                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, _currentIHttpWebSocketFeature);
             }
             if (_currentISessionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(ISessionFeatureType, _currentISessionFeature as global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
+                yield return new KeyValuePair<Type, object>(ISessionFeatureType, _currentISessionFeature);
             }
             if (_currentIHttpBodyControlFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpBodyControlFeatureType, _currentIHttpBodyControlFeature as global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
+                yield return new KeyValuePair<Type, object>(IHttpBodyControlFeatureType, _currentIHttpBodyControlFeature);
             }
             if (_currentIServerVariablesFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IServerVariablesFeature, _currentIServerVariablesFeature as global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
+                yield return new KeyValuePair<Type, object>(IServerVariablesFeature, _currentIServerVariablesFeature);
             }
             if (_currentIHttpMaxRequestBodySizeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpMaxRequestBodySizeFeature, _currentIHttpMaxRequestBodySizeFeature as global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpMaxRequestBodySizeFeature, _currentIHttpMaxRequestBodySizeFeature);
             }
             if (_currentIHttpResponseTrailersFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResponseTrailersFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResponseTrailersFeature);
             }
             if (_currentIHttpResetFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResetFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeature, _currentIHttpResetFeature);
             }
 
             if (MaybeExtra != null)

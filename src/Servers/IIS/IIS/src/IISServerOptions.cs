@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Sets the display name shown to users on login pages. The default is null.
         /// </summary>
-        public string AuthenticationDisplayName { get; set; }
+        public string? AuthenticationDisplayName { get; set; }
 
         /// <summary>
         /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         internal bool ForwardWindowsAuthentication { get; set; } = true;
 
-        internal string[] ServerAddresses { get; set; }
+        internal string[] ServerAddresses { get; set; } = default!; // Set by configuration.
 
         // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
         // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005

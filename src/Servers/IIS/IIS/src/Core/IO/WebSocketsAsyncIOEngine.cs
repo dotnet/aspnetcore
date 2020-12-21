@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private bool _isInitialized;
 
-        private AsyncInitializeOperation _initializationFlush;
+        private AsyncInitializeOperation? _initializationFlush;
 
-        private WebSocketWriteOperation _cachedWebSocketWriteOperation;
+        private WebSocketWriteOperation? _cachedWebSocketWriteOperation;
 
-        private WebSocketReadOperation _cachedWebSocketReadOperation;
+        private WebSocketReadOperation? _cachedWebSocketReadOperation;
 
-        private AsyncInitializeOperation _cachedAsyncInitializeOperation;
+        private AsyncInitializeOperation? _cachedAsyncInitializeOperation;
 
         public WebSocketsAsyncIOEngine(IISHttpContext context, NativeSafeHandle handler)
         {

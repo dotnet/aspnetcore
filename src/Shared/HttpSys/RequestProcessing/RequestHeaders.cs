@@ -10,11 +10,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
+// Remove once HttpSys has enabled nullable
+#nullable enable
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal partial class RequestHeaders : IHeaderDictionary
     {
-        private IDictionary<string, StringValues> _extra;
+        private IDictionary<string, StringValues>? _extra;
         private NativeRequestContext _requestMemoryBlob;
         private long? _contentLength;
         private StringValues _contentLengthText;
@@ -57,7 +60,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private string GetKnownHeader(HttpSysRequestHeader header)
+        private string? GetKnownHeader(HttpSysRequestHeader header)
         {
             return _requestMemoryBlob.GetKnownHeader(header);
         }

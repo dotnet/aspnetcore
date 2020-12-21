@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             [UnmanagedCallersOnly]
             private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
-                var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target;
+                var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target!;
 
                 NativeMethods.HttpGetCompletionInfo(completionInfo, out var cbBytes, out var hr);
 
