@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
     internal class QuicConnectionFactory : IMultiplexedConnectionFactory
     {
-        private QuicTransportContext _transportContext;
+        private readonly QuicTransportContext _transportContext;
 
         public QuicConnectionFactory(IOptions<QuicTransportOptions> options, ILoggerFactory loggerFactory)
         {

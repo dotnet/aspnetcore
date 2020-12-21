@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool DisableStringReuse { get; set; } = false;
 
         /// <summary>
-        /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
+        /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
         /// </summary>
         /// <remarks>
         /// Defaults to false.
