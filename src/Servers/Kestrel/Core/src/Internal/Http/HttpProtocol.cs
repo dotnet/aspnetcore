@@ -1187,7 +1187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // TODO allow customization of this.
-            // Chome is using h3-29 for protocol ID as of 12/2020. This is likely to be the alt-svc
+            // Chrome is using h3-29 for protocol ID as of 12/2020. This is likely to be the alt-svc
             // value until HTTP/3 is finalized.
             // More info: https://blog.chromium.org/2020/10/chrome-is-deploying-http3-and-ietf-quic.html
             if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
