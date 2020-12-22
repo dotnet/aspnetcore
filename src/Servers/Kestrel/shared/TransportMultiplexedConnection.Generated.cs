@@ -157,12 +157,12 @@ namespace Microsoft.AspNetCore.Connections
                 }
                 else
                 {
-                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
+                    ExtraFeatureSet(key, value);
                 }
             }
         }
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
             TFeature? feature = default;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
@@ -190,10 +190,10 @@ namespace Microsoft.AspNetCore.Connections
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
-            return feature!;
+            return feature;
         }
 
-        void IFeatureCollection.Set<TFeature>(TFeature feature)
+        void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {
             _featureRevision++;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else
             {
-                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
+                ExtraFeatureSet(typeof(TFeature), feature);
             }
         }
 

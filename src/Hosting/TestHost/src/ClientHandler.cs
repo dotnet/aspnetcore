@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Copy trailers to the response message when the response stream is complete
             contextBuilder.RegisterResponseReadCompleteCallback(context =>
             {
-                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>()!;
 
                 foreach (var trailer in responseTrailersFeature.Trailers)
                 {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.TestHost
             var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase;
             response.RequestMessage = request;
             response.Version = request.Version;
 

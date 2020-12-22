@@ -142,7 +142,7 @@ namespace {namespaceName}
             }}
         }}
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {{
             TFeature? feature = default;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
@@ -159,10 +159,10 @@ namespace {namespaceName}
                 feature = {fallbackFeatures}.Get<TFeature>();
             }}")}
 
-            return feature!;
+            return feature;
         }}
 
-        void IFeatureCollection.Set<TFeature>(TFeature feature)
+        void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {{
             _featureRevision++;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
