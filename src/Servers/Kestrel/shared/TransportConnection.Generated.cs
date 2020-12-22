@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportConnection : IFeatureCollection
@@ -145,30 +147,30 @@ namespace Microsoft.AspNetCore.Connections
 
         TFeature IFeatureCollection.Get<TFeature>()
         {
-            TFeature feature = default;
+            TFeature? feature = default;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
-                feature = (TFeature)_currentIConnectionIdFeature;
+                feature = (TFeature?)_currentIConnectionIdFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
-                feature = (TFeature)_currentIConnectionTransportFeature;
+                feature = (TFeature?)_currentIConnectionTransportFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
             {
-                feature = (TFeature)_currentIConnectionItemsFeature;
+                feature = (TFeature?)_currentIConnectionItemsFeature;
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
-                feature = (TFeature)_currentIMemoryPoolFeature;
+                feature = (TFeature?)_currentIMemoryPoolFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
-                feature = (TFeature)_currentIConnectionLifetimeFeature;
+                feature = (TFeature?)_currentIConnectionLifetimeFeature;
             }
             else if (MaybeExtra != null)
             {
-                feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
+                feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
             return feature;

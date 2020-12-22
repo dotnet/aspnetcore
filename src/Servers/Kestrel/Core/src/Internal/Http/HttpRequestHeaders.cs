@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
+        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
         {
             if (_contentLength.HasValue)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // long.MaxValue = 9223372036854775807 (19 chars)
             Span<char> decodedChars = stackalloc char[20];
-            var numChars = customEncoding.GetChars(value, decodedChars);
+            var numChars = customEncoding!.GetChars(value, decodedChars);
             long parsed = -1;
 
             if (numChars > 19 ||

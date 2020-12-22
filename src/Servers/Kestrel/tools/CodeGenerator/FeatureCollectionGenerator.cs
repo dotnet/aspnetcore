@@ -27,15 +27,17 @@ using System.Collections;
 using System.Collections.Generic;
 {extraUsings}
 
+#nullable enable
+
 namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection
     {{{Each(features, feature => $@"
-        private object _current{feature.Name};")}
+        private object? _current{feature.Name};")}
 
         private int _featureRevision;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
@@ -52,7 +54,7 @@ namespace {namespaceName}
             _featureRevision++;
         }}
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {{
             if (MaybeExtra == null)
             {{
@@ -91,11 +93,11 @@ namespace {namespaceName}
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {{
             get
             {{
-                object feature = null;{Each(features, feature => $@"
+                object? feature = null;{Each(features, feature => $@"
                 {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
                     feature = _current{feature.Name};
@@ -118,21 +120,21 @@ namespace {namespaceName}
                 }}")}
                 else
                 {{
-                    ExtraFeatureSet(key, value);
+                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
                 }}
             }}
         }}
 
         TFeature IFeatureCollection.Get<TFeature>()
         {{
-            TFeature feature = default;{Each(features, feature => $@"
+            TFeature? feature = default;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                feature = (TFeature)_current{feature.Name};
+                feature = (TFeature?)_current{feature.Name};
             }}")}
             else if (MaybeExtra != null)
             {{
-                feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
+                feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }}{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $@"
 
             if (feature == null)
@@ -140,7 +142,7 @@ namespace {namespaceName}
                 feature = {fallbackFeatures}.Get<TFeature>();
             }}")}
 
-            return feature;
+            return feature!;
         }}
 
         void IFeatureCollection.Set<TFeature>(TFeature feature)
@@ -152,7 +154,7 @@ namespace {namespaceName}
             }}")}
             else
             {{
-                ExtraFeatureSet(typeof(TFeature), feature);
+                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
             }}
         }}
 

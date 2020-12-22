@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportMultiplexedConnection : IFeatureCollection

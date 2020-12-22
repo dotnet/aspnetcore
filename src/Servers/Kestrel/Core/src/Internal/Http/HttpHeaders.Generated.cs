@@ -12,6 +12,8 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal enum KnownHeaderType
@@ -6712,7 +6714,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
-            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
 
             return true;
         }
@@ -12724,7 +12726,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
-            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
 
             return true;
         }
@@ -12816,7 +12818,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             tempBits ^= 0x8000000000000000L;
                             output.Write(HeaderBytes.Slice(640, 18));
-                            output.WriteNumeric((ulong)ContentLength.Value);
+                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
                             if (tempBits == 0)
                             {
                                 return;
@@ -13266,10 +13268,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _AccessControlExposeHeaders;
             public StringValues _AccessControlMaxAge;
             
-            public byte[] _rawConnection;
-            public byte[] _rawDate;
-            public byte[] _rawTransferEncoding;
-            public byte[] _rawServer;
+            public byte[]? _rawConnection;
+            public byte[]? _rawDate;
+            public byte[]? _rawTransferEncoding;
+            public byte[]? _rawServer;
         }
 
         public partial struct Enumerator
@@ -14149,7 +14151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
-            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
 
             return true;
         }
