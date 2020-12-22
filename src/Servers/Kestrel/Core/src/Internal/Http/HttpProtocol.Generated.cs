@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else
                 {
-                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
+                    ExtraFeatureSet(key, value);
                 }
             }
         }
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
+                ExtraFeatureSet(typeof(TFeature), feature);
             }
         }
 

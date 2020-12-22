@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Connections
                 }
                 else
                 {
-                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
+                    ExtraFeatureSet(key, value);
                 }
             }
         }
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else
             {
-                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
+                ExtraFeatureSet(typeof(TFeature), feature);
             }
         }
 
