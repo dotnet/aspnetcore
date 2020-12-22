@@ -24,6 +24,8 @@ namespace CodeGenerator
 
 using System;
 
+#nullable enable
+
 namespace {namespaceName}
 {{
     internal partial class {className}

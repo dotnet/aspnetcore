@@ -14,15 +14,15 @@ namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportConnection : IFeatureCollection
     {
-        private object _currentIConnectionIdFeature;
-        private object _currentIConnectionTransportFeature;
-        private object _currentIConnectionItemsFeature;
-        private object _currentIMemoryPoolFeature;
-        private object _currentIConnectionLifetimeFeature;
+        private object? _currentIConnectionIdFeature;
+        private object? _currentIConnectionTransportFeature;
+        private object? _currentIConnectionItemsFeature;
+        private object? _currentIMemoryPoolFeature;
+        private object? _currentIConnectionLifetimeFeature;
 
         private int _featureRevision;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Connections
             _featureRevision++;
         }
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {
             if (MaybeExtra == null)
             {
@@ -81,11 +81,11 @@ namespace Microsoft.AspNetCore.Connections
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {
             get
             {
-                object feature = null;
+                object? feature = null;
                 if (key == typeof(IConnectionIdFeature))
                 {
                     feature = _currentIConnectionIdFeature;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Connections
                 }
                 else
                 {
-                    ExtraFeatureSet(key, value);
+                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
                 }
             }
         }
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Connections
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
-            return feature;
+            return feature!;
         }
 
         void IFeatureCollection.Set<TFeature>(TFeature feature)
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else
             {
-                ExtraFeatureSet(typeof(TFeature), feature);
+                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
             }
         }
 

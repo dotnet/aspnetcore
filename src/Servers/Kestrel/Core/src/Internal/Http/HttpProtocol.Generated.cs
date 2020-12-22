@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 feature = ConnectionFeatures.Get<TFeature>();
             }
 
-            return feature;
+            return feature!;
         }
 
         void IFeatureCollection.Set<TFeature>(TFeature feature)

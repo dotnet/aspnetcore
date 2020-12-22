@@ -14,15 +14,15 @@ namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportMultiplexedConnection : IFeatureCollection
     {
-        private object _currentIConnectionIdFeature;
-        private object _currentIConnectionTransportFeature;
-        private object _currentIConnectionItemsFeature;
-        private object _currentIMemoryPoolFeature;
-        private object _currentIConnectionLifetimeFeature;
+        private object? _currentIConnectionIdFeature;
+        private object? _currentIConnectionTransportFeature;
+        private object? _currentIConnectionItemsFeature;
+        private object? _currentIMemoryPoolFeature;
+        private object? _currentIConnectionLifetimeFeature;
 
         private int _featureRevision;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Connections
             _featureRevision++;
         }
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {
             if (MaybeExtra == null)
             {
@@ -81,11 +81,11 @@ namespace Microsoft.AspNetCore.Connections
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {
             get
             {
-                object feature = null;
+                object? feature = null;
                 if (key == typeof(IConnectionIdFeature))
                 {
                     feature = _currentIConnectionIdFeature;
@@ -140,40 +140,40 @@ namespace Microsoft.AspNetCore.Connections
                 }
                 else
                 {
-                    ExtraFeatureSet(key, value);
+                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
                 }
             }
         }
 
         TFeature IFeatureCollection.Get<TFeature>()
         {
-            TFeature feature = default;
+            TFeature? feature = default;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
-                feature = (TFeature)_currentIConnectionIdFeature;
+                feature = (TFeature?)_currentIConnectionIdFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
-                feature = (TFeature)_currentIConnectionTransportFeature;
+                feature = (TFeature?)_currentIConnectionTransportFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
             {
-                feature = (TFeature)_currentIConnectionItemsFeature;
+                feature = (TFeature?)_currentIConnectionItemsFeature;
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
-                feature = (TFeature)_currentIMemoryPoolFeature;
+                feature = (TFeature?)_currentIMemoryPoolFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
-                feature = (TFeature)_currentIConnectionLifetimeFeature;
+                feature = (TFeature?)_currentIConnectionLifetimeFeature;
             }
             else if (MaybeExtra != null)
             {
-                feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
+                feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
-            return feature;
+            return feature!;
         }
 
         void IFeatureCollection.Set<TFeature>(TFeature feature)
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else
             {
-                ExtraFeatureSet(typeof(TFeature), feature);
+                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
             }
         }
 
