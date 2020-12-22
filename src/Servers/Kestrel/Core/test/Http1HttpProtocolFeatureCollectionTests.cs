@@ -159,6 +159,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
         }
 
+        [Fact]
+        public void SetExtraFeatureAsNull()
+        {
+            _collection[typeof(string)] = null;
+            Assert.Equal(0, _collection.Count(kv => kv.Key == typeof(string)));
+
+            _collection[typeof(string)] = "A string";
+            Assert.Equal(1, _collection.Count(kv => kv.Key == typeof(string)));
+
+            _collection[typeof(string)] = null;
+            Assert.Equal(0, _collection.Count(kv => kv.Key == typeof(string)));
+        }
+
         private void CompareGenericGetterToIndexer()
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);

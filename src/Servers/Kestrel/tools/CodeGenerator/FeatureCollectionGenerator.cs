@@ -71,22 +71,39 @@ namespace {namespaceName}
             return null;
         }}
 
-        private void ExtraFeatureSet(Type key, object value)
+        private void ExtraFeatureSet(Type key, object? value)
         {{
-            if (MaybeExtra == null)
+            if (value == null)
             {{
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }}
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {{
-                if (MaybeExtra[i].Key == key)
+                if (MaybeExtra == null)
                 {{
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
                     return;
                 }}
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {{
+                    if (MaybeExtra[i].Key == key)
+                    {{
+                        MaybeExtra.RemoveAt(i);
+                        return;
+                    }}
+                }}
             }}
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            else
+            {{
+                if (MaybeExtra == null)
+                {{
+                    MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+                }}
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {{
+                    if (MaybeExtra[i].Key == key)
+                    {{
+                        MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                        return;
+                    }}
+                }}
+                MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            }}
         }}
 
         bool IFeatureCollection.IsReadOnly => false;
@@ -120,7 +137,7 @@ namespace {namespaceName}
                 }}")}
                 else
                 {{
-                    ExtraFeatureSet(key, value!); // TODO: What happens if you set an extra feature with a null value?
+                    ExtraFeatureSet(key, value);
                 }}
             }}
         }}
@@ -154,7 +171,7 @@ namespace {namespaceName}
             }}")}
             else
             {{
-                ExtraFeatureSet(typeof(TFeature), feature!); // TODO: What happens if you set an extra feature with a null value?
+                ExtraFeatureSet(typeof(TFeature), feature);
             }}
         }}
 
