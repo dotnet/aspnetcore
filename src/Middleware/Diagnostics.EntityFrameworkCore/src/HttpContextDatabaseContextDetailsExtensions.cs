@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (context == null)
             {
-                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName);
+                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName!);
                 return null;
             }
 
