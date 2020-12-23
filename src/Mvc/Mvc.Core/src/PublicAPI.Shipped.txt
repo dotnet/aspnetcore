@@ -1833,35 +1833,35 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.Name.set -> void
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.RouteAttribute(string template) -> void
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.Template.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.get -> object
-~Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.set -> void
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods) -> void
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods, string template) -> void
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethods.get -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.set -> void
-~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Template.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.IActionHttpMethodProvider.HttpMethods.get -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Name.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteKey.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteValue.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory.GetUrlHelper(Microsoft.AspNetCore.Mvc.ActionContext context) -> Microsoft.AspNetCore.Mvc.IUrlHelper
-~Microsoft.AspNetCore.Mvc.Routing.KnownRouteValueConstraint.KnownRouteValueConstraint(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider actionDescriptorCollectionProvider) -> void
-~Microsoft.AspNetCore.Mvc.Routing.KnownRouteValueConstraint.Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
-~Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteKey.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteValue.get -> string
-~Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteValueAttribute(string routeKey, string routeValue) -> void
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelper.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelper.Router.get -> Microsoft.AspNetCore.Routing.IRouter
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelper.UrlHelper(Microsoft.AspNetCore.Mvc.ActionContext actionContext) -> void
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.AmbientValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GenerateUrl(string protocol, string host, string path) -> string
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GenerateUrl(string protocol, string host, string virtualPath, string fragment) -> string
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GetValuesDictionary(object values) -> Microsoft.AspNetCore.Routing.RouteValueDictionary
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.UrlHelperBase(Microsoft.AspNetCore.Mvc.ActionContext actionContext) -> void
-~Microsoft.AspNetCore.Mvc.Routing.UrlHelperFactory.GetUrlHelper(Microsoft.AspNetCore.Mvc.ActionContext context) -> Microsoft.AspNetCore.Mvc.IUrlHelper
+Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.get -> object?
+Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.set -> void
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string!>! httpMethods) -> void
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string!>! httpMethods, string? template) -> void
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethods.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.set -> void
+Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Template.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IActionHttpMethodProvider.HttpMethods.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Name.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteKey.get -> string!
+Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteValue.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory.GetUrlHelper(Microsoft.AspNetCore.Mvc.ActionContext! context) -> Microsoft.AspNetCore.Mvc.IUrlHelper!
+Microsoft.AspNetCore.Mvc.Routing.KnownRouteValueConstraint.KnownRouteValueConstraint(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider! actionDescriptorCollectionProvider) -> void
+Microsoft.AspNetCore.Mvc.Routing.KnownRouteValueConstraint.Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route, string! routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
+Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteKey.get -> string!
+Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteValue.get -> string!
+Microsoft.AspNetCore.Mvc.Routing.RouteValueAttribute.RouteValueAttribute(string! routeKey, string! routeValue) -> void
+Microsoft.AspNetCore.Mvc.Routing.UrlHelper.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Mvc.Routing.UrlHelper.Router.get -> Microsoft.AspNetCore.Routing.IRouter!
+Microsoft.AspNetCore.Mvc.Routing.UrlHelper.UrlHelper(Microsoft.AspNetCore.Mvc.ActionContext! actionContext) -> void
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext!
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.AmbientValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GenerateUrl(string? protocol, string? host, string? path) -> string?
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GenerateUrl(string? protocol, string? host, string? virtualPath, string? fragment) -> string?
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.GetValuesDictionary(object? values) -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.UrlHelperBase(Microsoft.AspNetCore.Mvc.ActionContext! actionContext) -> void
+Microsoft.AspNetCore.Mvc.Routing.UrlHelperFactory.GetUrlHelper(Microsoft.AspNetCore.Mvc.ActionContext! context) -> Microsoft.AspNetCore.Mvc.IUrlHelper!
 ~Microsoft.AspNetCore.Mvc.SerializableError.SerializableError(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) -> void
 ~Microsoft.AspNetCore.Mvc.ServiceFilterAttribute.CreateInstance(System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
 ~Microsoft.AspNetCore.Mvc.ServiceFilterAttribute.ServiceFilterAttribute(System.Type type) -> void
@@ -1923,9 +1923,9 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.BindingSourceValueProvider.ContainsPrefix(string prefix) -> bool
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.BindingSourceValueProvider.GetValue(string key) -> Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.ObjectModelValidator.GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState) -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor
-~abstract Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.TransformAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary values) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Routing.RouteValueDictionary>
-~abstract Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext) -> string
-~abstract Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext) -> string
+abstract Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.TransformAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Routing.RouteValueDictionary!>
+abstract Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext! actionContext) -> string?
+abstract Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext! routeContext) -> string?
 ~const Microsoft.AspNetCore.Mvc.Diagnostics.AfterActionEventData.EventName = "Microsoft.AspNetCore.Mvc.AfterAction" -> string
 ~const Microsoft.AspNetCore.Mvc.Diagnostics.AfterActionFilterOnActionExecutedEventData.EventName = "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted" -> string
 ~const Microsoft.AspNetCore.Mvc.Diagnostics.AfterActionFilterOnActionExecutingEventData.EventName = "Microsoft.AspNetCore.Mvc.AfterOnActionExecuting" -> string
@@ -2074,8 +2074,8 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~override Microsoft.AspNetCore.Mvc.RedirectToActionResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.RedirectToPageResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.RedirectToRouteResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
-~override Microsoft.AspNetCore.Mvc.Routing.UrlHelper.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext) -> string
-~override Microsoft.AspNetCore.Mvc.Routing.UrlHelper.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext) -> string
+override Microsoft.AspNetCore.Mvc.Routing.UrlHelper.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext! actionContext) -> string?
+override Microsoft.AspNetCore.Mvc.Routing.UrlHelper.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext! routeContext) -> string?
 ~override Microsoft.AspNetCore.Mvc.SignInResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.SignOutResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.StatusCodeResult.ExecuteResult(Microsoft.AspNetCore.Mvc.ActionContext context) -> void
@@ -2171,14 +2171,14 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~static Microsoft.AspNetCore.Mvc.UrlHelperExtensions.RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol) -> string
 ~static Microsoft.AspNetCore.Mvc.UrlHelperExtensions.RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol, string host) -> string
 ~static Microsoft.AspNetCore.Mvc.UrlHelperExtensions.RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol, string host, string fragment) -> string
-~static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string action = null, string controller = null, object values = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string action = null, string controller = null, object values = null, string scheme = null, Microsoft.AspNetCore.Http.HostString? host = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string page = null, string handler = null, object values = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string handler = null, object values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string page = null, string handler = null, object values = null, string scheme = null, Microsoft.AspNetCore.Http.HostString? host = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
-~static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string handler, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) -> string
+static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, Microsoft.AspNetCore.Http.HttpContext! httpContext, string? action = null, string? controller = null, object? values = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, Microsoft.AspNetCore.Http.HttpContext! httpContext, string? action = null, string? controller = null, object? values = null, string? scheme = null, Microsoft.AspNetCore.Http.HostString? host = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values, string? scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, Microsoft.AspNetCore.Http.HttpContext! httpContext, string? page = null, string? handler = null, object? values = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! page, string? handler = null, object? values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, Microsoft.AspNetCore.Http.HttpContext! httpContext, string? page = null, string? handler = null, object? values = null, string? scheme = null, Microsoft.AspNetCore.Http.HostString? host = null, Microsoft.AspNetCore.Http.PathString? pathBase = null, Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! page, string? handler, object? values, string! scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
 ~static Microsoft.Extensions.DependencyInjection.ApplicationModelConventionExtensions.Add(this System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelConvention> conventions, Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention actionModelConvention) -> void
 ~static Microsoft.Extensions.DependencyInjection.ApplicationModelConventionExtensions.Add(this System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelConvention> conventions, Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention controllerModelConvention) -> void
 ~static Microsoft.Extensions.DependencyInjection.ApplicationModelConventionExtensions.Add(this System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelConvention> conventions, Microsoft.AspNetCore.Mvc.ApplicationModels.IParameterModelBaseConvention parameterModelConvention) -> void
@@ -2466,9 +2466,9 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) -> void
 ~virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filterContext) -> void
 ~virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filterContext) -> void
-~virtual Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.FilterAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary values, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint>>
-~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GenerateUrl(string protocol, string host, Microsoft.AspNetCore.Routing.VirtualPathData pathData, string fragment) -> string
-~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GetVirtualPathData(string routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary values) -> Microsoft.AspNetCore.Routing.VirtualPathData
-~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string contentPath) -> string
-~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string url) -> bool
-~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string routeName, object values) -> string
+virtual Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.FilterAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>! endpoints) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!>
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GenerateUrl(string? protocol, string? host, Microsoft.AspNetCore.Routing.VirtualPathData? pathData, string? fragment) -> string?
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GetVirtualPathData(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> Microsoft.AspNetCore.Routing.VirtualPathData?
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string? contentPath) -> string?
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string? url) -> bool
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string? routeName, object? values) -> string?
