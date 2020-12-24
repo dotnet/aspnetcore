@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ILoggerFactory loggerFactory,
             DiagnosticListener diagnosticListener,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor actionContextAccessor)
+            IActionContextAccessor? actionContextAccessor)
         {
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();

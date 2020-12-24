@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // selectedEncoding
                 var transcodingStream = Encoding.CreateTranscodingStream(response.Body, resolvedContentTypeEncoding, Encoding.UTF8, leaveOpen: true);
 
-                ExceptionDispatchInfo exceptionDispatchInfo = null;
+                ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
                     await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
@@ -140,12 +142,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _jsonResultExecuting = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.");
 
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                LogLevel.Debug,
                new EventId(2, "BufferingAsyncEnumerable"),
                "Buffering IAsyncEnumerable instance of type '{Type}'.");

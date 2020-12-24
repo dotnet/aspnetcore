@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -119,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
-        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
         {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
@@ -170,11 +172,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable;
 
             static Log()
             {
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                    LogLevel.Debug,
                    new EventId(1, "BufferingAsyncEnumerable"),
                    "Buffering IAsyncEnumerable instance of type '{Type}'.");
