@@ -25,5 +25,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// Gets or sets the exception associated with the authentication failure.
         /// </summary>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="AuthenticateResult"/> result.
+        /// </summary>
+        public new AuthenticateResult Result { get; set; }
     }
 }

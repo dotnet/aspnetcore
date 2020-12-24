@@ -25,5 +25,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// Gets or sets the validated security token.
         /// </summary>
         public SecurityToken SecurityToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="AuthenticateResult"/> result.
+        /// </summary>
+        public new AuthenticateResult Result { get; set; }
     }
 }
