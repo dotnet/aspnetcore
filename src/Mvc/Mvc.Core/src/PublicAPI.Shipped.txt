@@ -617,8 +617,6 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNeverAttribute
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNeverAttribute.ShouldValidateEntry(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry entry, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry parentEntry) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNeverAttribute.ValidateNeverAttribute() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.AllowShortCircuitingValidationWhenNoValidatorsArePresent.get -> bool
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.AllowShortCircuitingValidationWhenNoValidatorsArePresent.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.MaxValidationDepth.get -> int?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.MaxValidationDepth.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager
@@ -1402,7 +1400,6 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.FormatterSelector.get -> Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger
-~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector formatterSelector, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector formatterSelector, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptions) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.WriterFactory.get -> System.Func<System.IO.Stream, System.Text.Encoding, System.IO.TextWriter>
 ~Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.PhysicalFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void

@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// </summary>
         public string RelativePath { get; set; }
 
-#pragma warning disable CS0618 
+#pragma warning disable CS0618
         // Type or member is obsolete
         /// <summary>
         /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the view.

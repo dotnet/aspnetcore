@@ -26,8 +26,7 @@ namespace MvcSandbox
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
             services.AddServerSideBlazor();
-            services.AddMvc()
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

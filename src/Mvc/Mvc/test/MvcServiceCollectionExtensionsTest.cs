@@ -499,7 +499,6 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(IPostConfigureOptions<MvcOptions>),
                         new[]
                         {
-                            typeof(MvcOptionsConfigureCompatibilityOptions),
                             typeof(MvcCoreMvcOptionsSetup),
                         }
                     },

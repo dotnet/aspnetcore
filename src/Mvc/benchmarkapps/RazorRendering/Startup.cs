@@ -16,8 +16,7 @@ public class Startup
     {
         services.AddScoped<List<DataA>>(_ => DataA);
         services.AddScoped<List<DataB>>(_ => DataB);
-        services.AddMvc()
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+        services.AddMvc();
     }
 
     public void Configure(IApplicationBuilder app, IHostingEnvironment env)

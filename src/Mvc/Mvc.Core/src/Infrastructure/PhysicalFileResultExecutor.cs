@@ -127,6 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
 
+
         /// <summary>
         /// Get the file metadata for a path.
         /// </summary>

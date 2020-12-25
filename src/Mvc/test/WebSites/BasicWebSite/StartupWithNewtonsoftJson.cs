@@ -13,7 +13,6 @@ namespace BasicWebSite
         {
             services
                 .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddNewtonsoftJson();
         }
 
