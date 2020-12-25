@@ -468,6 +468,43 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
         }
 
+        [Fact]
+        public async Task AriaAttributeRemovedWhenStateChangesToValidFromInvalid()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+            var renderer = new TestRenderer();
+            var messageStore = new ValidationMessageStore(rootComponent.EditContext);
+            messageStore.Add(fieldIdentifier, "Artificial error message");
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            await renderer.RenderRootComponentAsync(rootComponentId);
+
+            // Initally, it rendered one batch and is invalid
+            var batch1 = renderer.Batches.Single();
+            var componentFrame1 = batch1.GetComponentFrames<TestInputComponent<string>>().Single();
+            var inputComponentId = componentFrame1.ComponentId;
+            var component = (TestInputComponent<string>)componentFrame1.Component;
+            Assert.Equal("invalid", component.CssClass);
+            Assert.NotNull(component.AdditionalAttributes);
+            Assert.True(component.AdditionalAttributes.ContainsKey("aria-invalid"));
+
+            // Act: update the field state in the EditContext and notify
+            messageStore.Clear(fieldIdentifier);
+            await renderer.Dispatcher.InvokeAsync(rootComponent.EditContext.NotifyValidationStateChanged);
+
+            // Assert: The input component rendered itself again and now has the new class
+            var batch2 = renderer.Batches.Skip(1).Single();
+            Assert.Equal(inputComponentId, batch2.DiffsByComponentId.Keys.Single());
+            Assert.Equal("valid", component.CssClass);
+            Assert.Null(component.AdditionalAttributes);
+        }
+
         class TestModel
         {
             public string StringProperty { get; set; }
