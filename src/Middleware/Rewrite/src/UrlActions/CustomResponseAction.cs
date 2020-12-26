@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
 
             if (!string.IsNullOrEmpty(StatusReason))
             {
-                context.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = StatusReason;
+                context.HttpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase = StatusReason;
             }
 
             if (!string.IsNullOrEmpty(StatusDescription))

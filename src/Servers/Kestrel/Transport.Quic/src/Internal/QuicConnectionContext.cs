@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             if (features != null)
             {
-                var streamDirectionFeature = features.Get<IStreamDirectionFeature>();
+                var streamDirectionFeature = features.Get<IStreamDirectionFeature>()!;
                 if (streamDirectionFeature.CanRead)
                 {
                     quicStream = _connection.OpenBidirectionalStream();

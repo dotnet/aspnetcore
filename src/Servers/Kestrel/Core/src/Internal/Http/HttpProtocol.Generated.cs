@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
             TFeature? feature = default;
             if (typeof(TFeature) == typeof(IHttpRequestFeature))
@@ -518,10 +518,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 feature = ConnectionFeatures.Get<TFeature>();
             }
 
-            return feature!;
+            return feature;
         }
 
-        void IFeatureCollection.Set<TFeature>(TFeature feature)
+        void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {
             _featureRevision++;
             if (typeof(TFeature) == typeof(IHttpRequestFeature))
