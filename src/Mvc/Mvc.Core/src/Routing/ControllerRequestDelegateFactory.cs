@@ -1,3 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -39,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             ILoggerFactory loggerFactory,
             DiagnosticListener diagnosticListener,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor actionContextAccessor)
+            IActionContextAccessor? actionContextAccessor)
         {
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
@@ -51,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
         }
 
-        public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
+        public RequestDelegate? CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary? dataTokens)
         {
             // Fallback to action invoker extensibility so that invokers can override any default behaviors
             if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor)
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             return context =>
             {
-                RouteData routeData = null;
+                RouteData routeData;
 
                 if (dataTokens is null or { Count: 0 })
                 {

@@ -95,8 +95,8 @@ Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint
 Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint.Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route, string! routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
 Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint.StringRouteConstraint(string! value) -> void
 Microsoft.AspNetCore.Routing.DataTokensMetadata
-Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
-Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object!>! dataTokens) -> void
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
 Microsoft.AspNetCore.Routing.DefaultEndpointDataSource
 Microsoft.AspNetCore.Routing.DefaultEndpointDataSource.DefaultEndpointDataSource(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Endpoint!>! endpoints) -> void
 Microsoft.AspNetCore.Routing.DefaultEndpointDataSource.DefaultEndpointDataSource(params Microsoft.AspNetCore.Http.Endpoint![]! endpoints) -> void
@@ -116,7 +116,7 @@ Microsoft.AspNetCore.Routing.HttpMethodMetadata.HttpMethodMetadata(System.Collec
 Microsoft.AspNetCore.Routing.HttpMethodMetadata.HttpMethodMetadata(System.Collections.Generic.IEnumerable<string!>! httpMethods, bool acceptCorsPreflight) -> void
 Microsoft.AspNetCore.Routing.HttpMethodMetadata.HttpMethods.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Routing.IDataTokensMetadata
-Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.IDynamicEndpointMetadata
 Microsoft.AspNetCore.Routing.IDynamicEndpointMetadata.IsDynamic.get -> bool
 Microsoft.AspNetCore.Routing.IEndpointAddressScheme<TAddress>
@@ -146,7 +146,7 @@ Microsoft.AspNetCore.Routing.IRouteBuilder.ServiceProvider.get -> System.IServic
 Microsoft.AspNetCore.Routing.IRouteCollection
 Microsoft.AspNetCore.Routing.IRouteCollection.Add(Microsoft.AspNetCore.Routing.IRouter! router) -> void
 Microsoft.AspNetCore.Routing.IRouteNameMetadata
-Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string!
+Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.ISuppressLinkGenerationMetadata
 Microsoft.AspNetCore.Routing.ISuppressLinkGenerationMetadata.SuppressLinkGeneration.get -> bool
 Microsoft.AspNetCore.Routing.ISuppressMatchingMetadata
@@ -309,8 +309,8 @@ Microsoft.AspNetCore.Routing.RouteHandler.GetVirtualPath(Microsoft.AspNetCore.Ro
 Microsoft.AspNetCore.Routing.RouteHandler.RouteAsync(Microsoft.AspNetCore.Routing.RouteContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Routing.RouteHandler.RouteHandler(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate) -> void
 Microsoft.AspNetCore.Routing.RouteNameMetadata
-Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
-Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
 Microsoft.AspNetCore.Routing.RouteOptions
 Microsoft.AspNetCore.Routing.RouteOptions.AppendTrailingSlash.get -> bool
 Microsoft.AspNetCore.Routing.RouteOptions.AppendTrailingSlash.set -> void
