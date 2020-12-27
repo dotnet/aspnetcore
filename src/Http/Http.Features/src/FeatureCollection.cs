@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Features
             return (TFeature?)this[typeof(TFeature)];
         }
 
-        public void Set<TFeature>(TFeature instance)
+        public void Set<TFeature>(TFeature? instance)
         {
             this[typeof(TFeature)] = instance;
         }

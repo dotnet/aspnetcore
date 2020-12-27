@@ -210,6 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var streamIdFeature = streamContext.Features.Get<IStreamIdFeature>();
 
                     Debug.Assert(quicStreamFeature != null);
+                    Debug.Assert(streamIdFeature != null);
 
                     var httpConnectionContext = new Http3StreamContext(
                         streamContext.ConnectionId,

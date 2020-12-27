@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _http3Connection = http3Connection;
             _context = context;
 
-            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>();
-            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>();
+            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,

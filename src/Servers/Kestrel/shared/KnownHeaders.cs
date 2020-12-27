@@ -723,6 +723,8 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
     internal enum KnownHeaderType
@@ -1026,7 +1028,7 @@ $@"        private void Clear(long bitsToClear)
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }}
-            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
 
             return true;
         }}
@@ -1070,7 +1072,7 @@ $@"        private void Clear(long bitsToClear)
                                 break; // OutputHeader
                             }}")}" : $@"
                             output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                            output.WriteNumeric((ulong)ContentLength.Value);
+                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
                             if (tempBits == 0)
                             {{
                                 return;
@@ -1148,7 +1150,7 @@ $@"        private void Clear(long bitsToClear)
         {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => @"
             public StringValues _" + header.Identifier + ";")}
             {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
-            public byte[] _raw" + header.Identifier + ";")}
+            public byte[]? _raw" + header.Identifier + ";")}
         }}
 
         public partial struct Enumerator
