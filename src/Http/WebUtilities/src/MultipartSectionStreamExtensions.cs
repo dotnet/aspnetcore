@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// <summary>
     /// Various extension methods for dealing with the section body stream
     /// </summary>
-    public static class MultipartSectionStreamExtensions
+    public static class MultipartSectionStreamExtensions    
     {
         /// <summary>
         /// Reads the body of the section as a string
@@ -50,6 +51,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 return await reader.ReadToEndAsync();
             }
+        }
+
+        public static async Task<string> ReadAsStringAsync(this MultipartPipeSection section, CancellationToken cancellationToken = default)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (section.BodyReader is null)
+            {
+                throw new ArgumentException($"Multipart section must have a body to be read.", nameof(section));
+            }
+
+            MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
+
+            var streamEncoding = sectionMediaType?.Encoding;
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
+            if (streamEncoding == null || streamEncoding == Encoding.UTF7)
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
+            {
+                streamEncoding = Encoding.UTF8;
+            }
+
+            return await section.BodyReader.ReadToEndAsync(streamEncoding, cancellationToken);
         }
     }
 }

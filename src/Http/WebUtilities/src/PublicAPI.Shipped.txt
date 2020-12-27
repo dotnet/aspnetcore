@@ -87,6 +87,15 @@ Microsoft.AspNetCore.WebUtilities.MultipartReader.HeadersLengthLimit.set -> void
 Microsoft.AspNetCore.WebUtilities.MultipartReader.MultipartReader(string! boundary, System.IO.Stream! stream) -> void
 Microsoft.AspNetCore.WebUtilities.MultipartReader.MultipartReader(string! boundary, System.IO.Stream! stream, int bufferSize) -> void
 Microsoft.AspNetCore.WebUtilities.MultipartReader.ReadNextSectionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.WebUtilities.MultipartSection?>!
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.BodyLengthLimit.get -> long?
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.BodyLengthLimit.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.HeadersCountLimit.get -> int
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.HeadersCountLimit.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.HeadersLengthLimit.get -> int
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.HeadersLengthLimit.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.ReadNextSectionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.WebUtilities.MultipartPipeSection?>!
+Microsoft.AspNetCore.WebUtilities.MultipartPipeReader.MultipartPipeReader(string! boundary, System.IO.Pipelines.PipeReader! pipeReader) -> void
 Microsoft.AspNetCore.WebUtilities.MultipartSection
 Microsoft.AspNetCore.WebUtilities.MultipartSection.BaseStreamOffset.get -> long?
 Microsoft.AspNetCore.WebUtilities.MultipartSection.BaseStreamOffset.set -> void
@@ -97,6 +106,16 @@ Microsoft.AspNetCore.WebUtilities.MultipartSection.ContentType.get -> string?
 Microsoft.AspNetCore.WebUtilities.MultipartSection.Headers.get -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
 Microsoft.AspNetCore.WebUtilities.MultipartSection.Headers.set -> void
 Microsoft.AspNetCore.WebUtilities.MultipartSection.MultipartSection() -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BaseStreamOffset.get -> long?
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BaseStreamOffset.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BodyReader.get -> System.IO.Pipelines.PipeReader!
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BodyReader.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.ContentDisposition.get -> string?
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.ContentType.get -> string?
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.Headers.get -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.Headers.set -> void
+Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.MultipartPipeSection() -> void
 Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions
 Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions
 Microsoft.AspNetCore.WebUtilities.QueryHelpers
@@ -188,6 +207,7 @@ static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.AsF
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.AsFormDataSection(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> Microsoft.AspNetCore.WebUtilities.FormMultipartSection?
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.GetContentDispositionHeader(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue?
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions.ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> System.Threading.Tasks.Task<string!>!
+static Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions.ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartPipeSection! section, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, System.Collections.Generic.IDictionary<string!, string?>! queryString) -> string!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! queryString) -> string!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>! queryString) -> string!
