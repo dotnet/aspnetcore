@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <c>/Products/ListProducts</c> with views looked up at <c>/Views/Products/ListProducts.cshtml</c>.
         /// </para>
         /// <para>
-        /// This option does not affect values specified using using <see cref="ActionNameAttribute"/>.
+        /// This option does not affect values specified using <see cref="ActionNameAttribute"/>.
         /// </para>
         /// </summary>
         /// <value>
