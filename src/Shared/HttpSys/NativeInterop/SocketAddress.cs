@@ -127,7 +127,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public override bool Equals(object? comparand)
         {
-            if (comparand is not SocketAddress { Size: this.Size }))
+            SocketAddress? castedComparand = comparand as SocketAddress;
+            if (castedComparand == null || this.Size != castedComparand.Size)
             {
                 return false;
             }
