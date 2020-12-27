@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
             };
-            ExtraFeatureSet(key, feature!); // TODO: What happens if you set an extra feature with a null value?
+            ExtraFeatureSet(key, feature);
         }
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()

@@ -70,22 +70,39 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return null;
         }
 
-        private void ExtraFeatureSet(Type key, object value)
+        private void ExtraFeatureSet(Type key, object? value)
         {
-            if (MaybeExtra == null)
+            if (value == null)
             {
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {
-                if (MaybeExtra[i].Key == key)
+                if (MaybeExtra == null)
                 {
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
                     return;
                 }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra.RemoveAt(i);
+                        return;
+                    }
+                }
             }
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            else
+            {
+                if (MaybeExtra == null)
+                {
+                    MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+                }
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {
+                    if (MaybeExtra[i].Key == key)
+                    {
+                        MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                        return;
+                    }
+                }
+                MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            }
         }
 
         string IHttpRequestFeature.Protocol
