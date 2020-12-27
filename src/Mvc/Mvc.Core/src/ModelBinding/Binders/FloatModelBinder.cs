@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var value = valueProviderResult.FirstValue;
 
-                object model;
+                object? model;
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     // Parse() method trims the value (with common NumberStyles) then throws if the result is empty.

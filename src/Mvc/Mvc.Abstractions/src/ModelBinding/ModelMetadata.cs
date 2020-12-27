@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the metadata for <see cref="ContainerType"/> if this metadata is for a property;
         /// <see langword="null"/> otherwise.
         /// </summary>
-        public virtual ModelMetadata ContainerMetadata
+        public virtual ModelMetadata? ContainerMetadata
         {
             get
             {
@@ -183,18 +183,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
-        public abstract string BinderModelName { get; }
+        public abstract string? BinderModelName { get; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> of a model if specified explicitly using
         /// <see cref="IBinderTypeProviderMetadata"/>.
         /// </summary>
-        public abstract Type BinderType { get; }
+        public abstract Type? BinderType { get; }
 
         /// <summary>
         /// Gets a binder metadata for this model.
         /// </summary>
-        public abstract BindingSource BindingSource { get; }
+        public abstract BindingSource? BindingSource { get; }
 
         /// <summary>
         /// Gets a value indicating whether or not to convert an empty string value or one containing only whitespace
@@ -207,28 +207,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// display scenarios.
         /// </summary>
         /// <value><c>null</c> unless set manually or through additional metadata e.g. attributes.</value>
-        public abstract string DataTypeName { get; }
+        public abstract string? DataTypeName { get; }
 
         /// <summary>
         /// Gets the description of the model.
         /// </summary>
-        public abstract string Description { get; }
+        public abstract string? Description { get; }
 
         /// <summary>
         /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the
         /// model.
         /// </summary>
-        public abstract string DisplayFormatString { get; }
+        public abstract string? DisplayFormatString { get; }
 
         /// <summary>
         /// Gets the display name of the model.
         /// </summary>
-        public abstract string DisplayName { get; }
+        public abstract string? DisplayName { get; }
 
         /// <summary>
         /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
         /// </summary>
-        public abstract string EditFormatString { get; }
+        public abstract string? EditFormatString { get; }
 
         /// <summary>
         /// Gets the <see cref="ModelMetadata"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// An <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{EnumGroupAndName, String}"/> of mappings between
         /// <see cref="Enum"/> field groups, names and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
-        public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; }
+        public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues { get; }
 
         /// <summary>
         /// Gets the names and values of all <see cref="Enum"/> values in <see cref="UnderlyingOrModelType"/>.
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// An <see cref="IReadOnlyDictionary{String, String}"/> of mappings between <see cref="Enum"/> field names
         /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
-        public abstract IReadOnlyDictionary<string, string> EnumNamesAndValues { get; }
+        public abstract IReadOnlyDictionary<string, string>? EnumNamesAndValues { get; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="EditFormatString"/> has a non-<c>null</c>, non-empty
@@ -365,18 +365,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the text to display as a placeholder value for an editor.
         /// </summary>
-        public abstract string Placeholder { get; }
+        public abstract string? Placeholder { get; }
 
         /// <summary>
         /// Gets the text to display when the model is <c>null</c>.
         /// </summary>
-        public abstract string NullDisplayText { get; }
+        public abstract string? NullDisplayText { get; }
 
         /// <summary>
         /// Gets the <see cref="IPropertyFilterProvider"/>, which can determine which properties
         /// should be model bound.
         /// </summary>
-        public abstract IPropertyFilterProvider PropertyFilterProvider { get; }
+        public abstract IPropertyFilterProvider? PropertyFilterProvider { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the property should be displayed in read-only views.
@@ -391,12 +391,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets  a value which is the name of the property used to display the model.
         /// </summary>
-        public abstract string SimpleDisplayProperty { get; }
+        public abstract string? SimpleDisplayProperty { get; }
 
         /// <summary>
         /// Gets a string used by the templating system to discover display-templates and editor-templates.
         /// </summary>
-        public abstract string TemplateHint { get; }
+        public abstract string? TemplateHint { get; }
 
         /// <summary>
         /// Gets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model should be
@@ -479,17 +479,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets a property getter delegate to get the property value from a model object.
         /// </summary>
-        public abstract Func<object, object> PropertyGetter { get; }
+        public abstract Func<object, object?>? PropertyGetter { get; }
 
         /// <summary>
         /// Gets a property setter delegate to set the property value on a model object.
         /// </summary>
-        public abstract Action<object, object> PropertySetter { get; }
+        public abstract Action<object, object?>? PropertySetter { get; }
 
         /// <summary>
         /// Gets a delegate that invokes the bound constructor <see cref="BoundConstructor" /> if non-<see langword="null" />.
         /// </summary>
-        public virtual Func<object[], object>? BoundConstructorInvoker => null;
+        public virtual Func<object?[], object>? BoundConstructorInvoker => null;
 
         /// <summary>
         /// Gets a value that determines if validators can be constructed using metadata exclusively defined on the property.

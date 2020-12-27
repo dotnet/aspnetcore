@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -339,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var memberExpression = (MemberExpression)expression;
             if (memberExpression.Member is PropertyInfo memberInfo)
             {
-                if (memberExpression.Expression.NodeType != ExpressionType.Parameter)
+                if (memberExpression.Expression!.NodeType != ExpressionType.Parameter)
                 {
                     // Chained expressions and non parameter based expressions are not supported.
                     throw new InvalidOperationException(
@@ -432,7 +435,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static void ClearValidationStateForModel(
             ModelMetadata modelMetadata,
             ModelStateDictionary modelState,
-            string modelKey)
+            string? modelKey)
         {
             if (modelMetadata == null)
             {
@@ -471,7 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     for (var i = 0; i < modelMetadata.Properties.Count; i++)
                     {
                         var property = modelMetadata.Properties[i];
-                        modelState.ClearValidationState(property.BinderModelName ?? property.PropertyName);
+                        modelState.ClearValidationState((property.BinderModelName ?? property.PropertyName)!);
                     }
                 }
                 else
@@ -495,9 +498,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        internal static TModel CastOrDefault<TModel>(object model)
+        internal static TModel? CastOrDefault<TModel>(object? model)
         {
-            return (model is TModel) ? (TModel)model : default(TModel);
+            return (model is TModel tModel) ? tModel : default;
         }
 
         /// <summary>
@@ -631,7 +634,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return CreateList<T>(capacity);
             }
 
-            return (ICollection<T>)Activator.CreateInstance(modelType);
+            return (ICollection<T>)Activator.CreateInstance(modelType)!;
         }
 
         private static List<T> CreateList<T>(int? capacity)
@@ -648,10 +651,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// The converted value or the default value of <typeparamref name="T"/> if the value could not be converted.
         /// </returns>
-        public static T ConvertTo<T>(object value, CultureInfo culture)
+        [return: NotNullIfNotNull("value")]
+        public static T? ConvertTo<T>(object? value, CultureInfo? culture)
         {
             var converted = ConvertTo(value, typeof(T), culture);
-            return converted == null ? default(T) : (T)converted;
+            return converted == null ? default : (T)converted;
         }
 
         /// <summary>
@@ -663,7 +667,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// The converted value or <c>null</c> if the value could not be converted.
         /// </returns>
-        public static object ConvertTo(object value, Type type, CultureInfo culture)
+        public static object? ConvertTo(object? value, Type type, CultureInfo? culture)
         {
             if (type == null)
             {
@@ -685,13 +689,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return UnwrapPossibleArrayType(value, type, cultureToUse);
         }
 
-        private static object UnwrapPossibleArrayType(object value, Type destinationType, CultureInfo culture)
+        private static object? UnwrapPossibleArrayType(object value, Type destinationType, CultureInfo culture)
         {
             // array conversion results in four cases, as below
             var valueAsArray = value as Array;
             if (destinationType.IsArray)
             {
-                var destinationElementType = destinationType.GetElementType();
+                var destinationElementType = destinationType.GetElementType()!;
                 if (valueAsArray != null)
                 {
                     // case 1: both destination + source type are arrays, so convert each element
@@ -717,8 +721,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // case 3: destination type is single element but source is array, so extract first element + convert
                 if (valueAsArray.Length > 0)
                 {
-                    value = valueAsArray.GetValue(0);
-                    return ConvertSimpleType(value, destinationType, culture);
+                    var elementValue = valueAsArray.GetValue(0);
+                    return ConvertSimpleType(elementValue, destinationType, culture);
                 }
                 else
                 {
@@ -731,7 +735,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return ConvertSimpleType(value, destinationType, culture);
         }
 
-        private static object ConvertSimpleType(object value, Type destinationType, CultureInfo culture)
+        private static object? ConvertSimpleType(object? value, Type destinationType, CultureInfo culture)
         {
             if (value == null || destinationType.IsAssignableFrom(value.GetType()))
             {
