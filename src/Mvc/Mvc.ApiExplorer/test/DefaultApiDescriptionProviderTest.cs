@@ -1407,7 +1407,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
-            
+
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
@@ -1423,6 +1423,33 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
             Assert.Same(BindingSource.Query, price.Source);
             Assert.Equal(typeof(decimal), price.Type);
+        }
+
+        [Fact]
+        public void GetApiDescription_ParameterDescription_ComplexDTOFomQueryOnNestedProperties()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptDataQueryOptions));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(3, description.ParameterDescriptions.Count);
+
+            var top = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.top");
+            Assert.Same(BindingSource.Query, top.Source);
+            Assert.Equal(typeof(int), top.Type);
+
+            var skip = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.skip");
+            Assert.Same(BindingSource.Query, skip.Source);
+            Assert.Equal(typeof(int), skip.Type);
+
+            var count = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.count");
+            Assert.Same(BindingSource.Query, count.Source);
+            Assert.Equal(typeof(int), count.Type);
         }
 
         // The method under test uses an attribute on the parameter to set a 'default' source
@@ -2192,6 +2219,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
+        private void AcceptDataQueryOptions([FromQuery] DataQueryOptions queryOptions) { }
+
         private void AcceptsOrderDTO_Query([FromQuery] OrderDTO dto)
         {
         }
@@ -2404,6 +2433,26 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
             [FromForm]
             public int Id { get; set; }
+        }
+
+        public class DataQueryOptions
+        {
+            [FromQuery(Name = "paging")]
+            public DataQueryPaging Paging { get; set; }
+        }
+
+        public sealed class DataQueryPaging
+        {
+            [FromQuery(Name = "top")]
+            [Required]
+            public int Top { get; set; }
+
+            [FromQuery(Name = "skip")]
+            [Required]
+            public int Skip { get; set; }
+
+            [FromQuery(Name = "count")]
+            public int Count { get; set; }
         }
 
         private class MultiplePropertiesContainer
