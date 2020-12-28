@@ -111,9 +111,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.InvalidHostHeader:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_InvalidHostHeader, StatusCodes.Status400BadRequest, reason);
                     break;
-                case RequestRejectionReason.UpgradeRequestCannotHavePayload:
-                    ex = new BadHttpRequestException(CoreStrings.BadRequest_UpgradeRequestCannotHavePayload, StatusCodes.Status400BadRequest, reason);
-                    break;
                 default:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest, StatusCodes.Status400BadRequest, reason);
                     break;
