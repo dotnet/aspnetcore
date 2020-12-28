@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly bool _suppressBrowserRefresh;
         private readonly string _browserPath;
 
-        private bool _canLaunchBrowser;
+        private bool _shouldRefreshOnChanges;
         private Process _browserProcess;
         private bool _browserLaunched;
         private BrowserRefreshServer _refreshServer;
@@ -46,44 +46,40 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            if (_suppressLaunchBrowser)
-            {
-                return;
-            }
-
             if (context.Iteration == 0)
             {
                 _reporter = context.Reporter;
 
-                if (CanLaunchBrowser(context, out var launchPath))
+                if (!_suppressLaunchBrowser && CanLaunchBrowser(context, out var launchPath))
                 {
                     context.Reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
-                    _canLaunchBrowser = true;
+                    _shouldRefreshOnChanges = true;
                     _launchPath = launchPath;
                     _cancellationToken = cancellationToken;
 
                     // We've redirected the output, but want to ensure that it continues to appear in the user's console.
                     context.ProcessSpec.OnOutput += (_, eventArgs) => Console.WriteLine(eventArgs.Data);
                     context.ProcessSpec.OnOutput += OnOutput;
+                }
 
-                    if (!_suppressBrowserRefresh)
-                    {
-                        _refreshServer = new BrowserRefreshServer(context.Reporter);
-                        var serverUrl = await _refreshServer.StartAsync(cancellationToken);
+                if (!_suppressBrowserRefresh)
+                {
+                    _shouldRefreshOnChanges = true;
+                    _refreshServer = new BrowserRefreshServer(context.Reporter);
+                    var serverUrl = await _refreshServer.StartAsync(cancellationToken);
 
-                        context.BrowserRefreshServer = _refreshServer;
+                    context.BrowserRefreshServer = _refreshServer;
 
-                        context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
-                        context.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrl;
+                    context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
+                    context.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrl;
 
-                        var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
-                        context.ProcessSpec.EnvironmentVariables["DOTNET_STARTUP_HOOKS"] = pathToMiddleware;
-                        context.ProcessSpec.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Microsoft.AspNetCore.Watch.BrowserRefresh";
-                    }
+                    var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
+                    context.ProcessSpec.EnvironmentVariables["DOTNET_STARTUP_HOOKS"] = pathToMiddleware;
+                    context.ProcessSpec.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Microsoft.AspNetCore.Watch.BrowserRefresh";
                 }
             }
 
-            if (_canLaunchBrowser)
+            if (_shouldRefreshOnChanges)
             {
                 if (context.Iteration > 0)
                 {
@@ -119,7 +115,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                     catch (Exception ex)
                     {
                         _reporter.Output($"Unable to launch browser: {ex}");
-                        _canLaunchBrowser = false;
                     }
                 }
                 else
