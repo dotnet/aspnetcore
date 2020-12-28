@@ -40,7 +40,6 @@ Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RequestPath.ge
 Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RequestPath.set -> void
 Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware
 Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext
-Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.StaticFileResponseContext() -> void
 Microsoft.Extensions.DependencyInjection.DirectoryBrowserServiceExtensions
 ~Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.get -> System.Collections.Generic.IList<string>
 ~Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.set -> void
