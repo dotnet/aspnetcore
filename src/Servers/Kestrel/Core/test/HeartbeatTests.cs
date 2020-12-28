@@ -66,11 +66,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
-            var kestrelTrace = new TestKestrelTrace();
+            var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
             var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var now = systemClock.UtcNow;
-            var heartbeatDuration = TimeSpan.FromSeconds(2);
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
             {
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Task blockedHeartbeatTask;
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
             {
                 blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -97,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await blockedHeartbeatTask.DefaultTimeout();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
-            Assert.Equal($"As of\"{now}\", the heartbeat has been running for \"{heartbeatDuration}\" which is longer than \"{Heartbeat.Interval}\". This could be caused by thread pool starvation.", kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Warning).Message);
+            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.FromSeconds(2), Heartbeat.Interval, now), Times.Never());
         }
 
         [Fact]
