@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         private static readonly Action _callbackCompleted = () => { };
 
+        private static readonly Action<object?> _pipeSchedulerDelegate = state => ((Action)state!)();
+
         private readonly PipeScheduler _ioScheduler;
 
         private Action? _callback;
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             if (continuation != null)
             {
-                _ioScheduler.Schedule(state => ((Action)state!)(), continuation);
+                _ioScheduler.Schedule(_pipeSchedulerDelegate, continuation);
             }
         }
     }
