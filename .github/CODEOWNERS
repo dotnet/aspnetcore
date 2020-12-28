@@ -10,11 +10,13 @@
 /eng/Version.Details.xml        @dotnet-maestro-bot @dougbu
 /src/**/PublicAPI.Unshipped.txt @dotnet/aspnet-api-review
 /src/**/PublicAPI.Shipped.txt   @dotnet/aspnet-api-review
+/src/Caching/                   @juntaoluo
 /src/Components/                @SteveSandersonMS @dotnet/aspnet-blazor-eng
 /src/DefaultBuilder/            @tratcher
 /src/Hosting/                   @tratcher
 /src/Http/                      @tratcher @jkotalik
 /src/Http/Routing/              @javiercn
+/src/HttpClientFactory/         @juntaoluo
 /src/Middleware/                @tratcher
 /src/Middleware/HttpsPolicy/    @jkotalik
 /src/Middleware/Rewrite/        @jkotalik
