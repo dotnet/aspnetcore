@@ -216,7 +216,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Tests
         [Fact]
         public void Watch_ReturnsNoOpTrigger()
         {
-            // Arange
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().Assembly);
 
             // Act
