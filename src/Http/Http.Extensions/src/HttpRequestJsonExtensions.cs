@@ -14,10 +14,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-#nullable enable
-
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extension methods to read JSON from the request.
+    /// </summary>
     public static class HttpRequestJsonExtensions
     {
         /// <summary>

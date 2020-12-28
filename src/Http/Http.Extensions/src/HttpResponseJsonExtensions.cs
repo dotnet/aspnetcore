@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-#nullable enable
-
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Provides extension methods for writing a JSON serialized value to the HTTP response.
+    /// </summary>
     public static partial class HttpResponseJsonExtensions
     {
         /// <summary>

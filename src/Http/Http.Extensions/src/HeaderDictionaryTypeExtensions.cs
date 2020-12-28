@@ -12,13 +12,27 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extension methods for accessing strongly typed HTTP request and response
+    /// headers.
+    /// </summary>
     public static class HeaderDictionaryTypeExtensions
     {
+        /// <summary>
+        /// Gets strongly typed HTTP request headers.
+        /// </summary>
+        /// <param name="request">The <see cref="HttpRequest"/>.</param>
+        /// <returns>The <see cref="RequestHeaders"/>.</returns>
         public static RequestHeaders GetTypedHeaders(this HttpRequest request)
         {
             return new RequestHeaders(request.Headers);
         }
 
+        /// <summary>
+        /// Gets strongly typed HTTP response headers.
+        /// </summary>
+        /// <param name="response">The <see cref="HttpResponse"/>.</param>
+        /// <returns>The <see cref="ResponseHeaders"/>.</returns>
         public static ResponseHeaders GetTypedHeaders(this HttpResponse response)
         {
             return new ResponseHeaders(response.Headers);
@@ -94,6 +108,13 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <summary>
+        /// Appends a sequence of values to <see cref="IHeaderDictionary"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of header value.</typeparam>
+        /// <param name="Headers">The <see cref="IHeaderDictionary"/>.</param>
+        /// <param name="name">The header name.</param>
+        /// <param name="values">The values to append.</param>
         public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
         {
             if (name == null)
@@ -246,7 +267,7 @@ namespace Microsoft.AspNetCore.Http
             var success = (bool)method.Invoke(null, parameters)!;
             if (success)
             {
-                return (T)parameters[1];
+                return (T?)parameters[1];
             }
             return default(T);
         }

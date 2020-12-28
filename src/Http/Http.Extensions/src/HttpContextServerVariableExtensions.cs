@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extensions for reading HTTP server variables.
+    /// </summary>
     public static class HttpContextServerVariableExtensions
     {
         /// <summary>

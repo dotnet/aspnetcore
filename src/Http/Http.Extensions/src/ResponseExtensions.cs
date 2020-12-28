@@ -7,8 +7,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extension methods for <see cref="HttpResponse"/>.
+    /// </summary>
     public static class ResponseExtensions
     {
+        /// <summary>
+        /// Clears the HTTP response.
+        /// <para>
+        /// This invocation resets the response headers, response status code, and response body.
+        /// </para>
+        /// </summary>
+        /// <param name="response">The <see cref="HttpResponse"/> to clear.</param>
         public static void Clear(this HttpResponse response)
         {
             if (response.HasStarted)
