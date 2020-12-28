@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -4072,6 +4073,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                                         "Content-Length: 0",
                                         "",
                                         "");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
+        [InlineData(HttpProtocols.Http3)]
+        public async Task EnableAltSvc_Http3EndpointConfigured_AltSvcInResponseHeaders(HttpProtocols protocols)
+        {
+            await using (var server = new TestServer(
+                context => Task.CompletedTask,
+                new TestServiceContext(),
+                options =>
+                {
+                    options.EnableAltSvc = true;
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1)) { Protocols = protocols });
+                },
+                services => { }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        @"Alt-Svc: h3-29="":1""; ma=84600",
+                        "",
+                        "");
                 }
             }
         }
