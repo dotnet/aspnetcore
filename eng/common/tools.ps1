@@ -439,11 +439,26 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   if (!(Test-Path $vsWhereExe)) {
     Create-Directory $vsWhereDir
     Write-Host 'Downloading vswhere'
-    try {
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
-    }
-    catch {
-      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message $_
+    $maxRetries = 5
+    $retries = 1
+
+    while($true) {
+      try {
+        Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
+        break
+      }
+      catch{
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message $_
+      }
+
+      if (++$retries -le $maxRetries) {
+        $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
+        Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
+        Start-Sleep -Seconds $delayInSeconds
+      }
+      else {
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unable to download file in $maxRetries attempts."
+      }
     }
   }
 
