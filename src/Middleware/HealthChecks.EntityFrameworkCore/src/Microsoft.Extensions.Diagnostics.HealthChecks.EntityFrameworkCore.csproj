@@ -8,6 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
     <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
