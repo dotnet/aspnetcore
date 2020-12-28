@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private void UpdateAdditionalValidationAttributes()
         {
-            bool hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
+            var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
             if (EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
                 if (hasAriaInvalidAttribute)
