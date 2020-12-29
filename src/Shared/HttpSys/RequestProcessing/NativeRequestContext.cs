@@ -118,6 +118,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
 
+        // Assumes memory isn't pinned. Will fail if called by IIS.
         internal uint Size
         {
             get
@@ -534,6 +535,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
+        // Assumes memory isn't pinned. Will fail if called by IIS.
         private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
         {
             var count = nativeRequest->RequestInfoCount;
@@ -550,7 +552,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 var offset = (long)requestInfo.pInfo - (long)baseAddress;
                 info.Add(
                     (int)requestInfo.InfoType,
-                    _backingBuffer!.Memory.Slice((int)offset, (int)requestInfo.InfoLength)); // TODO: _backingBuffer will be null if memory is permanently pinned.
+                    _backingBuffer!.Memory.Slice((int)offset, (int)requestInfo.InfoLength));
             }
 
             return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
