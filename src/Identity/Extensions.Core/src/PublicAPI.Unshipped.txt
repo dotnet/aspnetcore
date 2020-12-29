@@ -1,2 +1,2 @@
 #nullable enable
-virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.GetOptions(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasswordOptions>
+~virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.GetOptions(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasswordOptions>
