@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                     catch (Exception ex)
                     {
-                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier!, ex); // TODO: Can TraceIdentifier be null?
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
                     }
                 }
             }
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
-            Log.ConnectionBadRequest(_logger, RequestConnectionId!, ex); // TODO: Can RequestConnectionId be null?
+            Log.ConnectionBadRequest(_logger, ((IHttpConnectionFeature)this).ConnectionId, ex);
 
             if (!HasResponseStarted)
             {
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _applicationException = new AggregateException(_applicationException, ex);
             }
 
-            Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier!, ex); // TODO: Can TraceIdentifier be null?
+            Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
         }
 
         public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)

@@ -304,10 +304,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
                 }
 
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 // Synchronize access to native methods that might run in parallel with IO loops
                 lock (_contextLock)
                 {
-                    NativeMethods.HttpSetServerVariable(_requestNativeHandle, variableName, value!); // TODO: What happens if you set a null server variable value?
+                    NativeMethods.HttpSetServerVariable(_requestNativeHandle, variableName, value);
                 }
             }
         }
