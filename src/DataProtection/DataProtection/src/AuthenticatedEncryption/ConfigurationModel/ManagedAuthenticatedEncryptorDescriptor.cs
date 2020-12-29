@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ManagedAuthenticatedEncryptorDescriptor"/>.
+        /// </summary>
+        /// <param name="configuration">The <see cref="ManagedAuthenticatedEncryptorConfiguration"/>.</param>
+        /// <param name="masterKey">The master key.</param>
         public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
         {
             if (configuration == null)
@@ -33,6 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         internal ManagedAuthenticatedEncryptorConfiguration Configuration { get; }
 
+        /// <inheritdoc />
         public XmlSerializedDescriptorInfo ExportToXml()
         {
             // <descriptor>

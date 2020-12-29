@@ -136,6 +136,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         internal IXmlRepository KeyRepository { get; }
 
+        /// <inheritdoc />
         public IKey CreateNewKey(DateTimeOffset activationDate, DateTimeOffset expirationDate)
         {
             return _internalKeyManager.CreateNewKey(
@@ -151,6 +152,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             return dateTime.UtcDateTime.ToString("yyyyMMddTHHmmssFFFFFFFZ", CultureInfo.InvariantCulture);
         }
 
+        /// <inheritdoc/>
         public IReadOnlyCollection<IKey> GetAllKeys()
         {
             var allElements = KeyRepository.GetAllElements();
@@ -245,6 +247,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             return keyIdToKeyMap.Values.ToList().AsReadOnly();
         }
 
+        /// <inheritdoc/>
         public CancellationToken GetCacheExpirationToken()
         {
             Debug.Assert(_cacheExpirationTokenSource != null, $"{nameof(TriggerAndResetCacheExpirationToken)} must have been called first.");
@@ -316,6 +319,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
+        /// <inheritdoc/>
         public void RevokeAllKeys(DateTimeOffset revocationDate, string? reason = null)
         {
             // <revocation version="1">
@@ -341,6 +345,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             TriggerAndResetCacheExpirationToken();
         }
 
+        /// <inheritdoc/>
         public void RevokeKey(Guid keyId, string? reason = null)
         {
             _internalKeyManager.RevokeSingleKey(

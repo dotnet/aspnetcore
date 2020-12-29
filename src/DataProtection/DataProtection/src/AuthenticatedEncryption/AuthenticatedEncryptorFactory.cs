@@ -22,15 +22,19 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public AuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
         }
 
+        /// <inheritdoc />
         public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
-            var descriptor = key.Descriptor as AuthenticatedEncryptorDescriptor;
-            if (descriptor == null)
+            if (key.Descriptor is not AuthenticatedEncryptorDescriptor descriptor)
             {
                 return null;
             }

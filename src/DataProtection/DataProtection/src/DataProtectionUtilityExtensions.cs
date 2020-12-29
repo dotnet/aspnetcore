@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
+    /// <summary>
+    /// Data protection extensions for <see cref="IServiceProvider"/>.
+    /// </summary>
     public static class DataProtectionUtilityExtensions
     {
         /// <summary>
