@@ -48,7 +48,7 @@ The E2E tests are located in the top-level `tests` folder in this directory. The
 
 Each app server mounts the same `BasicTestApp` application under each scenario.
 
-To run the tests for this project, [run the tests on the command line](../../BuildFromSource.md#running-tests-on-command-line) in this directory.
+To run the tests for this project, [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 ## More Information
 
