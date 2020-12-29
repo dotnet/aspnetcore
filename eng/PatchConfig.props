@@ -83,4 +83,9 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.DataProtection.AzureStorage;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.25' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Server.Kestrel.Core;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
