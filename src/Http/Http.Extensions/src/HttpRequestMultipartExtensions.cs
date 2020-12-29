@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Http.Extensions
 {
     /// <summary>
-    /// Extension methods to read multipart request body.
+    /// Extension methods for working with multipart form requests.
     /// </summary>
     public static class HttpRequestMultipartExtensions
     {

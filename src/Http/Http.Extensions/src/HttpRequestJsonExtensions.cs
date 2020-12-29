@@ -17,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Extension methods to read JSON from the request.
+    /// Extension methods to read the request body as JSON.
     /// </summary>
     public static class HttpRequestJsonExtensions
     {

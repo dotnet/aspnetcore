@@ -4,10 +4,10 @@
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
-    /// Provides access to Trailer response headers.
+    /// Provides access to response trailers.
     /// <para>
-    /// The Trailer response header allows the sender to include additional fields at the end of chunked messages.
-    /// For more details, see <see href="https://tools.ietf.org/html/rfc7230#section-4.4">RFC7230</see>.
+    /// Response trailers allow for additional headers to be sent at the end of an HTTP/1.1 (chunked) or HTTP/2 response.
+    /// For more details, see <see href="https://tools.ietf.org/html/rfc7230#section-4.1.2">RFC7230</see>.
     /// </para>
     /// </summary>
     public interface IHttpResponseTrailersFeature
