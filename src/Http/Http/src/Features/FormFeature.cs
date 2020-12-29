@@ -13,6 +13,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IFormFeature"/>.
+    /// </summary>
     public class FormFeature : IFormFeature
     {
         private readonly HttpRequest _request;
@@ -20,6 +23,10 @@ namespace Microsoft.AspNetCore.Http.Features
         private Task<IFormCollection>? _parsedFormTask;
         private IFormCollection? _form;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormFeature"/>.
+        /// </summary>
+        /// <param name="form">The <see cref="IFormCollection"/> to use as the backing store.</param>
         public FormFeature(IFormCollection form)
         {
             if (form == null)
@@ -32,11 +39,20 @@ namespace Microsoft.AspNetCore.Http.Features
             _options = FormOptions.Default;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormFeature"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="HttpRequest"/>.</param>
         public FormFeature(HttpRequest request)
             : this(request, FormOptions.Default)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormFeature"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="HttpRequest"/>.</param>
+        /// <param name="options">The <see cref="FormOptions"/>.</param>
         public FormFeature(HttpRequest request, FormOptions options)
         {
             if (request == null)
@@ -61,6 +77,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public bool HasFormContentType
         {
             get
@@ -76,6 +93,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public IFormCollection? Form
         {
             get { return _form; }
@@ -86,6 +104,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public IFormCollection ReadForm()
         {
             if (Form != null)
@@ -103,8 +122,10 @@ namespace Microsoft.AspNetCore.Http.Features
             return ReadFormAsync().GetAwaiter().GetResult();
         }
 
+        /// <inheritdoc />
         public Task<IFormCollection> ReadFormAsync() => ReadFormAsync(CancellationToken.None);
 
+        /// <inheritdoc />
         public Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
         {
             // Avoid state machine and task allocation for repeated reads

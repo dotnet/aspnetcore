@@ -7,6 +7,9 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// An address that a HTTP server may bind to.
+    /// </summary>
     public class BindingAddress
     {
         private const string UnixPipeHostPrefix = "unix:/";
@@ -19,25 +22,46 @@ namespace Microsoft.AspNetCore.Http
             Scheme = scheme;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="BindingAddress"/>.
+        /// </summary>
         [Obsolete("This constructor is obsolete and will be removed in a future version. Use BindingAddress.Parse(address) to create a BindingAddress instance.")]
         public BindingAddress()
         {
             throw new InvalidOperationException("This constructor is obsolete and will be removed in a future version. Use BindingAddress.Parse(address) to create a BindingAddress instance.");
         }
 
+        /// <summary>
+        /// Gets the host component.
+        /// </summary>
         public string Host { get; }
+
+        /// <summary>
+        /// Gets the path component.
+        /// </summary>
         public string PathBase { get; }
+
+        /// <summary>
+        /// Gets the port.
+        /// </summary>
         public int Port { get; }
+
+        /// <summary>
+        /// Gets the scheme component.
+        /// </summary>
         public string Scheme { get; }
 
-        public bool IsUnixPipe
-        {
-            get
-            {
-                return Host.StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
-            }
-        }
+        /// <summary>
+        /// Gets a value that determines if this instance represents a Unix pipe.
+        /// <para>
+        /// Returns <see langword="true"/> if <see cref="Host"/> starts with <c>unix://</c> prefix.
+        /// </para>
+        /// </summary>
+        public bool IsUnixPipe => Host.StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
 
+        /// <summary>
+        /// Gets the unix pipe path if this instance represents a Unix pipe.
+        /// </summary>
         public string UnixPipePath
         {
             get
@@ -62,6 +86,7 @@ namespace Microsoft.AspNetCore.Http
             return host.Substring(unixPipeHostPrefixLength);
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (IsUnixPipe)
@@ -74,11 +99,13 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as BindingAddress;
@@ -92,6 +119,11 @@ namespace Microsoft.AspNetCore.Http
                 && PathBase == other.PathBase;
         }
 
+        /// <summary>
+        /// Parses the specified <paramref name="address"/> as a <see cref="BindingAddress"/>.
+        /// </summary>
+        /// <param name="address">The address to parse.</param>
+        /// <returns>The parsed address.</returns>
         public static BindingAddress Parse(string address)
         {
             // A null/empty address will throw FormatException

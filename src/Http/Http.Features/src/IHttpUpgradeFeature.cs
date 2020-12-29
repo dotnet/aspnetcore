@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides access to server upgrade features.
+    /// </summary>
     public interface IHttpUpgradeFeature
     {
         /// <summary>

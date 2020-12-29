@@ -5,10 +5,20 @@ using System;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// This API is obsolete.
+    /// </summary>
     [Obsolete("See IHttpRequestBodyFeature or IHttpResponseBodyFeature DisableBuffering", error: true)]
     public interface IHttpBufferingFeature
     {
+        /// <summary>
+        /// This API is obsolete.
+        /// </summary>
         void DisableRequestBuffering();
+
+        /// <summary>
+        /// This API is obsolete.
+        /// </summary>
         void DisableResponseBuffering();
     }
 }
