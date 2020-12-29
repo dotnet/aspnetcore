@@ -61,9 +61,6 @@ Microsoft.AspNetCore.Http.Features.IFormFeature.ReadFormAsync(System.Threading.C
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature.AllowSynchronousIO.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature.AllowSynchronousIO.set -> void
-Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature
-Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableRequestBuffering() -> void
-Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableResponseBuffering() -> void
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.ConnectionId.get -> string!
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.ConnectionId.set -> void
@@ -134,8 +131,6 @@ Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
-Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature
-Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature.SendFileAsync(string! path, long offset, long? count, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.IsUpgradableRequest.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.UpgradeAsync() -> System.Threading.Tasks.Task<System.IO.Stream!>!
