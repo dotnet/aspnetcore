@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <!-- queues for helix-matrix.yml pipeline -->
-  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="Linux" />
@@ -35,17 +35,20 @@
     <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673" Platform="Linux" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true'">
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true'">
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' != 'true'">
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientPre.VS2019.Pre" Platform="Windows" />
+  </ItemGroup>
 
   <!-- arm64 queues for helix-matrix.yml pipeline -->
-  <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailableTargetQueue Include="(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036" Platform="Linux" />
   </ItemGroup>
   <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on it's setup scripts. -->
-  <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
   </ItemGroup>
 </Project>
