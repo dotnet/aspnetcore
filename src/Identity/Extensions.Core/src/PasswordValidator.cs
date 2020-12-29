@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user whose password should be validated.</param>
         /// <param name="password">The password supplied for validation</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+        public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
         {
             if (password == null)
             {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(manager));
             }
             var errors = new List<IdentityError>();
-            var options = manager.Options.Password;
+            var options = await GetOptions(manager, user);
             if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
             {
                 errors.Add(Describer.PasswordTooShort(options.RequiredLength));
@@ -72,10 +72,9 @@ namespace Microsoft.AspNetCore.Identity
             {
                 errors.Add(Describer.PasswordRequiresUniqueChars(options.RequiredUniqueChars));
             }
-            return
-                Task.FromResult(errors.Count == 0
-                    ? IdentityResult.Success
-                    : IdentityResult.Failed(errors.ToArray()));
+            return errors.Count == 0
+                ? IdentityResult.Success
+                : IdentityResult.Failed(errors.ToArray());
         }
 
         /// <summary>
@@ -116,6 +115,17 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool IsLetterOrDigit(char c)
         {
             return IsUpper(c) || IsLower(c) || IsDigit(c);
+        }
+
+        /// <summary>
+        /// Allows a derived class to provide password options specific to a <paramref name="user"/>.
+        /// </summary>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> properties from.</param>
+        /// <param name="user">The user whose password should be validated.</param>
+        /// <returns>The <see cref="PasswordOptions"/> of the <paramref name="manager"/>'s <see cref="IdentityOptions"/>.</returns>
+        protected virtual Task<PasswordOptions> GetOptions(UserManager<TUser> manager, TUser user)
+        {
+            return Task.FromResult(manager.Options.Password);
         }
     }
 }
