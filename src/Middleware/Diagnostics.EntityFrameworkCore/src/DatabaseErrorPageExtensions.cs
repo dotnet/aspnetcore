@@ -5,8 +5,6 @@ using System;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-#nullable disable
-
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder
 {
