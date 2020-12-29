@@ -8,8 +8,15 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Headers
 {
+    /// <summary>
+    /// Strongly typed HTTP request headers.
+    /// </summary>
     public class RequestHeaders
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestHeaders"/>.
+        /// </summary>
+        /// <param name="headers">The request headers.</param>
         public RequestHeaders(IHeaderDictionary headers)
         {
             if (headers == null)
@@ -20,8 +27,14 @@ namespace Microsoft.AspNetCore.Http.Headers
             Headers = headers;
         }
 
+        /// <summary>
+        /// Gets the backing request header dictionary.
+        /// </summary>
         public IHeaderDictionary Headers { get; }
 
+        /// <summary>
+        /// Gets or sets the <c>Accept</c> header for an HTTP request.
+        /// </summary>
         public IList<MediaTypeHeaderValue> Accept
         {
             get
@@ -34,6 +47,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Accept-Charset</c> header for an HTTP request.
+        /// </summary>
         public IList<StringWithQualityHeaderValue> AcceptCharset
         {
             get
@@ -46,6 +62,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Accept-Encoding</c> header for an HTTP request.
+        /// </summary>
         public IList<StringWithQualityHeaderValue> AcceptEncoding
         {
             get
@@ -58,6 +77,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Accept-Language</c> header for an HTTP request.
+        /// </summary>
         public IList<StringWithQualityHeaderValue> AcceptLanguage
         {
             get
@@ -70,6 +92,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Cache-Control</c> header for an HTTP request.
+        /// </summary>
         public CacheControlHeaderValue? CacheControl
         {
             get
@@ -82,6 +107,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Content-Disposition</c> header for an HTTP request.
+        /// </summary>
         public ContentDispositionHeaderValue? ContentDisposition
         {
             get
@@ -94,6 +122,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Content-Length</c> header for an HTTP request.
+        /// </summary>
         public long? ContentLength
         {
             get
@@ -106,6 +137,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Content-Range</c> header for an HTTP request.
+        /// </summary>
         public ContentRangeHeaderValue? ContentRange
         {
             get
@@ -118,6 +152,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Content-Type</c> header for an HTTP request.
+        /// </summary>
         public MediaTypeHeaderValue? ContentType
         {
             get
@@ -130,6 +167,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Cookie</c> header for an HTTP request.
+        /// </summary>
         public IList<CookieHeaderValue> Cookie
         {
             get
@@ -142,6 +182,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Date</c> header for an HTTP request.
+        /// </summary>
         public DateTimeOffset? Date
         {
             get
@@ -154,6 +197,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Expires</c> header for an HTTP request.
+        /// </summary>
         public DateTimeOffset? Expires
         {
             get
@@ -166,6 +212,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Host</c> header for an HTTP request.
+        /// </summary>
         public HostString Host
         {
             get
@@ -178,6 +227,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>If-Match</c> header for an HTTP request.
+        /// </summary>
         public IList<EntityTagHeaderValue> IfMatch
         {
             get
@@ -190,6 +242,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>If-Modified-Since</c> header for an HTTP request.
+        /// </summary>
         public DateTimeOffset? IfModifiedSince
         {
             get
@@ -202,6 +257,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>If-None-Match</c> header for an HTTP request.
+        /// </summary>
         public IList<EntityTagHeaderValue> IfNoneMatch
         {
             get
@@ -214,6 +272,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>If-Range</c> header for an HTTP request.
+        /// </summary>
         public RangeConditionHeaderValue? IfRange
         {
             get
@@ -226,6 +287,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>If-Unmodified-Since</c> header for an HTTP request.
+        /// </summary>
         public DateTimeOffset? IfUnmodifiedSince
         {
             get
@@ -238,6 +302,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Last-Modified</c> header for an HTTP request.
+        /// </summary>
         public DateTimeOffset? LastModified
         {
             get
@@ -250,6 +317,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Range</c> header for an HTTP request.
+        /// </summary>
         public RangeHeaderValue? Range
         {
             get
@@ -262,6 +332,9 @@ namespace Microsoft.AspNetCore.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <c>Referer</c> header for an HTTP request.
+        /// </summary>
         public Uri? Referer
         {
             get
@@ -304,6 +377,11 @@ namespace Microsoft.AspNetCore.Http.Headers
             return Headers.GetList<T>(name);
         }
 
+        /// <summary>
+        /// Sets the header value.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <param name="value">The header value.</param>
         public void Set(string name, object? value)
         {
             if (name == null)
@@ -314,6 +392,12 @@ namespace Microsoft.AspNetCore.Http.Headers
             Headers.Set(name, value);
         }
 
+        /// <summary>
+        /// Sets the specified header and it's values.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="name">The header name.</param>
+        /// <param name="values">The sequence of header values.</param>
         public void SetList<T>(string name, IList<T>? values)
         {
             if (name == null)
@@ -324,6 +408,11 @@ namespace Microsoft.AspNetCore.Http.Headers
             Headers.SetList<T>(name, values);
         }
 
+        /// <summary>
+        /// Appends the header name and value.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <param name="value">The header value.</param>
         public void Append(string name, object value)
         {
             if (name == null)
@@ -339,6 +428,11 @@ namespace Microsoft.AspNetCore.Http.Headers
             Headers.Append(name, value.ToString());
         }
 
+        /// <summary>
+        /// Appends the header name and it's values.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <param name="values">The header values.</param>
         public void AppendList<T>(string name, IList<T> values)
         {
             Headers.AppendList<T>(name, values);
