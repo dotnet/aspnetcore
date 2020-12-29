@@ -5,7 +5,7 @@
 // tslint:disable:no-floating-promises
 
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
-import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";
+import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL, ENDPOINT_BASE_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
@@ -163,7 +163,7 @@ describe("connection", () => {
                 if (!Platform.isNode && transportType !== HttpTransportType.WebSockets &&
                     // tests run through karma during automation which is cross-site, but manually running the server will result in these tests failing
                     // so we check for cross-site
-                    !(window && ECHOENDPOINT_URL.match(`^${window.location.href}`))) {
+                    !(window && window.location.href.match(`^${ENDPOINT_BASE_URL}`))) {
                     it("honors withCredentials flag", (done) => {
                         TestLogger.saveLogsAndReset();
                         const message = "Hello World!";
@@ -193,6 +193,36 @@ describe("connection", () => {
                         });
                     });
                 }
+            });
+        });
+    });
+
+    eachHttpClient((httpClient) => {
+        describe(`with ${(httpClient.constructor as any).name}`, () => {
+            it("follows HTTP redirects", (done) => {
+                const message = "Hello World!";
+                const connection = new HttpConnection(USED_ECHOENDPOINT_URL + "redirect", {
+                    ...commonOptions,
+                    httpClient,
+                });
+
+                connection.onreceive = async (data: any) => {
+                    if (data === message) {
+                        connection.stop();
+                    }
+                };
+
+                connection.onclose = (error: any) => {
+                    expect(error).toBeUndefined();
+                    done();
+                };
+
+                connection.start(TransferFormat.Text).then(() => {
+                    connection.send(message);
+                }).catch((e) => {
+                    fail(e);
+                    done();
+                });
             });
         });
     });

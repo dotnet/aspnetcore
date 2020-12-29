@@ -91,7 +91,7 @@ export class FetchHttpClient extends HttpClient {
                 },
                 method: request.method!,
                 mode: "cors",
-                redirect: "manual",
+                redirect: "follow",
                 signal: abortController.signal,
             });
         } catch (e) {
