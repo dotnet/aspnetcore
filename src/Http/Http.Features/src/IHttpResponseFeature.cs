@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpResponseFeature
     {
         /// <summary>
-        /// Gets or sets the status-code as defined in RFC 7230..
+        /// Gets or sets the status-code as defined in RFC 7230.
         /// </summary>
         /// <value>Defaults to <c>200</c>.</value>
         int StatusCode { get; set; }

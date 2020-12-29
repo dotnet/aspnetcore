@@ -58,9 +58,8 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Gets or sets the request target as it was sent in the HTTP request.
         /// <para>
-        /// This property contains the
-        /// raw path and full query, as well as other request targets such as * for OPTIONS
-        /// requests (https://tools.ietf.org/html/rfc7230#section-5.3).
+        /// This property contains the raw path and full query, as well as other request targets
+        /// such as * for OPTIONS requests (https://tools.ietf.org/html/rfc7230#section-5.3).
         /// </para>
         /// </summary>
         /// <remarks>
@@ -72,8 +71,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Gets or sets headers included in the request, aggregated by header name.
         /// <para>
-        /// The values are not split
-        /// or merged across header lines. E.g. The following headers:
+        /// The values are not split or merged across header lines. E.g. The following headers:
         /// <list type="bullet">
         /// <item>HeaderA: value1, value2</item>
         /// <item>HeaderA: value3</item>

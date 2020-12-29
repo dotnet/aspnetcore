@@ -8,7 +8,7 @@ using System.IO;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// An address that a HTTP server is bound to.
+    /// An address that a HTTP server may bind to.
     /// </summary>
     public class BindingAddress
     {

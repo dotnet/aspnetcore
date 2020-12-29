@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Features
         bool HasFormContentType { get; }
 
         /// <summary>
-        /// The parsed form.
+        /// Gets or sets the parsed form.
         /// <para>
         /// This API will return a non-null value if the
         /// request body was read using <see cref="ReadFormAsync(CancellationToken)"/> or <see cref="ReadForm"/>, or
