@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsError()
+        public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsWarning()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
@@ -57,11 +58,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await blockedHeartbeatTask.DefaultTimeout();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
-            Assert.Equal($"As of\"{now}\", the heartbeat has been running for \"{heartbeatDuration}\" which is longer than \"{Heartbeat.Interval}\". This could be caused by thread pool starvation.", kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Warning).Message);
+
+            var warningMessage = kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Warning).Message;
+            Assert.Equal($"As of \"{now.ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
+                + $"\"{heartbeatDuration.ToString("c", CultureInfo.InvariantCulture)}\" which is longer than "
+                + $"\"{Heartbeat.Interval.ToString("c", CultureInfo.InvariantCulture)}\". "
+                + "This could be caused by thread pool starvation.", warningMessage);
         }
 
         [Fact]
-        public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedAsErrorIfDebuggerAttached()
+        public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedIfDebuggerAttached()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
