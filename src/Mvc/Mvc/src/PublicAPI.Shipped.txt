@@ -8,3 +8,4 @@ Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions
 ~static Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions.AddMvc(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Mvc.MvcOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
 ~static Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions.AddRazorPages(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
 ~static Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions.AddRazorPages(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions> configure) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
+THIS CHANGE WON'T BE MERGED
