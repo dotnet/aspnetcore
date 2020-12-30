@@ -18,7 +18,7 @@
 /src/Middleware/                @tratcher
 /src/Middleware/HttpsPolicy/    @jkotalik
 /src/Middleware/Rewrite/        @jkotalik
-/src/Mvc/                       @pranavkm @javiercn @aspnet-api-review
+/src/Mvc/                       @pranavkm @javiercn @dotnet/aspnet-api-review
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/  @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                  @tratcher
