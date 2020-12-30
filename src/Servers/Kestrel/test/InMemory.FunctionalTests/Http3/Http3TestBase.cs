@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Reflection;
@@ -396,9 +397,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
             {
                 var http3WithPayload = await ReceiveFrameAsync();
+                Assert.Equal(Http3FrameType.Headers, http3WithPayload.Type);
+
                 _decodedHeaders.Clear();
                 _qpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
-                return _decodedHeaders;
+                return _decodedHeaders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, _decodedHeaders.Comparer);
             }
 
             internal async Task<Memory<byte>> ExpectDataAsync()
@@ -435,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string expectedErrorMessage)
             {
-                var readResult = await _pair.Application.Input.ReadAsync();
+                var readResult = await _pair.Application.Input.ReadAsync().DefaultTimeout();
                 _testBase.Logger.LogTrace("Input is completed");
 
                 Assert.True(readResult.IsCompleted);

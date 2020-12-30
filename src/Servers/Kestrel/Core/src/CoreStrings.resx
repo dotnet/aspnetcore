@@ -650,4 +650,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/3 stream was reset by the application with error code {errorCode}.</value>
   </data>
+  <data name="Http3StreamErrorAfterHeaders" xml:space="preserve">
+    <value>An error occurred after the response headers were sent, a reset is being sent.</value>
+  </data>
 </root>

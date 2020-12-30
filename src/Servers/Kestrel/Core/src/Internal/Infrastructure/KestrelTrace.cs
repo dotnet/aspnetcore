@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -132,6 +133,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, long, Exception?> _http3ConnectionClosed =
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
+
+        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamResetError =
+            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamResetAbort"),
+                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". A Reset is being sent to the stream.");
 
         protected readonly ILogger _logger;
 
@@ -329,6 +334,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
         {
             _http3ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
+        }
+
+        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _http3StreamResetError(_logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -260,6 +261,12 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
             _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+        }
+
+        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _trace1.Http3StreamResetAbort(traceIdentifier, error, abortReason);
+            _trace2.Http3StreamResetAbort(traceIdentifier, error, abortReason);
         }
     }
 }
