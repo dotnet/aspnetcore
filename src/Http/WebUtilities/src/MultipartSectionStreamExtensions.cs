@@ -34,9 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
 
             var streamEncoding = sectionMediaType?.Encoding;
-#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
-            if (streamEncoding == null || streamEncoding == Encoding.UTF7)
-#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
+            if (streamEncoding == null || streamEncoding.CodePage == 65000)
             {
                 streamEncoding = Encoding.UTF8;
             }
