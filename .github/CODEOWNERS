@@ -18,7 +18,7 @@
 /src/Middleware/                @tratcher
 /src/Middleware/HttpsPolicy/    @jkotalik
 /src/Middleware/Rewrite/        @jkotalik
-/src/Mvc/                       @pranavkm @javiercn @dotnet/aspnet-api-review
+/src/Mvc/                       @pranavkm @javiercn 
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/  @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                  @tratcher
@@ -26,5 +26,5 @@
 /src/Shared/runtime/            @dotnet/http
 /src/Shared/test/Shared.Tests/runtime/ @dotnet/http
 /src/SignalR/                   @BrennanConroy @halter73
-# /src/**/PublicAPI.Shipped.txt   @aspnet-api-review
-# *PublicAPI.Unshipped.txt         @aspnet-api-review
+/src/**/PublicAPI.Shipped.txt   @dotnet/aspnet-api-review
+PublicAPI.Unshipped.txt         @dotnet/aspnet-api-review
