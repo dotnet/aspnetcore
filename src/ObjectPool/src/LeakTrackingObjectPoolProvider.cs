@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.ObjectPool
 {
     /// <summary>
-    /// An <see cref="ObjectPoolProvider"/> that produces instancesof
+    /// An <see cref="ObjectPoolProvider"/> that produces instances of
     /// <see cref="LeakTrackingObjectPool{T}"/>.
     /// </summary>
     public class LeakTrackingObjectPoolProvider : ObjectPoolProvider

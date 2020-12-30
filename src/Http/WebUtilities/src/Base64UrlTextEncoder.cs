@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
-    /// An encoder for base64 text.
+    /// Encodes and decodes using base64 url encoding.
     /// </summary>
     public static class Base64UrlTextEncoder
     {

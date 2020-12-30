@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
-        /// Gets a value that determines if the contents are buffered entirely in memory.
+        /// Gets a value that determines where the contents are buffered on disk.
         /// </summary>
         public string? TempFileName
         {
