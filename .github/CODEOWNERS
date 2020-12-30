@@ -8,8 +8,6 @@
 /eng/common/                    @dotnet-maestro-bot
 /eng/Versions.props             @dotnet-maestro-bot @dougbu
 /eng/Version.Details.xml        @dotnet-maestro-bot @dougbu
-PublicAPI.Unshipped.txt         @dotnet/aspnet-api-review
-PublicAPI.Shipped.txt           @dotnet/aspnet-api-review
 /src/Caching/                   @juntaoluo
 /src/Components/                @SteveSandersonMS @dotnet/aspnet-blazor-eng
 /src/DefaultBuilder/            @tratcher
@@ -28,3 +26,5 @@ PublicAPI.Shipped.txt           @dotnet/aspnet-api-review
 /src/Shared/runtime/            @dotnet/http
 /src/Shared/test/Shared.Tests/runtime/ @dotnet/http
 /src/SignalR/                   @BrennanConroy @halter73
+PublicAPI.Unshipped.txt         @dotnet/aspnet-api-review
+/src/**/PublicAPI.Shipped.txt   @dotnet/aspnet-api-review
