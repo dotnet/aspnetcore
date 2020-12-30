@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var invoker = invokerFactory.CreateInvoker(actionContext);
-                return invoker.InvokeAsync();
+                return invoker!.InvokeAsync();
             };
         }
 
