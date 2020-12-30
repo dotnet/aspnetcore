@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         /// May return null or empty if the variable does not exist or is not set.
         /// </returns>
         [Obsolete("This is obsolete and will be removed in a future version. Use " + nameof(HttpContextServerVariableExtensions.GetServerVariable) + " instead.")]
-        public static string GetIISServerVariable(this HttpContext context, string variableName) =>
+        public static string? GetIISServerVariable(this HttpContext context, string variableName) =>
             context.GetServerVariable(variableName);
     }
 }

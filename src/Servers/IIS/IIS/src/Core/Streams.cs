@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly HttpRequestStream _request;
         private readonly WrappingStream _upgradeableRequest;
         private readonly WrappingStream _upgradeableResponse;
-        private EmptyStream _emptyRequest;
-        private Stream _upgradeStream;
+        private EmptyStream? _emptyRequest;
+        private Stream? _upgradeStream;
 
         public Streams(IISHttpContext context)
         {

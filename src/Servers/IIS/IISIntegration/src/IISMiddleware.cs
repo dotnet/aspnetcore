@@ -178,13 +178,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // The feature must be removed on a per request basis as the Upgrade feature exists per request.
             if (!_isWebsocketsSupported)
             {
-                httpContext.Features.Set<IHttpUpgradeFeature>(null);
+                httpContext.Features.Set<IHttpUpgradeFeature?>(null);
             }
 
             await _next(httpContext);
         }
 
-        private WindowsPrincipal GetUser(HttpContext context)
+        private WindowsPrincipal? GetUser(HttpContext context)
         {
             var tokenHeader = context.Request.Headers[MSAspNetCoreWinAuthToken];
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
             if (context.User is WindowsPrincipal)
             {
-                context.User = null;
+                context.User = null!;
             }
             return Task.CompletedTask;
         }

@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
             => _inner.CopyToAsync(destination, bufferSize, cancellationToken);
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
             => _inner.BeginRead(buffer, offset, count, callback, state);
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
             => _inner.BeginWrite(buffer, offset, count, callback, state);
 
         public override int EndRead(IAsyncResult asyncResult)
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override void Close()
             => _inner.Close();
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => _inner.Equals(obj);
 
         public override int GetHashCode()
             => _inner.GetHashCode();
 
-        public override string ToString()
+        public override string? ToString()
             => _inner.ToString();
 
         protected override void Dispose(bool disposing)

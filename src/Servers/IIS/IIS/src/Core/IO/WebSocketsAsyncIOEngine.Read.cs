@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             [UnmanagedCallersOnly]
             public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
-                var context = (WebSocketReadOperation)GCHandle.FromIntPtr(completionContext).Target;
+                var context = (WebSocketReadOperation)GCHandle.FromIntPtr(completionContext).Target!;
 
                 NativeMethods.HttpGetCompletionInfo(completionInfo, out var cbBytes, out var hr);
 
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             private readonly WebSocketsAsyncIOEngine _engine;
             private GCHandle _thisHandle;
             private MemoryHandle _inputHandle;
-            private NativeSafeHandle _requestHandler;
+            private NativeSafeHandle? _requestHandler;
             private Memory<byte> _memory;
 
             public WebSocketReadOperation(WebSocketsAsyncIOEngine engine)
@@ -39,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             protected override unsafe bool InvokeOperation(out int hr, out int bytes)
             {
+                Debug.Assert(_requestHandler != null, "Must initialize first.");
+
                 _thisHandle = GCHandle.Alloc(this);
                 _inputHandle = _memory.Pin();
 
