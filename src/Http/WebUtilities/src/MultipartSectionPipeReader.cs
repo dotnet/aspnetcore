@@ -73,11 +73,21 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new InvalidOperationException("AdvanceTo can only be called once per read operation.");
             }
 
-            if (!_boundaryFound && examined.Equals(_bodyBuffer.End))
+            if (examined.Equals(_bodyBuffer.End))
             {
-                // The caller has seen all of the available data. We may have a partial boundary match in the
-                // unconsumed buffer and we need more data to continue.
-                _pipeReader.AdvanceTo(consumed, _unconsumedData.End);
+                // The caller has seen all of the available data.
+                if (!_boundaryFound)
+                {
+                    // We may have a partial boundary match in the
+                    // unconsumed buffer and we need more data to continue.
+                    _pipeReader.AdvanceTo(consumed, _unconsumedData.End);
+                }
+                else
+                {
+                    // We reached the end of the section, we should advance to the end.
+                    _pipeReader.AdvanceTo(_unconsumedData.End);
+                    _finalLineConsumed = true;
+                }
             }
             else
             {
@@ -170,7 +180,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!_boundaryFound)
                 {
                     // We must be examining a partial boundary match, keep reading.
-                    _pipeReader.AdvanceTo(_bodyBuffer.Start, _unconsumedData.End);
+                    _pipeReader.AdvanceTo(_unconsumedData.Start, _unconsumedData.End);
                     continue;
                 }
 
@@ -184,7 +194,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     continue;
                 }
 
-                _advanceNeeded = !_bodyBuffer.IsEmpty;
+                _advanceNeeded = true; //!_bodyBuffer.IsEmpty;
                 return new ReadResult(_bodyBuffer, readResult.IsCanceled, isCompleted: true);
             }
 
@@ -377,7 +387,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             // The unconsumed data begins with the boundary.
             sequenceReader.Advance(_boundary.BoundaryBytes.Length);
 
-            var reachedNewLine = sequenceReader.TryReadTo(out ReadOnlySequence<byte> remainder, CrlfDelimiter);
+            var reachedNewLine = sequenceReader.TryReadTo(out ReadOnlySequence<byte> remainder, CrlfDelimiter, advancePastDelimiter: true);
             // Don't buffer indefinitely
             if (sequenceReader.Consumed > 100 + _boundary.BoundaryBytes.Length)
             {
@@ -424,7 +434,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
             }
 
-            _unconsumedData = _unconsumedData.Slice(0, remainderReader.Position);
+            _unconsumedData = _unconsumedData.Slice(0, sequenceReader.Position);
             _finalLineLength = _unconsumedData.Length;
 
             return true;

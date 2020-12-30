@@ -294,6 +294,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             await Assert.ThrowsAsync<IOException>(async () =>
             {
                 // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
+                var read = await section!.BodyReader.ReadAsync();
+                section.BodyReader.AdvanceTo(read.Buffer.End);
                 await section!.BodyReader.ReadAsync();
             });
         }
