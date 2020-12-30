@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         [ApplyPolicy]
         public int EncryptionAlgorithmKeySize { get; set; } = 256;
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;

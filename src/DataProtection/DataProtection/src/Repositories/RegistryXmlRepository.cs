@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// </summary>
         public RegistryKey RegistryKey { get; }
 
+        /// <inheritdoc/>
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
@@ -133,6 +134,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             return (!string.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
         }
 
+        /// <inheritdoc/>
         public virtual void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)

@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private static readonly TimeSpan _maxServerClockSkew = TimeSpan.FromMinutes(5);
         private TimeSpan _newKeyLifetime = TimeSpan.FromDays(90);
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="KeyManagementOptions"/>.
+        /// </summary>
         public KeyManagementOptions()
         {
         }

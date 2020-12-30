@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// </summary>
         public DirectoryInfo Directory { get; }
 
+        /// <inheritdoc/>
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
@@ -105,6 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
+        /// <inheritdoc/>
         public virtual void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)

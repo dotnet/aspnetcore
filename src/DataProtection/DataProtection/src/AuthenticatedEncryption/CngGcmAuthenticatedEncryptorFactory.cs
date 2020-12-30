@@ -23,11 +23,16 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public CngGcmAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<CngGcmAuthenticatedEncryptorFactory>();
         }
 
+        /// <inheritdoc />
         public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as CngGcmAuthenticatedEncryptorDescriptor;

@@ -40,11 +40,20 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormPipeReader"/>.
+        /// </summary>
+        /// <param name="pipeReader">The <see cref="PipeReader"/> to read from.</param>
         public FormPipeReader(PipeReader pipeReader)
             : this(pipeReader, Encoding.UTF8)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormPipeReader"/>.
+        /// </summary>
+        /// <param name="pipeReader">The <see cref="PipeReader"/> to read from.</param>
+        /// <param name="encoding">The <see cref="Encoding"/>.</param>
         public FormPipeReader(PipeReader pipeReader, Encoding encoding)
         {
 #pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete

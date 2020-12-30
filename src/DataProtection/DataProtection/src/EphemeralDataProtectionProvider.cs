@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider, loggerFactory);
         }
 
+        /// <inheritdoc />
         public IDataProtector CreateProtector(string purpose)
         {
             if (purpose == null)

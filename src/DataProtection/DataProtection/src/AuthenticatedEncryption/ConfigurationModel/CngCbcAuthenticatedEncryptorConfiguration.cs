@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         [ApplyPolicy]
         public string? HashAlgorithmProvider { get; set; } = null;
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;
