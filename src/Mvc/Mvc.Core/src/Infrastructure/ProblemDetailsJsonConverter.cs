@@ -1,7 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        internal static bool TryReadStringProperty(ref Utf8JsonReader reader, JsonEncodedText propertyName, out string value)
+        internal static bool TryReadStringProperty(ref Utf8JsonReader reader, JsonEncodedText propertyName, [NotNullWhen(true)] out string? value)
         {
             if (!reader.ValueTextEquals(propertyName.EncodedUtf8Bytes))
             {
@@ -92,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             reader.Read();
-            value = reader.GetString();
+            value = reader.GetString()!;
             return true;
         }
 

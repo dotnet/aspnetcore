@@ -1357,57 +1357,57 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.HttpPostAttribute.HttpPostAttribute(string template) -> void
 ~Microsoft.AspNetCore.Mvc.HttpPutAttribute.HttpPutAttribute(string template) -> void
 ~Microsoft.AspNetCore.Mvc.IDesignTimeMvcBuilderConfiguration.ConfigureMvc(Microsoft.Extensions.DependencyInjection.IMvcBuilder builder) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ActionContextAccessor.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext
-~Microsoft.AspNetCore.Mvc.Infrastructure.ActionContextAccessor.ActionContext.set -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.ActionDescriptorCollection(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> items, int version) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.Items.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor>
-~Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(string message) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ActionContextAccessor.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext?
+Microsoft.AspNetCore.Mvc.Infrastructure.ActionContextAccessor.ActionContext.set -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.ActionDescriptorCollection(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>! items, int version) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.Items.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>!
+Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(string? message) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.CompatibilitySwitch<TValue>.CompatibilitySwitch(string name) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.CompatibilitySwitch<TValue>.CompatibilitySwitch(string name, TValue initialValue) -> void
 ~Microsoft.AspNetCore.Mvc.Infrastructure.CompatibilitySwitch<TValue>.Name.get -> string
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.ConfigureCompatibilityOptions(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions> compatibilityOptions) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor> logger, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory httpResponseStreamWriterFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.FileContentResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.FileResultExecutorBase(Microsoft.Extensions.Logging.ILogger logger) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.Logger.get -> Microsoft.Extensions.Logging.ILogger
-~Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.FileStreamResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor.ActionContext.set -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorChangeProvider.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider.ActionDescriptors.get -> Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionInvokerFactory.CreateInvoker(Microsoft.AspNetCore.Mvc.ActionContext actionContext) -> Microsoft.AspNetCore.Mvc.Abstractions.IActionInvoker
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<TResult>
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<TResult>.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, TResult result) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper.Convert(object value, System.Type returnType) -> Microsoft.AspNetCore.Mvc.IActionResult
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper.GetResultDataType(System.Type returnType) -> System.Type
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionSelector.SelectBestCandidate(Microsoft.AspNetCore.Routing.RouteContext context, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> candidates) -> Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor
-~Microsoft.AspNetCore.Mvc.Infrastructure.IActionSelector.SelectCandidates(Microsoft.AspNetCore.Routing.RouteContext context) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor>
-~Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorFactory.GetClientError(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorActionResult clientError) -> Microsoft.AspNetCore.Mvc.IActionResult
+Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor!>! logger, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! httpResponseStreamWriterFactory) -> void
+~Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.FileContentResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.FileResultExecutorBase(Microsoft.Extensions.Logging.ILogger! logger) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.FileStreamResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext?
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor.ActionContext.set -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorChangeProvider.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken!
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider.ActionDescriptors.get -> Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection!
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionInvokerFactory.CreateInvoker(Microsoft.AspNetCore.Mvc.ActionContext! actionContext) -> Microsoft.AspNetCore.Mvc.Abstractions.IActionInvoker?
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<TResult>
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<TResult>.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, TResult result) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper.Convert(object? value, System.Type! returnType) -> Microsoft.AspNetCore.Mvc.IActionResult!
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper.GetResultDataType(System.Type! returnType) -> System.Type!
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionSelector.SelectBestCandidate(Microsoft.AspNetCore.Routing.RouteContext! context, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>! candidates) -> Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor?
+Microsoft.AspNetCore.Mvc.Infrastructure.IActionSelector.SelectCandidates(Microsoft.AspNetCore.Routing.RouteContext! context) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>?
+Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorFactory.GetClientError(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorActionResult! clientError) -> Microsoft.AspNetCore.Mvc.IActionResult?
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch.Name.get -> string
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch.Value.get -> object
 ~Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch.Value.set -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult.Convert() -> Microsoft.AspNetCore.Mvc.IActionResult
-~Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory.CreateReader(System.IO.Stream stream, System.Text.Encoding encoding) -> System.IO.TextReader
-~Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory.CreateWriter(System.IO.Stream stream, System.Text.Encoding encoding) -> System.IO.TextWriter
-~Microsoft.AspNetCore.Mvc.Infrastructure.IParameterInfoParameterDescriptor.ParameterInfo.get -> System.Reflection.ParameterInfo
-~Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor.PropertyInfo.get -> System.Reflection.PropertyInfo
-~Microsoft.AspNetCore.Mvc.Infrastructure.LocalRedirectResultExecutor.LocalRedirectResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.ModelStateInvalidFilter(Microsoft.AspNetCore.Mvc.ApiBehaviorOptions apiBehaviorOptions, Microsoft.Extensions.Logging.ILogger logger) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.FormatterSelector.get -> Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector
-~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger
-~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector formatterSelector, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptions) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.WriterFactory.get -> System.Func<System.IO.Stream, System.Text.Encoding, System.IO.TextWriter>
+Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult.Convert() -> Microsoft.AspNetCore.Mvc.IActionResult!
+Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory.CreateReader(System.IO.Stream! stream, System.Text.Encoding! encoding) -> System.IO.TextReader!
+Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory.CreateWriter(System.IO.Stream! stream, System.Text.Encoding! encoding) -> System.IO.TextWriter!
+Microsoft.AspNetCore.Mvc.Infrastructure.IParameterInfoParameterDescriptor.ParameterInfo.get -> System.Reflection.ParameterInfo!
+Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor.PropertyInfo.get -> System.Reflection.PropertyInfo!
+Microsoft.AspNetCore.Mvc.Infrastructure.LocalRedirectResultExecutor.LocalRedirectResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory! urlHelperFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.ModelStateInvalidFilter(Microsoft.AspNetCore.Mvc.ApiBehaviorOptions! apiBehaviorOptions, Microsoft.Extensions.Logging.ILogger! logger) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext! context) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilter.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext! context) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.FormatterSelector.get -> Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector!
+Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+~Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector! formatterSelector, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! mvcOptions) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.WriterFactory.get -> System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>!
 ~Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.PhysicalFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.RedirectResultExecutor.RedirectResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToActionResultExecutor.RedirectToActionResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToPageResultExecutor.RedirectToPageResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToRouteResultExecutor.RedirectToRouteResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
-~Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.VirtualFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.RedirectResultExecutor.RedirectResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory! urlHelperFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToActionResultExecutor.RedirectToActionResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory! urlHelperFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToPageResultExecutor.RedirectToPageResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory! urlHelperFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToRouteResultExecutor.RedirectToRouteResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory! urlHelperFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.VirtualFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment) -> void
 ~Microsoft.AspNetCore.Mvc.JsonOptions.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions
 ~Microsoft.AspNetCore.Mvc.JsonResult.ContentType.get -> string
 ~Microsoft.AspNetCore.Mvc.JsonResult.ContentType.set -> void
@@ -1914,12 +1914,12 @@ Microsoft.AspNetCore.Mvc.Routing.UrlHelperFactory.GetUrlHelper(Microsoft.AspNetC
 ~abstract Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) -> System.Threading.Tasks.Task
 ~abstract Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context, System.Text.Encoding encoding) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult>
 ~abstract Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding selectedEncoding) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollectionProvider.ActionDescriptors.get -> Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection
-~abstract Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollectionProvider.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken
+abstract Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollectionProvider.ActionDescriptors.get -> Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection!
+abstract Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollectionProvider.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken!
 ~abstract Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.DefaultValues.get -> System.Collections.Generic.IReadOnlyDictionary<string, object>
-~abstract Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector.SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection mediaTypes) -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter
-~abstract Microsoft.AspNetCore.Mvc.Infrastructure.ProblemDetailsFactory.CreateProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, int? statusCode = null, string title = null, string type = null, string detail = null, string instance = null) -> Microsoft.AspNetCore.Mvc.ProblemDetails
-~abstract Microsoft.AspNetCore.Mvc.Infrastructure.ProblemDetailsFactory.CreateValidationProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary, int? statusCode = null, string title = null, string type = null, string detail = null, string instance = null) -> Microsoft.AspNetCore.Mvc.ValidationProblemDetails
+abstract Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector.SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter!>! formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection! mediaTypes) -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter?
+abstract Microsoft.AspNetCore.Mvc.Infrastructure.ProblemDetailsFactory.CreateProblemDetails(Microsoft.AspNetCore.Http.HttpContext! httpContext, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null) -> Microsoft.AspNetCore.Mvc.ProblemDetails!
+abstract Microsoft.AspNetCore.Mvc.Infrastructure.ProblemDetailsFactory.CreateValidationProblemDetails(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelStateDictionary, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null) -> Microsoft.AspNetCore.Mvc.ValidationProblemDetails!
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.BindingSourceValueProvider.ContainsPrefix(string prefix) -> bool
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.BindingSourceValueProvider.GetValue(string key) -> Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
 ~abstract Microsoft.AspNetCore.Mvc.ModelBinding.ObjectModelValidator.GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState) -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor
@@ -1977,7 +1977,7 @@ abstract Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.RouteUrl(Microsoft.AspNe
 ~override Microsoft.AspNetCore.Mvc.Formatters.StringOutputFormatter.WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding encoding) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult>
 ~override Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) -> System.Threading.Tasks.Task
-~override Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection contentTypes) -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter
+override Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter!>! formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection! contentTypes) -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter?
 ~override Microsoft.AspNetCore.Mvc.JsonResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.LocalRedirectResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinder<TElement>.CanCreateInstance(System.Type targetType) -> bool
@@ -2125,8 +2125,8 @@ override Microsoft.AspNetCore.Mvc.Routing.UrlHelper.RouteUrl(Microsoft.AspNetCor
 ~static Microsoft.AspNetCore.Mvc.Formatters.MediaType.GetEncoding(string mediaType) -> System.Text.Encoding
 ~static Microsoft.AspNetCore.Mvc.Formatters.MediaType.ReplaceEncoding(Microsoft.Extensions.Primitives.StringSegment mediaType, System.Text.Encoding encoding) -> string
 ~static Microsoft.AspNetCore.Mvc.Formatters.MediaType.ReplaceEncoding(string mediaType, System.Text.Encoding encoding) -> string
-~static Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.CreateLogger<T>(Microsoft.Extensions.Logging.ILoggerFactory factory) -> Microsoft.Extensions.Logging.ILogger
-~static Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.WriteFileAsync(Microsoft.AspNetCore.Http.HttpContext context, System.IO.Stream fileStream, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) -> System.Threading.Tasks.Task
+static Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.CreateLogger<T>(Microsoft.Extensions.Logging.ILoggerFactory! factory) -> Microsoft.Extensions.Logging.ILogger!
+static Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.WriteFileAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.IO.Stream! fileStream, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) -> System.Threading.Tasks.Task!
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider.CreateAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory> factories) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider>
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider.CreateAsync(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider>
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.DefaultModelBindingContext.CreateBindingContext(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo bindingInfo, string modelName) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext
@@ -2405,25 +2405,25 @@ static Microsoft.AspNetCore.Routing.PageLinkGeneratorExtensions.GetUriByPage(thi
 ~virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.WriteResponseHeaders(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) -> void
 ~virtual Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.SelectCharacterEncoding(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) -> System.Text.Encoding
 ~virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string name, TOptions options) -> void
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ContentResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileContentResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileContentResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.SetHeadersAndLog(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileResult result, long? fileLength, bool enableRangeProcessing, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue etag = null) -> (Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength, bool serveBody)
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileStreamResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileStreamResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.LocalRedirectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.LocalRedirectResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ObjectResult result) -> System.Threading.Tasks.Task
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.ContentResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.FileContentResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.FileContentResult! result, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.SetHeadersAndLog(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.FileResult! result, long? fileLength, bool enableRangeProcessing, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? etag = null) -> (Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength, bool serveBody)
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.FileStreamResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.FileStreamResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.FileStreamResult! result, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.LocalRedirectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.LocalRedirectResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.ObjectResult! result) -> System.Threading.Tasks.Task!
 ~virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result) -> System.Threading.Tasks.Task
 ~virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.GetFileInfo(string path) -> Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.FileMetadata
 ~virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.GetFileStream(string path) -> System.IO.Stream
 ~virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.RedirectResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToActionResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.RedirectToActionResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToPageResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.RedirectToPageResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToRouteResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.RedirectToRouteResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.GetFileStream(Microsoft.Extensions.FileProviders.IFileInfo fileInfo) -> System.IO.Stream
-~virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result, Microsoft.Extensions.FileProviders.IFileInfo fileInfo, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) -> System.Threading.Tasks.Task
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.RedirectResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToActionResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.RedirectToActionResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToPageResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.RedirectToPageResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.RedirectToRouteResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.RedirectToRouteResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.VirtualFileResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.GetFileStream(Microsoft.Extensions.FileProviders.IFileInfo! fileInfo) -> System.IO.Stream!
+virtual Microsoft.AspNetCore.Mvc.Infrastructure.VirtualFileResultExecutor.WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.VirtualFileResult! result, Microsoft.Extensions.FileProviders.IFileInfo! fileInfo, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) -> System.Threading.Tasks.Task!
 ~virtual Microsoft.AspNetCore.Mvc.ModelBinderAttribute.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource
 ~virtual Microsoft.AspNetCore.Mvc.ModelBinderAttribute.BindingSource.set -> void
 ~virtual Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<TElement>.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) -> System.Threading.Tasks.Task
