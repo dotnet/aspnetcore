@@ -39,7 +39,9 @@ namespace Microsoft.AspNetCore.Owin
         IHttpWebSocketFeature,
         IOwinEnvironmentFeature
     {
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets OWIN environment values.
+        /// </summary>
         public IDictionary<string, object> Environment { get; set; }
         private PipeWriter _responseBodyWrapper;
         private bool _headersSent;
