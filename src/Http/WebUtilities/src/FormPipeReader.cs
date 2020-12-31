@@ -56,10 +56,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="encoding">The <see cref="Encoding"/>.</param>
         public FormPipeReader(PipeReader pipeReader, Encoding encoding)
         {
-#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
-            if (encoding == Encoding.UTF7)
+            // https://docs.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+            if (encoding is Encoding { CodePage: 65000 })
             {
-#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
                 throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");
             }
 
