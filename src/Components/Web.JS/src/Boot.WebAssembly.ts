@@ -13,6 +13,7 @@ import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { WasmInputFile } from './WasmInputFile';
 
 let started = false;
 
@@ -33,6 +34,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
     }
   });
+
+  window['Blazor']._internal.InputFile = WasmInputFile;
 
   // Configure JS interop
   window['Blazor']._internal.invokeJSFromDotNet = invokeJSFromDotNet;

@@ -13,6 +13,7 @@ import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/Circuit
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { InputFile } from './InputFile';
 
 let renderingFailed = false;
 let started = false;
@@ -27,6 +28,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   const options = resolveOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
   window['Blazor'].defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
+  window['Blazor']._internal.InputFile = InputFile;
+
   options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
