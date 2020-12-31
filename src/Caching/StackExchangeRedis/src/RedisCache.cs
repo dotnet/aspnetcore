@@ -11,7 +11,9 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
-
+    /// <summary>
+    /// Distributed cache implementation using Microsoft StackExchange Redis.
+    /// </summary>
     public class RedisCache : IDistributedCache, IDisposable
     {
         // KEYS[1] = = key
