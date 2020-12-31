@@ -150,6 +150,20 @@ namespace FunctionalTests
 
             app.Use((context, next) =>
             {
+                if (context.Request.Path.StartsWithSegments("/echoredirect"))
+                {
+                    var url = context.Request.Path.ToString();
+                    url = url.Replace("echoredirect", "echo");
+                    url += context.Request.QueryString.ToString();
+                    context.Response.Redirect(url, false, true);
+                    return Task.CompletedTask;
+                }
+
+                return next.Invoke();
+            });
+
+            app.Use((context, next) =>
+            {
                 if (context.Request.Path.StartsWithSegments("/redirect"))
                 {
                     var newUrl = context.Request.Query["baseUrl"] + "/testHub?numRedirects=" + Interlocked.Increment(ref _numRedirects);
