@@ -20,8 +20,16 @@ namespace Microsoft.AspNetCore.Builder
           Func<IDictionary<string, object>, Task>
         >;
 
+    /// <summary>
+    /// Extension methods to add OWIN to an HTTP application pipeline.
+    /// </summary>
     public static class OwinExtensions
     {
+        /// <summary>
+        /// Adds an OWIN pipeline to the specified <see cref="IApplicationBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the pipeline to.</param>
+        /// <returns>An action used to create the OWIN pipeline.</returns>
         public static AddMiddleware UseOwin(this IApplicationBuilder builder)
         {
             if (builder == null)
@@ -62,6 +70,12 @@ namespace Microsoft.AspNetCore.Builder
             return add;
         }
 
+        /// <summary>
+        /// Adds OWIN middleware pipeline to the specified <see cref="IApplicationBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="pipeline">A delegate which can specify the OWIN pipeline.</param>
+        /// <returns>The original <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseOwin(this IApplicationBuilder builder, Action<AddMiddleware> pipeline)
         {
             if (builder == null)
@@ -77,11 +91,22 @@ namespace Microsoft.AspNetCore.Builder
             return builder;
         }
 
+        /// <summary>
+        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// </summary>
+        /// <param name="app">The OWIN pipeline.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/></returns>
         public static IApplicationBuilder UseBuilder(this AddMiddleware app)
         {
             return app.UseBuilder(serviceProvider: null);
         }
 
+        /// <summary>
+        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// </summary>
+        /// <param name="app">The OWIN pipeline.</param>
+        /// <param name="serviceProvider">A service provider for <see cref="IApplicationBuilder.ApplicationServices"/>.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseBuilder(this AddMiddleware app, IServiceProvider serviceProvider)
         {
             if (app == null)
@@ -142,11 +167,24 @@ namespace Microsoft.AspNetCore.Builder
             };
         }
 
+        /// <summary>
+        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// </summary>
+        /// <param name="app">The OWIN pipeline.</param>
+        /// <param name="pipeline">A delegate used to configure a middleware pipeline.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/>.</returns>
         public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline)
         {
             return app.UseBuilder(pipeline, serviceProvider: null);
         }
 
+        /// <summary>
+        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// </summary>
+        /// <param name="app">The OWIN pipeline.</param>
+        /// <param name="pipeline">A delegate used to configure a middleware pipeline.</param>
+        /// <param name="serviceProvider">A service provider for <see cref="IApplicationBuilder.ApplicationServices"/>.</param>
+        /// <returns>An <see cref="IApplicationBuilder"/>.</returns>
         public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline, IServiceProvider serviceProvider)
         {
             if (app == null)

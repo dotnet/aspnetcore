@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Owin
         private AppFunc _callback;
         private IDictionary<string, object> _options;
 
+        /// <summary>
+        /// Create a <see cref="WebSocketAcceptAdapter"/> for an OWIN environment.
+        /// </summary>
+        /// <param name="env">The OWIN environment.</param>
+        /// <param name="accept">WebSocket accept delegate.</param>
         public WebSocketAcceptAdapter(IDictionary<string, object> env, WebSocketAcceptAlt accept)
 	    {
             _env = env;
@@ -52,6 +57,11 @@ namespace Microsoft.AspNetCore.Owin
             _env[OwinConstants.ResponseStatusCode] = 101;
         }
 
+        /// <summary>
+        /// Adapt web sockets to OWIN.
+        /// </summary>
+        /// <param name="next">The next OWIN app delegate.</param>
+        /// <returns>An OWIN app delegate.</returns>
         public static AppFunc AdaptWebSockets(AppFunc next)
         {
             return async environment =>
