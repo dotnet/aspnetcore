@@ -12,11 +12,13 @@ namespace Microsoft.Extensions.WebEncoders.Testing
     /// </summary>
     public class JavaScriptTestEncoder : JavaScriptEncoder
     {
+        /// <inheritdoc />
         public override int MaxOutputCharactersPerInputCharacter
         {
             get { return 1; }
         }
 
+        /// <inheritdoc />
         public override string Encode(string value)
         {
             if (value == null)
@@ -32,6 +34,7 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             return $"JavaScriptEncode[[{value}]]";
         }
 
+        /// <inheritdoc />
         public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
         {
             if (output == null)
@@ -54,6 +57,7 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             output.Write("]]");
         }
 
+        /// <inheritdoc />
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
             if (output == null)
@@ -76,16 +80,19 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             output.Write("]]");
         }
 
+        /// <inheritdoc />
         public override bool WillEncode(int unicodeScalar)
         {
             return false;
         }
 
+        /// <inheritdoc />
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
         {
             return -1;
         }
 
+        /// <inheritdoc />
         public override unsafe bool TryEncodeUnicodeScalar(
             int unicodeScalar,
             char* buffer,

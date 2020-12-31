@@ -11,6 +11,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
+
     public class RedisCache : IDistributedCache, IDisposable
     {
         // KEYS[1] = = key
@@ -39,6 +40,10 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RedisCache"/>.
+        /// </summary>
+        /// <param name="optionsAccessor">The configuration options.</param>
         public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
         {
             if (optionsAccessor == null)
@@ -52,6 +57,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             _instance = _options.InstanceName ?? string.Empty;
         }
 
+        /// <inheritdoc />
         public byte[] Get(string key)
         {
             if (key == null)
@@ -62,6 +68,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             return GetAndRefresh(key, getData: true);
         }
 
+        /// <inheritdoc />
         public async Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
@@ -74,6 +81,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             return await GetAndRefreshAsync(key, getData: true, token: token).ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
             if (key == null)
@@ -107,6 +115,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 });
         }
 
+        /// <inheritdoc />
         public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
@@ -142,6 +151,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 }).ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
         public void Refresh(string key)
         {
             if (key == null)
@@ -152,6 +162,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             GetAndRefresh(key, getData: false);
         }
 
+        /// <inheritdoc />
         public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
@@ -301,6 +312,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             return null;
         }
 
+        /// <inheritdoc />
         public void Remove(string key)
         {
             if (key == null)
@@ -314,6 +326,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             // TODO: Error handling
         }
 
+        /// <inheritdoc />
         public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
@@ -432,6 +445,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             return options.AbsoluteExpiration;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)
