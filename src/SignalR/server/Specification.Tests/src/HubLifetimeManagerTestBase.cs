@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -8,12 +8,23 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 {
+    /// <summary>
+    /// Base test class for lifetime manager implementations. Nothing specific to scale-out for these tests.
+    /// </summary>
+    /// <typeparam name="THub">The type of the <see cref="Hub"/>.</typeparam>
     public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
     {
-        public HubLifetimeManager<THub> Manager { get; set; }
-
+        /// <summary>
+        /// Method to create an implementation of <see cref="HubLifetimeManager{THub}"/> for use in tests.
+        /// </summary>
+        /// <returns>The implementation of <see cref="HubLifetimeManager{THub}"/> to test against.</returns>
         public abstract HubLifetimeManager<THub> CreateNewHubLifetimeManager();
 
+        /// <summary>
+        /// Creates a couple connections, registers them with the lifetime manager, then checks that
+        /// HubLifetimeManager.SendAllAsync sends to all connections.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task SendAllAsyncWritesToAllConnectionsOutput()
         {
@@ -41,6 +52,11 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Creates a couple connections, registers them with the lifetime manager, disconnects one of them,
+        /// then checks that HubLifetimeManager.SendAllAsync does not send to the diconnected connection.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task SendAllAsyncDoesNotWriteToDisconnectedConnectionsOutput()
         {
@@ -67,6 +83,11 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Creates a couple connections, registers them with the lifetime manager, adds one of them to a group,
+        /// then checks that HubLifetimeManager.SendGroupAsync only sends to the connection in the group.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task SendGroupAsyncWritesToAllConnectionsInGroupOutput()
         {
@@ -93,6 +114,11 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Creates a couple connections, registers them with the lifetime manager, adds them to a group,
+        /// then checks that HubLifetimeManager.SendGroupExceptAsync only sends to the non-excluded connection in the group.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task SendGroupExceptAsyncDoesNotWriteToExcludedConnections()
         {
@@ -120,6 +146,11 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Creates a connection, registers it with the lifetime manager,
+        /// then checks that HubLifetimeManager.SendConnectionAsync sends to the connection.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task SendConnectionAsyncWritesToConnectionOutput()
         {
