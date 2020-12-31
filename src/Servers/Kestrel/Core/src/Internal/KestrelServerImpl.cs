@@ -276,12 +276,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Options.ConfigurationLoader?.Load();
 
                 await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!).ConfigureAwait(false);
-                _configChangedRegistration = reloadToken?.RegisterChangeCallback(async state => await ((KestrelServerImpl)state).RebindAsync(), this);
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(Rebind, this);
             }
             finally
             {
                 _bindSemaphore.Release();
             }
+        }
+
+        private static void Rebind(object state)
+        {
+            var server = (KestrelServerImpl)state;
+            _ = server.RebindAsync();
         }
 
         private async Task RebindAsync()
@@ -350,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             finally
             {
-                _configChangedRegistration = reloadToken?.RegisterChangeCallback(async state => await ((KestrelServerImpl)state).RebindAsync(), this);
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(Rebind, this);
                 _bindSemaphore.Release();
             }
         }
