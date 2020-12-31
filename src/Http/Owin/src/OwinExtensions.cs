@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// Creates an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
         /// </summary>
         /// <param name="app">The OWIN pipeline.</param>
         /// <returns>An <see cref="IApplicationBuilder"/></returns>
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// Creates an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
         /// </summary>
         /// <param name="app">The OWIN pipeline.</param>
         /// <param name="serviceProvider">A service provider for <see cref="IApplicationBuilder.ApplicationServices"/>.</param>
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// Creates an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
         /// </summary>
         /// <param name="app">The OWIN pipeline.</param>
         /// <param name="pipeline">A delegate used to configure a middleware pipeline.</param>
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Create an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
+        /// Creates an <see cref="IApplicationBuilder"/> for an OWIN pipeline.
         /// </summary>
         /// <param name="app">The OWIN pipeline.</param>
         /// <param name="pipeline">A delegate used to configure a middleware pipeline.</param>

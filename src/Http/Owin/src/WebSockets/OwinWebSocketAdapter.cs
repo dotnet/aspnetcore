@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Owin
         private string _subProtocol;
 
         /// <summary>
-        /// Create an <see cref="OwinWebSocketAdapter"/>.
+        /// Initializes a new instance of <see cref="OwinWebSocketAdapter"/>.
         /// </summary>
         /// <param name="websocketContext">WebSocket context options.</param>
         /// <param name="subProtocol">The WebSocket subprotocol.</param>

@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Owin
         private IDictionary<string, object> _options;
 
         /// <summary>
-        /// Create an <see cref="OwinWebSocketAcceptContext"/>.
+        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
         /// </summary>
         public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
         {
         }
 
         /// <summary>
-        /// Create an <see cref="OwinWebSocketAcceptContext"/>.
+        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
         /// </summary>
         /// <param name="options">OWIN WebSocket options.</param>
         public OwinWebSocketAcceptContext(IDictionary<string, object> options)

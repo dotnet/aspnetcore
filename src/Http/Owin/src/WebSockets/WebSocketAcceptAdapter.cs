@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Owin
         private IDictionary<string, object> _options;
 
         /// <summary>
-        /// Create a <see cref="WebSocketAcceptAdapter"/> for an OWIN environment.
+        /// Initializes a new instance of <see cref="WebSocketAcceptAdapter"/> for an OWIN environment.
         /// </summary>
         /// <param name="env">The OWIN environment.</param>
         /// <param name="accept">WebSocket accept delegate.</param>

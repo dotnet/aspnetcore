@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="featureInterface">The feature interface type.</param>
             /// <param name="getter">Value getter delegate.</param>
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="featureInterface">The feature interface type.</param>
             /// <param name="getter">Value getter delegate.</param>
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="featureInterface">The feature interface type.</param>
             /// <param name="getter">Value getter delegate.</param>
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="featureInterface">The feature interface type.</param>
             /// <param name="getter">Value getter delegate.</param>
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Owin
         public class FeatureMap<TFeature> : FeatureMap
         {
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="getter">Value getter.</param>
             public FeatureMap(Func<TFeature, object> getter)
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="getter">Value getter delegate.</param>
             /// <param name="defaultFactory">Default value factory delegate.</param>
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="getter">Value getter delegate.</param>
             /// <param name="setter">Value setter delegate.</param>
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="getter">Value getter delegate.</param>
             /// <param name="defaultFactory">Default value factory delegate.</param>
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Owin
             }
 
             /// <summary>
-            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
             /// </summary>
             /// <param name="getter">Value getter delegate.</param>
             /// <param name="defaultFactory">Default value factory delegate.</param>
