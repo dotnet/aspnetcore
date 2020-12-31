@@ -91,10 +91,10 @@ export class WebSocketTransport implements ITransport {
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
                 } else {
-                    error = new Error("There was an error with the transport.");
+                    error = "There was an error with the transport";
                 }
 
-                reject(error);
+                this.logger.log(LogLevel.Information, `(WebSockets transport) ${error}.`);
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
@@ -120,7 +120,10 @@ export class WebSocketTransport implements ITransport {
                     if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                         error = event.error;
                     } else {
-                        error = new Error("There was an error with the transport.");
+                        error = "WebSocket failed to connect. The connection could not be found on the server,"
+                        + " either the endpoint may not be a SignalR endpoint,"
+                        + " the connection ID is not present on the server, or there is a proxy blocking WebSockets."
+                        + " If you have multiple servers check that sticky sessions are enabled.";
                     }
 
                     reject(error);

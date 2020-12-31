@@ -59,7 +59,7 @@ describe("WebSocketTransport", () => {
 
             expect(connectComplete).toBe(false);
 
-            TestWebSocket.webSocket.onerror(new TestEvent());
+            TestWebSocket.webSocket.onclose(new TestEvent());
 
             await expect(connectPromise)
                 .rejects

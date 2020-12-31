@@ -94,7 +94,9 @@ export class ServerSentEventsTransport implements ITransport {
                     if (opened) {
                         this._close(error);
                     } else {
-                        reject(error);
+                        reject(new Error("EventSource failed to connect. The connection could not be found on the server,"
+                        + " either the connection ID is not present on the server, or a proxy is refusing/buffering the connection."
+                        + " If you have multiple servers check that sticky sessions are enabled."));
                     }
                 };
 

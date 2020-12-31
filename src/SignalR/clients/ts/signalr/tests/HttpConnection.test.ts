@@ -400,7 +400,7 @@ describe("HttpConnection", () => {
                 }
             },
             "Failed to complete negotiation with the server: Error: We don't care how this turns out",
-            "Failed to start the connection: Error: We don't care how this turns out");
+            "Failed to start the connection: Error: Failed to complete negotiation with the server: Error: We don't care how this turns out");
         });
     });
 
@@ -1122,7 +1122,8 @@ describe("HttpConnection", () => {
 
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.closeSet;
-            TestWebSocket.webSocket.onerror(new TestEvent());
+            TestWebSocket.webSocket.onclose(new TestEvent());
+            // TestWebSocket.webSocket.onerror(new TestEvent());
 
             try {
                 await startPromise;
