@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorWebSite
 {
-    public class StartupDataAnnotations
+    public class StartupDataAnnotationsProvider
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -20,7 +20,11 @@ namespace RazorWebSite
             services
                 .AddMvc()
                 .AddViewLocalization()
-                .AddDataAnnotationsLocalization()
+                .AddDataAnnotationsLocalization((options) =>
+                {
+                    options.DataAnnotationLocalizerProvider =
+                        (modelType, stringLocalizerFactory) => stringLocalizerFactory.Create(typeof(SingleType));
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 

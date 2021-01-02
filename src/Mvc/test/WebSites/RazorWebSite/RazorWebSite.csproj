@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RazorWebSite.Localization\RazorWebSite.Localization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
 
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

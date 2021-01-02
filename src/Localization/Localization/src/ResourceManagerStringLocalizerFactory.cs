@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.Localization
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
         private readonly string _resourcesRelativePath;
+        private readonly Assembly? _resourceAssembly;
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
@@ -47,11 +48,13 @@ namespace Microsoft.Extensions.Localization
             }
 
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
+            _resourceAssembly = localizationOptions.Value.ResourcesAssembly ?? null;
             _loggerFactory = loggerFactory;
 
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
-                _resourcesRelativePath = _resourcesRelativePath.Replace(Path.AltDirectorySeparatorChar, '.')
+                _resourcesRelativePath = _resourcesRelativePath
+                    .Replace(Path.AltDirectorySeparatorChar, '.')
                     .Replace(Path.DirectorySeparatorChar, '.') + ".";
             }
         }
@@ -105,6 +108,21 @@ namespace Microsoft.Extensions.Localization
             }
             else
             {
+                var typeNamespace = typeInfo.Assembly.GetName().Name;
+
+                if (typeNamespace != null && !typeNamespace.StartsWith(baseNamespace, StringComparison.Ordinal))
+                {
+                    var resourceFullName = baseNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, typeNamespace + ".");
+                    var resourceType = Type.GetType($"{resourceFullName}, {baseNamespace}", false);
+
+                    if (resourceType != null)
+                    {
+                        return resourceFullName;
+                    }
+
+                    return typeNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, typeNamespace + ".");
+                }
+
                 // This expectation is defined by dotnet's automatic resource storage.
                 // We have to conform to "{RootNamespace}.{ResourceLocation}.{FullTypeName - RootNamespace}".
                 return baseNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, baseNamespace + ".");
@@ -154,10 +172,18 @@ namespace Microsoft.Extensions.Localization
             }
 
             var typeInfo = resourceSource.GetTypeInfo();
-
             var baseName = GetResourcePrefix(typeInfo);
-
             var assembly = typeInfo.Assembly;
+            var assemblyName = assembly.GetName().Name;
+            var rootNamespace = GetRootNamespace(typeInfo.Assembly);
+
+            if (rootNamespace != null && rootNamespace != assemblyName &&
+                baseName.StartsWith(rootNamespace, StringComparison.Ordinal))
+            {
+                var resourceAssembly = Assembly.Load(rootNamespace);
+
+                return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(resourceAssembly, baseName));
+            }
 
             return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(assembly, baseName));
         }
@@ -180,13 +206,33 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(location));
             }
 
-            return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
-            {
-                var assemblyName = new AssemblyName(location);
-                var assembly = Assembly.Load(assemblyName);
-                baseName = GetResourcePrefix(baseName, location);
+            var assemblyName = new AssemblyName(location);
+            var assembly = Assembly.Load(assemblyName);
+            var rootNamespace = GetRootNamespace(assembly);
+            var resourceLocation = GetResourcePath(assembly);
 
-                return CreateResourceManagerStringLocalizer(assembly, baseName);
+            var resourceFullName = rootNamespace + "." + resourceLocation + TrimPrefix(baseName, location + ".");
+
+            if (rootNamespace != null && !rootNamespace.Equals(location, StringComparison.Ordinal))
+            {
+                var resourceType = Type.GetType($"{resourceFullName}, {rootNamespace}", false);
+
+                if (resourceType != null)
+                {
+                    assembly = Assembly.Load(rootNamespace);
+                }
+                else
+                {
+                    resourceFullName = location + "." + resourceLocation + TrimPrefix(baseName, location + ".");
+                    rootNamespace = location;
+                }
+            }
+
+            var key = $"B={resourceFullName},L={rootNamespace}";
+
+            return _localizerCache.GetOrAdd(key, _ =>
+            {
+                return CreateResourceManagerStringLocalizer(assembly, resourceFullName);
             });
         }
 
@@ -247,7 +293,7 @@ namespace Microsoft.Extensions.Localization
                 return rootNamespaceAttribute.RootNamespace;
             }
 
-            return assembly.GetName().Name;
+            return GetResourceAssembly(assembly);
         }
 
         private string GetResourcePath(Assembly assembly)
@@ -258,11 +304,22 @@ namespace Microsoft.Extensions.Localization
             var resourceLocation = resourceLocationAttribute == null
                 ? _resourcesRelativePath
                 : resourceLocationAttribute.ResourceLocation + ".";
+
             resourceLocation = resourceLocation
                 .Replace(Path.DirectorySeparatorChar, '.')
                 .Replace(Path.AltDirectorySeparatorChar, '.');
 
             return resourceLocation;
+        }
+
+        private string? GetResourceAssembly(Assembly assembly)
+        {
+            if (_resourceAssembly != null)
+            {
+                return _resourceAssembly.GetName().Name;
+            }
+
+            return assembly.GetName().Name;
         }
 
         private static string? TrimPrefix(string name, string prefix)

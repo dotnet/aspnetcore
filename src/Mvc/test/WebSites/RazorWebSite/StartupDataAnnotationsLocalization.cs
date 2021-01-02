@@ -7,15 +7,20 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using RazorWebSite.Localization;
 
 namespace RazorWebSite
 {
-    public class StartupDataAnnotations
+    public class StartupDataAnnotationsLocalization
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            services.AddLocalization((options) =>
+            {
+                options.ResourcesPath = "Resources";
+                options.ResourcesAssembly = typeof(SingleTypeLocalization).Assembly;
+            });
 
             services
                 .AddMvc()

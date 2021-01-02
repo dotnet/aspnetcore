@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Models\ContactLocalizationModel.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ContactLocalizationModel.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\SingleTypeLocalization.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SingleTypeLocalization.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Views\ViewEngine\ViewWithLocalizationAssembly.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ViewWithLocalizationAssembly.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Models\ContactLocalizationModel.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ContactLocalizationModel.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\SingleTypeLocalization.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SingleTypeLocalization.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Views\ViewEngine\ViewWithLocalizationAssembly.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ViewWithLocalizationAssembly.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

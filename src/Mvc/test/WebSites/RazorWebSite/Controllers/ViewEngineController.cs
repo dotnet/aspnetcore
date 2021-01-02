@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using RazorWebSite.Models;
 
 namespace RazorWebSite.Controllers
 {
@@ -76,6 +77,38 @@ namespace RazorWebSite.Controllers
         public IActionResult ViewWithComponentThatHasViewStart()
         {
             return View();
+        }
+
+        public IActionResult ViewWithLocalization()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ViewWithLocalization(ContactModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ViewWithLocalizationAssembly()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ViewWithLocalizationAssembly(ContactLocalizationModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            return View(model);
         }
 
         public IActionResult SearchInPages() => View();
