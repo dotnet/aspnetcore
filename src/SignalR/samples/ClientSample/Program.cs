@@ -14,7 +14,7 @@ namespace ClientSample
         {
             if (args.Contains("--debug"))
             {
-                Console.WriteLine($"Ready for debugger to attach. Process ID: {Process.GetCurrentProcess().Id}");
+                Console.WriteLine($"Ready for debugger to attach. Process ID: {Environment.ProcessId}");
                 Console.Write("Press ENTER to Continue");
                 Console.ReadLine();
                 args = args.Except(new[] { "--debug" }).ToArray();

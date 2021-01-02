@@ -154,7 +154,7 @@ namespace SampleApp
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseStartup<Startup>();
 
-                    if (string.Equals(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
+                    if (string.Equals(Environment.ProcessId.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
                     {
                         // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
 #pragma warning disable CS0618

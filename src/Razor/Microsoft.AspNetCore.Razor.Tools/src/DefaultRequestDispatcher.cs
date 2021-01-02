@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     if (request.IsShutdownRequest())
                     {
                         // Reply with the PID of this process so that the client can wait for it to exit.
-                        var response = new ShutdownServerResponse(Process.GetCurrentProcess().Id);
+                        var response = new ShutdownServerResponse(Environment.ProcessId);
                         await response.WriteAsync(connection.Stream, cancellationToken);
 
                         // We can safely disconnect the client, then when this connection gets cleaned up by the event loop

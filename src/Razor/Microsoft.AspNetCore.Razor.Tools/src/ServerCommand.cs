@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             // <pipename>
 
             const int DefaultBufferSize = 4096;
-            var processId = Process.GetCurrentProcess().Id;
+            var processId = Environment.ProcessId;
             var fileName = $"rzc-{processId}";
 
             // Make sure the directory exists.

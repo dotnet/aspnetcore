@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
         private AgentWorker CreateWorker()
         {
             var fileName = _executable;
-            var arguments = $"worker --agent {Process.GetCurrentProcess().Id}";
+            var arguments = $"worker --agent {Environment.ProcessId}";
             if (_workerWaitForDebugger)
             {
                 arguments += " --wait-for-debugger";

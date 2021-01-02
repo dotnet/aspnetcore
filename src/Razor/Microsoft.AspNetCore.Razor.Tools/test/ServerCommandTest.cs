@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public void WritePidFile_WorksAsExpected()
         {
             // Arrange
-            var expectedProcessId = Process.GetCurrentProcess().Id;
+            var expectedProcessId = Environment.ProcessId;
             var expectedRzcPath = typeof(ServerCommand).Assembly.Location;
             var expectedFileName = $"rzc-{expectedProcessId}";
             var directoryPath = Path.Combine(Path.GetTempPath(), "RazorTest", Guid.NewGuid().ToString());

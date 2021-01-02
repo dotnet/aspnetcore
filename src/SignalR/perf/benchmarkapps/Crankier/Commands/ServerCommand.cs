@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 
         private static int Execute(LogLevel logLevel, string azureSignalRConnectionString)
         {
-            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+            Console.WriteLine($"Process ID: {Environment.ProcessId}");
 
             var configBuilder = new ConfigurationBuilder()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_");
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
                 configBuilder.AddInMemoryCollection(new [] { new KeyValuePair<string, string>("Azure:SignalR:ConnectionString", azureSignalRConnectionString) });
                 Console.WriteLine("Using Azure SignalR");
             }
-            
+
             var config = configBuilder.Build();
 
             var host = new WebHostBuilder()

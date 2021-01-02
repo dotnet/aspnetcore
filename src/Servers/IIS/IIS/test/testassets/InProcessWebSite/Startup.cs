@@ -1040,7 +1040,7 @@ namespace TestSite
 
         private async Task ProcessId(HttpContext context)
         {
-            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+            await context.Response.WriteAsync(Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
         }
 
         public async Task ANCM_HTTPS_PORT(HttpContext context)

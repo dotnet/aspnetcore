@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
 
             // Job name is optional but helps with diagnostics.  Job name must be unique if non-null.
-            _jobHandle = CreateJobObject(IntPtr.Zero, name: $"ProcessTracker{Process.GetCurrentProcess().Id}");
+            _jobHandle = CreateJobObject(IntPtr.Zero, name: $"ProcessTracker{Environment.ProcessId}");
 
             var extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
             {

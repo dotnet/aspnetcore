@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             if (args.Any(a => string.Equals(a, "--debug", StringComparison.Ordinal)))
             {
                 args = args.Where(a => !string.Equals(a, "--debug", StringComparison.Ordinal)).ToArray();
-                Console.WriteLine($"Waiting for debugger. Process ID: {Process.GetCurrentProcess().Id}");
+                Console.WriteLine($"Waiting for debugger. Process ID: {Environment.ProcessId}");
                 Console.WriteLine("Press ENTER to continue");
                 Console.ReadLine();
             }

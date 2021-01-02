@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 .Returns(() =>
                 {
                     // Use a thread instead of Task to guarantee this code runs on a different
-                    // thread and we can validate the mutex state. 
+                    // thread and we can validate the mutex state.
                     var source = new TaskCompletionSource<bool>();
                     var thread = new Thread(_ =>
                     {
@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
                         }
                     });
 
-                    // Synchronously wait here.  Don't returned a Task value because we need to 
-                    // ensure the above check completes before the server hits a timeout and 
-                    // releases the mutex. 
+                    // Synchronously wait here.  Don't returned a Task value because we need to
+                    // ensure the above check completes before the server hits a timeout and
+                    // releases the mutex.
                     thread.Start();
                     source.Task.Wait();
 
@@ -108,13 +108,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var serverProcessId = await ServerUtilities.SendShutdown(serverData.PipeName);
 
                 // Assert
-                Assert.Equal(Process.GetCurrentProcess().Id, serverProcessId);
+                Assert.Equal(Environment.ProcessId, serverProcessId);
                 await serverData.Verify(connections: 1, completed: 1);
             }
         }
 
         /// <summary>
-        /// A shutdown request should not abort an existing compilation.  It should be allowed to run to 
+        /// A shutdown request should not abort an existing compilation.  It should be allowed to run to
         /// completion.
         /// </summary>
         [Fact]
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     // The compilation is now in progress, send the shutdown.
                     var processId = await ServerUtilities.SendShutdown(serverData.PipeName);
-                    Assert.Equal(Process.GetCurrentProcess().Id, processId);
+                    Assert.Equal(Environment.ProcessId, processId);
                     Assert.False(compileTask.IsCompleted);
                 }
 
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
 
                 // Act
-                // Wait until all of the connections are being processed by the server. 
+                // Wait until all of the connections are being processed by the server.
                 await completionSource.Task;
 
                 // Now cancel

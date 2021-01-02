@@ -13,7 +13,7 @@ namespace KitchenSink
         {
             Console.WriteLine("Started");
             // Process ID is insufficient because PID's may be reused.
-            Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
+            Console.WriteLine($"Process identifier = {Environment.ProcessId}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
             Console.WriteLine("DOTNET_WATCH = " + Environment.GetEnvironmentVariable("DOTNET_WATCH"));
             Console.WriteLine("DOTNET_WATCH_ITERATION = " + Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION"));
 
