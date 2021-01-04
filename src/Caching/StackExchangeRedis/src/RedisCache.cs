@@ -12,7 +12,8 @@ using StackExchange.Redis;
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
     /// <summary>
-    /// Distributed cache implementation using Microsoft StackExchange Redis.
+    /// Distributed cache implementation using Redis.
+    /// <para>Uses <c>StackExchange.Redis</c> as the Redis client.</para>
     /// </summary>
     public class RedisCache : IDistributedCache, IDisposable
     {
