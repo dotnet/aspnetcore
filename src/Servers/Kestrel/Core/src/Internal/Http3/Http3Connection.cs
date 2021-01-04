@@ -347,7 +347,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         // This throws when connection is shut down.
                         // TODO how to make it so we can distinguish between Abort from server vs client?
-                        // Different exception catches?
                         await SendGoAway(_highestOpenedStreamId);
                     }
 
