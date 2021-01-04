@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
         public string ManifestPath { get; set; }
 
         /// <summary>
+        /// Whether to build a publish manifest which uses relative 
+        /// </summary>
+        public bool ForPublish { get; set; }
+
+        /// <summary>
         /// A list of content root paths and assembly names to generate the
         /// manifest from.
         /// </summary>
@@ -40,6 +45,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
             {
                 var contentRoot = project.GetMetadata("ContentRoot");
                 var assemblyName = project.GetMetadata("Identity");
+                // Use the app relative path when publishing
+                if (ForPublish)
+                {
+                    contentRoot = Path.Combine("~", Path.GetFileName(contentRoot));
+                }
                 output[assemblyName] = contentRoot;
             }
 

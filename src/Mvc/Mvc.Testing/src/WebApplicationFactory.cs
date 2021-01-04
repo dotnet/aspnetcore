@@ -192,7 +192,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
             try
             {
-                return data[key];
+                // For publish scenarios, ~ should be expanded to the base directory
+                return data[key].Replace("~", AppContext.BaseDirectory);
             } catch
             {
                 throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");

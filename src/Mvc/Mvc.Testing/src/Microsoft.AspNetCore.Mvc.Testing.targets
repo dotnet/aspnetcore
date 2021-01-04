@@ -46,6 +46,24 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+    <ItemGroup>
+      <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
+        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
+      </_ManifestProjects>
+    </ItemGroup>
+
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)PublishAppManifest.json" Projects="@(_ManifestProjects)" ForPublish="true" />
+
+    <ItemGroup>
+      <ContentWithTargetPath Include="$(IntermediateOutputPath)PublishAppManifest.json"
+        TargetPath="MvcTestingAppManifest.json"
+        CopyToOutputDirectory="Never"
+        CopyToPublishDirectory="PreserveNewest"/>
+      <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
     <ItemGroup>
       <DepsFilePaths
