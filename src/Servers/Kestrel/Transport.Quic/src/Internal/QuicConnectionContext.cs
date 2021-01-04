@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 {
     internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
     {
-        private QuicConnection _connection;
+        private readonly QuicConnection _connection;
         private readonly QuicTransportContext _context;
         private readonly IQuicTrace _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
@@ -90,12 +90,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                 context.Start();
                 return context;
             }
-            catch (QuicException ex)
+            catch (QuicConnectionAbortedException ex)
             {
-                // Accept on graceful close throws an aborted exception rather than returning null.
-
+                // Shutdown initiated by peer, abortive.
                 // TODO cancel CTS here?
                 _log.LogDebug($"Accept loop ended with exception: {ex.Message}");
+            }
+            catch (QuicOperationAbortedException)
+            {
+                // Shutdown initiated by us
+
+                // Allow for graceful closure.
             }
 
             return null;

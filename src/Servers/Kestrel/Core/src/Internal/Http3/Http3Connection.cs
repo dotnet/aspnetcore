@@ -237,6 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Don't create Encoder and Decoder as they aren't used now.
             Exception? error = null;
 
+            // TODO should we await the control stream task?
             var controlTask = CreateControlStream(application);
 
             _timeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
