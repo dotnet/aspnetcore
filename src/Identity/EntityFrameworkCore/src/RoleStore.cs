@@ -73,14 +73,68 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
     /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
-    public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
-        IQueryableRoleStore<TRole>,
-        IRoleClaimStore<TRole>
+    public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> : RoleStore<TRole, TContext, TKey, TKey, TUserRole, TRoleClaim>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
         where TUserRole : IdentityUserRole<TKey>, new()
         where TRoleClaim : IdentityRoleClaim<TKey>, new()
+    {
+        /// <summary>
+        /// Constructs a new instance of <see cref="RoleStore{TRole, TContext, TKey, TUserRole, TRoleClaim}"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+
+        /// <summary>
+        /// Converts the provided <paramref name="id"/> to a strongly typed key object.
+        /// </summary>
+        /// <param name="id">The id to convert.</param>
+        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
+        public virtual TKey ConvertIdFromString(string id)
+        {
+            if (id == null)
+            {
+                return default(TKey);
+            }
+            return (TKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
+        }
+
+        /// <summary>
+        /// Converts the provided <paramref name="id"/> to its string representation.
+        /// </summary>
+        /// <param name="id">The id to convert.</param>
+        /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
+        public virtual string ConvertIdToString(TKey id)
+        {
+            if (id.Equals(default(TKey)))
+            {
+                return null;
+            }
+            return id.ToString();
+        }
+    }
+
+
+    /// <summary>
+    /// Creates a new instance of a persistence store for roles.
+    /// </summary>
+    /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKeyUser">The type of the primary key for a user.</typeparam>
+    /// <typeparam name="TKeyRole">The type of the primary key for a user.</typeparam>
+    /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
+    /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
+    public class RoleStore<TRole, TContext, TKeyUser, TKeyRole, TUserRole, TRoleClaim> :
+        IQueryableRoleStore<TRole>,
+        IRoleClaimStore<TRole>
+        where TRole : IdentityRole<TKeyRole>
+        where TKeyUser : IEquatable<TKeyUser>
+        where TKeyRole : IEquatable<TKeyRole>
+        where TContext : DbContext
+        where TUserRole : IdentityUserRole<TKeyUser, TKeyRole>, new()
+        where TRoleClaim : IdentityRoleClaim<TKeyRole>, new()
     {
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole, TContext, TKey, TUserRole, TRoleClaim}"/>.
@@ -216,7 +270,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(role));
             }
-            return Task.FromResult(ConvertIdToString(role.Id));
+            return Task.FromResult(ConvertRoleIdToString(role.Id));
         }
 
         /// <summary>
@@ -259,14 +313,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// Converts the provided <paramref name="id"/> to a strongly typed key object.
         /// </summary>
         /// <param name="id">The id to convert.</param>
-        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
-        public virtual TKey ConvertIdFromString(string id)
+        /// <returns>An instance of <typeparamref name="TKeyUser"/> representing the provided <paramref name="id"/>.</returns>
+        public virtual TKeyUser ConvertUserIdFromString(string id)
         {
             if (id == null)
             {
-                return default(TKey);
+                return default(TKeyUser);
             }
-            return (TKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
+            return (TKeyUser)TypeDescriptor.GetConverter(typeof(TKeyUser)).ConvertFromInvariantString(id);
         }
 
         /// <summary>
@@ -274,9 +328,37 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         /// <param name="id">The id to convert.</param>
         /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
-        public virtual string ConvertIdToString(TKey id)
+        public virtual string ConvertUserIdToString(TKeyUser id)
         {
-            if (id.Equals(default(TKey)))
+            if (id == null || id.Equals(default(TKeyUser)))
+            {
+                return null;
+            }
+            return id.ToString();
+        }
+
+        /// <summary>
+        /// Converts the provided <paramref name="id"/> to a strongly typed key object.
+        /// </summary>
+        /// <param name="id">The id to convert.</param>
+        /// <returns>An instance of <typeparamref name="TKeyRole"/> representing the provided <paramref name="id"/>.</returns>
+        public virtual TKeyRole ConvertRoleIdFromString(string id)
+        {
+            if (id == null)
+            {
+                return default(TKeyRole);
+            }
+            return (TKeyRole)TypeDescriptor.GetConverter(typeof(TKeyRole)).ConvertFromInvariantString(id);
+        }
+
+        /// <summary>
+        /// Converts the provided <paramref name="id"/> to its string representation.
+        /// </summary>
+        /// <param name="id">The id to convert.</param>
+        /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
+        public virtual string ConvertRoleIdToString(TKeyRole id)
+        {
+            if (id == null || id.Equals(default(TKeyRole)))
             {
                 return null;
             }
@@ -293,7 +375,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var roleId = ConvertIdFromString(id);
+            var roleId = ConvertRoleIdFromString(id);
             return Roles.FirstOrDefaultAsync(u => u.Id.Equals(roleId), cancellationToken);
         }
 

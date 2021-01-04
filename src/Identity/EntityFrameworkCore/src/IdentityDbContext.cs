@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
     /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
     /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
-    public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>
+    public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityDbContext<TUser, TRole, TKey, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
@@ -84,6 +84,41 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         where TUserLogin : IdentityUserLogin<TKey>
         where TRoleClaim : IdentityRoleClaim<TKey>
         where TUserToken : IdentityUserToken<TKey>
+    {
+        /// <summary>
+        /// Initializes a new instance of the class.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        public IdentityDbContext(DbContextOptions options) : base(options) { }
+
+        /// <summary>
+        /// Initializes a new instance of the class.
+        /// </summary>
+        protected IdentityDbContext() { }
+    }
+
+    /// <summary>
+    /// Base class for the Entity Framework database context used for identity.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user objects.</typeparam>
+    /// <typeparam name="TRole">The type of role objects.</typeparam>
+    /// <typeparam name="TKeyUser">The type of the primary key for users.</typeparam>
+    /// <typeparam name="TKeyRole">The type of the primary key for roles.</typeparam>
+    /// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
+    /// <typeparam name="TUserRole">The type of the user role object.</typeparam>
+    /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
+    /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
+    /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
+    public abstract class IdentityDbContext<TUser, TRole, TKeyUser, TKeyRole, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityUserContext<TUser, TKeyUser, TUserClaim, TUserLogin, TUserToken>
+        where TUser : IdentityUser<TKeyUser>
+        where TRole : IdentityRole<TKeyRole>
+        where TKeyUser : IEquatable<TKeyUser>
+        where TKeyRole : IEquatable<TKeyRole>
+        where TUserClaim : IdentityUserClaim<TKeyUser>
+        where TUserRole : IdentityUserRole<TKeyUser, TKeyRole>
+        where TUserLogin : IdentityUserLogin<TKeyUser>
+        where TRoleClaim : IdentityRoleClaim<TKeyRole>
+        where TUserToken : IdentityUserToken<TKeyUser>
     {
         /// <summary>
         /// Initializes a new instance of the class.

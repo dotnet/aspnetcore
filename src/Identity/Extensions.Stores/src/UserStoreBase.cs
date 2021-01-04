@@ -1085,7 +1085,7 @@ namespace Microsoft.AspNetCore.Identity
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
     /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
     public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
-        UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
+        UserStoreBase<TUser, TRole, TKey, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>,
         IUserRoleStore<TUser>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey> 
@@ -1095,6 +1095,38 @@ namespace Microsoft.AspNetCore.Identity
         where TUserLogin : IdentityUserLogin<TKey>, new()
         where TUserToken : IdentityUserToken<TKey>, new()
         where TRoleClaim : IdentityRoleClaim<TKey>, new()
+    {
+        /// <summary>
+        /// Creates a new instance.
+        /// </summary>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
+        public UserStoreBase(IdentityErrorDescriber describer) : base(describer) { }
+    }
+
+    /// <summary>
+    /// Represents a new instance of a persistence store for the specified user and role types.
+    /// </summary>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TKeyUser">The type of the primary key for a user.</typeparam>
+    /// <typeparam name="TKeyRole">The type of the primary key for a role.</typeparam>
+    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
+    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+    /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+    /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
+    public abstract class UserStoreBase<TUser, TRole, TKeyUser, TKeyRole, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+        UserStoreBase<TUser, TKeyUser, TUserClaim, TUserLogin, TUserToken>,
+        IUserRoleStore<TUser>
+        where TUser : IdentityUser<TKeyUser>
+        where TRole : IdentityRole<TKeyRole>
+        where TKeyUser : IEquatable<TKeyUser>
+        where TKeyRole : IEquatable<TKeyRole>
+        where TUserClaim : IdentityUserClaim<TKeyUser>, new()
+        where TUserRole : IdentityUserRole<TKeyUser, TKeyRole>, new()
+        where TUserLogin : IdentityUserLogin<TKeyUser>, new()
+        where TUserToken : IdentityUserToken<TKeyUser>, new()
+        where TRoleClaim : IdentityRoleClaim<TKeyRole>, new()
     {
         /// <summary>
         /// Creates a new instance.
@@ -1179,6 +1211,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="roleId">The role's id.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The user role if it exists.</returns>
-        protected abstract Task<TUserRole> FindUserRoleAsync(TKey userId, TKey roleId, CancellationToken cancellationToken);
+        protected abstract Task<TUserRole> FindUserRoleAsync(TKeyUser userId, TKeyRole roleId, CancellationToken cancellationToken);
     }
 }
