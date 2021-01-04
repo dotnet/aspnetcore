@@ -200,7 +200,7 @@ function InstallDotNet {
   if [[ "$#" -ge "5" ]] && [[ "$5" != 'false' ]]; then
     skipNonVersionedFilesArg="--skip-non-versioned-files"
   fi
-  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
+  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg --verbose || {
     local exit_code=$?
     echo "Failed to install dotnet SDK from public location (exit code '$exit_code')."
 
@@ -223,7 +223,7 @@ function InstallDotNet {
     fi
 
     if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
-      bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey || {
+      bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey --verbose || {
         local exit_code=$?
         Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from custom location '$runtimeSourceFeed' (exit code '$exit_code')."
         ExitWithExitCode $exit_code
