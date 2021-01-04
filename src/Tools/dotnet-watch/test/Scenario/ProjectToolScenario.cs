@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 if (!process.HasExited)
                 {
                     _logger?.WriteLine($"Killing process {process.Id}");
-                    process.KillTree();
+                    process.Kill(entireProcessTree: true);
                 }
 
                 throw new TimeoutException($"Process timed out after {timeout.TotalSeconds} seconds");

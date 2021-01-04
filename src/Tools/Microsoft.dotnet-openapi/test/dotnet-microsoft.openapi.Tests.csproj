@@ -13,7 +13,6 @@
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
     <Content Include="TestContent\*" LinkBase="TestContent\" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(SharedSourceRoot)Process\ProcessExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

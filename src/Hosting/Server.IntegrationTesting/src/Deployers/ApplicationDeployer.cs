@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 Logger.LogInformation("Attempting to cancel process {0}", hostProcess.Id);
 
                 // Shutdown the host process.
-                hostProcess.KillTree();
+                hostProcess.Kill(entireProcessTree: true);
                 if (!hostProcess.HasExited)
                 {
                     Logger.LogWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);

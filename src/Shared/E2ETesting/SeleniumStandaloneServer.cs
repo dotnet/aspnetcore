@@ -227,12 +227,12 @@ Captured output lines:
         {
             try
             {
-                if (process?.HasExited == false)
+                if (process is not null && process.HasExited == false)
                 {
                     try
                     {
-                        process?.KillTree(TimeSpan.FromSeconds(10));
-                        process?.Dispose();
+                        process.Kill(entireProcessTree: true);
+                        process.Dispose();
                     }
                     catch
                     {

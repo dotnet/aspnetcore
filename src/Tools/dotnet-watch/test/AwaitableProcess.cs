@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 if (_started && !_process.HasExited)
                 {
-                    _process.KillTree();
+                    _process.Kill(entireProcessTree: true);
                 }
 
                 _process.CancelErrorRead();

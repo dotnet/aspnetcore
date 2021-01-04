@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (_process != null && !_process.HasExited)
             {
-                _process.KillTree();
+                _process.Kill(entireProcessTree: true);
             }
 
             if (_process != null)
