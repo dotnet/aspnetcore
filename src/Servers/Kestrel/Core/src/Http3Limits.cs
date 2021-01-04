@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the size of the header compression table, in octets, the QPACK decoder on the server can use.
         /// <para>
-        /// Value must be greater than 0, defaults to 0
+        /// Value must be greater than 0, defaults to 0.
         /// </para>
         /// </summary>
         // TODO: Make public https://github.com/dotnet/aspnetcore/issues/26666
