@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Owin
         >;
 
     /// <summary>
-    /// A strongly-typed wrapper of an OWIN environment.
+    /// A loosely-typed OWIN environment wrapper over an <see cref="HttpContext"/>.
     /// </summary>
     public class OwinEnvironment : IDictionary<string, object>
     {
