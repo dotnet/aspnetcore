@@ -35,7 +35,15 @@
       </_ManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutput)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
+
+    <ItemGroup>
+      <ContentWithTargetPath Include="$(IntermediateOutputPath)MvcTestingAppManifest.json"
+        TargetPath="MvcTestingAppManifest.json"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="Never"/>
+      <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
@@ -45,7 +53,7 @@
       </_ManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)" ForPublish="true" />
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)" ForPublish="true" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
