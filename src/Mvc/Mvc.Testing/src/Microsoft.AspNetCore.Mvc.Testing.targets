@@ -35,7 +35,7 @@
       </_ManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutput)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
 
     <ItemGroup>
       <ContentWithTargetPath Include="$(IntermediateOutputPath)MvcTestingAppManifest.json"
