@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("MvcWithComponents")]
         public Task Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks(MSBuildProcessKind.Dotnet);
 
-
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("MvcWithComponents")]
