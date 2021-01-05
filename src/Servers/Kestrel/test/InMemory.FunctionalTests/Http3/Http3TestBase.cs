@@ -396,6 +396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
             {
                 var http3WithPayload = await ReceiveFrameAsync();
+                _decodedHeaders.Clear();
                 _qpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
                 return _decodedHeaders;
             }

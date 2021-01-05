@@ -641,5 +641,124 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3StreamErrorLessDataThanLength);
         }
+
+        [Fact]
+        public async Task ResponseTrailers_WithoutData_Sent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                trailersFeature.Trailers.Add("Trailer1", "Value1");
+                trailersFeature.Trailers.Add("Trailer2", "Value2");
+
+                return Task.CompletedTask;
+            });
+
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal(2, responseTrailers.Count);
+            Assert.Equal("Value1", responseTrailers["Trailer1"]);
+            Assert.Equal("Value2", responseTrailers["Trailer2"]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithData_Sent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                trailersFeature.Trailers.Add("Trailer1", "Value1");
+                trailersFeature.Trailers.Add("Trailer2", "Value2");
+
+                await context.Response.WriteAsync("Hello world");
+            });
+
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            var responseTrailers = await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal(2, responseTrailers.Count);
+            Assert.Equal("Value1", responseTrailers["Trailer1"]);
+            Assert.Equal("Value2", responseTrailers["Trailer2"]);
+        }
+
+        [Fact]
+        public async Task ResponseTrailers_WithExeption500_Cleared()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                trailersFeature.Trailers.Add("Trailer1", "Value1");
+                trailersFeature.Trailers.Add("Trailer2", "Value2");
+
+                throw new NotImplementedException("Test Exception");
+            });
+
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task ResetStream_ReturnStreamError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+                var resetFeature = context.Features.Get<IHttpResetFeature>();
+
+                resetFeature.Reset((int)Http3ErrorCode.RequestCancelled);
+
+                return Task.CompletedTask;
+            });
+
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.RequestCancelled, CoreStrings.FormatHttp3StreamResetByApplication(Http3ErrorCode.RequestCancelled));
+        }
     }
 }

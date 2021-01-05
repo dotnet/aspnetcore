@@ -173,6 +173,8 @@ namespace System.Net.Http.QPack
             {
                 Decode(segment.Span, handler);
             }
+
+            _state = State.RequiredInsertCount;
         }
 
         public void Decode(ReadOnlySpan<byte> headerBlock, IHttpHeadersHandler handler)
