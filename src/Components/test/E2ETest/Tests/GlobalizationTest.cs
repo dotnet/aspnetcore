@@ -91,7 +91,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27155")]
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
@@ -211,7 +210,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.Clear();
+            extraInput.SendKeys(new DateTime(2000, 1, 2).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
@@ -223,7 +223,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.Clear();
+            extraInput.SendKeys(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
