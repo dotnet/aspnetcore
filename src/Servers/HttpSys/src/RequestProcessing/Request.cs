@@ -312,6 +312,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 Protocol |= SslProtocols.Tls12;
             }
+            if ((Protocol & SslProtocols.Tls13) != 0)
+            {
+                Protocol |= SslProtocols.Tls13;
+            }
 
             CipherAlgorithm = handshake.CipherType;
             CipherStrength = (int)handshake.CipherStrength;
