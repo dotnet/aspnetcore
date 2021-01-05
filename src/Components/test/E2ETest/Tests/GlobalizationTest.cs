@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             extraInput.Clear();
-            extraInput.SendText(new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.SendKeys(new DateTime(2000, 1, 2).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
