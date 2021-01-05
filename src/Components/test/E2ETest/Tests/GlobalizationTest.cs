@@ -56,7 +56,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             display = Browser.Exists(By.Id("input_type_text_datetime_value"));
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
 
-            input.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
+            input.Clear();
+            input.SendKeys(new DateTime(2000, 1, 2).ToString(cultureInfo));
             input.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
 
@@ -65,7 +66,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             display = Browser.Exists(By.Id("input_type_text_datetimeoffset_value"));
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
 
-            input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            input.Clear();
+            input.SendKeys(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             input.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
         }
@@ -126,7 +128,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.Clear();
+            extraInput.SendText(new DateTime(2000, 1, 2).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
@@ -138,7 +141,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.Clear();
+            extraInput.SendKeys(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
