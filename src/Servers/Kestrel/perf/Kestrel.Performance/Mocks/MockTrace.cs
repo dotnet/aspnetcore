@@ -63,6 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http3ConnectionError(string connectionId, Http3ConnectionException ex) { }
         public void Http3ConnectionClosing(string connectionId) { }
         public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId) { }
-        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
+        public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
     }
 }

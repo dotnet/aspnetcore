@@ -263,10 +263,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
         }
 
-        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _trace1.Http3StreamResetAbort(traceIdentifier, error, abortReason);
-            _trace2.Http3StreamResetAbort(traceIdentifier, error, abortReason);
+            _trace1.Http3StreamAbort(traceIdentifier, error, abortReason);
+            _trace2.Http3StreamAbort(traceIdentifier, error, abortReason);
         }
     }
 }

@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, string, Exception?> _applicationAbortedConnection =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
-        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetError =
+        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetAbort =
             LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, "Http2StreamResetAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
 
@@ -134,9 +134,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
-        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamResetError =
-            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamResetAbort"),
-                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". A Reset is being sent to the stream.");
+        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamAbort =
+            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
+                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.");
 
         protected readonly ILogger _logger;
 
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http2StreamResetError(_logger, traceIdentifier, error, abortReason);
+            _http2StreamResetAbort(_logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
@@ -336,9 +336,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _http3ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
         }
 
-        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http3StreamResetError(_logger, traceIdentifier, error, abortReason);
+            _http3StreamAbort(_logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
