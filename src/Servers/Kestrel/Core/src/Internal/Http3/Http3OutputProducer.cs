@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
-            _stream.Abort(abortReason, Http3ErrorCode.InternalError);
+            _stream.ResetAndAbort(abortReason, Http3ErrorCode.InternalError);
         }
 
         void IHttpOutputAborter.OnInputOrOutputCompleted()
         {
-            _stream.Abort(new ConnectionAbortedException($"{nameof(Http3OutputProducer)}.{nameof(ProcessDataWrites)} has completed."), Http3ErrorCode.InternalError);
+            _stream.ResetAndAbort(new ConnectionAbortedException($"{nameof(Http3OutputProducer)}.{nameof(ProcessDataWrites)} has completed."), Http3ErrorCode.InternalError);
         }
 
         public void Advance(int bytes)

@@ -101,8 +101,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             AbortCore(ex, Http3ErrorCode.InternalError);
         }
 
-        public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
+        public void ResetAndAbort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
+            // TODO - Keep track of whether stream has been aborted before?
+
+            Log.Http3StreamResetAbort(TraceIdentifier, errorCode, ex);
+
             AbortCore(ex, errorCode);
         }
 
@@ -126,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             // We can no longer change the response, send a Reset instead.
             var abortReason = new ConnectionAbortedException(CoreStrings.Http3StreamErrorAfterHeaders);
-            Abort(abortReason, Http3ErrorCode.InternalError);
+            ResetAndAbort(abortReason, Http3ErrorCode.InternalError);
         }
 
         public void OnHeadersComplete(bool endStream)
@@ -310,19 +314,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Debug.Assert(Limits.MinRequestBodyDataRate != null);
 
             Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
         }
 
         public void HandleRequestHeadersTimeout()
         {
             Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
         }
 
         public void OnInputOrOutputCompleted()
         {
             TryClose();
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
         }
 
         protected override void OnRequestProcessingEnded()
@@ -383,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
-                Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
+                ResetAndAbort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
             }
             catch (Exception ex)
             {
@@ -409,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch
                 {
-                    Abort(streamError, Http3ErrorCode.ProtocolError);
+                    ResetAndAbort(streamError, Http3ErrorCode.ProtocolError);
                     throw;
                 }
                 finally
@@ -532,9 +536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void ApplicationAbort(ConnectionAbortedException abortReason, Http3ErrorCode error)
         {
-            Log.Http3StreamResetAbort(TraceIdentifier, error, abortReason);
-
-            AbortCore(abortReason, error);
+            ResetAndAbort(abortReason, error);
         }
 
         protected override string CreateRequestId()
@@ -572,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
                 {
-                    Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                     return false;
                 }
 
@@ -592,7 +594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
-                Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -620,7 +622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var requestLineLength = _methodText!.Length + Scheme!.Length + hostText.Length + path.Length;
             if (requestLineLength > ServerOptions.Limits.MaxRequestLineSize)
             {
-                Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -641,7 +643,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (Method == Http.HttpMethod.None)
             {
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -649,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (HttpCharacters.IndexOfInvalidTokenChar(_methodText) >= 0)
                 {
-                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                     return false;
                 }
             }
@@ -689,7 +691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             if (host.Count > 1 || !HttpUtilities.IsHostHeaderValid(hostText))
             {
                 // RST replaces 400
-                Abort(new ConnectionAbortedException(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(hostText)), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(hostText)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -701,7 +703,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Must start with a leading slash
             if (pathSegment.Length == 0 || pathSegment[0] != '/')
             {
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -740,7 +742,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (InvalidOperationException)
             {
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
         }
