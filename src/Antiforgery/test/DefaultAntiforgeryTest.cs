@@ -348,13 +348,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
-        [Theory]
-        [InlineData("Cache-Control", "no-cache, no-store, must-revalidate, private")]
-        [InlineData("Pragma", "no-cache")]
-        public void GetAndStoreTokens_ExistingNoCachingHeaders_NotOverriden(string headerName, string headerValue)
+        private string GetAndStoreTokens_CacheHeadersArrangeAct(TestSink testSink, string headerName, string headerValue)
         {
             // Arrange
-            var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
                 .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
@@ -367,14 +363,81 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 useOldCookie: true,
                 isOldCookieValid: true,
                 antiforgeryFeature: antiforgeryFeature);
+            context.HttpContext.RequestServices = services.BuildServiceProvider();
             var antiforgery = GetAntiforgery(context);
             context.HttpContext.Response.Headers[headerName] = headerValue;
 
             // Act
-            var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
+            antiforgery.GetAndStoreTokens(context.HttpContext);
+            return context.HttpContext.Response.Headers[headerName].ToString();
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, no-store")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE")]
+        [InlineData("Cache-Control", "no-cache, no-store, private")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE, PRIVATE")]        
+        public void GetAndStoreTokens_DoesNotOverwriteCacheControlHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
 
             // Assert
-            Assert.Equal(headerValue, context.HttpContext.Response.Headers[headerName]);
+            Assert.Equal(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, private")]
+        [InlineData("Cache-Control", "NO-CACHE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoStoreIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-store, private")]
+        [InlineData("Cache-Control", "NO-STORE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoCacheIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Pragma", "no-cache")]
+        [InlineData("Pragma", "NO-CACHE")]
+        public void GetAndStoreTokens_DoesNotOverwritePragmaHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.Equal(headerValue, actualHeaderValue);
 
             var hasWarningMessage = testSink.Writes
                 .Where(wc => wc.LogLevel == LogLevel.Warning)
