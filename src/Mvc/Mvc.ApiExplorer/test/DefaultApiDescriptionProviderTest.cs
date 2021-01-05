@@ -1426,7 +1426,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_ComplexDTOFomQueryOnNestedProperties()
+        public void GetApiDescription_ParameterDescription_ComplexDTOFromQueryOnNestedProperties()
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptDataQueryOptions));
