@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         // ARGV[4] = data - byte[]
         // this order should not change LUA script depends on it
         private const string SetScript = (@"
-                redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
+                redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
                 end
