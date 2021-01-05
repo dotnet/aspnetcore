@@ -5,7 +5,9 @@ using System;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -240,6 +242,24 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.InvalidResponseHeaderRemoved();
             _trace2.InvalidResponseHeaderRemoved();
+        }
+
+        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        {
+            _trace1.Http3ConnectionError(connectionId, ex);
+            _trace2.Http3ConnectionError(connectionId, ex);
+        }
+
+        public void Http3ConnectionClosing(string connectionId)
+        {
+            _trace1.Http3ConnectionClosing(connectionId);
+            _trace2.Http3ConnectionClosing(connectionId);
+        }
+
+        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        {
+            _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+            _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
         }
     }
 }
