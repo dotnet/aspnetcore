@@ -1,9 +1,3 @@
----
-name: Servicing PR
-labels: Servicing-consider
----
-
-
 ## Description
 
 
