@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27552")]
         public async Task UseSpa_KillsRds_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         private async Task Assert_NpmKilled_WhenAppIsStopped(IHostApplicationLifetime applicationLifetime, NpmStartedDiagnosticListener listener)
         {
             // Give node a moment to start up
-            await Task.WhenAny(listener.NpmStarted, Task.Delay(TimeSpan.FromSeconds(30)));
+            await Task.WhenAny(listener.NpmStarted, Task.Delay(TimeSpan.FromSeconds(45)));
 
             Process npmProcess = null;
             var npmExitEvent = new ManualResetEventSlim();
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             AssertNoErrors();
             Assert.True(listener.NpmStarted.IsCompleted, "npm wasn't launched");
 
-            npmExitEvent.Wait(TimeSpan.FromSeconds(30));
+            npmExitEvent.Wait(TimeSpan.FromSeconds(45));
             Assert.True(npmProcess.HasExited, "npm wasn't killed");
         }
 
