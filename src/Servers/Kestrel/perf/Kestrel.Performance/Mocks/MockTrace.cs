@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -62,5 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http3ConnectionError(string connectionId, Http3ConnectionException ex) { }
         public void Http3ConnectionClosing(string connectionId) { }
         public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId) { }
+        public void Http3StreamResetAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
     }
 }
