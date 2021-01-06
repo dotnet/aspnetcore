@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.");
 
         private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameSending =
-            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameReceived"),
+            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.");
 
         protected readonly ILogger _logger;
