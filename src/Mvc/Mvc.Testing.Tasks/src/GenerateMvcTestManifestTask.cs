@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
                 // Use the app relative path when publishing
                 if (ForPublish)
                 {
-                    contentRoot = Path.Combine("~", Path.GetFileName(contentRoot));
+                    contentRoot = "~";
                 }
                 output[assemblyName] = contentRoot;
             }
