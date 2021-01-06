@@ -11,6 +11,7 @@ using System.Net.Http.QPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -27,8 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
+        private readonly string _connectionId;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
+        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _outgoingFrame;
         private readonly TimingPipeFlusher _flusher;
 
@@ -42,14 +45,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log, IStreamIdFeature streamIdFeature)
         {
             _outputWriter = output;
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
+            _connectionId = connectionId;
             _memoryPool = memoryPool;
             _log = log;
+            _streamIdFeature = streamIdFeature;
             _outgoingFrame = new Http3RawFrame();
             _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
             _headerEncodingBuffer = new byte[_maxFrameSize];
@@ -228,6 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void WriteHeaderUnsynchronized()
         {
+            _log.Http3FrameSending(_connectionId, _streamIdFeature.StreamId, _outgoingFrame);
             var headerLength = WriteHeader(_outgoingFrame, _outputWriter);
 
             // We assume the payload will be written prior to the next flush.

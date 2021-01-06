@@ -268,5 +268,17 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.Http3StreamAbort(traceIdentifier, error, abortReason);
             _trace2.Http3StreamAbort(traceIdentifier, error, abortReason);
         }
+
+        public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _trace1.Http3FrameReceived(connectionId, streamId, frame);
+            _trace1.Http3FrameReceived(connectionId, streamId, frame);
+        }
+
+        public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _trace1.Http3FrameSending(connectionId, streamId, frame);
+            _trace2.Http3FrameSending(connectionId, streamId, frame);
+        }
     }
 }

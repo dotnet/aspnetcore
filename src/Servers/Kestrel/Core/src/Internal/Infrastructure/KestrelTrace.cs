@@ -138,6 +138,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.");
 
+        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameReceived =
+            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.");
+
+        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameSending =
+            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -339,6 +347,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
             _http3StreamAbort(_logger, traceIdentifier, error, abortReason);
+        }
+
+        public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _http3FrameReceived(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+        }
+
+        public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _http3FrameSending(_logger, connectionId, frame.Type, streamId, frame.Length, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

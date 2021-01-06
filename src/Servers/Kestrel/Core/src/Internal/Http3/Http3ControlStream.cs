@@ -9,8 +9,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
@@ -24,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3Connection _http3Connection;
         private readonly Http3StreamContext _context;
         private readonly Http3PeerSettings _serverPeerSettings;
+        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;
@@ -36,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _http3Connection = http3Connection;
             _context = context;
             _serverPeerSettings = context.ServerSettings;
+            _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -44,7 +48,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
                 context.MemoryPool,
-                context.ServiceContext.Log);
+                context.ServiceContext.Log,
+                _streamIdFeature);
         }
 
         private void OnStreamClosed()
@@ -53,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         public PipeReader Input => _context.Transport.Input;
-
+        public IKestrelTrace Log => _context.ServiceContext.Log;
 
         public void Abort(ConnectionAbortedException ex)
         {
@@ -193,9 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (!readableBuffer.IsEmpty)
                     {
                         // need to kick off httpprotocol process request async here.
-                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
                         {
-                            //Log.Http2FrameReceived(ConnectionId, _incomingFrame);
+                            Log.Http3FrameReceived(_context.ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
+
                             consumed = examined = framePayload.End;
                             await ProcessHttp3ControlStream(framePayload);
                         }

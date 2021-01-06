@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = 16 * 1024)
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync()
             {
                 var frame = new Http3FrameWithPayload();
 
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     {
                         Assert.True(buffer.Length > 0);
 
-                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
+                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, out var framePayload))
                         {
                             consumed = examined = framePayload.End;
                             frame.Payload = framePayload.ToArray();
