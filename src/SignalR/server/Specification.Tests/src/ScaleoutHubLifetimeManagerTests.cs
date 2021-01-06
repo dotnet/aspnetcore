@@ -36,9 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates two connections and assigns each to one of the
-        /// lifetime managers, then tests that HubLifetimeManager.SendAllAsync from one lifetime manager will
-        /// cause both clients to receive the message.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -65,9 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates two connections and assigns each to one of the
-        /// lifetime managers, then disconnects one client and tests that HubLifetimeManager.SendAllAsync from one lifetime manager will
-        /// only write to the connected client.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -97,9 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates one connection and assigns it to one of the
-        /// lifetime managers, then tests that HubLifetimeManager.SendConnectionAsync from the other lifetime manager
-        /// writes to the client.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -123,9 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates one connection and assigns it to one of the
-        /// lifetime managers, then adds the connection to a group and tests that HubLifetimeManager.SendGroupAsync
-        /// from the other lifetime manager writes to the client.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -151,9 +143,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and one lifetime manager, creates one connection and assigns it to the
-        /// lifetime manager, then adds the connection to a group and disconnects the connection. Then tests
-        /// that HubLifetimeManager.SendGroupAsync does not write to the connection.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -179,8 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and one lifetime manager, creates one connection and assigns it to the
-        /// lifetime manager, then removes the connection from a group that it isn't in.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -200,8 +189,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates one connection and assigns it one of the
-        /// lifetime managers, then removes the connection from a group with the other lifetime manager.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -222,9 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates one connection and assigns it to one of the
-        /// lifetime managers, then adds the connection to a group via the other lifetime manager
-        /// and tests that HubLifetimeManager.SendGroupAsync writes to the client.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -249,9 +235,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and a lifetime manager, creates a connection and assigns it to the
-        /// lifetime manager, then adds the connection to the same group twice
-        /// and tests that HubLifetimeManager.SendGroupAsync writes to the client once.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -277,9 +261,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates a connection and assigns it to one of the
-        /// lifetime managers, then adds the connection to the same group with both lifetime managers
-        /// and tests that HubLifetimeManager.SendGroupAsync writes to the client once.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -306,9 +288,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates a connection and assigns it to one of the
-        /// lifetime managers, then adds the connection to a group and removes the connection from the group with
-        /// the other lifetime manager and tests that HubLifetimeManager.SendGroupAsync does not write to the client.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -339,9 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates a connection and assigns it to both of the
-        /// lifetime managers, then sends to the connection from one of the lifetime managers to test that the message
-        /// does not go over the backplane for local connections.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -367,9 +345,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and two lifetime managers, creates a connection and assigns it to one of the
-        /// lifetime managers, then forces a connection error when sending to the client from the other lifetime manager
-        /// and checks that an exception isn't thrown.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -393,9 +369,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and a lifetime manager, creates two connections and assigns them to the
-        /// lifetime manager, then forces an error when sending to one of the clients and verifies that the second client
-        /// still receives the message.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -430,9 +404,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and a lifetime manager, creates a few connections with user identifiers
-        /// and assigns them to the lifetime manager, then tests that HubLifetimeManager.SendUserAsync only sends
-        /// to the connections with the specified user identifier.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
@@ -460,10 +432,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
         }
 
         /// <summary>
-        /// Creates a backplane and a lifetime manager, creates a few connections with user identifiers
-        /// and assigns them to the lifetime manager, then disconnects one of the connections and tests that
-        /// HubLifetimeManager.SendUserAsync still sends to the connections with the specified user identifier
-        /// minus the disconnected connection.
+        /// Specification test for SignalR HubLifetimeManager.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
