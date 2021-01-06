@@ -154,7 +154,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
     <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
-    <FrameworkListOutputPath>$(SharedFxLayoutTargetDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
