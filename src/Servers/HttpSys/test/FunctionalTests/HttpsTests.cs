@@ -128,29 +128,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task Https_SetsITlsHandshakeFeature()
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                try
-                {
-                    var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
-                    Assert.NotNull(tlsFeature);
-                    Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
-                    Assert.True(Enum.IsDefined(typeof(SslProtocols), tlsFeature.Protocol), "Defined"); // Mapping is required, make sure it's current
-                    Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
-                    Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
-                    Assert.True(tlsFeature.HashAlgorithm > HashAlgorithmType.None, "HashAlgorithm");
-                    Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
-                    Assert.True(tlsFeature.KeyExchangeAlgorithm > ExchangeAlgorithmType.None, "KeyExchangeAlgorithm");
-                    Assert.True(tlsFeature.KeyExchangeStrength > 0, "KeyExchangeStrength");
-                }
-                catch (Exception ex)
-                {
-                    await httpContext.Response.WriteAsync(ex.ToString());
-                }
+                var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
+                Assert.NotNull(tlsFeature);
+                return httpContext.Response.WriteAsJsonAsync(tlsFeature);
             }))
             {
                 string response = await SendRequestAsync(address);
-                Assert.Equal(string.Empty, response);
+                var result = System.Text.Json.JsonDocument.Parse(response).RootElement;
+
+                var protocol = (SslProtocols)result.GetProperty("protocol").GetInt32();
+                Assert.True(protocol > SslProtocols.None, "Protocol: " + protocol);
+                Assert.True(Enum.IsDefined(typeof(SslProtocols), protocol), "Defined: " + protocol); // Mapping is required, make sure it's current
+
+                var cipherAlgorithm = (CipherAlgorithmType)result.GetProperty("cipherAlgorithm").GetInt32();
+                Assert.True(cipherAlgorithm > CipherAlgorithmType.Null, "Cipher: " + cipherAlgorithm);
+
+                var cipherStrength = result.GetProperty("cipherStrength").GetInt32();
+                Assert.True(cipherStrength > 0, "CipherStrength: " + cipherStrength);
+
+                var hashAlgorithm = (HashAlgorithmType)result.GetProperty("hashAlgorithm").GetInt32();
+                Assert.True(hashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm: " + hashAlgorithm);
+
+                var hashStrength = result.GetProperty("hashStrength").GetInt32();
+                Assert.True(hashStrength >= 0, "HashStrength: " + hashStrength); // May be 0 for some algorithms
+
+                var keyExchangeAlgorithm = (ExchangeAlgorithmType)result.GetProperty("keyExchangeAlgorithm").GetInt32();
+                Assert.True(keyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm: " + keyExchangeAlgorithm);
+
+                var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
+                Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
             }
         }
 
