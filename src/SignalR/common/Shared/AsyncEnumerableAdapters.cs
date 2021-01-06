@@ -67,16 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     var registration = cancellationToken.Register((ctsState) =>
                     {
-                        try
-                        {
-                            ((CancellationTokenSource)ctsState).Cancel();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                            // cancellationToken is passed in by the user, and if they call cancel after the
-                            // enumerator is finished but before the enumerator is disposed
-                            // then _cts might already be disposed by our wrapping code
-                        }
+                        ((CancellationTokenSource)ctsState).Cancel();
                     }, _cts);
 
                     return new CancelableEnumerator<TResult>(enumerator, registration);
