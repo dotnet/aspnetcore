@@ -22,6 +22,16 @@ namespace Microsoft.AspNetCore.DataProtection
     public class DataProtectionProviderTests
     {
         [Fact]
+        public void VerifyX509StoreWorks()
+        {
+            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            {
+                store.Open(OpenFlags.ReadWrite);
+                Assert.True(true);
+            }
+        }
+        
+        [Fact]
         public void System_UsesProvidedDirectory()
         {
             WithUniqueTempDirectory(directory =>
