@@ -10,7 +10,7 @@
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
     <!-- https://github.com/dotnet/aspnetcore/issues/10423 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <BuildHelixPayload>true</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
