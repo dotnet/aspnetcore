@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Moq;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task WriteSettings_NoSettingsWrittenWithProtocolDefault()
         {
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null);
+            var frameWriter = CreateFrameWriter(pipe);
 
             var settings = new Http3PeerSettings();
             await frameWriter.WriteSettingsAsync(settings.GetNonProtocolDefaults());
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task WriteSettings_OneSettingsWrittenWithKestrelDefaults()
         {
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null);
+            var frameWriter = CreateFrameWriter(pipe);
 
             var limits = new Http3Limits();
             var settings = new Http3PeerSettings();
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task WriteSettings_TwoSettingsWritten()
         {
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null);
+            var frameWriter = CreateFrameWriter(pipe);
 
             var settings = new Http3PeerSettings();
             settings.HeaderTableSize = 1234;
@@ -83,6 +84,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var payload = await pipe.Reader.ReadForLengthAsync(10);
 
             Assert.Equal(new byte[] { 0x04, 0x08, 0x01, 0x44, 0xD2, 0x06, 0x80, 0x08, 0xAA, 0x52 }, payload.ToArray());
+        }
+
+        private Http3FrameWriter CreateFrameWriter(Pipe pipe)
+        {
+            return new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>());
         }
     }
 }

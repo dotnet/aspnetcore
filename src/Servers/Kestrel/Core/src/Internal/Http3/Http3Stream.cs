@@ -72,7 +72,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
                 context.MemoryPool,
-                context.ServiceContext.Log);
+                context.ServiceContext.Log,
+                _streamIdFeature);
 
             // ResponseHeaders aren't set, kind of ugly that we need to reset.
             Reset();
@@ -359,8 +360,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         if (!readableBuffer.IsEmpty)
                         {
-                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
                             {
+                                Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
+
                                 consumed = examined = framePayload.End;
                                 await ProcessHttp3Stream(application, framePayload);
                             }

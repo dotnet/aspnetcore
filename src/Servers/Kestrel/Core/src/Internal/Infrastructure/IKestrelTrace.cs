@@ -88,5 +88,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId);
 
         void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason);
+
+        void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame);
+
+        void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame);
     }
 }
