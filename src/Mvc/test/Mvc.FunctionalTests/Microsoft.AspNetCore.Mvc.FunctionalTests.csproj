@@ -77,6 +77,7 @@
       <_PublishFiles Include="$(ArtifactsBinDir)MvcSandbox\$(Configuration)\$(DefaultNetCoreTargetFramework)\MvcSandbox.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)RazorBuildWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorBuildWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)RazorPagesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorPagesWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)RazorWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)SecurityWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\SecurityWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)SimpleWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\SimpleWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)TagHelpersWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\TagHelpersWebSite.deps.json" />
