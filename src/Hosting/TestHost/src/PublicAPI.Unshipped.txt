@@ -2,6 +2,8 @@
 Microsoft.AspNetCore.TestHost.TestServerOptions
 Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.get -> bool
 Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.set -> void
+Microsoft.AspNetCore.TestHost.TestServerOptions.BaseAddress.get -> System.Uri!
+Microsoft.AspNetCore.TestHost.TestServerOptions.BaseAddress.set -> void
 Microsoft.AspNetCore.TestHost.TestServerOptions.PreserveExecutionContext.get -> bool
 Microsoft.AspNetCore.TestHost.TestServerOptions.PreserveExecutionContext.set -> void
 Microsoft.AspNetCore.TestHost.TestServerOptions.TestServerOptions() -> void

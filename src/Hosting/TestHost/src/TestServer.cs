@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.TestHost
             var options = optionsAccessor?.Value ?? throw new ArgumentNullException(nameof(optionsAccessor));
             AllowSynchronousIO = options.AllowSynchronousIO;
             PreserveExecutionContext = options.PreserveExecutionContext;
-        }
+            BaseAddress = options.BaseAddress;
+    }
 
         /// <summary>
         /// For use with IHostBuilder.

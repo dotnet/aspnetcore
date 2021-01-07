@@ -352,6 +352,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task TestServerConstructorSetOptions()
         {
             // Arrange
+            var baseAddress = new Uri("http://localhost/test");
             using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
@@ -360,6 +361,7 @@ namespace Microsoft.AspNetCore.TestHost
                         { 
                             options.AllowSynchronousIO = true;
                             options.PreserveExecutionContext = true;
+                            options.BaseAddress = baseAddress;
                         })
                         .Configure(_ => { });
                 })
@@ -372,6 +374,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Assert
             Assert.True(testServer.AllowSynchronousIO);
             Assert.True(testServer.PreserveExecutionContext);
+            Assert.Equal(baseAddress, testServer.BaseAddress);
         }
 
         public class TestService { public string Message { get; set; } }
