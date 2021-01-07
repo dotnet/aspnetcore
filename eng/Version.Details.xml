@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="dotnet-ef" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-alpha.1.21057.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-alpha.1.21057.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>5b79f739f31dd81bf0073c20147e76bd42936849</Sha>
+      <Sha>5419213cc2502a4ed7271879f482cbc36080be1b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0-alpha.1.21055.17">
       <Uri>https://github.com/dotnet/runtime</Uri>
