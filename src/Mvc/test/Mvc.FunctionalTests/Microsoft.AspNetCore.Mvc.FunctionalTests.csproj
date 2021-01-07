@@ -70,11 +70,11 @@
       <_PublishFiles Include="$(ArtifactsBinDir)CorsWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\CorsWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)ErrorPageMiddlewareWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\ErrorPageMiddlewareWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)FilesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\FilesWebSite.deps.json" />
-
       <_PublishFiles Include="$(ArtifactsBinDir)FormatterWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\FormatterWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)GenericHostWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\GenericHostWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)HtmlGenerationWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\HtmlGenerationWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)Mvc.RoutingWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Mvc.RoutingWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)MvcSandbox\$(Configuration)\$(DefaultNetCoreTargetFramework)\MvcSandbox.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)RazorBuildWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorBuildWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)RazorPagesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorPagesWebSite.deps.json" />
       <_PublishFiles Include="$(ArtifactsBinDir)SecurityWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\SecurityWebSite.deps.json" />
