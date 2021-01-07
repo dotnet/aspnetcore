@@ -545,6 +545,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
+      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
       <_PackageFiles Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
