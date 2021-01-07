@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
-    public class Http2Tests
+    public class Http2Tests : LoggedTest
     {
         private const string VersionForReset = "10.0.19529";
 
@@ -607,6 +607,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
         [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_BeforeResponse_Resets()
         {
