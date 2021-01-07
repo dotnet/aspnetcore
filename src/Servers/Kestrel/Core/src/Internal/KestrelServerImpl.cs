@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Options.ConfigurationLoader?.Load();
 
                 await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!).ConfigureAwait(false);
-                _configChangedRegistration = reloadToken?.RegisterChangeCallback(Rebind, this);
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
             }
             finally
             {
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        private static void Rebind(object state)
+        private static void TriggerRebind(object state)
         {
             var server = (KestrelServerImpl)state;
             _ = server.RebindAsync();
@@ -292,6 +292,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private async Task RebindAsync()
         {
+            // Prevents from interfering with shutdown or other rebinds.
+            // All exceptions are caught and logged at the critical level.
             await _bindSemaphore.WaitAsync();
 
             IChangeToken? reloadToken = null;
@@ -356,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             finally
             {
-                _configChangedRegistration = reloadToken?.RegisterChangeCallback(Rebind, this);
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
                 _bindSemaphore.Release();
             }
         }
