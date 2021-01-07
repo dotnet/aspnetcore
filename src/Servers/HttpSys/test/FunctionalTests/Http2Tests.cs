@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 Assert.Null(feature);
                 return httpContext.Response.WriteAsync("Hello World");
-            });
+            }, LoggerFactory);
 
             var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     appResult.SetException(ex);
                 }
                 return Task.FromResult(0);
-            });
+            }, LoggerFactory);
 
             await new HostBuilder()
                 .UseHttp2Cat(address, async h2Connection =>
