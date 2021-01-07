@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Internal
@@ -27,10 +26,10 @@ namespace Microsoft.AspNetCore.Internal
         private readonly object _pipeCaptureLock = new object();
         private readonly object _testOutputLock = new object();
         private BlockingCollection<string> _stdoutLines;
-        private readonly TaskCompletionSource<int> _exited;
         private readonly CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         private readonly CancellationTokenSource _processTimeoutCts;
         private bool _disposed = false;
+        private Task _exited;
 
         public ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {
@@ -38,32 +37,18 @@ namespace Microsoft.AspNetCore.Internal
             _stdoutCapture = new StringBuilder();
             _stderrCapture = new StringBuilder();
             _stdoutLines = new BlockingCollection<string>();
-            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _process = proc;
             proc.EnableRaisingEvents = true;
             proc.OutputDataReceived += OnOutputData;
             proc.ErrorDataReceived += OnErrorData;
-            proc.Exited += OnProcessExited;
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
-
-            // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
-            // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
-            // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
-            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
-
             _processTimeoutCts = new CancellationTokenSource(timeout);
-            _processTimeoutCts.Token.Register(() =>
-            {
-                _exited.TrySetException(new TimeoutException(timeoutExMessage));
-            });
         }
 
         public Process Process => _process;
-
-        public Task Exited => _exited.Task;
 
         public bool HasExited => _process.HasExited;
 
@@ -85,6 +70,30 @@ namespace Microsoft.AspNetCore.Internal
                 lock (_pipeCaptureLock)
                 {
                     return _stdoutCapture.ToString();
+                }
+            }
+        }
+
+        public Task Exited
+        {
+            get
+            {
+                _exited ??= WaitForExitAsync();
+                return _exited;
+
+                async Task WaitForExitAsync()
+                {
+                    await _process.WaitForExitAsync(_processTimeoutCts.Token);
+                    lock (_testOutputLock)
+                    {
+                        if (!_disposed)
+                        {
+                            _output.WriteLine("Process exited.");
+                        }
+                    }
+
+                    _stdoutLines.CompleteAdding();
+                    _stdoutLines = null;
                 }
             }
         }
@@ -174,21 +183,6 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        private void OnProcessExited(object sender, EventArgs e)
-        {
-            lock (_testOutputLock)
-            {
-                if (!_disposed)
-                {
-                    _output.WriteLine("Process exited.");
-                }
-            }
-            _process.WaitForExit();
-            _stdoutLines.CompleteAdding();
-            _stdoutLines = null;
-            _exited.TrySetResult(_process.ExitCode);
-        }
-
         internal string GetFormattedOutput()
         {
             if (!_process.HasExited)
@@ -201,7 +195,7 @@ namespace Microsoft.AspNetCore.Internal
 
         public void WaitForExit(bool assertSuccess, TimeSpan? timeSpan = null)
         {
-            if(!timeSpan.HasValue)
+            if (!timeSpan.HasValue)
             {
                 timeSpan = TimeSpan.FromSeconds(600);
             }
@@ -250,7 +244,6 @@ namespace Microsoft.AspNetCore.Internal
 
                 _process.ErrorDataReceived -= OnErrorData;
                 _process.OutputDataReceived -= OnOutputData;
-                _process.Exited -= OnProcessExited;
                 _process.Dispose();
             }
         }

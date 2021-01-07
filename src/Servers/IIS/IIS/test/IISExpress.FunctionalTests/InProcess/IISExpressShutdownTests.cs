@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var response = await result.HttpClient.GetAsync("/HelloWorld");
             response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: true);
-            Assert.True(result.HostProcess.ExitCode == 0);
+            Assert.Equal(0, result.HostProcess.ExitCode);
         }
 
         [ConditionalFact]
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var response = await result.HttpClient.GetAsync("/HelloWorld");
             response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: false);
-            Assert.True(result.HostProcess.ExitCode == 1);
+            Assert.NotEqual(0, result.HostProcess.ExitCode);
         }
     }
 }
