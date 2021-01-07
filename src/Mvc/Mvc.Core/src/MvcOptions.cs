@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value that detemines if the inference of <see cref="RequiredAttribute"/> for
-        /// for properties and parameters of non-nullable reference types is suppressed. If <c>false</c>
+        /// properties and parameters of non-nullable reference types is suppressed. If <c>false</c>
         /// (the default), then all non-nullable reference types will behave as-if <c>[Required]</c> has
         /// been applied. If <c>true</c>, this behavior will be suppressed; nullable reference types and
         /// non-nullable reference types will behave the same for the purposes of validation.
