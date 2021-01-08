@@ -1216,7 +1216,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
             {
-                Assert.Equal(LogLevel.Debug, level);
+                Assert.Equal(LogLevel.Information, level);
                 Assert.Equal(2, eventId.Id);
                 Assert.Equal("UserAuthorizationFailed", eventId.Name);
                 var message = formatter(state, exception);
@@ -1249,7 +1249,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
             {
-                Assert.Equal(LogLevel.Debug, level);
+                Assert.Equal(LogLevel.Information, level);
                 Assert.Equal(2, eventId.Id);
                 Assert.Equal("UserAuthorizationFailed", eventId.Name);
                 var message = formatter(state, exception);
