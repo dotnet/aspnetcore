@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Logger.ObtainRequestToken();
 
             var response = await ExecuteRequestAsync(TwitterDefaults.RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
-            response.EnsureSuccessStatusCode();
+            response.EnsureTwitterRequestSuccess();
             var responseText = await response.Content.ReadAsStringAsync();
 
             var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
-                response.EnsureSuccessStatusCode(); // throw
+                response.EnsureTwitterRequestSuccess(); // throw
             }
 
             var responseText = await response.Content.ReadAsStringAsync();
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("Email request failed with a status code of " + response.StatusCode);
-                response.EnsureSuccessStatusCode(); // throw
+                response.EnsureTwitterRequestSuccess(); // throw
             }
             var responseText = await response.Content.ReadAsStringAsync();
 
