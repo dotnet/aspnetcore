@@ -111,46 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(WebPagesDataNonHelix))]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public async Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
-        {
-            // Arrange
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-            var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home." + action + ".html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-
-            // Act
-            // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await Client.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-
-            responseContent = responseContent.Trim();
-            if (antiforgeryPath == null)
-            {
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-            }
-            else
-            {
-                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-
-                if (ResourceFile.GenerateBaselines)
-                {
-                    // Reverse usual substitution and insert a format item into the new file content.
-                    responseContent = responseContent.Replace(forgeryToken, "{0}");
-                    ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-                }
-                else
-                {
-                    expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
-                    Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-                }
-            }
-        }
+        public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
+            => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
 
         [Theory]
         [MemberData(nameof(WebPagesData))]
