@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
-    public class Http2Tests
+    public class Http2Tests : LoggedTest
     {
         private const string VersionForReset = "10.0.19529";
 
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 Assert.Null(feature);
                 return httpContext.Response.WriteAsync("Hello World");
-            });
+            }, LoggerFactory);
 
             var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -607,6 +607,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
         [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_BeforeResponse_Resets()
         {
@@ -626,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     appResult.SetException(ex);
                 }
                 return Task.FromResult(0);
-            });
+            }, LoggerFactory);
 
             await new HostBuilder()
                 .UseHttp2Cat(address, async h2Connection =>
