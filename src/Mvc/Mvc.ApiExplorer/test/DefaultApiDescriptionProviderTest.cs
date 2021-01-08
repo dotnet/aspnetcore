@@ -1398,7 +1398,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         public void GetApiDescription_ParameterDescription_ComplexDTO()
         {
             // Arrange
-            var action = CreateActionDescriptor(nameof(AcceptsOrderDTO));
+            var action = CreateActionDescriptor(nameof(AcceptsProductChangeDTO));
             var parameterDescriptor = action.Parameters.Single();
 
             // Act
@@ -1408,28 +1408,28 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
-            var quantity = Assert.Single(description.ParameterDescriptions, p => p.Name == "Quantity");
-            Assert.Same(BindingSource.ModelBinding, quantity.Source);
-            Assert.Equal(typeof(int), quantity.Type);
+            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
+            Assert.Same(BindingSource.Body, product.Source);
+            Assert.Equal(typeof(Product), product.Type);
 
-            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
-            Assert.Same(BindingSource.Query, productId.Source);
-            Assert.Equal(typeof(int), productId.Type);
+            var userId = Assert.Single(description.ParameterDescriptions, p => p.Name == "UserId");
+            Assert.Same(BindingSource.Header, userId.Source);
+            Assert.Equal(typeof(string), userId.Type);
 
-            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
-            Assert.Same(BindingSource.Query, price.Source);
-            Assert.Equal(typeof(decimal), price.Type);
+            var comments = Assert.Single(description.ParameterDescriptions, p => p.Name == "Comments");
+            Assert.Same(BindingSource.ModelBinding, comments.Source);
+            Assert.Equal(typeof(string), comments.Type);
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_ComplexDTOFromQueryOnNestedProperties()
+        public void GetApiDescription_ParameterDescription_FromQueryEmployee()
         {
             // Arrange
-            var action = CreateActionDescriptor(nameof(AcceptDataQueryOptions));
+            var action = CreateActionDescriptor(nameof(AcceptsEmployee));
             var parameterDescriptor = action.Parameters.Single();
 
             // Act
@@ -1437,19 +1437,34 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal(3, description.ParameterDescriptions.Count);
+            Assert.Equal(1, description.ParameterDescriptions.Count);
 
-            var top = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.top");
-            Assert.Same(BindingSource.Query, top.Source);
-            Assert.Equal(typeof(int), top.Type);
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
+            Assert.Same(BindingSource.Query, id.Source);
+            Assert.Equal(typeof(string), id.Type);
+        }
+        
+        [Fact]
+        public void GetApiDescription_ParameterDescription_FromQueryManager()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsManager));
+            var parameterDescriptor = action.Parameters.Single();
 
-            var skip = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.skip");
-            Assert.Same(BindingSource.Query, skip.Source);
-            Assert.Equal(typeof(int), skip.Type);
+            // Act
+            var descriptions = GetApiDescriptions(action);
 
-            var count = Assert.Single(description.ParameterDescriptions, p => p.Name == "paging.count");
-            Assert.Same(BindingSource.Query, count.Source);
-            Assert.Equal(typeof(int), count.Type);
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(2, description.ParameterDescriptions.Count);
+
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "managerid");
+            Assert.Same(BindingSource.Query, id.Source);
+            Assert.Equal(typeof(string), id.Type);
+
+            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "name");
+            Assert.Same(BindingSource.Query, product.Source);
+            Assert.Equal(typeof(string), product.Type);
         }
 
         // The method under test uses an attribute on the parameter to set a 'default' source
@@ -1498,7 +1513,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
@@ -1506,11 +1521,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Same(BindingSource.ModelBinding, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
-            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
-            Assert.Same(BindingSource.Query, productId.Source);
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
+            Assert.Same(BindingSource.ModelBinding, productId.Source);
             Assert.Equal(typeof(int), productId.Type);
 
-            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
+            var price = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
             Assert.Same(BindingSource.Query, price.Source);
             Assert.Equal(typeof(decimal), price.Type);
         }
@@ -1530,7 +1545,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
             Assert.Equal(4, description.ParameterDescriptions.Count);
 
-            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
 
@@ -1538,11 +1553,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Same(BindingSource.Query, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
-            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.Id");
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
             Assert.Same(BindingSource.Query, productId.Source);
             Assert.Equal(typeof(int), productId.Type);
 
-            var productPrice = Assert.Single(description.ParameterDescriptions, p => p.Name == "product.price");
+            var productPrice = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
             Assert.Same(BindingSource.Query, productPrice.Source);
             Assert.Equal(typeof(decimal), productPrice.Type);
         }
@@ -2215,11 +2230,17 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void AcceptsOrderDTO(OrderDTO dto)
+        private void AcceptsManager([ModelBinder] Manager dto)
         {
         }
 
-        private void AcceptDataQueryOptions([FromQuery] DataQueryOptions queryOptions) { }
+        private void AcceptsEmployee([FromQuery(Name = "employee")] Employee dto)
+        {
+        }
+
+        private void AcceptsOrderDTO(OrderDTO dto)
+        {
+        }
 
         private void AcceptsOrderDTO_Query([FromQuery] OrderDTO dto)
         {
@@ -2334,6 +2355,20 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
+        private class Employee
+        {
+            public string Name { get; set; }
+        }
+
+        private class Manager
+        {
+            [FromQuery(Name = "managerid")]
+            public string ManagerId { get; set; }
+
+            [FromQuery(Name = "name")]
+            public string Name { get; set; }
+        }
+
         private class Product
         {
             public int ProductId { get; set; }
@@ -2370,12 +2405,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
         private class OrderDTO
         {
-            [FromRoute(Name = "id")]
+            [FromRoute]
             public int Id { get; set; }
 
             public int Quantity { get; set; }
 
-            [FromQuery(Name = "product")]
             public OrderProductDTO Product { get; set; }
         }
 
@@ -2383,7 +2417,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             public int Id { get; set; }
 
-            [FromQuery(Name = "price")]
+            [FromQuery]
             public decimal Price { get; set; }
         }
 
@@ -2433,26 +2467,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
             [FromForm]
             public int Id { get; set; }
-        }
-
-        public class DataQueryOptions
-        {
-            [FromQuery(Name = "paging")]
-            public DataQueryPaging Paging { get; set; }
-        }
-
-        public sealed class DataQueryPaging
-        {
-            [FromQuery(Name = "top")]
-            [Required]
-            public int Top { get; set; }
-
-            [FromQuery(Name = "skip")]
-            [Required]
-            public int Skip { get; set; }
-
-            [FromQuery(Name = "count")]
-            public int Count { get; set; }
         }
 
         private class MultiplePropertiesContainer
