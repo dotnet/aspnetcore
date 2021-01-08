@@ -14,11 +14,6 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class TwitterExtensions
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder)
             => builder.AddTwitter(TwitterDefaults.AuthenticationScheme, _ => { });
 
