@@ -65,8 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "Environment", null },
                     // Testing InputTagHelper with File
                     { "Input", null },
-                    // Testing the LinkTagHelper
-                    { "Link", null },
                     // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
                     // Only attribute order should differ.
                     { "Order", "/HtmlGeneration_Order/Submit" },
@@ -78,6 +76,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "ProductList", "/HtmlGeneration_Product" },
                     { "ProductListUsingTagHelpers", "/HtmlGeneration_Product" },
                     { "ProductListUsingTagHelpersWithNullModel", "/HtmlGeneration_Product" },
+                };
+
+                return data;
+            }
+        }
+
+        public static TheoryData<string, string> WebPagesDataNonHelix
+        {
+            get
+            {
+                var data = new TheoryData<string, string>
+                {
+                    // Testing the LinkTagHelper
+                    { "Link", null },
                     // Testing the ScriptTagHelper
                     { "Script", null },
                 };
@@ -94,6 +106,50 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(WebPagesDataNonHelix))]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public async Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
+        {
+            // Arrange
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home." + action + ".html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await Client.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+            if (antiforgeryPath == null)
+            {
+                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+            }
+            else
+            {
+                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
+
+                if (ResourceFile.GenerateBaselines)
+                {
+                    // Reverse usual substitution and insert a format item into the new file content.
+                    responseContent = responseContent.Replace(forgeryToken, "{0}");
+                    ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+                }
+                else
+                {
+                    expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
+                    Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+                }
+            }
         }
 
         [Theory]
@@ -118,23 +174,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Trim();
             if (antiforgeryPath == null)
             {
-#if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
             }
             else
             {
                 var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-#if GENERATE_BASELINES
-                // Reverse usual substitution and insert a format item into the new file content.
-                responseContent = responseContent.Replace(forgeryToken, "{0}");
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+
+                if (ResourceFile.GenerateBaselines)
+                {
+                    // Reverse usual substitution and insert a format item into the new file content.
+                    responseContent = responseContent.Replace(forgeryToken, "{0}");
+                    ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+                }
+                else
+                {
+                    expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
+                    Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+                }
             }
         }
 
@@ -167,11 +224,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         public static TheoryData<string, string> EncodedPagesData
@@ -214,26 +268,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             responseContent = responseContent.Trim();
             if (antiforgeryPath == null)
             {
-#if GENERATE_BASELINES
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                Assert.Equal(
-                    expectedContent.Trim(),
-                    responseContent,
-                    ignoreLineEndingDifferences: true);
-#endif
+                ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
             }
             else
             {
-                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-#if GENERATE_BASELINES
-                // Reverse usual substitution and insert a format item into the new file content.
-                responseContent = responseContent.Replace(forgeryToken, "{0}");
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-                expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+                ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath));
             }
         }
 
@@ -259,11 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -293,17 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             responseContent = responseContent.Trim();
-            var forgeryToken =
-                AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer");
-
-#if GENERATE_BASELINES
-            // Reverse usual substitution and insert a format item into the new file content.
-            responseContent = responseContent.Replace(forgeryToken, "{0}");
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer"));
         }
 
         [Fact]
@@ -396,12 +421,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response2 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 1
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile1, expected1, response1.Trim());
-#else
-            Assert.Equal(expected1, response1.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected1, response2.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile1, expected1, response1.Trim());
+
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected1, response2.Trim(), ignoreLineEndingDifferences: true);
+            }
 
             // Act - 2
             // Verify content gets changed in partials when one of the vary by parameters is changed
@@ -412,12 +437,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response4 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 2
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile2, expected2, response3.Trim());
-#else
-            Assert.Equal(expected2, response3.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected2, response4.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile2, expected2, response3.Trim());
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected2, response4.Trim(), ignoreLineEndingDifferences: true);
+            }
 
             // Act - 3
             // Verify content gets changed in a View Component when the Vary-by-header parameters is changed
@@ -428,12 +452,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response6 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 3
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile3, expected3, response5.Trim());
-#else
-            Assert.Equal(expected3, response5.Trim(), ignoreLineEndingDifferences: true);
-            Assert.Equal(expected3, response6.Trim(), ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile3, expected3, response5.Trim());
+            if (!ResourceFile.GenerateBaselines)
+            {
+                Assert.Equal(expected3, response6.Trim(), ignoreLineEndingDifferences: true);
+            }
         }
 
         [Fact]
