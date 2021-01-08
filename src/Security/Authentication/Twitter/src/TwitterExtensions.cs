@@ -45,7 +45,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, _jsonSerializerOptions);
 
-                    throw TwitterException.FromTwitterErrorResponse(errorResponse);
+                    var errorMessage = "An error has occured while calling the Twitter API, error's returned:";
+
+                    errorMessage += errorResponse.Errors.Aggregate("", (currentString, nextError)
+                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" + Environment.NewLine);
+
+                    throw new InvalidOperationException(errorMessage);
                 }
                 catch
                 {
