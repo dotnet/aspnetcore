@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Logger.ObtainRequestToken();
 
             var response = await ExecuteRequestAsync(TwitterDefaults.RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
-            response.EnsureTwitterRequestSuccess();
+            await EnsureTwitterRequestSuccess(response);
             var responseText = await response.Content.ReadAsStringAsync();
 
             var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
-                response.EnsureTwitterRequestSuccess(); // throw
+                await EnsureTwitterRequestSuccess(response); // throw
             }
 
             var responseText = await response.Content.ReadAsStringAsync();
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("Email request failed with a status code of " + response.StatusCode);
-                response.EnsureTwitterRequestSuccess(); // throw
+                await EnsureTwitterRequestSuccess(response); // throw
             }
             var responseText = await response.Content.ReadAsStringAsync();
 
@@ -316,6 +316,32 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
                 var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
                 return Convert.ToBase64String(hash);
+            }
+        }
+
+        private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                // Failure, attempt to parse Twitters error message
+                var errorContentStream = await response.Content.ReadAsStreamAsync();
+
+                try
+                {
+                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, _jsonSerializerOptions);
+
+                    var errorMessage = "An error has occured while calling the Twitter API, error's returned:";
+
+                    errorMessage += errorResponse.Errors.Aggregate("", (currentString, nextError)
+                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" + Environment.NewLine);
+
+                    throw new InvalidOperationException(errorMessage);
+                }
+                catch
+                {
+                    // No valid Twitter error response, throw as normal
+                    response.EnsureSuccessStatusCode();
+                }
             }
         }
     }

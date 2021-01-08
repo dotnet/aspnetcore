@@ -33,31 +33,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
             return builder.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, displayName, configureOptions);
         }
-
-        public static async Task EnsureTwitterRequestSuccess(this HttpResponseMessage response)
-        {
-            if (!response.IsSuccessStatusCode)
-            {
-                // Failure, attempt to parse Twitters error message
-                var errorContentStream = await response.Content.ReadAsStreamAsync();
-
-                try
-                {
-                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, _jsonSerializerOptions);
-
-                    var errorMessage = "An error has occured while calling the Twitter API, error's returned:";
-
-                    errorMessage += errorResponse.Errors.Aggregate("", (currentString, nextError)
-                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" + Environment.NewLine);
-
-                    throw new InvalidOperationException(errorMessage);
-                }
-                catch
-                {
-                    // No valid Twitter error response, throw as normal
-                    response.EnsureSuccessStatusCode();
-                }
-            }
-        }
     }
 }
