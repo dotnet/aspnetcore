@@ -33,6 +33,22 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
+        /// Enables the <see cref="TestServer" /> service.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="configureOptions">Configures test server options</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseTestServer(this IWebHostBuilder builder, Action<TestServerOptions> configureOptions)
+        {
+            return builder.ConfigureServices(services =>
+            {
+                services.Configure(configureOptions);
+                services.AddSingleton<IHostLifetime, NoopHostLifetime>();
+                services.AddSingleton<IServer, TestServer>();
+            });
+        }
+
+        /// <summary>
         /// Retrieves the TestServer from the host services.
         /// </summary>
         /// <param name="host"></param>
