@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets the flag which causes content negotiation to ignore Accept header
-        /// when it contains the media type */*. <see langword="false"/> by default.
+        /// when it contains the media type <c>*/*</c>. <see langword="false"/> by default.
         /// </summary>
         public bool RespectBrowserAcceptHeader { get; set; }
 
