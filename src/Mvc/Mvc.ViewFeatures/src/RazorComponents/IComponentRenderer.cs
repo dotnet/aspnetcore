@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    internal interface IComponentRenderer
+    public interface IComponentRenderer
     {
         Task<IHtmlContent> RenderComponentAsync(
             ViewContext viewContext,
