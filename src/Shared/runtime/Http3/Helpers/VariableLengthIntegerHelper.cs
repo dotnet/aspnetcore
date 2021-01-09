@@ -31,6 +31,7 @@ namespace System.Net.Http
         private const uint FourByteLengthMask = 0x80000000;
         private const ulong EightByteLengthMask = 0xC000000000000000;
 
+        // public for internal use in aspnetcore
         public const uint OneByteLimit = (1U << 6) - 1;
         public const uint TwoByteLimit = (1U << 16) - 1;
         public const uint FourByteLimit = (1U << 30) - 1;
