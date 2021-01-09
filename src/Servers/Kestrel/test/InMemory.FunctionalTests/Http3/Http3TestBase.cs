@@ -401,6 +401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 _decodedHeaders.Clear();
                 _qpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
+                _qpackDecoder.Reset();
                 return _decodedHeaders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, _decodedHeaders.Comparer);
             }
 
