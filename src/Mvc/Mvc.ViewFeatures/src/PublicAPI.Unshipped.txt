@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ViewFeatures.IComponentRenderer
+Microsoft.AspNetCore.Mvc.ViewFeatures.IComponentRenderer.RenderComponentAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, System.Type componentType, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, System.Object parameters) -> System.Threading.Tasks.Task<IHtmlContent>
