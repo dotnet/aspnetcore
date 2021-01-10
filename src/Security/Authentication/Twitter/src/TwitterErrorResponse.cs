@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
-    public class TwitterErrorResponse
+    internal class TwitterErrorResponse
     {
         public List<TwitterError> Errors { get; set; }
     }
