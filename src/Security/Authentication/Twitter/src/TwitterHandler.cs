@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             PropertyNameCaseInsensitive = true
         };
+
         private HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -325,19 +328,29 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
         {
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode && Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/json")))
             {
                 // Failure, attempt to parse Twitters error message
                 var errorContentStream = await response.Content.ReadAsStreamAsync();
 
                 try
                 {
-                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, _jsonSerializerOptions);
+                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, this._jsonSerializerOptions);
 
-                    var errorMessage = "An error has occured while calling the Twitter API, error's returned:";
+                    var errorMessage = "An error has occurred while calling the Twitter API, error's returned:";
 
-                    errorMessage += errorResponse.Errors.Aggregate("", (currentString, nextError)
-                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" + Environment.NewLine);
+                    if (errorResponse == null)
+                    {
+                        // No error message body
+                        response.EnsureSuccessStatusCode();
+                        return;
+                    }
+
+                    errorMessage += errorResponse.Errors.Aggregate(
+                        "",
+                        (currentString, nextError)
+                            => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
+                               Environment.NewLine);
 
                     throw new InvalidOperationException(errorMessage);
                 }
@@ -346,6 +359,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                     // No valid Twitter error response, throw as normal
                     response.EnsureSuccessStatusCode();
                 }
+            }
+            else
+            {
+                // Response was not JSON, ensure HTTP Success
+                response.EnsureSuccessStatusCode();
             }
         }
     }
