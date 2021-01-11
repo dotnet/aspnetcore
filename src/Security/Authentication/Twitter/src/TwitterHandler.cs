@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -328,37 +329,70 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
         {
-            if (!response.IsSuccessStatusCode && Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/json")))
-            {
-                // Failure, attempt to parse Twitters error message
-                var errorContentStream = await response.Content.ReadAsStreamAsync();
+            var contentTypeIsJson = Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/json"));
+            var contentTypeIsXml = Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/xml"));
 
+            if (!response.IsSuccessStatusCode &&
+                (contentTypeIsJson || contentTypeIsXml))
+            {
+                TwitterErrorResponse errorResponse = null;
                 try
                 {
-                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, this.ErrorSerializerOptions);
+                    // Failure, attempt to parse Twitters error message
+                    var errorContentStream = await response.Content.ReadAsStreamAsync();
 
-                    var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
-
-                    if (errorResponse == null)
+                    if (contentTypeIsJson)
                     {
-                        // No error message body
-                        response.EnsureSuccessStatusCode();
-                        return;
+                        errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
                     }
+                    else
+                    {
+                        // Load into XML doc and manually parse to same object
+                        var xmlDocument = new XmlDocument();
+                        xmlDocument.Load(errorContentStream);
 
-                    errorMessage += errorResponse.Errors.Aggregate(
-                        "",
-                        (currentString, nextError)
-                            => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
-                               Environment.NewLine);
+                        errorResponse = new TwitterErrorResponse
+                        {
+                            Errors = new List<TwitterError>()
+                        };
 
-                    throw new InvalidOperationException(errorMessage);
+                        var errors = xmlDocument.SelectSingleNode("//errors") ?? throw new XmlException("Error parsing Twitter XML error response");
+
+                        foreach (XmlNode error in errors.ChildNodes)
+                        {
+                            var twitterError = new TwitterError
+                            {
+                                Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
+                                Message = error.InnerText
+                            };
+
+                            errorResponse.Errors.Add(twitterError);
+                        }
+                    }
                 }
                 catch
                 {
                     // No valid Twitter error response, throw as normal
                     response.EnsureSuccessStatusCode();
+                    return;
                 }
+
+                if (errorResponse == null)
+                {
+                    // No error message body
+                    response.EnsureSuccessStatusCode();
+                    return;
+                }
+
+                var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
+
+                errorMessage += errorResponse.Errors.Aggregate(
+                    "",
+                    (currentString, nextError)
+                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
+                            Environment.NewLine);
+
+                throw new InvalidOperationException(errorMessage);
             }
             else
             {
