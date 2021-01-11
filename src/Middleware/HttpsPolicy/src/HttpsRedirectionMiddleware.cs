@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             var httpsRedirectionOptions = options.Value;
             if (httpsRedirectionOptions.HttpsPort.HasValue)
             {
-                _httpsPort = new Lazy<int>(() => httpsRedirectionOptions.HttpsPort.Value);
+                _httpsPort = new Lazy<int>(httpsRedirectionOptions.HttpsPort.Value);
             }
             else
             {
@@ -149,8 +149,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                     // If we find multiple different https ports specified, throw
                     if (nullablePort.HasValue && nullablePort != bindingAddress.Port)
                     {
-                        _logger.FailedMultiplePorts();
-                        return PortNotFound;
+                        throw new InvalidOperationException(
+                            "Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
+                            "Set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.");
                     }
                     else
                     {
