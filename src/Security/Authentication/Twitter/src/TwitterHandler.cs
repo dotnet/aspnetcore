@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions ErrorSerializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
