@@ -29,7 +29,7 @@ using_wasm=false
 use_latest_dotnet=false
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2

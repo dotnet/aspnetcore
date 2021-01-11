@@ -89,16 +89,16 @@ function ResolvePath {
 function ReadGlobalVersion {
   local key=$1
 
-  local line=$(awk "/$key/ {print; exit}" "$global_json_file")
-  local pattern="\"$key\" *: *\"(.*)\""
+  if command -v jq &> /dev/null; then
+    _ReadGlobalVersion="$(jq -r ".[] | select(has(\"$key\")) | .\"$key\"" "$global_json_file")"
+  elif [[ "$(cat "$global_json_file")" =~ \"$key\"[[:space:]\:]*\"([^\"]+) ]]; then
+    _ReadGlobalVersion=${BASH_REMATCH[1]}
+  fi
 
-  if [[ ! $line =~ $pattern ]]; then
+  if [[ -z "$_ReadGlobalVersion" ]]; then
     Write-PipelineTelemetryError -category 'Build' "Error: Cannot find \"$key\" in $global_json_file"
     ExitWithExitCode 1
   fi
-
-  # return value
-  _ReadGlobalVersion=${BASH_REMATCH[1]}
 }
 
 function InitializeDotNetCli {
@@ -200,7 +200,7 @@ function InstallDotNet {
   if [[ "$#" -ge "5" ]] && [[ "$5" != 'false' ]]; then
     skipNonVersionedFilesArg="--skip-non-versioned-files"
   fi
-  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg --verbose || {
+  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
     echo "Failed to install dotnet SDK from public location (exit code '$exit_code')."
 
@@ -223,7 +223,7 @@ function InstallDotNet {
     fi
 
     if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
-      bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey --verbose || {
+      bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey || {
         local exit_code=$?
         Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from custom location '$runtimeSourceFeed' (exit code '$exit_code')."
         ExitWithExitCode $exit_code
@@ -273,8 +273,11 @@ function GetDotNetInstallScript {
     if command -v curl > /dev/null; then
       # first, try directly, if this fails we will retry with verbose logging
       curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
-        echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
-        echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
+        if command -v openssl &> /dev/null
+        then
+          echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
+          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
+        fi
         echo "Will now retry the same URL with verbose logging."
         with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
           local exit_code=$?
@@ -411,7 +414,10 @@ function MSBuild {
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
-    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll"
+    if [[ ! -f $logger_path ]]; then
+      logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    fi
     args=( "${args[@]}" "-logger:$logger_path" )
   fi
 
@@ -476,8 +482,11 @@ temp_dir="$artifacts_dir/tmp/$configuration"
 global_json_file="$repo_root/global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
-dotnetlocal_key=$(awk "/runtimes/ {print; exit}" "$global_json_file") || true
-if [[ -n "$dotnetlocal_key" ]]; then
+if command -v jq &> /dev/null; then
+  if jq -er '. | select(has("runtimes"))' "$global_json_file" &> /dev/null; then
+    global_json_has_runtimes=true
+  fi
+elif [[ "$(cat "$global_json_file")" =~ \"runtimes\"[[:space:]\:]*\{ ]]; then
   global_json_has_runtimes=true
 fi
 
