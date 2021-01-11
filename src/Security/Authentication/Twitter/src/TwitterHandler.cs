@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
                 try
                 {
-                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, this._jsonSerializerOptions);
+                    var errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, this.ErrorSerializerOptions);
 
                     var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
 
