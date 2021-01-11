@@ -274,6 +274,84 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         [Fact]
+        public async Task TwitterError_Json_ThrowsParsedException()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = JsonErroredBackchannelRequestToken
+                };
+            },
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
+            using var server = host.GetTestServer();
+            
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = await server.SendAsync("http://example.com/challenge");
+            });
+        }
+
+        [Fact]
+        public async Task TwitterError_Xml_ThrowsParsedException()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = XmlErroredBackchannelRequestToken
+                };
+            },
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
+            using var server = host.GetTestServer();
+
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = await server.SendAsync("http://example.com/challenge");
+            });
+        }
+
+        [Fact]
+        public async Task TwitterError_UnknownContentType_ThrowsHttpException()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = UnknownContentTypeErroredBackchannelRequestToken
+                };
+            },
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
+            using var server = host.GetTestServer();
+
+
+            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            {
+                var transaction = await server.SendAsync("http://example.com/challenge");
+            });
+        }
+
+        [Fact]
         public async Task BadCallbackCallsRemoteAuthFailedWithState()
         {
             using var host = await CreateHost(o =>
@@ -382,6 +460,54 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
                             Encoding.UTF8,
                             "application/x-www-form-urlencoded")
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+
+        private HttpResponseMessage JsonErroredBackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content =
+                        new StringContent("{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}",
+                            Encoding.UTF8,
+                            "application/json"),
+                    StatusCode = HttpStatusCode.Forbidden
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+
+        private HttpResponseMessage XmlErroredBackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content =
+                        new StringContent("<?xml version='1.0' encoding='UTF-8'?><errors><error code=\"415\">Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings</error></errors>",
+                            Encoding.UTF8,
+                            "application/xml"),
+                    StatusCode = HttpStatusCode.Forbidden
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+
+        private HttpResponseMessage UnknownContentTypeErroredBackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content =
+                        new StringContent("example response text",
+                            Encoding.UTF8,
+                            "text/html"),
+                    StatusCode = HttpStatusCode.Forbidden
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
