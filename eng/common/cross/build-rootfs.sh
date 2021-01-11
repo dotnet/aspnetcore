@@ -82,7 +82,7 @@ while :; do
         break
     fi
 
-    lowerI="$(echo $1 | awk '{print tolower($0)}')"
+    lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
     case $lowerI in
         -?|-h|--help)
             usage

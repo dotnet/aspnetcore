@@ -244,7 +244,6 @@ function InstallDotNet([string] $dotnetRoot,
   $installParameters = @{
     Version = $version
     InstallDir = $dotnetRoot
-    Verbose = $null
   }
 
   if ($architecture) { $installParameters.Architecture = $architecture }
@@ -543,7 +542,7 @@ function GetDefaultMSBuildEngine() {
 
 function GetNuGetPackageCachePath() {
   if ($env:NUGET_PACKAGES -eq $null) {
-    # Use local cache on CI to ensure deterministic build.
+    # Use local cache on CI to ensure deterministic build. 
     # Avoid using the http cache as workaround for https://github.com/NuGet/Home/issues/3116
     # use global cache in dev builds to avoid cost of downloading packages.
     # For directory normalization, see also: https://github.com/NuGet/Home/issues/7968
@@ -646,7 +645,11 @@ function MSBuild() {
 
     $toolsetBuildProject = InitializeToolset
     $path = Split-Path -parent $toolsetBuildProject
-    $path = Join-Path $path (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')
+    $path = Join-Path $path (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')
+    if (-not (Test-Path $path)) {
+      $path = Split-Path -parent $toolsetBuildProject
+      $path = Join-Path $path (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')
+    }
     $args += "/logger:$path"
   }
 
