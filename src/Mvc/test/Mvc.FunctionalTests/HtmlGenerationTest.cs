@@ -82,22 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
-        public static TheoryData<string, string> WebPagesDataNonHelix
-        {
-            get
-            {
-                var data = new TheoryData<string, string>
-                {
-                    // Testing the LinkTagHelper
-                    { "Link", null },
-                    // Testing the ScriptTagHelper
-                    { "Script", null },
-                };
-
-                return data;
-            }
-        }
-
         [Fact]
         public async Task EnumValues_SerializeCorrectly()
         {
@@ -107,12 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
         }
-
-        [ConditionalTheory]
-        [MemberData(nameof(WebPagesDataNonHelix))]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
-            => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
 
         [Theory]
         [MemberData(nameof(WebPagesData))]
@@ -157,6 +135,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
+        [ConditionalTheory]
+        [InlineData("Link", null)]
+        [InlineData("Script", null)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task HtmlGenerationWebSite_GeneratesExpectedResultsNotReadyForHelix(string action, string antiforgeryPath)
+            => HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
+
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
@@ -199,11 +184,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "AttributesWithBooleanValues", null },
                     { "EditWarehouse", null },
                     { "Index", null },
-                    { "Link", null },
                     { "Order", "/HtmlGeneration_Order/Submit" },
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     { "Product", null },
-                    { "Script", null },
                 };
             }
         }
@@ -237,6 +220,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath));
             }
         }
+
+
+        [ConditionalTheory]
+        [InlineData("Link", null)]
+        [InlineData("Script", null)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task HtmlGenerationWebSite_GenerateEncodedResultsNotReadyForHelix(string action, string antiforgeryPath)
+            => HtmlGenerationWebSite_GenerateEncodedResults(action, antiforgeryPath);
 
         // Testing how ModelMetadata is handled as ViewDataDictionary instances are created.
         [Theory]

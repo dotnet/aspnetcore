@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -35,12 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient EncodedClient { get; }
 
         [Theory]
-        [InlineData("GlobbingTagHelpers")]
         [InlineData("Index")]
         [InlineData("About")]
         [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
-        [InlineData("ViewComponentTagHelpers")]
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
@@ -60,6 +59,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseContent = await response.Content.ReadAsStringAsync();
             ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
+
+        [ConditionalTheory]
+        [InlineData("GlobbingTagHelpers")]
+        [InlineData("ViewComponentTagHelpers")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action)
+            => CanRenderViewsWithTagHelpers(action);
 
         [Fact]
         public async Task GivesCorrectCallstackForSyncronousCalls()
