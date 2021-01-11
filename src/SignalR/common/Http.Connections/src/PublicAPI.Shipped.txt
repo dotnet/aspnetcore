@@ -10,7 +10,7 @@ Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup
 Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup.Configure(Microsoft.AspNetCore.Http.Connections.ConnectionOptions! options) -> void
 Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup.ConnectionOptionsSetup() -> void
 Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature
-Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
 Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.set -> void
 Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature
 Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature.TransportType.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType

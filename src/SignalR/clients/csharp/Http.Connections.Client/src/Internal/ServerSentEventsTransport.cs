@@ -19,24 +19,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
 
         // Volatile so that the SSE loop sees the updated value set from a different thread
-        private volatile Exception _error;
+        private volatile Exception? _error;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _inputCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
-        private IDuplexPipe _transport;
-        private IDuplexPipe _application;
+        private IDuplexPipe? _transport;
+        private IDuplexPipe? _application;
 
         internal Task Running { get; private set; } = Task.CompletedTask;
 
-        public PipeReader Input => _transport.Input;
+        public PipeReader Input => _transport!.Input;
 
-        public PipeWriter Output => _transport.Output;
+        public PipeWriter Output => _transport!.Output;
 
         public ServerSentEventsTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
 
-        public ServerSentEventsTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(HttpClient httpClient, ILoggerFactory? loggerFactory)
         {
             if (httpClient == null)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
-            HttpResponseMessage response = null;
+            HttpResponseMessage? response = null;
 
             try
             {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = ProcessEventStream(response, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token);
+            var sending = SendUtils.SendMessages(url, _application!, _httpClient, _logger, _inputCts.Token);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -108,19 +108,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _inputCts.Cancel();
 
                 // Cancel the application so that ReadAsync yields
-                _application.Input.CancelPendingRead();
+                _application!.Input.CancelPendingRead();
 
                 await sending;
             }
             else
             {
                 // Set the sending error so we communicate that to the application
-                _error = sending.IsFaulted ? sending.Exception.InnerException : null;
+                _error = sending.IsFaulted ? sending.Exception!.InnerException : null;
 
                 _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
-                _application.Output.CancelPendingFlush();
+                _application!.Output.CancelPendingFlush();
 
                 await receiving;
             }
@@ -129,8 +129,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private async Task ProcessEventStream(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             Log.StartReceive(_logger);
-            
-            static void CancelReader(object state) => ((PipeReader)state).CancelPendingRead();
+
+            static void CancelReader(object? state) => ((PipeReader)state!).CancelPendingRead();
 
             using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
@@ -166,9 +166,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                                 switch (parseResult)
                                 {
                                     case ServerSentEventsMessageParser.ParseResult.Completed:
-                                        Log.MessageToApplication(_logger, message.Length);
+                                        Log.MessageToApplication(_logger, message!.Length);
 
-                                        flushResult = await _application.Output.WriteAsync(message);
+                                        flushResult = await _application!.Output.WriteAsync(message);
 
                                         _parser.Reset();
                                         break;
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
                 finally
                 {
-                    _application.Output.Complete(_error);
+                    _application!.Output.Complete(_error);
 
                     Log.ReceiveStopped(_logger);
 
@@ -224,8 +224,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 return;
             }
 
-            _transport.Output.Complete();
-            _transport.Input.Complete();
+            _transport!.Output.Complete();
+            _transport!.Input.Complete();
 
             _application.Input.CancelPendingRead();
 

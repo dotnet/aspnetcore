@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
+#nullable enable
 
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Internal
     internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
     {
         [ThreadStatic]
-        private static MemoryBufferWriter _cachedInstance;
+        private static MemoryBufferWriter? _cachedInstance;
 
 #if DEBUG
         private bool _inUse;
@@ -25,8 +26,8 @@ namespace Microsoft.AspNetCore.Internal
         private readonly int _minimumSegmentSize;
         private int _bytesWritten;
 
-        private List<CompletedBuffer> _completedSegments;
-        private byte[] _currentSegment;
+        private List<CompletedBuffer>? _completedSegments;
+        private byte[]? _currentSegment;
         private int _position;
 
         public MemoryBufferWriter(int minimumSegmentSize = 4096)
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Internal
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            if (_completedSegments == null)
+            if (_completedSegments == null && _currentSegment is not null)
             {
                 // There is only one segment so write without awaiting.
                 return destination.WriteAsync(_currentSegment, 0, _position);
@@ -145,6 +146,7 @@ namespace Microsoft.AspNetCore.Internal
             return CopyToSlowAsync(destination);
         }
 
+        [MemberNotNull("_currentSegment")]
         private void EnsureCapacity(int sizeHint)
         {
             // This does the Right Thing. It only subtracts _position from the current segment length if it's non-null.
@@ -156,12 +158,15 @@ namespace Microsoft.AspNetCore.Internal
             if ((sizeHint == 0 && remainingSize > 0) || (sizeHint > 0 && remainingSize >= sizeHint))
             {
                 // We have capacity in the current segment
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
                 return;
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
             }
 
             AddSegment(sizeHint);
         }
 
+        [MemberNotNull("_currentSegment")]
         private void AddSegment(int sizeHint = 0)
         {
             if (_currentSegment != null)
@@ -196,7 +201,10 @@ namespace Microsoft.AspNetCore.Internal
                 }
             }
 
-            await destination.WriteAsync(_currentSegment, 0, _position);
+            if (_currentSegment is not null)
+            {
+                await destination.WriteAsync(_currentSegment, 0, _position);
+            }
         }
 
         public byte[] ToArray()

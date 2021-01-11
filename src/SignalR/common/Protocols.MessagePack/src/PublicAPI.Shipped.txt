@@ -11,8 +11,8 @@ Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.Version.get -> int
 Microsoft.Extensions.DependencyInjection.MessagePackProtocolDependencyInjectionExtensions
 static Microsoft.Extensions.DependencyInjection.MessagePackProtocolDependencyInjectionExtensions.AddMessagePackProtocol<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.MessagePackProtocolDependencyInjectionExtensions.AddMessagePackProtocol<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! configure) -> TBuilder
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> System.ReadOnlyMemory<byte>
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions> options) -> void
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.Name.get -> string
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> bool
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Buffers.IBufferWriter<byte> output) -> void
+Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> System.ReadOnlyMemory<byte>
+~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void
+Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.Name.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool
+Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void

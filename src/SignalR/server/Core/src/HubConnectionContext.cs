@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the user for this connection.
         /// </summary>
-        public virtual ClaimsPrincipal? User => Features.Get<IConnectionUserFeature>()?.User;
+        public virtual ClaimsPrincipal User => Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
 
         /// <summary>
         /// Gets the collection of features available on this connection.

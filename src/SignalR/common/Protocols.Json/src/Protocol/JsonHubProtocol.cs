@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         }
 
         /// <inheritdoc />
-        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, [NotNullWhen(true)] out HubMessage? message)
         {
             if (!TextMessageParser.TryParseMessage(ref input, out var payload))
             {
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return HubProtocolExtensions.GetMessageBytes(this, message);
         }
 
-        private HubMessage ParseMessage(ReadOnlySequence<byte> input, IInvocationBinder binder)
+        private HubMessage? ParseMessage(ReadOnlySequence<byte> input, IInvocationBinder binder)
         {
             try
             {
@@ -119,24 +118,24 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 // if we're lucky and the state we need to directly parse is available, then we'll use it.
 
                 int? type = null;
-                string invocationId = null;
-                string target = null;
-                string error = null;
+                string? invocationId = null;
+                string? target = null;
+                string? error = null;
                 var hasItem = false;
-                object item = null;
+                object? item = null;
                 var hasResult = false;
-                object result = null;
+                object? result = null;
                 var hasArguments = false;
-                object[] arguments = null;
-                string[] streamIds = null;
+                object?[]? arguments = null;
+                string[]? streamIds = null;
                 bool hasArgumentsToken = false;
                 Utf8JsonReader argumentsToken = default;
                 bool hasItemsToken = false;
                 Utf8JsonReader itemsToken = default;
                 bool hasResultToken = false;
                 Utf8JsonReader resultToken = default;
-                ExceptionDispatchInfo argumentBindingException = null;
-                Dictionary<string, string> headers = null;
+                ExceptionDispatchInfo? argumentBindingException = null;
+                Dictionary<string, string>? headers = null;
                 var completed = false;
                 var allowReconnect = false;
 
@@ -179,7 +178,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 reader.Read();
                                 while (reader.TokenType != JsonTokenType.EndArray)
                                 {
-                                    newStreamIds.Add(reader.GetString());
+                                    newStreamIds.Add(reader.GetString() ?? throw new InvalidDataException($"Null value for {StreamIdsPropertyName} is not valid."));
                                     reader.Read();
                                 }
 
@@ -223,7 +222,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 hasItem = true;
 
-                                string id = null;
+                                string? id = null;
                                 if (!string.IsNullOrEmpty(invocationId))
                                 {
                                     id = invocationId;
@@ -311,6 +310,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 {
                     case HubProtocolConstants.InvocationMessageType:
                         {
+                            if (target is null)
+                            {
+                                throw new InvalidDataException($"Missing required property '{TargetPropertyName}'.");
+                            }
+
                             if (hasArgumentsToken)
                             {
                                 // We weren't able to bind the arguments because they came before the 'target', so try to bind now that we've read everything.
@@ -327,11 +331,16 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                             message = argumentBindingException != null
                                 ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                                : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                                : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                         }
                         break;
                     case HubProtocolConstants.StreamInvocationMessageType:
                         {
+                            if (target is null)
+                            {
+                                throw new InvalidDataException($"Missing required property '{TargetPropertyName}'.");
+                            }
+
                             if (hasArgumentsToken)
                             {
                                 // We weren't able to bind the arguments because they came before the 'target', so try to bind now that we've read everything.
@@ -348,10 +357,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                             message = argumentBindingException != null
                                 ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                                : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                                : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                         }
                         break;
                     case HubProtocolConstants.StreamItemMessageType:
+                        if (invocationId is null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{InvocationIdPropertyName}'.");
+                        }
+
                         if (hasItemsToken)
                         {
                             try
@@ -369,6 +383,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         message = BindStreamItemMessage(invocationId, item, hasItem, binder);
                         break;
                     case HubProtocolConstants.CompletionMessageType:
+                        if (invocationId is null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{InvocationIdPropertyName}'.");
+                        }
+
                         if (hasResultToken)
                         {
                             var returnType = binder.GetReturnType(invocationId);
@@ -413,7 +432,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var propertyName = reader.GetString();
+                        var propertyName = reader.GetString()!;
 
                         reader.CheckRead();
 
@@ -422,7 +441,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             throw new InvalidDataException($"Expected header '{propertyName}' to be of type {JsonTokenType.String}.");
                         }
 
-                        headers[propertyName] = reader.GetString();
+                        headers[propertyName] = reader.GetString()!;
                         break;
                     case JsonTokenType.Comment:
                         break;
@@ -576,7 +595,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteArguments(object[] arguments, Utf8JsonWriter writer)
+        private void WriteArguments(object?[] arguments, Utf8JsonWriter writer)
         {
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
@@ -593,7 +612,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteEndArray();
         }
 
-        private void WriteStreamIds(string[] streamIds, Utf8JsonWriter writer)
+        private void WriteStreamIds(string[]? streamIds, Utf8JsonWriter writer)
         {
             if (streamIds == null)
             {
@@ -621,7 +640,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteNumber(TypePropertyNameBytes, type);
         }
 
-        private HubMessage BindCancelInvocationMessage(string invocationId)
+        private HubMessage BindCancelInvocationMessage(string? invocationId)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -631,7 +650,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CancelInvocationMessage(invocationId);
         }
 
-        private HubMessage BindCompletionMessage(string invocationId, string error, object result, bool hasResult, IInvocationBinder binder)
+        private HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -651,7 +670,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CompletionMessage(invocationId, error, result: null, hasResult: false);
         }
 
-        private HubMessage BindStreamItemMessage(string invocationId, object item, bool hasItem, IInvocationBinder binder)
+        private HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -666,7 +685,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new StreamItemMessage(invocationId, item);
         }
 
-        private HubMessage BindStreamInvocationMessage(string invocationId, string target, object[] arguments, bool hasArguments, string[] streamIds, IInvocationBinder binder)
+        private HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -683,10 +702,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 throw new InvalidDataException($"Missing required property '{TargetPropertyName}'.");
             }
 
+            Debug.Assert(arguments != null);
+
             return new StreamInvocationMessage(invocationId, target, arguments, streamIds);
         }
 
-        private HubMessage BindInvocationMessage(string invocationId, string target, object[] arguments, bool hasArguments, string[] streamIds, IInvocationBinder binder)
+        private HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
         {
             if (string.IsNullOrEmpty(target))
             {
@@ -698,17 +719,19 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 throw new InvalidDataException($"Missing required property '{ArgumentsPropertyName}'.");
             }
 
+            Debug.Assert(arguments != null);
+
             return new InvocationMessage(invocationId, target, arguments, streamIds);
         }
 
-        private object BindType(ref Utf8JsonReader reader, Type type)
+        private object? BindType(ref Utf8JsonReader reader, Type type)
         {
             return JsonSerializer.Deserialize(ref reader, type, _payloadSerializerOptions);
         }
 
-        private object[] BindTypes(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes)
+        private object?[] BindTypes(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes)
         {
-            object[] arguments = null;
+            object?[]? arguments = null;
             var paramIndex = 0;
             var paramCount = paramTypes.Count;
 
@@ -719,7 +742,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (paramIndex < paramCount)
                 {
-                    arguments ??= new object[paramCount];
+                    arguments ??= new object?[paramCount];
 
                     try
                     {
@@ -747,7 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return arguments ?? Array.Empty<object>();
         }
 
-        private CloseMessage BindCloseMessage(string error, bool allowReconnect)
+        private CloseMessage BindCloseMessage(string? error, bool allowReconnect)
         {
             // An empty string is still an error
             if (error == null && !allowReconnect)
@@ -758,7 +781,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CloseMessage(error, allowReconnect);
         }
 
-        private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string> headers)
+        private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string>? headers)
         {
             if (headers != null && message is HubInvocationMessage invocationMessage)
             {

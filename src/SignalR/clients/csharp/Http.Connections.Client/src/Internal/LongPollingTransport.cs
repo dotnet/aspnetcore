@@ -5,13 +5,11 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using static Microsoft.AspNetCore.Http.Connections.Client.Internal.Utils;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
@@ -19,24 +17,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private IDuplexPipe _application;
-        private IDuplexPipe _transport;
+        private IDuplexPipe? _application;
+        private IDuplexPipe? _transport;
         // Volatile so that the poll loop sees the updated value set from a different thread
-        private volatile Exception _error;
+        private volatile Exception? _error;
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
         internal Task Running { get; private set; } = Task.CompletedTask;
 
-        public PipeReader Input => _transport.Input;
+        public PipeReader Input => _transport!.Input;
 
-        public PipeWriter Output => _transport.Output;
+        public PipeWriter Output => _transport!.Output;
 
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
 
-        public LongPollingTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
+        public LongPollingTransport(HttpClient httpClient, ILoggerFactory? loggerFactory)
         {
             _httpClient = httpClient;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = Poll(url, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
+            var sending = SendUtils.SendMessages(url, _application!, _httpClient, _logger);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -87,20 +85,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // 2. Waiting for an outgoing send (this should be instantaneous)
 
                 // Cancel the application so that ReadAsync yields
-                _application.Input.CancelPendingRead();
+                _application!.Input.CancelPendingRead();
 
                 await sending;
             }
             else
             {
                 // Set the sending error so we communicate that to the application
-                _error = sending.IsFaulted ? sending.Exception.InnerException : null;
+                _error = sending.IsFaulted ? sending.Exception!.InnerException : null;
 
                 // Cancel the poll request
                 _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
-                _application.Output.CancelPendingFlush();
+                _application!.Output.CancelPendingFlush();
 
                 await receiving;
 
@@ -131,8 +129,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 throw;
             }
 
-            _transport.Output.Complete();
-            _transport.Input.Complete();
+            _transport!.Output.Complete();
+            _transport!.Input.Complete();
 
             Log.TransportStopped(_logger, null);
         }
@@ -142,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             Log.StartReceive(_logger);
 
             // Allocate this once for the duration of the transport so we can continuously write to it
-            var applicationStream = new PipeWriterStream(_application.Output);
+            var applicationStream = new PipeWriterStream(_application!.Output);
 
             try
             {

@@ -11,8 +11,8 @@ Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.Version.get -> int
 Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions
 static Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions.AddJsonProtocol<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions.AddJsonProtocol<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions!>! configure) -> TBuilder
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> System.ReadOnlyMemory<byte>
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.JsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions> options) -> void
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.Name.get -> string
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> bool
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Buffers.IBufferWriter<byte> output) -> void
+Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> System.ReadOnlyMemory<byte>
+~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.JsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions!>! options) -> void
+Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.Name.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool
+Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void

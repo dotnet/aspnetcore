@@ -16,39 +16,39 @@ Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseDefaultCre
 Microsoft.AspNetCore.Http.Connections.Client.NoTransportSupportedException
 Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException
 override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.DisposeAsync() -> System.Threading.Tasks.ValueTask
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions httpConnectionOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri url) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext>
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.get -> System.Func<System.Threading.Tasks.Task<string>>
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ClientCertificates.get -> System.Security.Cryptography.X509Certificates.X509CertificateCollection
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ClientCertificates.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Cookies.get -> System.Net.CookieContainer
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Cookies.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Credentials.get -> System.Net.ICredentials
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Credentials.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Headers.get -> System.Collections.Generic.IDictionary<string, string>
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Headers.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHandlerFactory.get -> System.Func<System.Net.Http.HttpMessageHandler, System.Net.Http.HttpMessageHandler>
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHandlerFactory.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.get -> System.Net.IWebProxy
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> System.Uri
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.get -> System.Action<System.Net.WebSockets.ClientWebSocketOptions>
-~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.set -> void
-~Microsoft.AspNetCore.Http.Connections.Client.NoTransportSupportedException.NoTransportSupportedException(string message) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportFailedException(string transportType, string message, System.Exception innerException = null) -> void
-~Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportType.get -> string
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.ConnectionId.get -> string
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.ConnectionId.set -> void
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Items.get -> System.Collections.Generic.IDictionary<object, object>
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Items.set -> void
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.get -> System.IO.Pipelines.IDuplexPipe
-~override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions! httpConnectionOptions, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(System.Net.EndPoint! endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.get -> System.Func<System.Threading.Tasks.Task<string?>!>?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ClientCertificates.get -> System.Security.Cryptography.X509Certificates.X509CertificateCollection?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ClientCertificates.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Cookies.get -> System.Net.CookieContainer!
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Cookies.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Credentials.get -> System.Net.ICredentials?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Credentials.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Headers.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Headers.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHandlerFactory.get -> System.Func<System.Net.Http.HttpMessageHandler!, System.Net.Http.HttpMessageHandler!>?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHandlerFactory.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.get -> System.Net.IWebProxy?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> System.Uri?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.get -> System.Action<System.Net.WebSockets.ClientWebSocketOptions!>?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.NoTransportSupportedException.NoTransportSupportedException(string! message) -> void
+Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportFailedException(string! transportType, string! message, System.Exception? innerException = null) -> void
+Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportType.get -> string!
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.ConnectionId.get -> string?
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.ConnectionId.set -> void
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Items.set -> void
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.get -> System.IO.Pipelines.IDuplexPipe!
+override Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.Transport.set -> void

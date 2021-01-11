@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,14 +38,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly object _stateLock = new object();
         private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
-        private List<(Action<object> handler, object state)> _heartbeatHandlers;
+        private List<(Action<object> handler, object state)>? _heartbeatHandlers;
         private readonly ILogger _logger;
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
-        private IDictionary<object, object> _items;
+        private IDictionary<object, object?>? _items;
         private CancellationTokenSource _connectionClosedTokenSource;
 
-        private CancellationTokenSource _sendCts;
+        private CancellationTokenSource? _sendCts;
         private bool _activeSend;
         private long _startedSendTime;
         private readonly object _sendingLock = new object();
@@ -64,8 +62,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// <param name="connectionId"></param>
         /// <param name="connectionToken"></param>
         /// <param name="logger"></param>
-        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger)
+        /// <param name="transport"></param>
+        /// <param name="application"></param>
+        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application)
         {
+            Transport = transport;
+            _applicationStream = new PipeWriterStream(application.Output);
+            _application = application;
+
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
             LastSeenUtc = DateTime.UtcNow;
@@ -93,23 +97,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
-        public CancellationTokenSource Cancellation { get; set; }
+        public CancellationTokenSource? Cancellation { get; set; }
 
         public HttpTransportType TransportType { get; set; }
 
         public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1);
 
         // Used for testing only
-        internal Task DisposeAndRemoveTask { get; set; }
+        internal Task? DisposeAndRemoveTask { get; set; }
 
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
-        internal IServiceScope ServiceScope { get; set; }
+        internal IServiceScope? ServiceScope { get; set; }
 
-        public Task TransportTask { get; set; }
+        public Task? TransportTask { get; set; }
 
         public Task PreviousPollTask { get; set; } = Task.CompletedTask;
 
-        public Task ApplicationTask { get; set; }
+        public Task? ApplicationTask { get; set; }
 
         public DateTime LastSeenUtc { get; set; }
 
@@ -132,11 +136,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public override IFeatureCollection Features { get; }
 
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
 
         public bool HasInherentKeepAlive { get; set; }
 
-        public override IDictionary<object, object> Items
+        public override IDictionary<object, object?> Items
         {
             get
             {
@@ -146,7 +150,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     {
                         if (_items == null)
                         {
-                            _items = new ConnectionItems(new ConcurrentDictionary<object, object>());
+                            _items = new ConnectionItems(new ConcurrentDictionary<object, object?>());
                         }
                     }
                 }
@@ -160,14 +164,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             get => _application;
             set
             {
-                if (value != null)
-                {
-                    _applicationStream = new PipeWriterStream(value.Output);
-                }
-                else
-                {
-                    _applicationStream = null;
-                }
+                _applicationStream = new PipeWriterStream(value.Output);
                 _application = value;
             }
         }
@@ -180,13 +177,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public TransferFormat ActiveFormat { get; set; }
 
-        public HttpContext HttpContext { get; set; }
+        public HttpContext? HttpContext { get; set; }
 
         public override CancellationToken ConnectionClosed { get; set; }
 
         public override void Abort()
         {
-            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
 
             HttpContext?.Abort();
         }
@@ -330,7 +327,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         Application?.Input.Complete();
 
                         // Trigger ConnectionClosed
-                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
                     }
                 }
                 else
@@ -340,7 +337,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     Application?.Input.Complete();
 
                     // Trigger ConnectionClosed
-                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
 
                     try
                     {
@@ -378,6 +375,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         internal bool TryActivatePersistentConnection(
             ConnectionDelegate connectionDelegate,
             IHttpTransport transport,
+            HttpContext context,
             ILogger dispatcherLogger)
         {
             lock (_stateLock)
@@ -390,13 +388,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     ApplicationTask = ExecuteApplication(connectionDelegate);
 
                     // Start the transport
-                    TransportTask = transport.ProcessRequestAsync(HttpContext, HttpContext.RequestAborted);
+                    TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
 
                     return true;
                 }
                 else
                 {
-                    FailActivationUnsynchronized(HttpContext, dispatcherLogger);
+                    FailActivationUnsynchronized(context, dispatcherLogger);
 
                     return false;
                 }
@@ -473,7 +471,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             if (Status == HttpConnectionStatus.Active)
             {
-                HttpConnectionDispatcher.Log.ConnectionAlreadyActive(dispatcherLogger, ConnectionId, HttpContext.TraceIdentifier);
+                HttpConnectionDispatcher.Log.ConnectionAlreadyActive(dispatcherLogger, ConnectionId, HttpContext!.TraceIdentifier);
 
                 // Reject the request with a 409 conflict
                 nonClonedContext.Response.StatusCode = StatusCodes.Status409Conflict;
@@ -493,7 +491,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal async Task<bool> CancelPreviousPoll(HttpContext context)
         {
-            CancellationTokenSource cts;
+            CancellationTokenSource? cts;
             lock (_stateLock)
             {
                 // Need to sync cts access with DisposeAsync as that will dispose the cts
@@ -576,7 +574,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     if (currentTicks - _startedSendTime > _tenSeconds)
                     {
-                        _sendCts.Cancel();
+                        _sendCts!.Cancel();
                     }
                 }
             }
@@ -591,28 +589,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _disposingConnection =
+            private static readonly Action<ILogger, string, Exception?> _disposingConnection =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(1, "DisposingConnection"), "Disposing connection {TransportConnectionId}.");
 
-            private static readonly Action<ILogger, Exception> _waitingForApplication =
+            private static readonly Action<ILogger, Exception?> _waitingForApplication =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(2, "WaitingForApplication"), "Waiting for application to complete.");
 
-            private static readonly Action<ILogger, Exception> _applicationComplete =
+            private static readonly Action<ILogger, Exception?> _applicationComplete =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "ApplicationComplete"), "Application complete.");
 
-            private static readonly Action<ILogger, HttpTransportType, Exception> _waitingForTransport =
+            private static readonly Action<ILogger, HttpTransportType, Exception?> _waitingForTransport =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(4, "WaitingForTransport"), "Waiting for {TransportType} transport to complete.");
 
-            private static readonly Action<ILogger, HttpTransportType, Exception> _transportComplete =
+            private static readonly Action<ILogger, HttpTransportType, Exception?> _transportComplete =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(5, "TransportComplete"), "{TransportType} transport complete.");
 
-            private static readonly Action<ILogger, HttpTransportType, Exception> _shuttingDownTransportAndApplication =
+            private static readonly Action<ILogger, HttpTransportType, Exception?> _shuttingDownTransportAndApplication =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(6, "ShuttingDownTransportAndApplication"), "Shutting down both the application and the {TransportType} transport.");
 
-            private static readonly Action<ILogger, HttpTransportType, Exception> _waitingForTransportAndApplication =
+            private static readonly Action<ILogger, HttpTransportType, Exception?> _waitingForTransportAndApplication =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(7, "WaitingForTransportAndApplication"), "Waiting for both the application and {TransportType} transport to complete.");
 
-            private static readonly Action<ILogger, HttpTransportType, Exception> _transportAndApplicationComplete =
+            private static readonly Action<ILogger, HttpTransportType, Exception?> _transportAndApplicationComplete =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(8, "TransportAndApplicationComplete"), "The application and {TransportType} transport are both complete.");
 
             public static void DisposingConnection(ILogger logger, string connectionId)
@@ -664,6 +662,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 _transportComplete(logger, transportType, null);
             }
+
             public static void ShuttingDownTransportAndApplication(ILogger logger, HttpTransportType transportType)
             {
                 if (logger == null)

@@ -18,24 +18,26 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     internal partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
-        private readonly Func<Task<string>> _accessTokenProvider;
-        private IDuplexPipe _application;
+        private readonly Func<Task<string?>> _accessTokenProvider;
+        private IDuplexPipe? _application;
         private WebSocketMessageType _webSocketMessageType;
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
 
-        private IDuplexPipe _transport;
+        private IDuplexPipe? _transport;
 
         internal Task Running { get; private set; } = Task.CompletedTask;
 
-        public PipeReader Input => _transport.Input;
+        public PipeReader Input => _transport!.Input;
 
-        public PipeWriter Output => _transport.Output;
+        public PipeWriter Output => _transport!.Output;
 
-        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
+        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
+            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
+
             var isBrowser = OperatingSystem.IsBrowser();
             if (!isBrowser)
             {
@@ -102,8 +104,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
-
-            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     // 2. Waiting for a websocket send to complete
 
                     // Cancel the application so that ReadAsync yields
-                    _application.Input.CancelPendingRead();
+                    _application!.Input.CancelPendingRead();
 
                     using (var delayCts = new CancellationTokenSource())
                     {
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     socket.Abort();
 
                     // Cancel any pending flush so that we can quit
-                    _application.Output.CancelPendingFlush();
+                    _application!.Output.CancelPendingFlush();
                 }
             }
         }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         return;
                     }
 #endif
-                    var memory = _application.Output.GetMemory();
+                    var memory = _application!.Output.GetMemory();
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
@@ -280,9 +280,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                     Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
-                    _application.Output.Advance(receiveResult.Count);
+                    _application!.Output.Advance(receiveResult.Count);
 
-                    var flushResult = await _application.Output.FlushAsync();
+                    var flushResult = await _application!.Output.FlushAsync();
 
                     // We canceled in the middle of applying back pressure
                     // or if the consumer is done
@@ -300,13 +300,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (!_aborted)
                 {
-                    _application.Output.Complete(ex);
+                    _application!.Output.Complete(ex);
                 }
             }
             finally
             {
                 // We're done writing
-                _application.Output.Complete();
+                _application!.Output.Complete();
 
                 Log.ReceiveStopped(_logger);
             }
@@ -314,13 +314,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task StartSending(WebSocket socket)
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
                 while (true)
                 {
-                    var result = await _application.Input.ReadAsync();
+                    var result = await _application!.Input.ReadAsync();
                     var buffer = result.Buffer;
 
                     // Get a frame from the application
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
                     finally
                     {
-                        _application.Input.AdvanceTo(buffer.End);
+                        _application!.Input.AdvanceTo(buffer.End);
                     }
                 }
             }
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
                 }
 
-                _application.Input.Complete();
+                _application!.Input.Complete();
 
                 Log.SendStopped(_logger);
             }
@@ -424,8 +424,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 return;
             }
 
-            _transport.Output.Complete();
-            _transport.Input.Complete();
+            _transport!.Output.Complete();
+            _transport!.Input.Complete();
 
             // Cancel any pending reads from the application, this should start the entire shutdown process
             _application.Input.CancelPendingRead();
