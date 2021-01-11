@@ -292,7 +292,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
             using var server = host.GetTestServer();
             
-
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var transaction = await server.SendAsync("http://example.com/challenge");
@@ -318,7 +317,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
             using var server = host.GetTestServer();
 
-
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 var transaction = await server.SendAsync("http://example.com/challenge");
@@ -343,7 +341,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return true;
             });
             using var server = host.GetTestServer();
-
 
             await Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
