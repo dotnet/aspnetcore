@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                     {
                         errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
                     }
-                    else
+                    else if (contentTypeIsXml)
                     {
                         // Load into XML doc and manually parse to same object
                         var xmlDocument = new XmlDocument();
