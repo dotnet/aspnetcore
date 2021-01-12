@@ -4,7 +4,6 @@
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.23</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.23</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -16,7 +15,7 @@
     <!-- Determined by build tools -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.1.7-build-20201119.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.1.7-build-20201218.2</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <!-- These are package versions that should not be overridden or updated by automation. -->
@@ -31,6 +30,7 @@
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.1.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.10</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.1</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>

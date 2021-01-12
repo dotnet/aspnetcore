@@ -6,18 +6,9 @@
 [cmdletbinding()]
 param(
     [string]$Configuration = 'Debug',
-    [Parameter(Mandatory = $true)]
-    [Alias("x86")]
-    [string]$Runtime86Zip,
-    [Parameter(Mandatory = $true)]
-    [Alias("x64")]
-    [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
-    [switch]$IsFinalBuild,
-    [string]$SignType = '',
-    [string]$PackageVersionPropsUrl = $null,
+    [string]$PackageVersionPropsUrl = $env:PB_PackageVersionPropsUrl,
     [string]$AccessTokenSuffix = $null,
-    [string]$AssetRootUrl = $null,
     [switch]$clean
 )
 
@@ -27,19 +18,12 @@ Import-Module -Scope Local "$repoRoot/scripts/common.psm1" -Force
 $msbuild = Get-MSBuildPath -Prerelease -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
 
 $harvestRoot = "$repoRoot/obj/sfx/"
+$sharedFxDepsRoot = "$repoRoot/.deps/fx/"
 if ($clean) {
     Remove-Item -Recurse -Force $harvestRoot -ErrorAction Ignore | Out-Null
 }
 
 New-Item "$harvestRoot/x86", "$harvestRoot/x64" -ItemType Directory -ErrorAction Ignore | Out-Null
-
-if (-not (Test-Path "$harvestRoot/x86/shared/")) {
-    Expand-Archive $Runtime86Zip -DestinationPath "$harvestRoot/x86"
-}
-
-if (-not (Test-Path "$harvestRoot/x64/shared/")) {
-    Expand-Archive $Runtime64Zip -DestinationPath "$harvestRoot/x64"
-}
 
 Push-Location $PSScriptRoot
 try {
@@ -56,12 +40,13 @@ try {
 
     [string[]] $msbuildArgs = @()
 
+    # PipeBuild parameters
+    $msbuildArgs += "-p:SignType=${env:PB_SignType}"
+    $msbuildArgs += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
+    $msbuildArgs += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
+
     if ($clean) {
         $msbuildArgs += '-t:Clean'
-    }
-
-    if ($AssetRootUrl) {
-        $msbuildArgs += "-p:DotNetAssetRootUrl=$AssetRootUrl"
     }
 
     if ($AccessTokenSuffix) {
@@ -87,10 +72,9 @@ try {
             -nodeReuse:false `
             -clp:Summary `
             "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
+            "-p:SharedFxDepsRoot=$sharedFxDepsRoot" `
             "-p:Configuration=$Configuration" `
             "-p:BuildNumber=$BuildNumber" `
-            "-p:SignType=$SignType" `
-            "-p:IsFinalBuild=$IsFinalBuild" `
             "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
             @msbuildArgs
     }

@@ -21,9 +21,9 @@
     <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildSiteExtension;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
-    <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true'">$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(SkipArtifactInfoTargets)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
@@ -272,6 +272,65 @@
   <Target Name="VerifyAllReposHaveNuGetPackageVerifier" DependsOnTargets="_PrepareRepositories">
     <Error Condition="'%(Repository.Identity)' != '' AND !Exists('%(Repository.RootPath)NuGetPackageVerifier.json')"
            Text="Repository %(Repository.Identity) is missing NuGetPackageVerifier.json. Expected file to exist in %(Repository.RootPath)NuGetPackageVerifier.json" />
+  </Target>
+
+  <Target Name="DoCodeSigning" DependsOnTargets="_SetupCodeSign;CodeSign;_CopySignedFilesToArtifacts" />
+
+  <Target Name="_SetupCodeSign">
+    <PropertyGroup>
+      <!-- Make sure we're not disabling code signing -->
+      <DisableCodeSigning>false</DisableCodeSigning>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- We're passing a custom list of files - clear out the exclusion list so it doesn't interfere -->
+      <FilesToExcludeFromSigning Remove="@(FilesToExcludeFromSigning)" />
+
+      <!-- Make sure 3rd party binaries get 3rd party certificate -->
+      <CustomFileSignInfo Include="MsgPack.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="MessagePack.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="Newtonsoft.Json.Bson.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="Remotion.Linq.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="SQLitePCLRaw.batteries_green.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="SQLitePCLRaw.batteries_v2.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="SQLitePCLRaw.core.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="SQLitePCLRaw.provider.e_sqlite3.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="e_sqlite3.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="StackExchange.Redis.StrongName.dll" CertificateName="3PartySHA2" />
+      <CustomFileSignInfo Include="System.Interactive.Async.dll" CertificateName="3PartySHA2" />
+      <!--
+      Map file extensions to a code-sign cert.
+      "None" means don't sign the file itself, but still scan the contents for signable files.
+      -->
+      <CustomFileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="Microsoft400" />
+      <CustomFileExtensionSignInfo Include=".dll;.exe" CertificateName="MicrosoftSHA2" />
+      <CustomFileExtensionSignInfo Include=".cab" CertificateName="None" />
+      <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+      <CustomFileExtensionSignInfo Include=".js" CertificateName="None" />
+      <!-- We don't produce font files. We rebundle some for using the web brower, so they do not need to be signed. -->
+      <CustomFileExtensionSignInfo Include=".otf" CertificateName="None" />
+      <CustomFileExtensionSignInfo Include=".ttf" CertificateName="None" />
+      <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
+      <CustomFileSignInfo Include="ancm.mof" CertificateName="None" />
+      <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
+      <CustomFileSignInfo Include="apphost.exe" CertificateName="None" />
+
+      <FilesToSign Include="$(DependencyPackageDir)**\*.nupkg" Certificate="NuGet" />
+      <FilesToSign Include="$(DependencyPackageDir)**\*.mpack" Certificate="None" />
+      <FilesToSign Include="$(DependencyPackageDir)**\*.vsix" Certificate="VsixSHA2" />
+      <FilesToSign Include="$(DependencyPackageDir)**\*.jar" Certificate="MicrosoftJARSHA2" />
+      <FilesToSign Include="$(ArtifactsDir)symbols\**\*.nupkg" Certificate="NuGet" />
+      <FilesToSign Include="$(SharedFxOutputPath)**\*.zip" Certificate="None" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CopySignedFilesToArtifacts">
+    <Copy SourceFiles="%(FilesToSign.Identity)" DestinationFiles="$(ArtifactsDir)Signed\MPacks\%(FilesToSign.Filename)%(FilesToSign.Extension)" Condition="'%(FilesToSign.Extension)' == '.mpack'" />
+    <Copy SourceFiles="%(FilesToSign.Identity)" DestinationFiles="$(ArtifactsDir)Signed\Packages\%(FilesToSign.Filename)%(FilesToSign.Extension)" Condition="'%(FilesToSign.Extension)' == '.nupkg'" />
+    <Copy SourceFiles="%(FilesToSign.Identity)" DestinationFiles="$(ArtifactsDir)Signed\Packages\%(FilesToSign.Filename)%(FilesToSign.Extension)" Condition="'%(FilesToSign.Extension)' == '.jar'" />
+    <Copy SourceFiles="%(FilesToSign.Identity)" DestinationFiles="$(ArtifactsDir)Signed\VSIX\%(FilesToSign.Filename)%(FilesToSign.Extension)" Condition="'%(FilesToSign.Extension)' == '.vsix'" />
+    <Copy SourceFiles="%(FilesToSign.Identity)" DestinationFiles="$(ArtifactsDir)Signed\SharedFx\%(FilesToSign.Filename)%(FilesToSign.Extension)" Condition="'%(FilesToSign.Extension)' == '.zip'" />
   </Target>
 
 </Project>

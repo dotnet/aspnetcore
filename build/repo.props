@@ -20,7 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
+    <!-- Don't populate SharedSourceDirectories while doing Code Signing, otherwise we'll try to sign this nonexistant package -->
+    <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" Condition="'$(SkipArtifactInfoTargets)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>

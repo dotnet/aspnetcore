@@ -1,2 +1,2 @@
-version:2.1.7-build-20201119.1
-commithash:8212674c2abff7b51f99422c9bdb1a81b90d9dc1
+version:2.1.7-build-20201218.2
+commithash:26d5fca2ed53577d072f0c7a00c188a2fe826f7f
