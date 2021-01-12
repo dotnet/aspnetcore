@@ -356,17 +356,20 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                             Errors = new List<TwitterError>()
                         };
 
-                        var errors = xmlDocument.SelectSingleNode("//errors") ?? throw new XmlException("Error parsing Twitter XML error response");
+                        var errors = xmlDocument.SelectSingleNode("//errors");
 
-                        foreach (XmlNode error in errors.ChildNodes)
+                        if (errors != null)
                         {
-                            var twitterError = new TwitterError
+                            foreach (XmlNode error in errors.ChildNodes)
                             {
-                                Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
-                                Message = error.InnerText
-                            };
+                                var twitterError = new TwitterError
+                                {
+                                    Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
+                                    Message = error.InnerText
+                                };
 
-                            errorResponse.Errors.Add(twitterError);
+                                errorResponse.Errors.Add(twitterError);
+                            }
                         }
                     }
                 }
