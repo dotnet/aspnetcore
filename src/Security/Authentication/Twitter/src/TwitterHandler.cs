@@ -236,6 +236,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var request = new HttpRequestMessage(httpMethod, url + queryString);
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
+            // This header is so that the error response is also JSON - without it the success response is already JSON
+            request.Headers.Add("Accept", "application/json");
+
             if (formData != null)
             {
                 request.Content = new FormUrlEncodedContent(formData);
@@ -331,53 +334,19 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
         {
             var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
-            var contentTypeIsXml = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/xml", StringComparison.OrdinalIgnoreCase);
-
-            if (response.IsSuccessStatusCode ||
-                !contentTypeIsJson && !contentTypeIsXml)
+            if (response.IsSuccessStatusCode || !contentTypeIsJson)
             {
                 // Response was not JSON, ensure HTTP Success
                 response.EnsureSuccessStatusCode();
                 return;
             }
 
-            TwitterErrorResponse errorResponse = null;
+            TwitterErrorResponse errorResponse;
             try
             {
                 // Failure, attempt to parse Twitters error message
                 var errorContentStream = await response.Content.ReadAsStreamAsync();
-
-                if (contentTypeIsJson)
-                {
-                    errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
-                }
-                else if (contentTypeIsXml)
-                {
-                    // Load into XML doc and manually parse to same object
-                    var xmlDocument = new XmlDocument();
-                    xmlDocument.Load(errorContentStream);
-
-                    errorResponse = new TwitterErrorResponse
-                    {
-                        Errors = new List<TwitterError>()
-                    };
-
-                    var errors = xmlDocument.SelectNodes(".//error");
-
-                    if (errors != null)
-                    {
-                        foreach (XmlNode error in errors)
-                        {
-                            var twitterError = new TwitterError
-                            {
-                                Code = int.Parse(error.Attributes["code"]?.Value ?? "-1", NumberFormatInfo.InvariantInfo),
-                                Message = error.InnerText
-                            };
-
-                            errorResponse.Errors.Add(twitterError);
-                        }
-                    }
-                }
+                errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
             }
             catch
             {

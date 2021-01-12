@@ -304,36 +304,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         [Fact]
-        public async Task TwitterError_Xml_ThrowsParsedException()
-        {
-            using var host = await CreateHost(o =>
-            {
-                o.ConsumerKey = "Test Consumer Key";
-                o.ConsumerSecret = "Test Consumer Secret";
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = XmlErroredBackchannelRequestToken
-                };
-            },
-            async context =>
-            {
-                await context.ChallengeAsync("Twitter");
-                return true;
-            });
-            using var server = host.GetTestServer();
-
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await server.SendAsync("http://example.com/challenge");
-            });
-
-            var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
-                + "Code: 415, Message: 'Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings'";
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
-        }
-
-        [Fact]
         public async Task TwitterError_UnknownContentType_ThrowsHttpException()
         {
             using var host = await CreateHost(o =>
@@ -482,21 +452,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         new StringContent("{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}",
                             Encoding.UTF8,
                             "application/json")
-                };
-            }
-            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-        }
-
-        private HttpResponseMessage XmlErroredBackchannelRequestToken(HttpRequestMessage req)
-        {
-            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
-            {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden)
-                {
-                    Content =
-                        new StringContent("<?xml version='1.0' encoding='UTF-8'?><errors><error code=\"415\">Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings</error></errors>",
-                            Encoding.UTF8,
-                            "application/xml")
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
