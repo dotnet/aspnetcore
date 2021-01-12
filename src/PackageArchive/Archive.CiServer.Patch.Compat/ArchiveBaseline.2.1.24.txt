@@ -1,0 +1,15 @@
+runtime.native.system.io.compression\4.3.0\.signature.p7s
+runtime.native.system.net.http\4.3.0\.signature.p7s
+runtime.native.system\4.3.0\.signature.p7s
+system.collections.nongeneric\4.3.0\.signature.p7s
+system.diagnostics.fileversioninfo\4.3.0\.signature.p7s
+system.globalization.extensions\4.3.0\.signature.p7s
+system.net.nameresolution\4.3.0\.signature.p7s
+system.private.datacontractserialization\4.1.1\.signature.p7s
+system.reflection.emit\4.3.0\.signature.p7s
+system.runtime.serialization.xml\4.3.0\.signature.p7s
+system.security.cryptography.csp\4.3.0\.signature.p7s
+system.threading.thread\4.3.0\.signature.p7s
+system.threading.threadpool\4.3.0\.signature.p7s
+system.xml.xmldocument\4.3.0\.signature.p7s
+system.xml.xmlserializer\4.0.11\.signature.p7s
