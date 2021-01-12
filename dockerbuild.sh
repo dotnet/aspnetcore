@@ -104,6 +104,15 @@ docker run \
     -e TEAMCITY_VERSION \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
+    -e PB_RESTORESOURCE \
+    -e PB_PUBLISHBLOBFEEDURL \
+    -e PB_PUBLISHTYPE \
+    -e PB_SKIPTESTS \
+    -e PB_ISFINALBUILD \
+    -e PB_ACCESSTOKENSUFFIX \
+    -e PB_PACKAGEVERSIONPROPSURL\
+    -e PB_ASSETROOTURL \
+    -e PRODUCTBUILDID \
     -v "$DIR:/code/build" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \

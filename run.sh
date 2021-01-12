@@ -19,11 +19,9 @@ lockfile_path=''
 channel=''
 tools_source=''
 ci=false
-package_version_props_url=''
-asset_root_url=''
-access_token_suffix=''
-restore_sources=''
-product_build_id=''
+package_version_props_url="${PB_PACKAGEVERSIONPROPSURL:-}"
+asset_root_url="${PB_ASSETROOTURL:-}"
+product_build_id="${PRODUCTBUILDID:-}"
 msbuild_args=()
 
 #
@@ -193,30 +191,6 @@ while [[ $# -gt 0 ]]; do
             [ -z "${1+x}" ] && __error "Missing value for parameter --package-version-props-url" && __usage
             package_version_props_url="$1"
             ;;
-        --access-token-suffix|-AccessTokenSuffix)
-            shift
-            # This parameter can be an empty string, but it should be set
-            [ -z "${1+x}" ] && __error "Missing value for parameter --access-token-suffix" && __usage
-            access_token_suffix="$1"
-            ;;
-        --restore-sources|-RestoreSources)
-            shift
-            # This parameter can be an empty string, but it should be set
-            [ -z "${1+x}" ] && __error "Missing value for parameter --restore-sources" && __usage
-            restore_sources="$1"
-            ;;
-        --asset-root-url|-AssetRootUrl)
-            shift
-            # This parameter can be an empty string, but it should be set
-            [ -z "${1+x}" ] && __error "Missing value for parameter --asset-root-url" && __usage
-            asset_root_url="$1"
-            ;;
-        --product-build-id|-ProductBuildId)
-            shift
-            # This parameter can be an empty string, but it should be set
-            [ -z "${1+x}" ] && __error "Missing value for parameter --product-build-id" && __usage
-            product_build_id="$1"
-            ;;
         -u|--update|-Update)
             update=true
             ;;
@@ -278,29 +252,31 @@ fi
 
 [ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 
+prodcon_args=()
+
 if [ ! -z "$package_version_props_url" ]; then
     intermediate_dir="$repo_path/obj"
     props_file_path="$intermediate_dir/external-dependencies.props"
     mkdir -p "$intermediate_dir"
-    __get_remote_file "$package_version_props_url" "$props_file_path"
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
-fi
-
-if [ ! -z "$restore_sources" ]; then
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAdditionalRestoreSources=$restore_sources"
+    __get_remote_file "$package_version_props_url" "$props_file_path" "${PB_ACCESSTOKENSUFFIX:-}"
+    prodcon_args[${#prodcon_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
 fi
 
 if [ ! -z "$asset_root_url" ]; then
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootUrl=$asset_root_url"
-fi
-
-if [ ! -z "$access_token_suffix" ]; then
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootAccessTokenSuffix=$access_token_suffix"
+    prodcon_args[${#prodcon_args[*]}]="-p:DotNetAssetRootUrl=$asset_root_url"
 fi
 
 if [ ! -z "$product_build_id" ]; then
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=$product_build_id"
+    prodcon_args[${#prodcon_args[*]}]="-p:DotNetProductBuildId=$product_build_id"
 fi
+
+# PipeBuild parameters
+prodcon_args[${#prodcon_args[*]}]="-p:DotNetAdditionalRestoreSources=${PB_RESTORESOURCE:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:PublishType=${PB_PUBLISHTYPE:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:SkipTests=${PB_SKIPTESTS:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:IsFinalBuild=${PB_ISFINALBUILD:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:DotNetAssetRootAccessTokenSuffix=${PB_ACCESSTOKENSUFFIX:-}"
 
 [ -z "$lockfile_path" ] && lockfile_path="$repo_path/korebuild-lock.txt"
 [ -z "$channel" ] && channel='master'
@@ -311,4 +287,4 @@ set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-invoke_korebuild_command "$command" ${msbuild_args[@]+"${msbuild_args[@]}"}
+invoke_korebuild_command "$command" "${prodcon_args[@]}" ${msbuild_args[@]+"${msbuild_args[@]}"}
