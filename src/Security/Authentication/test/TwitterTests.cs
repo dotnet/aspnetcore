@@ -476,13 +476,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
             {
-                return new HttpResponseMessage(HttpStatusCode.OK)
+                return new HttpResponseMessage(HttpStatusCode.Forbidden)
                 {
                     Content =
                         new StringContent("{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}",
                             Encoding.UTF8,
-                            "application/json"),
-                    StatusCode = HttpStatusCode.Forbidden
+                            "application/json")
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
@@ -492,13 +491,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
             {
-                return new HttpResponseMessage(HttpStatusCode.OK)
+                return new HttpResponseMessage(HttpStatusCode.Forbidden)
                 {
                     Content =
                         new StringContent("<?xml version='1.0' encoding='UTF-8'?><errors><error code=\"415\">Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings</error></errors>",
                             Encoding.UTF8,
-                            "application/xml"),
-                    StatusCode = HttpStatusCode.Forbidden
+                            "application/xml")
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
@@ -508,13 +506,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
             {
-                return new HttpResponseMessage(HttpStatusCode.OK)
+                return new HttpResponseMessage(HttpStatusCode.Forbidden)
                 {
                     Content =
                         new StringContent("example response text",
                             Encoding.UTF8,
-                            "text/html"),
-                    StatusCode = HttpStatusCode.Forbidden
+                            "text/html")
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);
