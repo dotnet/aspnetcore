@@ -199,7 +199,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             if (contentRoot == "~")
             {
                 contentRoot = AppContext.BaseDirectory + Path.PathSeparator;
-            }            
+            }
+            return contentRoot;
         }
 
         private string GetContentRootFromAssembly()
