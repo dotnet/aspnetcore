@@ -21,7 +21,7 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%CD%\home%random%
 
-set "PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin"
+set "PATH=%DOTNET_ROOT%;%PATH%;%CD%\nodejs"
 echo Set path to: "%PATH%"
 echo.
 
