@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
             if (response.IsSuccessStatusCode || !contentTypeIsJson)
             {
-                // Response was not JSON, ensure HTTP Success
+                // Not an error or not JSON, ensure success as usual
                 response.EnsureSuccessStatusCode();
                 return;
             }
