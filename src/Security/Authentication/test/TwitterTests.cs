@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
 
             var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
-                + "Code: 32, Message: 'Could not authenticate you.'" + Environment.NewLine;
+                + "Code: 32, Message: 'Could not authenticate you.'";
 
             Assert.Equal(expectedErrorMessage, exception.Message);
         }
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
 
             var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
-                + "Code: 415, Message: 'Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings'" + Environment.NewLine;
+                + "Code: 415, Message: 'Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings'";
 
             Assert.Equal(expectedErrorMessage, exception.Message);
         }
