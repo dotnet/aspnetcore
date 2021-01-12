@@ -362,15 +362,15 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         Errors = new List<TwitterError>()
                     };
 
-                    var errors = xmlDocument.SelectSingleNode("//errors");
+                    var errors = xmlDocument.SelectNodes(".//error");
 
                     if (errors != null)
                     {
-                        foreach (XmlNode error in errors.ChildNodes)
+                        foreach (XmlNode error in errors)
                         {
                             var twitterError = new TwitterError
                             {
-                                Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
+                                Code = int.Parse(error.Attributes["code"]?.Value ?? "-1", NumberFormatInfo.InvariantInfo),
                                 Message = error.InnerText
                             };
 
