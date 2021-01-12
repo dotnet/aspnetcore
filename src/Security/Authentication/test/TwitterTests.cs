@@ -292,10 +292,15 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
             using var server = host.GetTestServer();
             
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var transaction = await server.SendAsync("http://example.com/challenge");
+                await server.SendAsync("http://example.com/challenge");
             });
+
+            var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
+                + "Code: 32, Message: 'Could not authenticate you.'" + Environment.NewLine;
+
+            Assert.Equal(expectedErrorMessage, exception.Message);
         }
 
         [Fact]
@@ -317,10 +322,15 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             });
             using var server = host.GetTestServer();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var transaction = await server.SendAsync("http://example.com/challenge");
+                await server.SendAsync("http://example.com/challenge");
             });
+
+            var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
+                + "Code: 415, Message: 'Callback URL not approved for this client application. Approved callback URLs can be adjusted in your application settings'" + Environment.NewLine;
+
+            Assert.Equal(expectedErrorMessage, exception.Message);
         }
 
         [Fact]
@@ -344,7 +354,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             await Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
-                var transaction = await server.SendAsync("http://example.com/challenge");
+                await server.SendAsync("http://example.com/challenge");
             });
         }
 
