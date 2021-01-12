@@ -329,8 +329,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
         {
-            var contentTypeIsJson = Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/json"));
-            var contentTypeIsXml = Equals(response.Content.Headers.ContentType, new MediaTypeHeaderValue("application/xml"));
+            var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
+            var contentTypeIsXml = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/xml", StringComparison.OrdinalIgnoreCase);
 
             if (!response.IsSuccessStatusCode &&
                 (contentTypeIsJson || contentTypeIsXml))
