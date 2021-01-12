@@ -327,6 +327,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             }
         }
 
+        // https://developer.twitter.com/en/docs/apps/callback-urls
         private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
         {
             var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
