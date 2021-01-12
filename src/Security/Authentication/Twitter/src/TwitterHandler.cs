@@ -332,76 +332,75 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
             var contentTypeIsXml = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/xml", StringComparison.OrdinalIgnoreCase);
 
-            if (!response.IsSuccessStatusCode &&
-                (contentTypeIsJson || contentTypeIsXml))
-            {
-                TwitterErrorResponse errorResponse = null;
-                try
-                {
-                    // Failure, attempt to parse Twitters error message
-                    var errorContentStream = await response.Content.ReadAsStreamAsync();
-
-                    if (contentTypeIsJson)
-                    {
-                        errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
-                    }
-                    else if (contentTypeIsXml)
-                    {
-                        // Load into XML doc and manually parse to same object
-                        var xmlDocument = new XmlDocument();
-                        xmlDocument.Load(errorContentStream);
-
-                        errorResponse = new TwitterErrorResponse
-                        {
-                            Errors = new List<TwitterError>()
-                        };
-
-                        var errors = xmlDocument.SelectSingleNode("//errors");
-
-                        if (errors != null)
-                        {
-                            foreach (XmlNode error in errors.ChildNodes)
-                            {
-                                var twitterError = new TwitterError
-                                {
-                                    Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
-                                    Message = error.InnerText
-                                };
-
-                                errorResponse.Errors.Add(twitterError);
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // No valid Twitter error response, throw as normal
-                    response.EnsureSuccessStatusCode();
-                    return;
-                }
-
-                if (errorResponse == null)
-                {
-                    // No error message body
-                    response.EnsureSuccessStatusCode();
-                    return;
-                }
-
-                var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
-
-                errorMessage += errorResponse.Errors.Aggregate(
-                    "",
-                    (currentString, nextError)
-                        => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
-                            Environment.NewLine);
-
-                throw new InvalidOperationException(errorMessage);
-            }
-            else
+            if (response.IsSuccessStatusCode ||
+                !contentTypeIsJson && !contentTypeIsXml)
             {
                 // Response was not JSON, ensure HTTP Success
                 response.EnsureSuccessStatusCode();
+                return;
             }
+
+            TwitterErrorResponse errorResponse = null;
+            try
+            {
+                // Failure, attempt to parse Twitters error message
+                var errorContentStream = await response.Content.ReadAsStreamAsync();
+
+                if (contentTypeIsJson)
+                {
+                    errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
+                }
+                else if (contentTypeIsXml)
+                {
+                    // Load into XML doc and manually parse to same object
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.Load(errorContentStream);
+
+                    errorResponse = new TwitterErrorResponse
+                    {
+                        Errors = new List<TwitterError>()
+                    };
+
+                    var errors = xmlDocument.SelectSingleNode("//errors");
+
+                    if (errors != null)
+                    {
+                        foreach (XmlNode error in errors.ChildNodes)
+                        {
+                            var twitterError = new TwitterError
+                            {
+                                Code = int.Parse(error.Attributes["code"].Value, NumberFormatInfo.InvariantInfo),
+                                Message = error.InnerText
+                            };
+
+                            errorResponse.Errors.Add(twitterError);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // No valid Twitter error response, throw as normal
+                response.EnsureSuccessStatusCode();
+                return;
+            }
+
+            if (errorResponse == null)
+            {
+                // No error message body
+                response.EnsureSuccessStatusCode();
+                return;
+            }
+
+            var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
+
+            errorMessage += errorResponse.Errors.Aggregate(
+                "",
+                (currentString, nextError)
+                    => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
+                        Environment.NewLine);
+
+            throw new InvalidOperationException(errorMessage);
         }
     }
 }
