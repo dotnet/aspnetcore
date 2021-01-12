@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Called to create a new instance of a <see cref="IdentityUserLogin{TKey}"/>.
         /// </summary>
         /// <param name="user">The associated user.</param>
-        /// <param name="login">The sasociated login.</param>
+        /// <param name="login">The associated login.</param>
         /// <returns></returns>
         protected virtual TUserLogin CreateUserLogin(TUser user, UserLoginInfo login)
         {
