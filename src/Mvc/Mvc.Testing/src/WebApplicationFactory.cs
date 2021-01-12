@@ -196,11 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
             }
 
-            if (contentRoot == "~")
-            {
-                contentRoot = AppContext.BaseDirectory + Path.PathSeparator;
-            }
-            return contentRoot;
+            return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
         }
 
         private string GetContentRootFromAssembly()
