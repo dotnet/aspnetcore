@@ -393,15 +393,15 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return;
             }
 
-            var errorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine;
+            var errorMessageStringBuilder = new StringBuilder("An error has occurred while calling the Twitter API, error's returned:");
 
-            errorMessage += errorResponse.Errors.Aggregate(
-                "",
-                (currentString, nextError)
-                    => currentString + $"Code: {nextError.Code}, Message: '{nextError.Message}'" +
-                        Environment.NewLine);
+            foreach (var error in errorResponse.Errors)
+            {
+                errorMessageStringBuilder.Append(Environment.NewLine);
+                errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+            }
 
-            throw new InvalidOperationException(errorMessage);
+            throw new InvalidOperationException(errorMessageStringBuilder.ToString());
         }
     }
 }
