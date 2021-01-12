@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="maxWith">The maximum image width.</param>
         /// <param name="maxHeight">The maximum image height</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWith, int maxHeight)
+        public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWidth, int maxHeight)
         {
             if (browserFile is BrowserFile browserFileInternal)
             {
-                return browserFileInternal.Owner.ConvertToImageFileAsync(browserFileInternal, format, maxWith, maxHeight);
+                return browserFileInternal.Owner.ConvertToImageFileAsync(browserFileInternal, format, maxWidth, maxHeight);
             }
 
             throw new InvalidOperationException($"Cannot perform this operation on custom {typeof(IBrowserFile)} implementations.");
