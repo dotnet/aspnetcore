@@ -1,6 +1,6 @@
 parameters:
   enableSourceLinkValidation: false
-  enableSigningValidation: false
+  enableSigningValidation: true
   enableSymbolValidation: false
   enableNugetValidation: true
   publishInstallersAndChecksums: false
