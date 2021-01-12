@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             {
                 lock (_shutdownLock)
                 {
-                    _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
+                    _shutdownReason = shutdownReason;
 
                     _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
                     _stream.Shutdown();
