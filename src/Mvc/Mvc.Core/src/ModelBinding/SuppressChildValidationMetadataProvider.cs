@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -51,12 +52,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="Type"/> for which to suppress validation of children.
         /// </summary>
-        public Type Type { get; }
+        public Type? Type { get; }
 
         /// <summary>
         /// Gets the full name of a type for which to suppress validation of children.
         /// </summary>
-        public string FullTypeName { get; }
+        public string? FullTypeName { get; }
 
         /// <inheritdoc />
         public void CreateValidationMetadata(ValidationMetadataProviderContext context)
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Debug.Fail("We shouldn't get here.");
         }
 
-        private bool IsMatchingName(Type type)
+        private bool IsMatchingName(Type? type)
         {
             Debug.Assert(FullTypeName != null);
 
