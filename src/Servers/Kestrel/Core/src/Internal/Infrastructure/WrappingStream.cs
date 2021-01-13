@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override void EndWrite(IAsyncResult asyncResult)
             => _inner.EndWrite(asyncResult);
 
-        [Obsolete("This Remoting API is not supported and throws PlatformNotSupportedException.", DiagnosticId = "SYSLIB0010", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
         public override object InitializeLifetimeService()
             => _inner.InitializeLifetimeService();
 
