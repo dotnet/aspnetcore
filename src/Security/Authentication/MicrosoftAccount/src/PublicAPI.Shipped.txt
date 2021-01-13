@@ -6,29 +6,29 @@ Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions.Mic
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties() -> void
 Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.MicrosoftAccountHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions> options, Microsoft.Extensions.Logging.ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder, Microsoft.AspNetCore.Authentication.ISystemClock clock) -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHint.get -> string
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHint.set -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.get -> string
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.set -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string, string> items) -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string, string> items, System.Collections.Generic.IDictionary<string, object> parameters) -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.get -> string
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.set -> void
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseMode.get -> string
-~Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseMode.set -> void
-~const Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.AuthenticationScheme = "Microsoft" -> string
-~override Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.BuildChallengeUrl(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string redirectUri) -> string
-~override Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.CreateTicketAsync(System.Security.Claims.ClaimsIdentity identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket>
-~static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
-~static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
-~static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
-~static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.AuthorizationEndpoint -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.DisplayName -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.TokenEndpoint -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.UserInformationEndpoint -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHintKey -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHintKey -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.PromptKey -> string
-~static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseModeKey -> string
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.MicrosoftAccountHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHint.get -> string?
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHint.set -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.get -> string?
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.set -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string!>! items) -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string!>! items, System.Collections.Generic.IDictionary<string!, object!>! parameters) -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.get -> string?
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.set -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseMode.get -> string?
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseMode.set -> void
+const Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.AuthenticationScheme = "Microsoft" -> string!
+override Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.BuildChallengeUrl(Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! redirectUri) -> string!
+override Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountHandler.CreateTicketAsync(System.Security.Claims.ClaimsIdentity! identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse! tokens) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
+static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.MicrosoftAccountExtensions.AddMicrosoftAccount(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! displayName, System.Action<Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.AuthorizationEndpoint -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.DisplayName -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.TokenEndpoint -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftAccountDefaults.UserInformationEndpoint -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHintKey -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHintKey -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.PromptKey -> string!
+static readonly Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseModeKey -> string!
