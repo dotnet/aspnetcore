@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class TestHttp1Connection : Http1Connection
+    internal class TestHttp1Connection : Http1Connection
     {
-        public TestHttp1Connection(Http1ConnectionContext context)
+        public TestHttp1Connection(HttpConnectionContext context)
             : base(context)
         {
         }

@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,29 +14,35 @@ namespace CreateDefaultBuilderApp
     {
         static void Main(string[] args)
         {
-            string responseMessage = string.Empty;
+            string responseMessage = null;
 
             WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-                .ConfigureServices((context, services) =>
-                {
-                    responseMessage = GetResponseMessage(context, services);
-                })
-                .Configure(app =>
-                {
-                    app.Run(context =>
+                .ConfigureServices((context, services) => responseMessage = responseMessage ?? GetResponseMessage(context))
+                .ConfigureKestrel(options => options
+                    .Configure(options.ConfigurationLoader.Configuration)
+                    .Endpoint("HTTP", endpointOptions =>
                     {
-                        return context.Response.WriteAsync(responseMessage);
-                    });
-                })
+                        if (responseMessage == null
+                            && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
+                        {
+                            responseMessage = "Default Kestrel configuration not read.";
+                        }
+                    }))
+                .Configure(app => app.Run(context =>
+                {
+                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+                    return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
+                }))
                 .Build().Run();
         }
 
-        private static string GetResponseMessage(WebHostBuilderContext context, IServiceCollection services)
+        private static string GetResponseMessage(WebHostBuilderContext context)
         {
             // Verify ContentRootPath set
-            if (!string.Equals(Directory.GetCurrentDirectory(), context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
+            var contentRoot = Environment.GetEnvironmentVariable("ASPNETCORE_CONTENTROOT");
+            if (!string.Equals(contentRoot, context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
             {
-                return $"Current directory incorrect. Expected: {Directory.GetCurrentDirectory()} Actual: {context.HostingEnvironment.ContentRootPath}";
+                return $"ContentRootPath incorrect. Expected: {contentRoot} Actual: {context.HostingEnvironment.ContentRootPath}";
             }
 
             // Verify appsettings.json loaded
@@ -70,7 +75,7 @@ namespace CreateDefaultBuilderApp
             // TODO: Verify AddDebug called
             // TODO: Verify UseIISIntegration called
 
-            return context.HostingEnvironment.ApplicationName;
+            return null;
         }
     }
 }

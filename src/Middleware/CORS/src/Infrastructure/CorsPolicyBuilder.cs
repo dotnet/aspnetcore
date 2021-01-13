@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// Creates a new instance of the <see cref="CorsPolicyBuilder"/>.
         /// </summary>
         /// <param name="origins">list of origins which can be added.</param>
+        /// <remarks> <see cref="WithOrigins(string[])"/> for details on normalizing the origin value.</remarks>
         public CorsPolicyBuilder(params string[] origins)
         {
             WithOrigins(origins);
@@ -36,14 +37,53 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         /// <param name="origins">The origins that are allowed.</param>
         /// <returns>The current policy builder.</returns>
+        /// <remarks>
+        /// This method normalizes the origin value prior to adding it to <see cref="CorsPolicy.Origins"/> to match
+        /// the normalization performed by the browser on the value sent in the <c>ORIGIN</c> header.
+        /// <list type="bullet">
+        /// <item>
+        /// If the specified origin has an internationalized domain name (IDN), the punycoded value is used. If the origin
+        /// specifies a default port (e.g. 443 for HTTPS or 80 for HTTP), this will be dropped as part of normalization.
+        /// Finally, the scheme and punycoded host name are culture invariant lower cased before being added to the <see cref="CorsPolicy.Origins"/>
+        /// collection.
+        /// </item>
+        /// <item>
+        /// For all other origins, normalization involves performing a culture invariant lower casing of the host name.
+        /// </item>
+        /// </list>
+        /// </remarks>
         public CorsPolicyBuilder WithOrigins(params string[] origins)
         {
-            foreach (var req in origins)
+            foreach (var origin in origins)
             {
-                _policy.Origins.Add(req);
+                var normalizedOrigin = GetNormalizedOrigin(origin);
+                _policy.Origins.Add(normalizedOrigin);
             }
 
             return this;
+        }
+
+        internal static string GetNormalizedOrigin(string origin)
+        {
+            if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
+                !string.Equals(uri.IdnHost, uri.Host, StringComparison.Ordinal))
+            {
+                var builder = new UriBuilder(uri.Scheme.ToLowerInvariant(), uri.IdnHost.ToLowerInvariant());
+                if (!uri.IsDefaultPort)
+                {
+                    // Uri does not have a way to differentiate between a port value inferred by default (e.g. Port = 80 for http://www.example.com) and
+                    // a default port value that is specified (e.g. Port = 80 for http://www.example.com:80). Although the HTTP or FETCH spec does not say 
+                    // anything about including the default port as part of the Origin header, at the time of writing, browsers drop "default" port when navigating
+                    // and when sending the Origin header. All this goes to say, it appears OK to drop an explicitly specified port, 
+                    // if it is the default port when working with an IDN host.
+                    builder.Port = uri.Port;
+                }
+
+                return builder.Uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+            }
+
+            return origin.ToLowerInvariant();
         }
 
         /// <summary>
@@ -184,6 +224,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <returns>The constructed <see cref="CorsPolicy"/>.</returns>
         public CorsPolicy Build()
         {
+            if (_policy.AllowAnyOrigin && _policy.SupportsCredentials)
+            {
+                throw new InvalidOperationException(Resources.InsecureConfiguration);
+            }
+
             return _policy;
         }
 

@@ -2,7 +2,8 @@
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.AspNetCore.AspNetCoreModuleV1": {}
+            "Microsoft.AspNetCore.AspNetCoreModule": {},
+            "Microsoft.AspNetCore.AspNetCoreModuleV2": {}
         }
     },
     "Default": {

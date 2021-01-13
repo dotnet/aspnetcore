@@ -270,11 +270,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a value indicating where the current metadata should be ordered relative to other properties
         /// in its containing type.
         /// </summary>
+        /// <value>The order value of the current metadata.</value>
         /// <remarks>
         /// <para>For example this property is used to order items in <see cref="Properties"/>.</para>
         /// <para>The default order is <c>10000</c>.</para>
         /// </remarks>
-        /// <value>The order value of the current metadata.</value>
         public abstract int Order { get; }
 
         /// <summary>
@@ -326,6 +326,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract bool ValidateChildren { get; }
 
         /// <summary>
+        /// Gets a value that indicates if the model, or one of it's properties, or elements has associated validators.
+        /// </summary>
+        /// <remarks>
+        /// When <see langword="false"/>, validation can be assume that the model is valid (<see cref="ModelValidationState.Valid"/>) without
+        /// inspecting the object graph.
+        /// </remarks>
+        public virtual bool? HasValidators { get; }
+
+        /// <summary>
         /// Gets a collection of metadata items for validators.
         /// </summary>
         public abstract IReadOnlyList<object> ValidatorMetadata { get; }
@@ -340,8 +349,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
         /// </summary>
         /// <remarks>
-        /// A complex type is defined as a <see cref="Type"/> which has a
-        /// <see cref="TypeConverter"/> that can convert from <see cref="string"/>.
+        /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
+        /// from <see cref="string"/>. Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
+        /// not all, BCL value types are simple types.
         /// </remarks>
         public bool IsComplexType { get; private set; }
 

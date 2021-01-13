@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Owin
                 { OwinConstants.ResponseStatusCode, new FeatureMap<IHttpResponseFeature>(feature => feature.StatusCode, () => 200, (feature, value) => feature.StatusCode = Convert.ToInt32(value)) },
                 { OwinConstants.ResponseReasonPhrase, new FeatureMap<IHttpResponseFeature>(feature => feature.ReasonPhrase, (feature, value) => feature.ReasonPhrase = Convert.ToString(value)) },
                 { OwinConstants.ResponseHeaders, new FeatureMap<IHttpResponseFeature>(feature => Utilities.MakeDictionaryStringArray(feature.Headers), (feature, value) => feature.Headers = Utilities.MakeHeaderDictionary((IDictionary<string, string[]>)value)) },
-                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseFeature>(feature => feature.Body, () => Stream.Null, (feature, value) => feature.Body = (Stream)value) },
+                { OwinConstants.ResponseBody, new FeatureMap<IHttpResponseBodyFeature>(feature => feature.Stream, () => Stream.Null, (feature, value) => context.Response.Body = (Stream)value) }, // DefaultHttpResponse.Body.Set has built in logic to handle replacing the feature.
                 { OwinConstants.CommonKeys.OnSendingHeaders, new FeatureMap<IHttpResponseFeature>(
                     feature => new Action<Action<object>, object>((cb, state) => {
                         feature.OnStarting(s =>
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Owin
                 { OwinConstants.CommonKeys.RemoteIpAddress, new FeatureMap<IHttpConnectionFeature>(feature => feature.RemoteIpAddress.ToString(),
                     (feature, value) => feature.RemoteIpAddress = IPAddress.Parse(Convert.ToString(value))) },
 
-                { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpSendFileFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
+                { OwinConstants.SendFiles.SendAsync, new FeatureMap<IHttpResponseBodyFeature>(feature => new SendFileFunc(feature.SendFileAsync)) },
 
                 { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User,
                     ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),

@@ -1,6 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -11,426 +17,28 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Authentication.Tests;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    public class JwtBearerTests
+    public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     {
+        protected override string DefaultScheme => JwtBearerDefaults.AuthenticationScheme;
+        protected override Type HandlerType => typeof(JwtBearerHandler);
+        protected override bool SupportsSignIn { get => false; }
+        protected override bool SupportsSignOut { get => false; }
+
+        protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
+        {
+            services.AddJwtBearer(o =>
+            {
+                ConfigureDefaults(o);
+                configure.Invoke(o);
+            });
+        }
+
         private void ConfigureDefaults(JwtBearerOptions o)
         {
-        }
-
-        [Fact]
-        public async Task CanForwardDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler>("auth1", "auth1");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-            });
-
-            var forwardDefault = new TestHandler();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-        }
-
-        [Fact]
-        public async Task ForwardSignInThrows()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardSignOut = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-        }
-
-        [Fact]
-        public async Task ForwardSignOutThrows()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardSignOut = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-        }
-
-        [Fact]
-        public async Task ForwardForbidWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ForbidAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(1, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardAuthenticateWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardAuthenticate = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(1, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardChallengeWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler>("specific", "specific");
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardChallenge = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ChallengeAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(1, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardSelectorWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, selector.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, selector.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, selector.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task NullForwardSelectorUsesDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => null;
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task SpecificForwardWinsOverSelectorAndDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-                o.ForwardAuthenticate = "specific";
-                o.ForwardChallenge = "specific";
-                o.ForwardSignIn = "specific";
-                o.ForwardSignOut = "specific";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, specific.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, specific.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, specific.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-        }
-
-        [Fact]
-        public async Task VerifySchemeDefaults()
-        {
-            var services = new ServiceCollection();
-            services.AddAuthentication().AddJwtBearer();
-            var sp = services.BuildServiceProvider();
-            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
-            var scheme = await schemeProvider.GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
-            Assert.NotNull(scheme);
-            Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
-            Assert.Null(scheme.DisplayName);
         }
 
         [Fact]
@@ -631,12 +239,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Theory]
-        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience is invalid")]
-        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience '(null)' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer '(null)' is invalid")]
         [InlineData(typeof(SecurityTokenNoExpirationException), "The token has no expiration")]
-        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid")]
-        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid yet")]
-        [InlineData(typeof(SecurityTokenExpiredException), "The token is expired")]
+        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '(null)', Expires: '(null)'")]
+        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/01/0001 00:00:00'")]
+        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '01/01/0001 00:00:00'")]
         [InlineData(typeof(SecurityTokenInvalidSignatureException), "The signature is invalid")]
         [InlineData(typeof(SecurityTokenSignatureKeyNotFoundException), "The signature key was not found")]
         public async Task ExceptionReportedInHeaderForAuthenticationFailures(Type errorType, string message)
@@ -645,6 +253,26 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             {
                 options.SecurityTokenValidators.Clear();
                 options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+            });
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Theory]
+        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience 'Bad Audience' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer 'Bad Issuer' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '01/15/2001 00:00:00', Expires: '02/20/2000 00:00:00'")]
+        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/15/2045 00:00:00'")]
+        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '02/20/2000 00:00:00'")]
+        public async Task ExceptionReportedInHeaderWithDetailsForAuthenticationFailures(Type errorType, string message)
+        {
+            var server = CreateServer(options =>
+            {
+                options.SecurityTokenValidators.Clear();
+                options.SecurityTokenValidators.Add(new DetailedInvalidTokenValidator(errorType));
             });
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
@@ -681,7 +309,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience is invalid; The signature key was not found\"",
+            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience '(null)' is invalid; The signature key was not found\"",
                 response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
@@ -1051,6 +679,77 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Assert.Equal(string.Empty, response.ResponseText);
         }
 
+        [Fact]
+        public async Task EventOnForbidden_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbiddenSkip_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbidden_ResponseModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        context.Response.StatusCode = 418;
+                        return context.Response.WriteAsync("You Shall Not Pass");
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(418, (int)response.Response.StatusCode);
+            Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+        }
+
         class InvalidTokenValidator : ISecurityTokenValidator
         {
             public InvalidTokenValidator()
@@ -1080,6 +779,69 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 var constructor = ExceptionType.GetTypeInfo().GetConstructor(new[] { typeof(string) });
                 var exception = (Exception)constructor.Invoke(new[] { ExceptionType.Name });
                 throw exception;
+            }
+        }
+
+        class DetailedInvalidTokenValidator : ISecurityTokenValidator
+        {
+            public DetailedInvalidTokenValidator()
+            {
+                ExceptionType = typeof(SecurityTokenException);
+            }
+
+            public DetailedInvalidTokenValidator(Type exceptionType)
+            {
+                ExceptionType = exceptionType;
+            }
+
+            public Type ExceptionType { get; set; }
+
+            public bool CanValidateToken => true;
+
+            public int MaximumTokenSizeInBytes
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
+            public bool CanReadToken(string securityToken) => true;
+
+            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+            {
+                if (ExceptionType == typeof(SecurityTokenInvalidAudienceException))
+                {
+                    throw new SecurityTokenInvalidAudienceException("SecurityTokenInvalidAudienceException") { InvalidAudience = "Bad Audience" };
+                }
+                if (ExceptionType == typeof(SecurityTokenInvalidIssuerException))
+                {
+                    throw new SecurityTokenInvalidIssuerException("SecurityTokenInvalidIssuerException") { InvalidIssuer = "Bad Issuer" };
+                }
+                if (ExceptionType == typeof(SecurityTokenInvalidLifetimeException))
+                {
+                    throw new SecurityTokenInvalidLifetimeException("SecurityTokenInvalidLifetimeException")
+                    {
+                        NotBefore = new DateTime(2001, 1, 15),
+                        Expires = new DateTime(2000, 2, 20),
+                    };
+                }
+                if (ExceptionType == typeof(SecurityTokenNotYetValidException))
+                {
+                    throw new SecurityTokenNotYetValidException("SecurityTokenNotYetValidException")
+                    {
+                        NotBefore = new DateTime(2045, 1, 15),
+                    };
+                }
+                if (ExceptionType == typeof(SecurityTokenExpiredException))
+                {
+                    throw new SecurityTokenExpiredException("SecurityTokenExpiredException")
+                    {
+                        Expires = new DateTime(2000, 2, 20),
+                    };
+                }
+                else
+                {
+                    throw new NotImplementedException(ExceptionType.Name);
+                }
             }
         }
 
@@ -1188,6 +950,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                             await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                         }
+                        else if (context.Request.Path == new PathString("/forbidden"))
+                        {
+                            // Simulate Forbidden
+                            await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                        }
                         else if (context.Request.Path == new PathString("/signIn"))
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
@@ -1232,6 +999,27 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             return transaction;
+        }
+
+        private static (string tokenText, SymmetricSecurityKey key) CreateStandardTokenAndKey()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+            return (tokenText, key);
         }
     }
 }

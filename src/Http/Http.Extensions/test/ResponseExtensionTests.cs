@@ -3,8 +3,11 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Extensions
@@ -33,6 +36,23 @@ namespace Microsoft.AspNetCore.Http.Extensions
             context.Features.Set<IHttpResponseFeature>(new StartedResponseFeature());
 
             Assert.Throws<InvalidOperationException>(() => context.Response.Clear());
+        }
+
+        [Theory]
+        [InlineData(true, false, 301)]
+        [InlineData(false, false, 302)]
+        [InlineData(true, true, 308)]
+        [InlineData(false, true, 307)]
+        public void Redirect_SetsResponseCorrectly(bool permanent, bool preserveMethod, int expectedStatusCode)
+        {
+            var location = "http://localhost/redirect";
+            var context = new DefaultHttpContext();
+            context.Response.StatusCode = StatusCodes.Status200OK;
+
+            context.Response.Redirect(location, permanent, preserveMethod);
+
+            Assert.Equal(location, context.Response.Headers[HeaderNames.Location].First());
+            Assert.Equal(expectedStatusCode, context.Response.StatusCode);
         }
 
         private class StartedResponseFeature : IHttpResponseFeature

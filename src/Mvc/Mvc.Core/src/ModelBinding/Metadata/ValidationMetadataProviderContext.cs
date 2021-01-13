@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             Key = key;
             Attributes = attributes.Attributes;
+            ParameterAttributes = attributes.ParameterAttributes;
             PropertyAttributes = attributes.PropertyAttributes;
             TypeAttributes = attributes.TypeAttributes;
 
@@ -42,6 +43,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the <see cref="ModelMetadataIdentity"/>.
         /// </summary>
         public ModelMetadataIdentity Key { get; }
+
+        /// <summary>
+        /// Gets the parameter attributes.
+        /// </summary>
+        public IReadOnlyList<object> ParameterAttributes { get; }
 
         /// <summary>
         /// Gets the property attributes.

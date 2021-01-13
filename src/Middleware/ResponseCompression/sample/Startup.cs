@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,6 +26,11 @@ namespace ResponseCompressionSample
                 options.Providers.Add<CustomCompressionProvider>();
                 // .Append(TItem) is only available on Core.
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
+
+                ////Example of using excluded and wildcard MIME types:
+                ////Compress all MIME types except various media types, but do compress SVG images.
+                //options.MimeTypes = new[] { "*/*", "image/svg+xml" };
+                //options.ExcludedMimeTypes = new[] { "image/*", "audio/*", "video/*" };
             });
         }
 
@@ -48,7 +53,7 @@ namespace ResponseCompressionSample
                 {
                     context.Response.ContentType = "text/plain";
                     // Disables compression on net451 because that GZipStream does not implement Flush.
-                    context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+                    context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
                     for (int i = 0; i < 100; i++)
                     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices;
 using Microsoft.AspNetCore.SpaServices.Extensions.Util;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods for configuring prerendering of a Single Page Application.
     /// </summary>
+    [Obsolete("Prerendering is no longer supported out of box")]
     public static class SpaPrerenderingExtensions
     {
         /// <summary>
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
         /// <param name="configuration">Supplies configuration for the prerendering middleware.</param>
+        [Obsolete("Prerendering is no longer supported out of box")]
         public static void UseSpaPrerendering(
             this ISpaBuilder spaBuilder,
             Action<SpaPrerenderingOptions> configuration)
@@ -61,9 +64,9 @@ namespace Microsoft.AspNetCore.Builder
             var applicationBuilder = spaBuilder.ApplicationBuilder;
             var serviceProvider = applicationBuilder.ApplicationServices;
             var nodeServices = GetNodeServices(serviceProvider);
-            var applicationStoppingToken = serviceProvider.GetRequiredService<IApplicationLifetime>()
+            var applicationStoppingToken = serviceProvider.GetRequiredService<IHostApplicationLifetime>()
                 .ApplicationStopping;
-            var applicationBasePath = serviceProvider.GetRequiredService<IHostingEnvironment>()
+            var applicationBasePath = serviceProvider.GetRequiredService<IWebHostEnvironment>()
                 .ContentRootPath;
             var moduleExport = new JavaScriptModuleExport(capturedBootModulePath);
             var excludePathStrings = (options.ExcludeUrls ?? Array.Empty<string>())

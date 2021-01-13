@@ -7,9 +7,9 @@
       "PipelineDepth": 16
     },
     "Source": {
-      "Repository": "https://github.com/aspnet/KestrelHttpServer.git",
-      "BranchOrCommit": "dev",
-      "Project": "benchmarkapps/PlatformBenchmarks/PlatformBenchmarks.csproj"
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "BranchOrCommit": "master",
+      "Project": "src/Servers/Kestrel/perf/PlatformBenchmarks/PlatformBenchmarks.csproj"
     },
     "Port": 8080
   },

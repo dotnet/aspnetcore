@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace HttpsSample
@@ -33,7 +34,7 @@ namespace HttpsSample
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment environment)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
         {
             if (!environment.IsDevelopment())
             {

@@ -3,8 +3,8 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Reflection;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 

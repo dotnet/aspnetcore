@@ -44,12 +44,15 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         /// Asserts that the result has not Succeeded and that first error matches error's code and Description.
         /// </summary>
-        public static void IsFailure(IdentityResult result, IdentityError error)
+        public static void IsFailure(IdentityResult result, IdentityError error = null)
         {
             Assert.NotNull(result);
             Assert.False(result.Succeeded);
-            Assert.Equal(error.Description, result.Errors.First().Description);
-            Assert.Equal(error.Code, result.Errors.First().Code);
+            if (error != null)
+            {
+                Assert.Equal(error.Description, result.Errors.FirstOrDefault()?.Description);
+                Assert.Equal(error.Code, result.Errors.FirstOrDefault()?.Code);
+            }
         }
 
         /// <summary>

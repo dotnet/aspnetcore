@@ -34,35 +34,6 @@ namespace Microsoft.AspNetCore.Identity.Test
                 new IdentityErrorDescriber(), null);
         }
 
-        public static Mock<ILogger<T>> MockILogger<T>(StringBuilder logStore = null) where T : class
-        {
-            logStore = logStore ?? LogMessage;
-            var logger = new Mock<ILogger<T>>();
-            logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(),
-                It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback((LogLevel logLevel, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
-                {
-                    if (formatter == null)
-                    {
-                        logStore.Append(state.ToString());
-                    }
-                    else
-                    {
-                        logStore.Append(formatter(state, exception));
-                    }
-                    logStore.Append(" ");
-                });
-            logger.Setup(x => x.BeginScope(It.IsAny<object>())).Callback((object state) =>
-                {
-                    logStore.Append(state.ToString());
-                    logStore.Append(" ");
-                });
-            logger.Setup(x => x.IsEnabled(LogLevel.Debug)).Returns(true);
-            logger.Setup(x => x.IsEnabled(LogLevel.Warning)).Returns(true);
-
-            return logger;
-        }
-
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
         {
             store = store ?? new Mock<IUserStore<TUser>>().Object;
@@ -89,10 +60,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new AspNetRoleManager<TRole>(store, roles,
+            return new RoleManager<TRole>(store, roles,
                 new UpperInvariantLookupNormalizer(),
                 new IdentityErrorDescriber(),
-                null,
                 null);
         }
 

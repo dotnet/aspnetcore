@@ -1,0 +1,39 @@
+﻿
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Globbing Page - My ASP.NET Application</title>
+
+    
+</head>
+<body>
+    <h1 style="font-family: cursive;">ASP.NET vNext - Globbing Page</h1>
+    <p>| <a href="/" style="background-color: gray;color: white;border-radius: 3px;border: 1px solid black;padding: 3px;font-family: cursive;">My Home</a>
+       | <a href="/home/about" style="background-color: gray;color: white;border-radius: 3px;border: 1px solid black;padding: 3px;font-family: cursive;">My About</a> 
+       | <a href="/home/help" style="background-color: gray;color: white;border-radius: 3px;border: 1px solid black;padding: 3px;font-family: cursive;">My Help</a> |</p>
+    <div>
+        
+
+Globbing
+
+        <hr />
+        <footer>
+            
+    <!-- File wildcard -->
+    <script src="/js/dist/dashboardHome.js"></script>
+    <!-- RazorClassLib folder wildcard -->
+    <script src="/_content/RazorPagesClassLibrary/razorlib/file.js"></script>
+    <!-- RazorClassLib deep wildcard -->
+    <script src="/js/dist/dashboardHome.js"></script><script src="/_content/RazorPagesClassLibrary/razorlib/file.js"></script>
+    <!-- RazorClassLib Exclude local -->
+    <script src="/_content/RazorPagesClassLibrary/razorlib/file.js"></script>
+    <!-- local Exclude lib-->
+    <script src="/js/dist/dashboardHome.js"></script>
+
+        </footer>
+    </div>
+</body>
+</html>

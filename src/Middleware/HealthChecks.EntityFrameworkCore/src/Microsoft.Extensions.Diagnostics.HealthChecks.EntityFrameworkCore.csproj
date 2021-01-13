@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>
+      Components for performing health checks using EntityFrameworkCore.
+    </Description>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
+    <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+  </ItemGroup>
+
+</Project>

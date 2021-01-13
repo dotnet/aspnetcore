@@ -1,0 +1,31 @@
+{
+  "sdk": {
+    "version": "3.1.111"
+  },
+  "tools": {
+    "dotnet": "3.1.111",
+    "runtimes": {
+      "dotnet/x64": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ],
+      "dotnet/x86": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ]
+    },
+    "Git": "2.22.0",
+    "jdk": "11.0.3",
+    "vs": {
+      "version": "16.3",
+      "components": [
+        "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.Windows10SDK.17134"
+      ]
+    }
+  },
+  "msbuild-sdks": {
+    "Yarn.MSBuild": "1.15.2",
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.20569.8",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.20569.8"
+  }
+}

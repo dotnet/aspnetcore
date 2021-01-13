@@ -2,21 +2,15 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC API explorer functionality for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

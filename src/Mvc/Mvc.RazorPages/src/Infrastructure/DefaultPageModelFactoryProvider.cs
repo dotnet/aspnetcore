@@ -7,7 +7,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
+    internal class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
     {
         private static readonly Func<PropertyInfo, PropertyActivator<PageContext>> _createActivateInfo =
             CreateActivateInfo;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _modelActivator = modelActivator;
         }
 
-        public virtual Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor)
+        public Func<PageContext, object> CreateModelFactory(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, object> CreateModelDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

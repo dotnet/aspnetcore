@@ -1,4 +1,19 @@
 <Project>
+  <!-- Set versioning properties after Arcade SDK targets have been imported. -->
+  <PropertyGroup>
+    <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
+    <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
+    <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
+    <BundleVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+    <!-- Used for generating stable upgrade codes for bundles -->
+    <Version>$(BundleVersion)</Version>
+
+    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <InstallDir>$(ProductName)</InstallDir>
     <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
@@ -6,19 +21,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageGuidInputs>$(Version);$(Platform)</PackageGuidInputs>
-    <BundleGuidInputs>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion);$(Platform)</BundleGuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
   </PropertyGroup>
-
-  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(PackageGuidInputs);$(OutputType)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 
@@ -28,16 +40,36 @@
   </Target>
 
   <Target Name="_GenerateBundleGuids" Condition="'$(OutputType)' == 'bundle'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(BundleGuidInputs)">
+    <!-- Don't need to use the name of the bundle since we have separate namespace GUIDs. The name will also changes based on the milestone and destabalize
+         the upgrade code. Bundle upgrades pivot on Major.Minor.Patch changes. For example, 3.0.1-preview 1 can upgrade to 3.0.1-preview 8, but 3.0.1
+         cannot upgrade to 3.0.2 or 3.1. -->
+    <PropertyGroup>
+      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion);$(Platform)</BundleGuidInputs>
+    </PropertyGroup>
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleNameShort);$(BundleGuidInputs);$(OutputType)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleUpgradeCode" />
     </GenerateGuid>
 
     <PropertyGroup>
-      <DefineConstants>$(DefineConstants);BundleProviderKey=$(BundleProviderKey);BundleUpgradeCode=$(BundleUpgradeCode)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleVersion=$(BundleVersion);BundleProviderKey=$(BundleProviderKey);BundleUpgradeCode=$(BundleUpgradeCode)</DefineConstants>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
+    <Error Text="Missing required property: PackageFileName" Condition="'$(PackageFileName)' == ''" />
+  </Target>
+
+  <Target Name="CopyToArtifactsDirectory"
+          Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
+          BeforeTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
+    <ItemGroup>
+      <_cabs Include="$(TargetDir)**/*.cab" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
 </Project>

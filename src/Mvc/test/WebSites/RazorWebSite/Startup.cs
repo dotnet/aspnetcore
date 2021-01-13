@@ -3,15 +3,12 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 
 namespace RazorWebSite
 {
@@ -19,8 +16,6 @@ namespace RazorWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            var updateableFileProvider = new UpdateableFileProvider();
-            services.AddSingleton(updateableFileProvider);
             services.AddSingleton<ITagHelperComponent, TestHeadTagHelperComponent>();
             services.AddSingleton<ITagHelperComponent, TestBodyTagHelperComponent>();
 
@@ -28,10 +23,6 @@ namespace RazorWebSite
                 .AddMvc()
                 .AddRazorOptions(options =>
                 {
-                    options.FileProviders.Add(new EmbeddedFileProvider(
-                        typeof(Startup).GetTypeInfo().Assembly,
-                        $"{nameof(RazorWebSite)}.EmbeddedResources"));
-                    options.FileProviders.Add(updateableFileProvider);
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
                     options.ViewLocationExpanders.Add(new BackSlashExpander());
                 })
@@ -43,7 +34,8 @@ namespace RazorWebSite
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
                 })
-                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();
@@ -53,6 +45,9 @@ namespace RazorWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+
+            app.UseRouting();
+
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
@@ -70,23 +65,11 @@ namespace RazorWebSite
                 }
             });
 
-            app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
     }
 }
-

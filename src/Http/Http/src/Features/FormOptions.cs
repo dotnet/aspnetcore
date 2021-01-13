@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormOptions
     {
+        internal static readonly FormOptions Default = new FormOptions();
+
         public const int DefaultMemoryBufferThreshold = 1024 * 64;
         public const int DefaultBufferBodyLengthLimit = 1024 * 1024 * 128;
         public const int DefaultMultipartBoundaryLengthLimit = 128;

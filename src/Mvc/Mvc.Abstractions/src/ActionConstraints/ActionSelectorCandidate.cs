@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
     /// <summary>
     /// A candidate action for action selection.
     /// </summary>
-    public struct ActionSelectorCandidate
+    public readonly struct ActionSelectorCandidate
     {
         /// <summary>
         /// Creates a new <see cref="ActionSelectorCandidate"/>.

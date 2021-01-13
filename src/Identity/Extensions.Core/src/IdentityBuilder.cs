@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
             {
-                throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTokenProvider", UserType.Name));
+                throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTwoFactorTokenProvider", UserType.Name));
             }
             Services.Configure<IdentityOptions>(options =>
             {
@@ -166,7 +166,8 @@ namespace Microsoft.AspNetCore.Identity
         {
             RoleType = typeof(TRole);
             AddRoleValidator<RoleValidator<TRole>>();
-            Services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
+            Services.TryAddScoped<RoleManager<TRole>>();
+            Services.AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(UserClaimsPrincipalFactory<,>).MakeGenericType(UserType, RoleType));
             return this;
         }
 

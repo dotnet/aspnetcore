@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object>>
     {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     case 3:
                         return new KeyValuePair<string, object>("ContentLength", _request.ContentLength);
                     case 4:
-                        return new KeyValuePair<string, object>("Scheme", _request.Scheme.ToString());
+                        return new KeyValuePair<string, object>("Scheme", _request.Scheme);
                     case 5:
                         return new KeyValuePair<string, object>("Host", _request.Host.ToString());
                     case 6:

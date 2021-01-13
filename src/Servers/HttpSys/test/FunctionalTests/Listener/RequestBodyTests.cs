@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -17,184 +17,29 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class RequestBodyTests
     {
         [ConditionalFact]
-        public async Task RequestBody_SyncReadEnabledByDefault_ThrowsWhenDisabled()
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
+        public async Task RequestBody_SyncReadDisabledByDefault_WorksWhenEnabled()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                Assert.True(server.Options.AllowSynchronousIO);
+                Assert.False(server.Options.AllowSynchronousIO);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[100];
+                Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(input, 0, input.Length));
+
+                context.AllowSynchronousIO = true;
 
                 Assert.True(context.AllowSynchronousIO);
                 var read = context.Request.Body.Read(input, 0, input.Length);
                 context.Response.ContentLength = read;
                 context.Response.Body.Write(input, 0, read);
 
-                context.AllowSynchronousIO = false;
-                Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(input, 0, input.Length));
-
                 string response = await responseTask;
                 Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_ReadSync_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, "Hello World");
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[100];
-                int read = context.Request.Body.Read(input, 0, input.Length);
-                context.Response.ContentLength = read;
-                context.Response.Body.Write(input, 0, read);
-                
-                string response = await responseTask;
-                Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_ReadAsync_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, "Hello World");
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[100];
-                int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
-                context.Response.ContentLength = read;
-                await context.Response.Body.WriteAsync(input, 0, read);
-
-                string response = await responseTask;
-                Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_ReadBeginEnd_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, "Hello World");
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[100];
-                int read = context.Request.Body.EndRead(context.Request.Body.BeginRead(input, 0, input.Length, null, null));
-                context.Response.ContentLength = read;
-                context.Response.Body.EndWrite(context.Response.Body.BeginWrite(input, 0, read, null, null));
-
-                string response = await responseTask;
-                Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_InvalidBuffer_ArgumentException()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, "Hello World");
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[100];
-                Assert.Throws<ArgumentNullException>("buffer", () => context.Request.Body.Read(null, 0, 1));
-                Assert.Throws<ArgumentOutOfRangeException>("offset", () => context.Request.Body.Read(input, -1, 1));
-                Assert.Throws<ArgumentOutOfRangeException>("offset", () => context.Request.Body.Read(input, input.Length + 1, 1));
-                Assert.Throws<ArgumentOutOfRangeException>("size", () => context.Request.Body.Read(input, 10, -1));
-                Assert.Throws<ArgumentOutOfRangeException>("size", () => context.Request.Body.Read(input, 0, 0));
-                Assert.Throws<ArgumentOutOfRangeException>("size", () => context.Request.Body.Read(input, 1, input.Length));
-                Assert.Throws<ArgumentOutOfRangeException>("size", () => context.Request.Body.Read(input, 0, input.Length + 1));
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_ReadSyncPartialBody_Success()
-        {
-            StaggardContent content = new StaggardContent();
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, content);
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[10];
-                int read = context.Request.Body.Read(input, 0, input.Length);
-                Assert.Equal(5, read);
-                content.Block.Release();
-                read = context.Request.Body.Read(input, 0, input.Length);
-                Assert.Equal(5, read);
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_ReadAsyncPartialBody_Success()
-        {
-            StaggardContent content = new StaggardContent();
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address, content);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[10];
-                int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
-                Assert.Equal(5, read);
-                content.Block.Release();
-                read = await context.Request.Body.ReadAsync(input, 0, input.Length);
-                Assert.Equal(5, read);
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task RequestBody_PostWithImidateBody_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendSocketRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                byte[] input = new byte[11];
-                int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
-                Assert.Equal(10, read);
-                read = await context.Request.Body.ReadAsync(input, 0, input.Length);
-                Assert.Equal(0, read);
-                context.Response.ContentLength = 10;
-                await context.Response.Body.WriteAsync(input, 0, 10);
-                context.Dispose();
-
-                string response = await responseTask;
-                string[] lines = response.Split('\r', '\n');
-                Assert.Equal(13, lines.Length);
-                Assert.Equal("HTTP/1.1 200 OK", lines[0]);
-                Assert.Equal("0123456789", lines[12]);
             }
         }
 
@@ -206,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
@@ -231,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -255,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
@@ -280,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -297,6 +142,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2206", FlakyOn.All)]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();
@@ -305,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -333,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var client = new HttpClient();
                 var responseTask = client.PostAsync(address, content);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[10];
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken);
                 Assert.False(context.DisconnectToken.IsCancellationRequested);
@@ -362,51 +208,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
-        }
-
-        private async Task<string> SendSocketRequestAsync(string address)
-        {
-            // Connect with a socket
-            Uri uri = new Uri(address);
-            TcpClient client = new TcpClient();
-            try
-            {
-                await client.ConnectAsync(uri.Host, uri.Port);
-                NetworkStream stream = client.GetStream();
-
-                // Send an HTTP GET request
-                byte[] requestBytes = BuildPostRequest(uri);
-                await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
-                StreamReader reader = new StreamReader(stream);
-                return await reader.ReadToEndAsync();
-            }
-            catch (Exception)
-            {
-                ((IDisposable)client).Dispose();
-                throw;
-            }
-        }
-
-        private byte[] BuildPostRequest(Uri uri)
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("POST");
-            builder.Append(" ");
-            builder.Append(uri.PathAndQuery);
-            builder.Append(" HTTP/1.1");
-            builder.AppendLine();
-
-            builder.Append("Host: ");
-            builder.Append(uri.Host);
-            builder.Append(':');
-            builder.Append(uri.Port);
-            builder.AppendLine();
-
-            builder.AppendLine("Connection: close");
-            builder.AppendLine("Content-Length: 10");
-            builder.AppendLine();
-            builder.Append("0123456789");
-            return Encoding.ASCII.GetBytes(builder.ToString());
         }
 
         private class StaggardContent : HttpContent

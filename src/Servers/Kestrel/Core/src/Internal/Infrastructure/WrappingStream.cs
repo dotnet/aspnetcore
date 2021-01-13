@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class WrappingStream : Stream
+    internal sealed class WrappingStream : Stream
     {
         private Stream _inner;
         private bool _disposed;
@@ -68,10 +68,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => _inner.ReadAsync(buffer, offset, count, cancellationToken);
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
             => _inner.ReadAsync(destination, cancellationToken);
-#endif
 
         public override int ReadByte()
             => _inner.ReadByte();
@@ -88,10 +86,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => _inner.WriteAsync(buffer, offset, count, cancellationToken);
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
             => _inner.WriteAsync(source, cancellationToken);
-#endif
 
         public override void WriteByte(byte value)
             => _inner.WriteByte(value);

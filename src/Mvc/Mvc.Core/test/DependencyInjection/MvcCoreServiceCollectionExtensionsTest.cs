@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
             var services = new ServiceCollection();
 
             // Register a mock implementation of each service, AddMvcServices should add another implementation.
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
                 services.Add(ServiceDescriptor.Transient(serviceType.Key, mockType));
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
             MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
             // Assert
-            foreach (var serviceType in MutliRegistrationServiceTypes)
+            foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 AssertServiceCountEquals(services, serviceType.Key, serviceType.Value.Length + 1);
 
@@ -152,9 +152,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -173,12 +173,12 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
-            environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -196,11 +196,11 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName();
             var applicationName = assemblyName.FullName;
             environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -222,14 +222,14 @@ namespace Microsoft.AspNetCore.Mvc
                 var services = new ServiceCollection();
                 MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
-                var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+                var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
                     .Select(sd => sd.ServiceType);
             }
         }
 
-        private Dictionary<Type, Type[]> MutliRegistrationServiceTypes
+        private Dictionary<Type, Type[]> MultiRegistrationServiceTypes
         {
             get
             {
@@ -247,6 +247,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(MvcOptionsConfigureCompatibilityOptions),
+                            typeof(MvcCoreMvcOptionsSetup),
                         }
                     },
                     {
@@ -304,6 +305,22 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(DefaultApplicationModelProvider),
                             typeof(ApiBehaviorApplicationModelProvider),
+                        }
+                    },
+                    {
+                        typeof(IStartupFilter),
+                        new Type[]
+                        {
+                            typeof(MiddlewareFilterBuilderStartupFilter)
+                        }
+                    },
+                    {
+                        typeof(MatcherPolicy),
+                        new Type[]
+                        {
+                            typeof(ConsumesMatcherPolicy),
+                            typeof(ActionConstraintMatcherPolicy),
+                            typeof(DynamicControllerEndpointMatcherPolicy),
                         }
                     },
                 };

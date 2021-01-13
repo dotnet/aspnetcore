@@ -1,59 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
                                                     LocalizationFile="thm.wxl"/>
+            <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 
-        <!-- Ensure upgrades from 2.1.0 thru 2.1.23 for x64. -->
-        <?if $(var.MajorVersion)=2 and $(var.MinorVersion)=1?>
-        <!--'Microsoft .NET Core 2.1.23 - Windows Server Hosting'-->
-        <RelatedBundle Id="{51DC181C-C29B-31D7-96CA-08B2B9322269}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.22 - Windows Server Hosting'-->
-        <RelatedBundle Id="{0629F7DA-FD3D-3C43-9C74-7CAB326D8408}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.21 - Windows Server Hosting'-->
-        <RelatedBundle Id="{20C43973-8701-31FF-B9F4-ED31D88182AC}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.20 - Windows Server Hosting'-->
-        <RelatedBundle Id="{AB66B18F-8B14-3FF3-A5F1-97435938BA40}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.19 - Windows Server Hosting'-->
-        <RelatedBundle Id="{9A7F3800-1BCF-3C0A-B1B2-948D6AE80CCB}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.18 - Windows Server Hosting'-->
-        <RelatedBundle Id="{B137EB6B-4CBA-32A0-A4E7-D2B8F3FE334A}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.17 - Windows Server Hosting'-->
-        <RelatedBundle Id="{F0A8977D-AA93-3745-9727-1DBAD0EC9BA4}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.16 - Windows Server Hosting'-->
-        <RelatedBundle Id="{C9D00CC1-53C8-38DD-85C5-F07298DCE93C}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.15 - Windows Server Hosting'-->
-        <RelatedBundle Id="{7CBFCC91-2F4E-3C4F-9F02-269BF67D0EF3}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.14 - Windows Server Hosting'-->
-        <RelatedBundle Id="{790FD6ED-06E1-3CA0-B4FA-8CC0690001F5}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.12 - Windows Server Hosting'-->
-        <RelatedBundle Id="{127E0E5D-65E8-339B-9E56-710CD7CAE521}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.11 - Windows Server Hosting'-->
-        <RelatedBundle Id="{3B4D8EC5-02AC-3F77-9ECE-83B92C6232D9}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.10 - Windows Server Hosting'-->
-        <RelatedBundle Id="{A265BA58-64C8-31B5-92DC-7C071095667E}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.9 - Windows Server Hosting'-->
-        <RelatedBundle Id="{91B539CE-A269-32B4-8EB9-66A3285DED97}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.8 - Windows Server Hosting'-->
-        <RelatedBundle Id="{9F1D5735-B2F6-3C74-8F6B-2390BB739697}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.7 - Windows Server Hosting'-->
-        <RelatedBundle Id="{E5555A4A-7AF5-3733-BB60-EC74A4874842}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.6 - Windows Server Hosting'-->
-        <RelatedBundle Id="{EC44441A-0A96-39C4-A4A3-C6D65FEA6E3C}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.5 - Windows Server Hosting'-->
-        <RelatedBundle Id="{E22164E9-31C6-3C19-8FB9-F9EA2711EEAC}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.4 - Windows Server Hosting'-->
-        <RelatedBundle Id="{38010573-29EA-472C-91FA-779DC0A6CDED}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.3 - Windows Server Hosting'-->
-        <RelatedBundle Id="{0ECB5C6B-3FD7-36C2-8138-61AE2E999E76}" Action="Upgrade" />
+        <!-- Ensure upgrades from 3.0.0 preview 1 and 2 (Preview 3 was not shipped). Conditioned for the 3.0.0 family. Hosting bundle simships x86/x64 so there's
+             a single set of upgrade codes. -->
+        <?if $(var.Version)=3.0.0.0?>
+        <RelatedBundle Action="Upgrade" Id="{D8BFC3A1-72B1-36C1-9E5A-49FE36A5563B}"/>
+        <RelatedBundle Action="Upgrade" Id="{EA47395A-BC9B-3ECC-8229-229BC9528DF6}"/>
         <?endif?>
+
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
+        <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
+        <!--'Microsoft .NET Core 3.1.9 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{E4913286-9840-380A-8743-3DF839147FF0}"/>
+        <!--'Microsoft .NET Core 3.1.8 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{81D96996-6F29-3BAC-82C6-9156FE1BD5FB}"/>
+        <!--'Microsoft .NET Core 3.1.7 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{44D6EE78-0248-36AD-9B2C-26FA728E477D}"/>
+        <!--'Microsoft .NET Core 3.1.6 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{C0453F97-42DD-3CD5-9FCE-018DD1F1A020}"/>
+        <!--'Microsoft .NET Core 3.1.5 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{8BF71BDA-9BF7-3AD5-9E6B-3656FEEC95AA}"/>
+        <!--'Microsoft .NET Core 3.1.4 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{6CF8B606-EE26-3536-BEFE-410EA70DBB94}"/>
+        <!--'Microsoft .NET Core 3.1.3 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{71F4232E-75BF-32AF-9A8F-1E87CC17CC6C}"/>
+        <!--'Microsoft .NET Core 3.1.2 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{3CDBE509-D166-335B-BD17-EA6FDAC4E03A}"/>
+        <!--'Microsoft .NET Core 3.1.1 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{62155173-E27B-3936-997F-56DA96ED19B5}"/>
+        <!--'Microsoft .NET Core 3.1.0 - Windows Server Hosting'-->
+        <RelatedBundle Action="Upgrade" Id="{6F741175-2F75-3845-B30B-6C364101EAA2}"/>
+        <?endif?>
+
+        <PayloadGroup Id="PG_Resources">
+            <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
+            <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
+            <Payload Id="PL_Strings_$(var.lcid)" SourceFile="$(var.lcid)\Strings.wxl" Name="$(var.lcid)\Strings.wxl" Compressed="yes"/>
+            <?endforeach?>
+        </PayloadGroup>
 
         <!-- Customizations of the default BA -->
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
@@ -68,8 +63,9 @@
         <Variable Name="OPT_NO_SHAREDFX" Value="0" bal:Overridable="yes"/>
         <Variable Name="OPT_NO_RUNTIME" Value="0" bal:Overridable="yes"/>
         <Variable Name="OPT_NO_X86" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_SHARED_CONFIG_CHECK" Value="0" bal:Overridable="yes" />
 
-        <!-- These variables control the state of conditional UI text elements. 
+        <!-- These variables control the state of conditional UI text elements.
              They are disabled by default and enabled based on whether or not we detect that IIS is installed -->
         <Variable Name="InstallResetIISState" Value="disable"/>
         <Variable Name="InstallNoIISState" Value="disable"/>

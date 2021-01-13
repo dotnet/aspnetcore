@@ -1,6 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,7): Error RZ9999: The 'model' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,1): Error RZ9999: The 'model' directive may only occur once per document.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,8): Error RZ9999: The 'model' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(6,8): Error RZ9999: The 'inject' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,9): Error RZ9999: The 'inject' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,26): Error RZ9999: The 'inject' directive expects an identifier.

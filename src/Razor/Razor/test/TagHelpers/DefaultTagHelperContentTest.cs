@@ -363,6 +363,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             {
                 return new TheoryData<string>
                 {
+                    null,
                     string.Empty,
                     " ",
                     "\n",

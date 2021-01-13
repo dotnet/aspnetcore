@@ -36,7 +36,10 @@ namespace PackageBaselineGenerator
 
         public Program()
         {
-            _source = Option("-s|--package-source <SOURCE>", "The NuGet source of packages to fetch", CommandOptionType.SingleValue);
+            _source = Option(
+                "-s|--package-source <SOURCE>",
+                "The NuGet source of packages to fetch",
+                CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
             _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
@@ -45,9 +48,6 @@ namespace PackageBaselineGenerator
 
         private async Task<int> Run()
         {
-            var source = _source.HasValue()
-                ? _source.Value().TrimEnd('/')
-                : "https://api.nuget.org/v3/index.json";
             if (_output.HasValue() && _update.HasValue())
             {
                 await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
@@ -56,6 +56,7 @@ namespace PackageBaselineGenerator
 
             var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
             var input = XDocument.Load(inputPath);
+            var source = _source.HasValue() ? _source.Value().TrimEnd('/') : "https://api.nuget.org/v3/index.json";
             var packageSource = new PackageSource(source);
             var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
             var sourceRepository = new SourceRepository(packageSource, providers);
@@ -88,6 +89,11 @@ namespace PackageBaselineGenerator
             Directory.CreateDirectory(tempDir);
 
             var baselineVersion = input.Root.Attribute("Version").Value;
+
+            // Baseline and .NET Core versions always align in non-preview releases.
+            var parsedVersion = Version.Parse(baselineVersion);
+            var defaultTarget = ((parsedVersion.Major < 5) ? "netcoreapp" : "net") +
+                $"{parsedVersion.Major}.{parsedVersion.Minor}";
 
             var doc = new XDocument(
                 new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
@@ -136,12 +142,34 @@ namespace PackageBaselineGenerator
 
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
+                        // Don't bother generating empty ItemGroup elements.
+                        if (group.Packages.Count() == 0)
+                        {
+                            continue;
+                        }
+
+                        // Handle changes to $(DefaultNetCoreTargetFramework) even if some projects are held back.
+                        var targetCondition = $"'$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}'";
+                        if (string.Equals(
+                            group.TargetFramework.GetShortFolderName(),
+                            defaultTarget,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetCondition =
+                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR {targetCondition})";
+                        }
+
+                        var itemGroup = new XElement(
+                            "ItemGroup",
+                            new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND {targetCondition} "));
                         doc.Root.Add(itemGroup);
 
                         foreach (var dependency in group.Packages)
                         {
-                            itemGroup.Add(new XElement("BaselinePackageReference", new XAttribute("Include", dependency.Id), new XAttribute("Version", dependency.VersionRange.ToString())));
+                            itemGroup.Add(
+                                new XElement("BaselinePackageReference",
+                                new XAttribute("Include", dependency.Id),
+                                new XAttribute("Version", dependency.VersionRange.ToString())));
                         }
                     }
                 }
@@ -177,7 +205,7 @@ namespace PackageBaselineGenerator
                 var versionAttribute = document.Root.Attribute("Version");
                 hasChanged = await TryUpdateVersionAsync(
                     versionAttribute,
-                    "Microsoft.AspNetCore.App",
+                    "Microsoft.AspNetCore.App.Runtime.win-x64",
                     packageMetadataResource,
                     logger,
                     cacheContext);

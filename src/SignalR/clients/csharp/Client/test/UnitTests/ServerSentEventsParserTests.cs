@@ -43,14 +43,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Theory]
-        [InlineData("data: T\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: T\r\ndata: Hello, World\r\r\n\n", "There was an error in the frame format")]
-        [InlineData("data: T\r\ndata: Hello, World\n\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T\r\ndata: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: T\r\nfoo: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("foo: T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("food: T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("data: T\r\ndata: Hello, World\r\n\n", "There was an error in the frame format")]
-        [InlineData("data: T\r\ndata: Hello\n, World\r\n\r\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T\r\ndata: Hello\n, World\r\n\r\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: Hello, World\r\n\r\\", "Expected a \\r\\n frame ending")]
         [InlineData("data: Major\r\ndata:  Key\rndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
         [InlineData("data: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
@@ -138,14 +138,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Theory]
-        [InlineData("data: T", "\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T", "\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: T\r\n", "data: Hello, World\r\r\n\n", "There was an error in the frame format")]
-        [InlineData("data: T\r\n", "data: Hello, World\n\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T\r\n", "data: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: T\r\nf", "oo: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("foo", ": T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("food:", " T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
         [InlineData("data: T\r\ndata: Hello, W", "orld\r\n\n", "There was an error in the frame format")]
-        [InlineData("data: T\r\nda", "ta: Hello\n, World\r\n\r\n", "Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'")]
+        [InlineData("data: T\r\nda", "ta: Hello\n, World\r\n\r\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
         [InlineData("data: ", "T\r\ndata: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
         [InlineData("data: B\r\ndata: SGVs", "bG8sIFdvcmxk\r\n\n\n", "There was an error in the frame format")]
         public async Task ParseMessageAcrossMultipleReadsFailure(string encodedMessagePart1, string encodedMessagePart2, string expectedMessage)

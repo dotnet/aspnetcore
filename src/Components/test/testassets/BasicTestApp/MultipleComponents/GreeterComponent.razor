@@ -1,0 +1,19 @@
+<div class="greet-wrapper">
+    <h3 class="@interactive">Greeter component</h3>
+    <p class="greet">Hello @Name</p>
+</div>
+@code{
+    [Parameter] public string Name { get; set; }
+
+    private string interactive = "";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && Name == null)
+        {
+            Name = "Alfred";
+            interactive = "interactive";
+            StateHasChanged();
+        }
+    }
+}

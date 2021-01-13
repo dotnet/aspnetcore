@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert
-            var ex = Assert.Throws<FormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input)));
+            var ex = Assert.Throws<FormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input), false));
             Assert.Equal(expected, ex.Message);
         }
     }

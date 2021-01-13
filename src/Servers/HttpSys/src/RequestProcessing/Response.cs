@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,6 +17,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Response
     {
+        // Support is assumed until we get an error and turn it off.
+        private static bool SupportsGoAway = true;
+
         private ResponseState _responseState;
         private string _reasonPhrase;
         private ResponseBody _nativeStream;
@@ -314,6 +316,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
                                 IntPtr.Zero);
 
+                        // GoAway is only supported on later versions. Retry.
+                        if (statusCode == ErrorCodes.ERROR_INVALID_PARAMETER
+                            && (flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY) != 0)
+                        {
+                            flags &= ~HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
+                            statusCode =
+                                HttpApi.HttpSendHttpResponse(
+                                    RequestContext.Server.RequestQueue.Handle,
+                                    Request.RequestId,
+                                    (uint)flags,
+                                    pResponse,
+                                    &cachePolicy,
+                                    &bytesSent,
+                                    IntPtr.Zero,
+                                    0,
+                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
+                                    IntPtr.Zero);
+
+                            // Succeeded without GoAway, disable them.
+                            if (statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)
+                            {
+                                SupportsGoAway = false;
+                            }
+                        }
+
                         if (asyncResult != null &&
                             statusCode == ErrorCodes.ERROR_SUCCESS &&
                             HttpSysListener.SkipIOCPCallbackOnSuccess)
@@ -333,6 +360,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpApiTypes.HTTP_FLAGS ComputeHeaders(long writeCount, bool endOfRequest = false)
         {
+            Headers.IsReadOnly = false; // Temporarily unlock
             if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
             {
                 RequestContext.Server.Options.Authentication.SetAuthenticationChallenge(RequestContext);
@@ -416,8 +444,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+                if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)
+                {
+                    flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
+                }
             }
 
+            Headers.IsReadOnly = true;
             return flags;
         }
 

@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class RequestCookieCollection : IRequestCookieCollection
+    internal class RequestCookieCollection : IRequestCookieCollection
     {
         private const string EnableCookieNameDecoding = "Microsoft.AspNetCore.Http.EnableCookieNameDecoding";
         private bool _enableCookieNameDecoding;

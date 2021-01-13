@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public enum HttpRequestTarget
+    internal enum HttpRequestTarget
     {
         Unknown = -1,
         // origin-form is the most common

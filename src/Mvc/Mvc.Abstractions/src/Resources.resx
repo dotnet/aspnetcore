@@ -174,4 +174,7 @@
   <data name="BindingSource_FormFile" xml:space="preserve">
     <value>FormFile</value>
   </data>
+  <data name="BinderType_MustBeIModelBinder" xml:space="preserve">
+    <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
+  </data>
 </root>

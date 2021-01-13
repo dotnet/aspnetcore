@@ -27,12 +27,12 @@ In the SignalR protocol, the following types of messages can be sent:
 | `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error.            |
 | `Invocation`          | Caller         | Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.                 |
 | `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
-| `StreamItem`          | Callee         | Indicates individual items of streamed response data from a previous `StreamInvocation` message.                               |
-| `Completion`          | Callee         | Indicates a previous `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
+| `StreamItem`          | Callee, Caller | Indicates individual items of streamed response data from a previous `StreamInvocation` message or streamed uploads from an invocation with streamIds.                               |
+| `Completion`          | Callee, Caller | Indicates a previous `Invocation` or `StreamInvocation` has completed or a stream in an `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
-After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
+After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection. Both the `HandshakeRequest` and `HandshakeResponse` messages must be terminated by the ASCII character `0x1E` (record separator).
 
 The `HandshakeRequest` message contains the following properties:
 
@@ -72,7 +72,7 @@ There are three kinds of interactions between the Caller and the Callee:
 
 In order to perform a single invocation, the Caller follows the following basic flow:
 
-1. Allocate a unique `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
+1. Allocate a unique (per connection) `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
 2. Send an `Invocation` or `StreamingInvocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
 3. If the `Invocation` is marked as non-blocking (see "Non-Blocking Invocations" below), stop here and immediately yield back to the application.
 4. Wait for a `StreamItem` or `Completion` message with a matching `Invocation ID`
@@ -101,11 +101,15 @@ On the Callee side, it is up to the Callee's Binder to determine if a method cal
 
 On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `Completion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `StreamInvocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `Completion` message. The Caller is free to ignore any `StreamItem` messages as well as the `Completion` message after sending `CancelInvocation`.
 
+## Upload streaming
+
+The Caller can send streaming data to the Callee, they can begin such a process by making an `Invocation` or `StreamInvocation` and adding a "StreamIds" property with an array of IDs that will represent the stream(s) associated with the invocation. The IDs must be unique from any other stream IDs used by the same Caller. The Caller then sends `StreamItem` messages with the "InvocationId" property set to the ID for the stream they are sending over. The Caller can end the stream by sending a `Completion` message with the ID of the stream they are completing. If the Callee sends a `Completion` the Caller should stop sending `StreamItem` and `Completion` messages, and the Callee is free to ignore any `StreamItem` and `Completion` messages that are sent after the invocation has completed.
+
 ## Completion and results
 
 An Invocation is only considered completed when the `Completion` message is received. Receiving **any** message using the same `Invocation ID` after a `Completion` message has been received for that invocation is considered a protocol error and the recipient may immediately terminate the connection.
 
-If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `Completion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. If the Callee receives an `Invocation` message for a method that would yield multiple results or the Callee receives a `StreamInvocationMessage` for a method that would return a single result it **MUST** complete the invocation with a `Completion` message containing an error.
+If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `Completion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. If the Callee receives an `Invocation` message for a method that would yield multiple results or the Callee receives a `StreamInvocation` message for a method that would return a single result it **MUST** complete the invocation with a `Completion` message containing an error.
 
 ## Errors
 
@@ -131,7 +135,7 @@ Keep alive behavior is achieved via the `Ping` message type. **Either endpoint**
 
 Ping messages do not have any payload, they are completely empty messages (aside from the encoding necessary to identify the message as a `Ping` message).
 
-It is up to the server implementation to decide how frequently (if at all) `Ping` frames are sent. The ASP.NET Core implementation sends `Ping` frames only when using the Server Sent Events and WebSockets transports, at a default interval of 15 seconds (configurable). However, a `Ping` frame is only sent if 15 seconds elapses since the last message was sent. Clients may choose to use the "Ping rate" to provide a timeout for the server connection. Since the Client can expect the server to send `Ping` frames at regular intervals, even when the connection is idle, it can use that to determine if the server has left without closing the connection. The ASP.NET Core implementation (both JavaScript and C#) use a default timeout window of 30 seconds, which is twice the server ping rate interval.
+The default ASP.NET Core implementation automatically pings both directions on active connections. These pings are at regular intervals, and allow detection of unexpected disconnects (for example, unplugging a server). If the client detects that the server has stopped pinging, the client will close the connection, and vice versa. If there's other traffic through the connection, keep-alive pings aren't needed. A `Ping` is only sent if the interval has elapsed without a message being sent.
 
 ## Example
 
@@ -150,26 +154,26 @@ public int SingleResultFailure(int x, int y)
 
 public IEnumerable<int> Batched(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
         yield return i;
     }
 }
 
-[return: Streamed] // This is a made-up attribute that is used to indicate to the .NET Binder that it should stream results
-public IEnumerable<int> Stream(int count)
+public async IAsyncEnumerable<int> Stream(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
+        await Task.Delay(10);
         yield return i;
     }
 }
 
-[return: Streamed] // This is a made-up attribute that is used to indicate to the .NET Binder that it should stream results
-public IEnumerable<int> StreamFailure(int count)
+public async IAsyncEnumerable<int> StreamFailure(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
+        await Task.Delay(10);
         yield return i;
     }
     throw new Exception("Ran out of data!");
@@ -179,6 +183,16 @@ private List<string> _callers = new List<string>();
 public void NonBlocking(string caller)
 {
     _callers.Add(caller);
+}
+
+public async Task<int> AddStream(IAsyncEnumerable<int> stream)
+{
+    int sum = 0;
+    await foreach(var item in stream)
+    {
+        sum += item;
+    }
+    return sum;
 }
 ```
 
@@ -269,6 +283,17 @@ S->C: Completion { Id = 42 } // This can be ignored
 C->S: Invocation { Target = "NonBlocking", Arguments = [ "foo" ] }
 ```
 
+### Stream from Client to Server (`AddStream` example above)
+
+```
+C->S: Invocation { Id = 42, Target = "AddStream", Arguments = [ ], StreamIds = [ 1 ] }
+C->S: StreamItem { Id = 1, Item = 1 }
+C->S: StreamItem { Id = 1, Item = 2 }
+C->S: StreamItem { Id = 1, Item = 3 }
+C->S: Completion { Id = 1 }
+S->C: Completion { Id = 42, Result = 6 }
+```
+
 ### Ping
 
 ```
@@ -279,6 +304,8 @@ C->S: Ping
 
 In the JSON Encoding of the SignalR Protocol, each Message is represented as a single JSON object, which should be the only content of the underlying message from the Transport. All property names are case-sensitive. The underlying protocol is expected to handle encoding and decoding of the text, so the JSON string should be encoded in whatever form is expected by the underlying transport. For example, when using the ASP.NET Sockets transports, UTF-8 encoding is always used for text.
 
+All JSON messages must be terminated by the ASCII character `0x1E` (record separator).
+
 ### Invocation Message Encoding
 
 An `Invocation` message is a JSON object with the following properties:
@@ -287,6 +314,7 @@ An `Invocation` message is a JSON object with the following properties:
 * `invocationId` - An optional `String` encoding the `Invocation ID` for a message.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section
+* `streamIds` - An optional `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
@@ -314,6 +342,22 @@ Example (Non-Blocking):
 }
 ```
 
+Example (Invocation with stream from Caller):
+
+```json
+{
+    "type": 1,
+    "invocationId": "123",
+    "target": "Send",
+    "arguments": [
+        42
+    ],
+    "streamIds": [
+        "1"
+    ]
+}
+```
+
 ### StreamInvocation Message Encoding
 
 A `StreamInvocation` message is a JSON object with the following properties:
@@ -322,6 +366,7 @@ A `StreamInvocation` message is a JSON object with the following properties:
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder.
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section.
+* `streamIds` - An optional `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
@@ -437,6 +482,7 @@ A `Close` message is a JSON object with the following properties
 
 * `type` - A `Number` with the literal value `7`, indicating that this message is a `Close`.
 * `error` - An optional `String` encoding the error message.
+* `allowReconnect` - An optional `Boolean` indicating to clients with automatic reconnects enabled that they should attempt to reconnect after receiving the message.
 
 Example - A `Close` message without an error
 ```json
@@ -450,6 +496,15 @@ Example - A `Close` message with an error
 {
     "type": 7,
     "error": "Connection closed because of an error!"
+}
+```
+
+Example - A `Close` message with an error that allows automatic client reconnects.
+```json
+{
+    "type": 7,
+    "error": "Connection closed because of an error!",
+    "allowReconnect": true
 }
 ```
 
@@ -477,8 +532,6 @@ Message headers are encoded into a JSON object, with string values, that are sto
 
 Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
 
-JSON payloads are separated with the record separator (0x1e) to ease the parsing.
-
 ## MessagePack (MsgPack) encoding
 
 In the MsgPack Encoding of the SignalR Protocol, each Message is represented as a single MsgPack array containing items that correspond to properties of the given hub protocol message. The array items may be primitive values, arrays (e.g. method arguments) or objects (e.g. argument value). The first item in the array is the message type.
@@ -490,7 +543,7 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 `Invocation` messages have the following structure:
 
 ```
-[1, Headers, InvocationId, NonBlocking, Target, [Arguments]]
+[1, Headers, InvocationId, NonBlocking, Target, [Arguments], [StreamIds]]
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.
@@ -500,18 +553,19 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
   * A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
+* StreamIds - An `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 #### Example:
 
 The following payload
 
 ```
-0x94 0x01 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
@@ -527,17 +581,18 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 #### Non-Blocking Example:
 
 The following payload
 ```
-0x95 0x01 0x80 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x80 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xc0` - `nil` (Invocation ID)
@@ -550,13 +605,14 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 ### StreamInvocation Message Encoding
 
 `StreamInvocation` messages have the following structure:
 
 ```
-[4, Headers, InvocationId, Target, [Arguments]]
+[4, Headers, InvocationId, Target, [Arguments], [StreamIds]]
 ```
 
 * `4` - Message Type - `4` indicates this is a `StreamInvocation` message.
@@ -564,18 +620,19 @@ is decoded as follows:
 * InvocationId - A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
+* StreamIds - An `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
 The following payload
 
 ```
-0x95 0x04 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x04 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x04` - `4` (Message Type - `StreamInvocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
@@ -591,6 +648,7 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 ### StreamItem Message Encoding
 
@@ -761,11 +819,12 @@ is decoded as follows:
 `Close` messages have the following structure
 
 ```
-[7, Error]
+[7, Error, AllowReconnect?]
 ```
 
 * `7` - Message Type - `7` indicates this is a `Close` message.
 * `Error` - Error - A `String` encoding the error for the message.
+* `AllowReconnect` - An optional `Boolean` indicating to clients with automatic reconnects enabled that they should attempt to reconnect after receiving the message.
 
 Examples:
 
@@ -785,6 +844,23 @@ is decoded as follows:
 * `0x79` - `y`
 * `0x7a` - `z`
 
+#### Close message that allows automatic client reconnects
+
+The following payload:
+```
+0x93 0x07 0xa3 0x78 0x79 0x7a 0xc3
+```
+
+is decoded as follows:
+
+* `0x93` - 3-element array
+* `0x07` - `7` (Message Type - `Close` message)
+* `0xa3` - string of length 3 (Error)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0xc3` - `True` (AllowReconnect)
+
 ### MessagePack Headers Encoding
 
 Headers are encoded in MessagePack messages as a Map that immediately follows the type value. The Map can be empty, in which case it is represented by the byte `0x80`. If there are items in the map,
@@ -795,12 +871,12 @@ Headers are not valid in a Ping message. The Ping message is **always exactly en
 Below shows an example encoding of a message containing headers:
 
 ```
-0x95 0x01 0x82 0xa1 0x78 0xa1 0x79 0xa1 0x7a 0xa1 0x7a 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x82 0xa1 0x78 0xa1 0x79 0xa1 0x7a 0xa1 0x7a 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 and is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x82` - Map of length 2
 * `0xa1` - string of length 1 (Key)
@@ -824,6 +900,7 @@ and is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 and interpreted as an Invocation message with headers: `'x' = 'y'` and `'z' = 'z'`.
 
@@ -834,7 +911,7 @@ Below are some sample type mappings between JSON types and the .NET client. This
 |                  .NET Type                      |          JSON Type           |   MsgPack format family   |
 | ----------------------------------------------- | ---------------------------- |---------------------------|
 | `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `positive fixint`, `uint` |
-| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixit`, `int`            |
+| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixint`, `int`           |
 | `System.UInt64`                                 | `Number`                     | `positive fixint`, `uint` |
 | `System.Int64`                                  | `Number`                     | `fixint`, `int`           |
 | `System.Single`                                 | `Number`                     | `float`                   |

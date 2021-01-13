@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -12,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    internal class LocalhostListenOptions : ListenOptions
+    internal sealed class LocalhostListenOptions : ListenOptions
     {
         internal LocalhostListenOptions(int port)
             : base(new IPEndPoint(IPAddress.Loopback, port))
@@ -28,11 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal override string GetDisplayName()
         {
-            var scheme = ConnectionAdapters.Any(f => f.IsHttps)
-                ? "https"
-                : "http";
-
-            return $"{scheme}://localhost:{IPEndPoint.Port}";
+            return $"{Scheme}://localhost:{IPEndPoint.Port}";
         }
 
         internal override async Task BindAsync(AddressBindContext context)
@@ -76,14 +71,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
             {
-                HandleType = HandleType,
                 KestrelServerOptions = KestrelServerOptions,
-                NoDelay = NoDelay,
                 Protocols = Protocols,
+                IsTls = IsTls
             };
 
             options._middleware.AddRange(_middleware);
-            options.ConnectionAdapters.AddRange(ConnectionAdapters);
             return options;
         }
     }

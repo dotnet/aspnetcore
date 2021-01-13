@@ -326,7 +326,7 @@ exit:
 WCHAR CA_DATA_DELIM[] = { '^', 0 };
 
 //
-// BUGBUG - Prefix will barf on this
+// BUGBUG - Prefix will not handle this
 // Can I really trust this data hasn't been tampered with?
 //
 WCHAR *

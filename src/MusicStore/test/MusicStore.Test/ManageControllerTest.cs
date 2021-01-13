@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MusicStore.Models;
@@ -15,36 +13,14 @@ using Xunit;
 
 namespace MusicStore.Controllers
 {
-    public class ManageControllerTest
+    public class ManageControllerTest : IClassFixture<ManageControllerTest.Fixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly Fixture _fixture;
 
-        public ManageControllerTest()
+        public ManageControllerTest(Fixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddOptions();
-            services
-                .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<MusicStoreContext>();
-
-            services.AddMvc();
-            services.AddSingleton<IAuthenticationService, NoOpAuth>();
-            services.AddLogging();
-
-            // IHttpContextAccessor is required for SignInManager, and UserManager
-            var context = new DefaultHttpContext();
-            services.AddSingleton<IHttpContextAccessor>(
-                new HttpContextAccessor()
-                    {
-                        HttpContext = context,
-                    });
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
@@ -55,19 +31,19 @@ namespace MusicStore.Controllers
             var phone = "abcdefg";
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
 
-            var userManager = _serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var userManager = _fixture.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var userManagerResult = await userManager.CreateAsync(
                 new ApplicationUser { Id = userId, UserName = "Test", TwoFactorEnabled = true, PhoneNumber = phone },
                 "Pass@word1");
             Assert.True(userManagerResult.Succeeded);
 
-            var signInManager = _serviceProvider.GetRequiredService<SignInManager<ApplicationUser>>();
+            var signInManager = _fixture.ServiceProvider.GetRequiredService<SignInManager<ApplicationUser>>();
 
-            var httpContext = _serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            var httpContext = _fixture.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-            httpContext.RequestServices = _serviceProvider;
+            httpContext.RequestServices = _fixture.ServiceProvider;
  
-            var schemeProvider = _serviceProvider.GetRequiredService<IAuthenticationSchemeProvider>();
+            var schemeProvider = _fixture.ServiceProvider.GetRequiredService<IAuthenticationSchemeProvider>();
   
             var controller = new ManageController(userManager, signInManager, schemeProvider);
             controller.ControllerContext.HttpContext = httpContext;
@@ -116,5 +92,34 @@ namespace MusicStore.Controllers
             }
         }
 
+        public class Fixture : SqliteInMemoryFixture
+        {
+            public override IServiceCollection ConfigureServices(IServiceCollection services)
+            {
+                services = base.ConfigureServices(services);
+
+                services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+                                services.AddOptions();
+
+
+                services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<MusicStoreContext>();
+
+                services.AddMvc();
+                services.AddSingleton<IAuthenticationService, NoOpAuth>();
+                services.AddLogging();
+
+
+                // IHttpContextAccessor is required for SignInManager, and UserManager
+                var context = new DefaultHttpContext();
+                services.AddSingleton<IHttpContextAccessor>(
+                new HttpContextAccessor()
+                    {
+                        HttpContext = context,
+                    });
+
+                return services;
+            }
+        }
     }
 }

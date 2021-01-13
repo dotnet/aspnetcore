@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         public RemoveExternalLogin(HttpClient client, IHtmlDocument externalLogin, DefaultUIContext context)
             : base(client, externalLogin, context)
         {
-            _removeLoginForm = HtmlAssert.HasForm("#remove-login", externalLogin);
+            _removeLoginForm = HtmlAssert.HasForm($"#remove-login-Contoso", externalLogin);
         }
 
         public async Task<RemoveExternalLogin> RemoveLoginAsync(string loginProvider, string providerKey)

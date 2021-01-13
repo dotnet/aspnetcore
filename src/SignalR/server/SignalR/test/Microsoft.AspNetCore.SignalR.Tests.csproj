@@ -1,18 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-
-    <!--
-      Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
-      Remove when fixed.
-    -->
-    <HasRuntimeOutput>true</HasRuntimeOutput>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <Reference Include="Microsoft.CSharp" />
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,13 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />

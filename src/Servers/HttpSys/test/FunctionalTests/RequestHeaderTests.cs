@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -57,7 +58,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await SendRequestAsync(address, "Custom-Header", customValues);
             }
         }
-        
+
+        [ConditionalFact]
+        public async Task RequestHeaders_ServerAddsCustomHeaders_Success()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                var requestHeaders = httpContext.Request.Headers;
+                var header = KeyValuePair.Create("Custom-Header", new StringValues("custom"));
+                requestHeaders.Add(header);
+
+                Assert.True(requestHeaders.Contains(header));
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(address);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             using (HttpClient client = new HttpClient())

@@ -5,21 +5,26 @@ using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpOutputProducer : IDisposable
+    internal interface IHttpOutputProducer
     {
-        void Abort(ConnectionAbortedException abortReason);
-        Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken);
-        Task FlushAsync(CancellationToken cancellationToken);
-        Task Write100ContinueAsync(CancellationToken cancellationToken);
-        void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);
-        // The reason this is ReadOnlySpan and not ReadOnlyMemory is because writes are always
-        // synchronous. Flushing to get back pressure is the only time we truly go async but
-        // that's after the buffer is copied
+        ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
+        ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken);
+        ValueTask<FlushResult> Write100ContinueAsync();
+        void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted);
+        // This takes ReadOnlySpan instead of ReadOnlyMemory because it always synchronously copies data before flushing.
+        ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
         Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
-        Task WriteStreamSuffixAsync(CancellationToken cancellationToken);
+        ValueTask<FlushResult> WriteStreamSuffixAsync();
+        void Advance(int bytes);
+        Span<byte> GetSpan(int sizeHint = 0);
+        Memory<byte> GetMemory(int sizeHint = 0);
+        void CancelPendingFlush();
+        void Stop();
+        ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken);
+        ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken);
+        void Reset();
     }
 }

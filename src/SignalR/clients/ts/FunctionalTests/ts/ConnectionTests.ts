@@ -4,25 +4,25 @@
 // This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
 // tslint:disable:no-floating-promises
 
-import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@aspnet/signalr";
-import { eachTransport, ECHOENDPOINT_URL } from "./Common";
+import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
+import { eachTransport, ECHOENDPOINT_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
-import { HttpConnection } from "@aspnet/signalr/dist/esm/HttpConnection";
+import { HttpConnection } from "@microsoft/signalr/dist/esm/HttpConnection";
+import "./LogBannerReporter";
+
+const USED_ECHOENDPOINT_URL = shouldRunHttpsTests ? HTTPS_ECHOENDPOINT_URL : ECHOENDPOINT_URL;
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,
     logger: TestLogger.instance,
 };
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
-
 describe("connection", () => {
     it("can connect to the server without specifying transport explicitly", (done) => {
         const message = "Hello World!";
-        const connection = new HttpConnection(ECHOENDPOINT_URL, {
+        const connection = new HttpConnection(USED_ECHOENDPOINT_URL, {
             ...commonOptions,
         });
 
@@ -51,7 +51,7 @@ describe("connection", () => {
                 const message = "Hello World!";
                 // the url should be resolved relative to the document.location.host
                 // and the leading '/' should be automatically added to the url
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(USED_ECHOENDPOINT_URL, {
                     ...commonOptions,
                     transport: transportType,
                 });
@@ -76,10 +76,11 @@ describe("connection", () => {
             });
 
             it("does not log content of messages sent or received by default", (done) => {
+                TestLogger.saveLogsAndReset();
                 const message = "Hello World!";
 
                 // DON'T use commonOptions because we want to specifically test the scenario where logMessageContent is not set.
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(USED_ECHOENDPOINT_URL, {
                     logger: TestLogger.instance,
                     transport: transportType,
                 });
@@ -110,10 +111,11 @@ describe("connection", () => {
             });
 
             it("does log content of messages sent or received when enabled", (done) => {
+                TestLogger.saveLogsAndReset();
                 const message = "Hello World!";
 
                 // DON'T use commonOptions because we want to specifically test the scenario where logMessageContent is set to true (even if commonOptions changes).
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(USED_ECHOENDPOINT_URL, {
                     logMessageContent: true,
                     logger: TestLogger.instance,
                     transport: transportType,

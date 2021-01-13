@@ -1,0 +1,74 @@
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- This does not represent the TFM for the code. It's only here because /t:Pack requires it. -->
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <IsSourcePackage>true</IsSourcePackage>
+    <NoBuild>true</NoBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <DefaultExcludeItems>$(DefaultExcludeItems);$(BaseOutputPath);$(BaseIntermediateOutputPath);</DefaultExcludeItems>
+    <NoWarn>$(NoWarn);CS8021</NoWarn>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="lib\**\*">
+      <Pack>True</Pack>
+      <PackagePath>lib</PackagePath>
+    </None>
+
+    <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(DefaultExcludeItems)">
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Analyzers/src/CompilationFeatureDetector.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/ConfigureMethodVisitor.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/StartupFacts.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/StartupSymbols.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/SymbolNames.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/WellKnownFeatures.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- This project does not produce a binary. Disable the compiler. -->
+  <Target Name="Compile" />
+  <Target Name="CopyFilesToOutputDirectory" />
+</Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <PackageId>$(TargetingPackName).Internal</PackageId>
+    <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+</Project>

@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,17 +13,14 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Options used to configure behavior for types annotated with <see cref="ApiControllerAttribute"/>.
     /// </summary>
-    public class ApiBehaviorOptions
+    public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     {
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
         private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory;
 
         /// <summary>
         /// Delegate invoked on actions annotated with <see cref="ApiControllerAttribute"/> to convert invalid
         /// <see cref="ModelStateDictionary"/> into an <see cref="IActionResult"/>
-        /// <para>
-        /// By default, the delegate produces a <see cref="BadRequestObjectResult"/> that wraps a serialized form
-        /// of <see cref="ModelStateDictionary"/>.
-        /// </para>
         /// </summary>
         public Func<ActionContext, IActionResult> InvalidModelStateResponseFactory
         {
@@ -52,5 +52,40 @@ namespace Microsoft.AspNetCore.Mvc
         /// that are bound from form data.
         /// </summary>
         public bool SuppressConsumesConstraintForFormFileParameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if controllers with <see cref="ApiControllerAttribute"/>
+        /// transform certain client errors.
+        /// <para>
+        /// When <see langword="false"/>, a result filter is added to API controller actions that transforms
+        /// <see cref="IClientErrorActionResult"/>. Otherwise, the filter is suppressed.
+        /// </para>
+        /// <para>
+        /// By default, <see cref="ClientErrorMapping"/> is used to map <see cref="IClientErrorActionResult"/> to a
+        /// <see cref="ProblemDetails"/> instance (returned as the value for <see cref="ObjectResult"/>).
+        /// </para>
+        /// <para>
+        /// To customize the output of the filter (for e.g. to return a different error type), register a custom
+        /// implementation of <see cref="IClientErrorFactory"/> in the service collection.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="false"/>.
+        /// </value>
+        public bool SuppressMapClientErrors { get; set; }
+
+        /// <summary>
+        /// Gets a map of HTTP status codes to <see cref="ClientErrorData"/>. Configured values
+        /// are used to transform <see cref="IClientErrorActionResult"/> to an <see cref="ObjectResult"/>
+        /// instance where the <see cref="ObjectResult.Value"/> is <see cref="ProblemDetails"/>.
+        /// <para>
+        /// Use of this feature can be disabled by resetting <see cref="SuppressMapClientErrors"/>.
+        /// </para>
+        /// </summary>
+        public IDictionary<int, ClientErrorData> ClientErrorMapping { get; } = new Dictionary<int, ClientErrorData>();
+
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }
 }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
   </PropertyGroup>
 

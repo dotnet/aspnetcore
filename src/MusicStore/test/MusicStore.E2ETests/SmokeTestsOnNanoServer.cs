@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -29,7 +29,7 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
         [InlineData(ServerType.Kestrel, 5000, ApplicationType.Standalone)]
-        [InlineData(ServerType.WebListener, 5000, ApplicationType.Standalone)]
+        [InlineData(ServerType.HttpSys, 5000, ApplicationType.Standalone)]
         [InlineData(ServerType.IIS, 8080, ApplicationType.Standalone)]
         public async Task Test(ServerType serverType, int portToListen, ApplicationType applicationType)
         {
@@ -60,7 +60,7 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
         [InlineData(ServerType.Kestrel, 5000, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, 5000, ApplicationType.Portable)]
+        [InlineData(ServerType.HttpSys, 5000, ApplicationType.Portable)]
         [InlineData(ServerType.IIS, 8080, ApplicationType.Portable)]
         public async Task Test(ServerType serverType, int portToListen, ApplicationType applicationType)
         {
@@ -244,7 +244,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountName,
                     _remoteDeploymentConfig.AccountPassword)
                 {
-                    TargetFramework = Helpers.GetTargetFramework(RuntimeFlavor.CoreClr),
+                    TargetFramework = Tfm.NetCoreApp31,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     ApplicationType = applicationType
                 };
@@ -256,7 +256,7 @@ namespace E2ETests
                 {
                     var deploymentResult = await deployer.DeployAsync();
 
-                    await SmokeTestRunner.RunTestsAsync(deploymentResult, logger);
+                    await SmokeTests.RunTestsAsync(deploymentResult, logger);
                 }
             }
         }

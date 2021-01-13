@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
+    <TestGroupName>ApiDescriptionClientTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(MSBuildProjectDirectory)\..\src\build\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="build" />
+    <Content Include="$(MSBuildProjectDirectory)\..\src\buildMultiTargeting\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="buildMultiTargeting" />
+    <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
+
+    <ProjectReference Include="..\src\Microsoft.Extensions.ApiDescription.Client.csproj" />
+  </ItemGroup>
+
+  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
+    <RemoveDir Directories="$(TargetDir)TestProjects" />
+  </Target>
+
+</Project>

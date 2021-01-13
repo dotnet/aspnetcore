@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests

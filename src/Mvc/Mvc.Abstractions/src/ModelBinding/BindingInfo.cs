@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class BindingInfo
     {
+        private Type _binderType;
+
         /// <summary>
         /// Creates a new <see cref="BindingInfo"/>.
         /// </summary>
@@ -48,9 +51,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public string BinderModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Type"/> of the model binder used to bind the model.
+        /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the
+        /// model.
         /// </summary>
-        public Type BinderType { get; set; }
+        /// <remarks>
+        /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not
+        /// use values from form data, route values or the query string.
+        /// </remarks>
+        public Type BinderType
+        {
+            get => _binderType;
+            set
+            {
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
+                {
+                    throw new ArgumentException(
+                        Resources.FormatBinderType_MustBeIModelBinder(
+                            value.FullName,
+                            typeof(IModelBinder).FullName),
+                        nameof(value));
+                }
+
+                _binderType = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.IPropertyFilterProvider"/>.

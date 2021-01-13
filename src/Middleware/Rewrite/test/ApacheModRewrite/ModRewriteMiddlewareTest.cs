@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -307,6 +307,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var response = await server.CreateClient().GetAsync("");
 
             Assert.Equal("/foo", response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
+        public async Task CapturedVariablesInConditionsArePreservedToRewriteRule()
+        {
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteCond %{REQUEST_URI} /home
+RewriteCond %{QUERY_STRING} report_id=(.+)
+RewriteRule (.*) http://localhost:80/home/report/%1 [R=301,L,QSD]"));
+            var builder = new WebHostBuilder().Configure(app =>
+               {
+                   app.UseRewriter(options);
+                   app.Run(context => context.Response.WriteAsync(
+                           context.Request.Path +
+                           context.Request.QueryString));
+               });
+
+            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
+            var response = await server.CreateClient().GetAsync("/home?report_id=123");
+
+            Assert.Equal("http://localhost:80/home/report/123", response.Headers.Location.OriginalString);
         }
     }
 }

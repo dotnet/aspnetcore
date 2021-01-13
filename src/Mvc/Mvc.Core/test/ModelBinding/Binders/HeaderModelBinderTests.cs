@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,25 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public class HeaderModelBinderTests
     {
-        public static TheoryData<HeaderModelBinder> HeaderModelBinderWithoutInnerBinderData
-        {
-            get
-            {
-                var data = new TheoryData<HeaderModelBinder>();
-#pragma warning disable CS0618
-                data.Add(new HeaderModelBinder());
-#pragma warning restore CS0618
-                data.Add(new HeaderModelBinder(NullLoggerFactory.Instance));
-                return data;
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(HeaderModelBinderWithoutInnerBinderData))]
-        public async Task HeaderBinder_BindsHeaders_ToStringCollection_WithoutInnerModelBinder(
-            HeaderModelBinder binder)
+        [Fact]
+        public async Task HeaderBinder_BindsHeaders_ToStringCollection_WithoutInnerModelBinder()
         {
             // Arrange
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var type = typeof(string[]);
             var header = "Accept";
             var headerValue = "application/json,text/json";
@@ -55,15 +40,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(headerValue.Split(','), bindingContext.Result.Model);
         }
 
-        [Theory]
-        [MemberData(nameof(HeaderModelBinderWithoutInnerBinderData))]
-        public async Task HeaderBinder_BindsHeaders_ToStringType_WithoutInnerModelBinder(HeaderModelBinder binder)
+        [Fact]
+        public async Task HeaderBinder_BindsHeaders_ToStringType_WithoutInnerModelBinder()
         {
             // Arrange
             var type = typeof(string);
             var header = "User-Agent";
             var headerValue = "UnitTest";
             var bindingContext = CreateContext(type);
+
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
 
             bindingContext.FieldName = header;
             bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
@@ -89,9 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var header = "Accept";
             var headerValue = "application/json,text/json";
-#pragma warning disable CS0618
-            var binder = new HeaderModelBinder();
-#pragma warning restore CS0618
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = CreateContext(destinationType);
 
             bindingContext.FieldName = header;
@@ -176,11 +160,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(CarType?), null)]
-        [InlineData(typeof(int?), null)]
-        public async Task HeaderBinder_DoesNotSetModel_ForHeaderNotPresentOnRequest(
-            Type modelType,
-            object expectedModel)
+        [InlineData(typeof(CarType?))]
+        [InlineData(typeof(int?))]
+        public async Task HeaderBinder_DoesNotSetModel_ForHeaderNotPresentOnRequest(Type modelType)
         {
             // Arrange
             var bindingContext = CreateContext(modelType);
@@ -195,11 +177,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(string[]), null)]
-        [InlineData(typeof(IEnumerable<string>), null)]
-        public async Task HeaderBinder_DoesNotCreateEmptyCollection_ForNonTopLevelObjects(
-            Type modelType,
-            object expectedModel)
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(IEnumerable<string>))]
+        public async Task HeaderBinder_DoesNotCreateEmptyCollection_ForNonTopLevelObjects(Type modelType)
         {
             // Arrange
             var bindingContext = CreateContext(modelType);
@@ -345,30 +325,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal($"The value '{headerValues[1]}' is not valid.", entry.Errors[1].ErrorMessage);
         }
 
-        private static DefaultModelBindingContext CreateContext(
-            Type modelType,
-            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+        private static DefaultModelBindingContext CreateContext(Type modelType)
         {
-            return CreateContext(
-                metadata: GetMetadataForType(modelType),
-                valueProvider: null,
-                allowBindingHeaderValuesToNonStringModelTypes: allowBindingHeaderValuesToNonStringModelTypes);
+            return CreateContext(metadata: GetMetadataForType(modelType), valueProvider: null);
         }
 
         private static DefaultModelBindingContext CreateContext(
             ModelMetadata metadata,
-            IValueProvider valueProvider = null,
-            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+            IValueProvider valueProvider = null)
         {
             if (valueProvider == null)
             {
                 valueProvider = Mock.Of<IValueProvider>();
             }
 
-            var options = new MvcOptions()
-            {
-                AllowBindingHeaderValuesToNonStringModelTypes = allowBindingHeaderValuesToNonStringModelTypes
-            };
+            var options = new MvcOptions();
             var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
             setup.Configure(options);
 

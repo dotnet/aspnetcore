@@ -6,14 +6,13 @@ using System.Buffers.Text;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace PlatformBenchmarks
 {
     /// <summary>
     /// Manages the generation of the date header value.
     /// </summary>
-    internal static class DateHeader 
+    internal static class DateHeader
     {
         const int prefixLength = 8; // "\r\nDate: ".Length
         const int dateTimeRLength = 29; // Wed, 14 Mar 2018 14:20:00 GMT
@@ -37,7 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             s_headerBytesScratch[suffixIndex] = (byte)'\r';
             s_headerBytesScratch[suffixIndex + 1] = (byte)'\n';
             SetDateValues(DateTimeOffset.UtcNow);
+            SyncDateTimer();
         }
+
+        public static void SyncDateTimer() => s_timer.Change(1000, 1000);
 
         public static ReadOnlySpan<byte> HeaderBytes => s_headerBytesMaster;
 

@@ -1,0 +1,25 @@
+@using Microsoft.Extensions.Logging
+@inject ILoggerFactory LoggerFactory
+
+<h2>Logging buttons</h2>
+<p>
+    <button id="log-none" @onclick="@(() => Log(LogLevel.None))">Log None</button>
+    <button id="log-trace" @onclick="@(() => Log(LogLevel.Trace))">Log Trace</button>
+    <button id="log-debug" @onclick="@(() => Log(LogLevel.Debug))">Log Debug</button>
+    <button id="log-information" @onclick="@(() => Log(LogLevel.Information))">Log Information</button>
+    <button id="log-warning" @onclick="@(() => Log(LogLevel.Warning))">Log Warning</button>
+    <button id="log-error" @onclick="@(() => Log(LogLevel.Error))">Log Error</button>
+    <button id="log-critical" @onclick="@(() => Log(LogLevel.Critical))">Log Critical</button>
+</p>
+
+@code {
+    int currentCount = 0;
+
+    void Log(LogLevel level)
+    {
+        currentCount++;
+
+        var logger = LoggerFactory.CreateLogger<ErrorComponent>();
+        logger.Log(level, $"This is a {level} message with count={{count}}", currentCount);
+    }
+}

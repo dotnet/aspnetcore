@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -16,6 +16,7 @@
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +25,7 @@
     <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

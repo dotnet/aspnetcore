@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -21,27 +22,15 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 
 namespace SocialSample
 {
     /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration config)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true);
-
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = config;
         }
 
         public IConfiguration Configuration { get; set; }
@@ -59,154 +48,172 @@ namespace SocialSample
                 .AddCookie(o => o.LoginPath = new PathString("/login"))
                 // You must first create an app with Facebook and add its ID and Secret to your user-secrets.
                 // https://developers.facebook.com/apps/
+                // https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login
                 .AddFacebook(o =>
-            {
-                o.AppId = Configuration["facebook:appid"];
-                o.AppSecret = Configuration["facebook:appsecret"];
-                o.Scope.Add("email");
-                o.Fields.Add("name");
-                o.Fields.Add("email");
-                o.SaveTokens = true;
-                o.Events = new OAuthEvents()
                 {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
+                    o.AppId = Configuration["facebook:appid"];
+                    o.AppSecret = Configuration["facebook:appsecret"];
+                    o.Scope.Add("email");
+                    o.Fields.Add("name");
+                    o.Fields.Add("email");
+                    o.SaveTokens = true;
+                    o.Events = new OAuthEvents()
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure
+                    };
+                })
                 // You must first create an app with Google and add its ID and Secret to your user-secrets.
                 // https://console.developers.google.com/project
-                .AddOAuth("Google-AccessToken", "Google AccessToken only", o =>
-            {
-                o.ClientId = Configuration["google:clientid"];
-                o.ClientSecret = Configuration["google:clientsecret"];
-                o.CallbackPath = new PathString("/signin-google-token");
-                o.AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
-                o.TokenEndpoint = GoogleDefaults.TokenEndpoint;
-                o.Scope.Add("openid");
-                o.Scope.Add("profile");
-                o.Scope.Add("email");
-                o.SaveTokens = true;
-                o.Events = new OAuthEvents()
-                {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
-                // You must first create an app with Google and add its ID and Secret to your user-secrets.
-                // https://console.developers.google.com/project
+                // https://developers.google.com/identity/protocols/OAuth2WebServer
+                // https://developers.google.com/+/web/people/
                 .AddGoogle(o =>
-            {
-                o.ClientId = Configuration["google:clientid"];
-                o.ClientSecret = Configuration["google:clientsecret"];
-                o.AuthorizationEndpoint += "?prompt=consent"; // Hack so we always get a refresh token, it only comes on the first authorization response
-                o.AccessType = "offline";
-                o.SaveTokens = true;
-                o.Events = new OAuthEvents()
                 {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-                o.ClaimActions.MapJsonSubKey("urn:google:image", "image", "url");
-                o.ClaimActions.Remove(ClaimTypes.GivenName);
-            })
+                    o.ClientId = Configuration["google:clientid"];
+                    o.ClientSecret = Configuration["google:clientsecret"];
+                    o.AuthorizationEndpoint += "?prompt=consent"; // Hack so we always get a refresh token, it only comes on the first authorization response
+                    o.AccessType = "offline";
+                    o.SaveTokens = true;
+                    o.Events = new OAuthEvents()
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure
+                    };
+                    o.ClaimActions.MapJsonSubKey("urn:google:image", "image", "url");
+                    o.ClaimActions.Remove(ClaimTypes.GivenName);
+                })
                 // You must first create an app with Twitter and add its key and Secret to your user-secrets.
                 // https://apps.twitter.com/
+                // https://developer.twitter.com/en/docs/basics/authentication/api-reference/access_token
                 .AddTwitter(o =>
-            {
-                o.ConsumerKey = Configuration["twitter:consumerkey"];
-                o.ConsumerSecret = Configuration["twitter:consumersecret"];
-                // http://stackoverflow.com/questions/22627083/can-we-get-email-id-from-twitter-oauth-api/32852370#32852370
-                // http://stackoverflow.com/questions/36330675/get-users-email-from-twitter-api-for-external-login-authentication-asp-net-mvc?lq=1
-                o.RetrieveUserDetails = true;
-                o.SaveTokens = true;
-                o.ClaimActions.MapJsonKey("urn:twitter:profilepicture", "profile_image_url", ClaimTypes.Uri);
-                o.Events = new TwitterEvents()
                 {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
+                    o.ConsumerKey = Configuration["twitter:consumerkey"];
+                    o.ConsumerSecret = Configuration["twitter:consumersecret"];
+                    // http://stackoverflow.com/questions/22627083/can-we-get-email-id-from-twitter-oauth-api/32852370#32852370
+                    // http://stackoverflow.com/questions/36330675/get-users-email-from-twitter-api-for-external-login-authentication-asp-net-mvc?lq=1
+                    o.RetrieveUserDetails = true;
+                    o.SaveTokens = true;
+                    o.ClaimActions.MapJsonKey("urn:twitter:profilepicture", "profile_image_url", ClaimTypes.Uri);
+                    o.Events = new TwitterEvents()
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure
+                    };
+                })
                 /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
-                   Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
+                   Therefore, to authenticate through microsoft accounts, try out the sample using the following URL:
                    https://localhost:44318/
                 */
                 // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
-                // https://apps.dev.microsoft.com/
-                .AddOAuth("Microsoft-AccessToken", "Microsoft AccessToken only", o =>
-            {
-                o.ClientId = Configuration["microsoftaccount:clientid"];
-                o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
-                o.CallbackPath = new PathString("/signin-microsoft-token");
-                o.AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
-                o.TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
-                o.Scope.Add("https://graph.microsoft.com/user.read");
-                o.SaveTokens = true;
-                o.Events = new OAuthEvents()
-                {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
-                // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
                 // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
+                // https://apps.dev.microsoft.com/
                 .AddMicrosoftAccount(o =>
-            {
-                o.ClientId = Configuration["microsoftaccount:clientid"];
-                o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
-                o.SaveTokens = true;
-                o.Scope.Add("offline_access");
-                o.Events = new OAuthEvents()
                 {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
-                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
-                // https://github.com/settings/applications/
-                .AddOAuth("GitHub-AccessToken", "GitHub AccessToken only", o =>
-            {
-                o.ClientId = Configuration["github-token:clientid"];
-                o.ClientSecret = Configuration["github-token:clientsecret"];
-                o.CallbackPath = new PathString("/signin-github-token");
-                o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
-                o.TokenEndpoint = "https://github.com/login/oauth/access_token";
-                o.SaveTokens = true;
-                o.Events = new OAuthEvents()
-                {
-                    OnRemoteFailure = HandleOnRemoteFailure
-                };
-            })
-                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
-                // https://github.com/settings/applications/
-                .AddOAuth("GitHub", "Github", o =>
-            {
-                o.ClientId = Configuration["github:clientid"];
-                o.ClientSecret = Configuration["github:clientsecret"];
-                o.CallbackPath = new PathString("/signin-github");
-                o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
-                o.TokenEndpoint = "https://github.com/login/oauth/access_token";
-                o.UserInformationEndpoint = "https://api.github.com/user";
-                o.ClaimsIssuer = "OAuth2-Github";
-                o.SaveTokens = true;
-                // Retrieving user information is unique to each provider.
-                o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-                o.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
-                o.ClaimActions.MapJsonKey("urn:github:name", "name");
-                o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
-                o.ClaimActions.MapJsonKey("urn:github:url", "url");
-                o.Events = new OAuthEvents
-                {
-                    OnRemoteFailure = HandleOnRemoteFailure,
-                    OnCreatingTicket = async context =>
+                    o.ClientId = Configuration["microsoftaccount:clientid"];
+                    o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
+                    o.SaveTokens = true;
+                    o.Scope.Add("offline_access");
+                    o.Events = new OAuthEvents()
                     {
-                        // Get the GitHub user
-                        var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        OnRemoteFailure = HandleOnRemoteFailure
+                    };
+                })
+                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+                // https://github.com/settings/applications/
+                // https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+                .AddOAuth("GitHub", "Github", o =>
+                {
+                    o.ClientId = Configuration["github:clientid"];
+                    o.ClientSecret = Configuration["github:clientsecret"];
+                    o.CallbackPath = new PathString("/signin-github");
+                    o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                    o.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                    o.UserInformationEndpoint = "https://api.github.com/user";
+                    o.ClaimsIssuer = "OAuth2-Github";
+                    o.SaveTokens = true;
+                    // Retrieving user information is unique to each provider.
+                    o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
+                    o.ClaimActions.MapJsonKey("urn:github:name", "name");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
+                    o.ClaimActions.MapJsonKey("urn:github:url", "url");
+                    o.Events = new OAuthEvents
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure,
+                        OnCreatingTicket = async context =>
+                        {
+                            // Get the GitHub user
+                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                        var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
-                        response.EnsureSuccessStatusCode();
+                            var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+                            response.EnsureSuccessStatusCode();
 
-                        var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+                            using (var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                            {
+                                context.RunClaimActions(user.RootElement);
+                            }
+                        }
+                    };
+                })
+                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+                // https://github.com/settings/applications/
+                // https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+                .AddOAuth("GitHub-AccessToken", "GitHub AccessToken only", o =>
+                {
+                    o.ClientId = Configuration["github-token:clientid"];
+                    o.ClientSecret = Configuration["github-token:clientsecret"];
+                    o.CallbackPath = new PathString("/signin-github-token");
+                    o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                    o.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                    o.SaveTokens = true;
+                    o.Events = new OAuthEvents()
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure
+                    };
+                })
+                // https://demo.identityserver.io/
+                .AddOAuth("IdentityServer", "Identity Server", o =>
+                {
+                    o.ClientId = "server.code";
+                    o.ClientSecret = "secret";
+                    o.CallbackPath = new PathString("/signin-identityserver");
+                    o.AuthorizationEndpoint = "https://demo.identityserver.io/connect/authorize";
+                    o.TokenEndpoint = "https://demo.identityserver.io/connect/token";
+                    o.UserInformationEndpoint = "https://demo.identityserver.io/connect/userinfo";
+                    o.ClaimsIssuer = "IdentityServer";
+                    o.SaveTokens = true;
+                    o.UsePkce = true;
+                    // Retrieving user information is unique to each provider.
+                    o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
+                    o.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                    o.ClaimActions.MapJsonKey("email_verified", "email_verified");
+                    o.ClaimActions.MapJsonKey(ClaimTypes.Uri, "website");
+                    o.Scope.Add("openid");
+                    o.Scope.Add("profile");
+                    o.Scope.Add("email");
+                    o.Scope.Add("offline_access");
+                    o.Events = new OAuthEvents
+                    {
+                        OnRemoteFailure = HandleOnRemoteFailure,
+                        OnCreatingTicket = async context =>
+                        {
+                            // Get the user
+                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                        context.RunClaimActions(user);
-                    }
-                };
-            });
+                            var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+                            response.EnsureSuccessStatusCode();
+
+                            using (var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                            {
+                                context.RunClaimActions(user.RootElement);
+                            }
+                        }
+                    };
+                });
         }
 
         private async Task HandleOnRemoteFailure(RemoteFailureContext context)
@@ -214,14 +221,15 @@ namespace SocialSample
             context.Response.StatusCode = 500;
             context.Response.ContentType = "text/html";
             await context.Response.WriteAsync("<html><body>");
-            await context.Response.WriteAsync("A remote failure has occurred: " + UrlEncoder.Default.Encode(context.Failure.Message) + "<br>");
+            await context.Response.WriteAsync("A remote failure has occurred: <br>" +
+                context.Failure.Message.Split(Environment.NewLine).Select(s => HtmlEncoder.Default.Encode(s) + "<br>").Aggregate((s1, s2) => s1 + s2));
 
             if (context.Properties != null)
             {
                 await context.Response.WriteAsync("Properties:<br>");
                 foreach (var pair in context.Properties.Items)
                 {
-                    await context.Response.WriteAsync($"-{ UrlEncoder.Default.Encode(pair.Key)}={ UrlEncoder.Default.Encode(pair.Value)}<br>");
+                    await context.Response.WriteAsync($"-{ HtmlEncoder.Default.Encode(pair.Key)}={ HtmlEncoder.Default.Encode(pair.Value)}<br>");
                 }
             }
 
@@ -299,7 +307,8 @@ namespace SocialSample
 
                     var currentAuthType = user.Identities.First().AuthenticationType;
                     if (string.Equals(GoogleDefaults.AuthenticationScheme, currentAuthType)
-                        || string.Equals(MicrosoftAccountDefaults.AuthenticationScheme, currentAuthType))
+                        || string.Equals(MicrosoftAccountDefaults.AuthenticationScheme, currentAuthType)
+                        || string.Equals("IdentityServer", currentAuthType))
                     {
                         var refreshToken = authProperties.GetTokenValue("refresh_token");
 
@@ -326,24 +335,25 @@ namespace SocialSample
                         var refreshResponse = await options.Backchannel.PostAsync(options.TokenEndpoint, content, context.RequestAborted);
                         refreshResponse.EnsureSuccessStatusCode();
 
-                        var payload = JObject.Parse(await refreshResponse.Content.ReadAsStringAsync());
-
-                        // Persist the new acess token
-                        authProperties.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
-                        refreshToken = payload.Value<string>("refresh_token");
-                        if (!string.IsNullOrEmpty(refreshToken))
+                        using (var payload = JsonDocument.Parse(await refreshResponse.Content.ReadAsStringAsync()))
                         {
-                            authProperties.UpdateTokenValue("refresh_token", refreshToken);
-                        }
-                        if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
-                        {
-                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                            authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
-                        }
-                        await context.SignInAsync(user, authProperties);
 
-                        await PrintRefreshedTokensAsync(response, payload, authProperties);
+                            // Persist the new acess token
+                            authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                            refreshToken = payload.RootElement.GetString("refresh_token");
+                            if (!string.IsNullOrEmpty(refreshToken))
+                            {
+                                authProperties.UpdateTokenValue("refresh_token", refreshToken);
+                            }
+                            if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                            {
+                                var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                                authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            }
+                            await context.SignInAsync(user, authProperties);
 
+                            await PrintRefreshedTokensAsync(response, payload, authProperties);
+                        }
                         return;
                     }
                     // https://developers.facebook.com/docs/facebook-login/access-tokens/expiration-and-extension
@@ -362,18 +372,18 @@ namespace SocialSample
                         }.ToQueryString();
 
                         var refreshResponse = await options.Backchannel.GetStringAsync(options.TokenEndpoint + query);
-                        var payload = JObject.Parse(refreshResponse);
-
-                        authProperties.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
-                        if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
+                        using (var payload = JsonDocument.Parse(refreshResponse))
                         {
-                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                            authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                            if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                            {
+                                var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                                authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            }
+                            await context.SignInAsync(user, authProperties);
+
+                            await PrintRefreshedTokensAsync(response, payload, authProperties);
                         }
-                        await context.SignInAsync(user, authProperties);
-
-                        await PrintRefreshedTokensAsync(response, payload, authProperties);
-
                         return;
                     }
 
@@ -475,16 +485,20 @@ namespace SocialSample
             {
                 return Task.FromResult<OAuthOptions>(context.RequestServices.GetRequiredService<IOptionsMonitor<FacebookOptions>>().Get(currentAuthType));
             }
+            else if (string.Equals("IdentityServer", currentAuthType))
+            {
+                return Task.FromResult<OAuthOptions>(context.RequestServices.GetRequiredService<IOptionsMonitor<OAuthOptions>>().Get(currentAuthType));
+            }
 
             throw new NotImplementedException(currentAuthType);
         }
 
-        private async Task PrintRefreshedTokensAsync(HttpResponse response, JObject payload, AuthenticationProperties authProperties)
+        private async Task PrintRefreshedTokensAsync(HttpResponse response, JsonDocument payload, AuthenticationProperties authProperties)
         {
             response.ContentType = "text/html";
             await response.WriteAsync("<html><body>");
             await response.WriteAsync("Refreshed.<br>");
-            await response.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+            await response.WriteAsync(HtmlEncoder.Default.Encode(payload.RootElement.ToString()).Replace(",", ",<br>") + "<br>");
 
             await response.WriteAsync("<br>Tokens:<br>");
 

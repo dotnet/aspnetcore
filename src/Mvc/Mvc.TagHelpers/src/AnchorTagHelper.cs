@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <inheritdoc />
         public override int Order => -1000;
 
+        /// <summary>
+        /// Gets the <see cref="IHtmlGenerator"/> used to generate the <see cref="AnchorTagHelper"/>'s output.
+        /// </summary>
         protected IHtmlGenerator Generator { get; }
 
         /// <summary>
@@ -76,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// The name of the area.
         /// </summary>
         /// <remarks>
-        /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Page"/> is non-<c>null</c>.
+        /// Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(AreaAttributeName)]
         public string Area { get; set; }
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         /// <remarks>
         /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Action"/>, <see cref="Controller"/>
-        /// or <see cref="Area"/> is non-<c>null</c>.
+        /// is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(PageAttributeName)]
         public string Page { get; set; }

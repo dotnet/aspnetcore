@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <OutputType>exe</OutputType>
+
+    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
+    <SignAssembly>false</SignAssembly>
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver" />
+    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
+    <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
+  </ItemGroup>
+
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile">
+    <ItemGroup>
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>TestAppLocatiion</_Parameter1>
+        <_Parameter2>$(MSBuildThisFileDirectory)..\TestApp\</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+</Project>

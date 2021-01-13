@@ -1,0 +1,16 @@
+@page "/routeablecomponentfrompackage.html"
+
+<div class="special-style">
+    This component, including the CSS and image required to produce its
+    elegant styling, is in an external NuGet package.
+    <button @onclick="ChangeLabel">@buttonLabel </button>
+</div>
+
+@code {
+    string buttonLabel = "Click me";
+
+    void ChangeLabel()
+    {
+        buttonLabel = "It works";
+    }
+}

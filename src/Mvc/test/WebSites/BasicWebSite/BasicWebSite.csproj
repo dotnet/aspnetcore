@@ -1,15 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common\TestResponseGenerator.cs" Link="TestResponseGenerator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.Localization.Routing" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />

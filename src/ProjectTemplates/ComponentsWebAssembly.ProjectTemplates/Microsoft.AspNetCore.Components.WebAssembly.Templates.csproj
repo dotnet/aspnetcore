@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+    <Description>Templates for ASP.NET Core Blazor WebAssembly projects.</Description>
+    <PackageTags>$(PackageTags);blazor;spa</PackageTags>
+    <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
+    <GeneratedContentProperties>
+      DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
+      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
+      MicrosoftExtensionsHttpPackageVersion=$(MicrosoftExtensionsHttpPackageVersion);
+      SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion)
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Build\src\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Client/ComponentsWebAssembly-CSharp.Client.csproj" />
+    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Shared/ComponentsWebAssembly-CSharp.Shared.csproj" />
+    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Server/ComponentsWebAssembly-CSharp.Server.csproj" />
+  </ItemGroup>
+
+</Project>

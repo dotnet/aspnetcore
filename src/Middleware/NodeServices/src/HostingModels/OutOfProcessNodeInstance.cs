@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,6 +22,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// protocol, or any other RPC-type mechanism).
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance" />
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
         /// <summary>

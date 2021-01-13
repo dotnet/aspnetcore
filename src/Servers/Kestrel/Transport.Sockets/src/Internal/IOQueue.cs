@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,35 +8,24 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class IOQueue : PipeScheduler
+    internal class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
-        private static readonly WaitCallback _doWorkCallback = s => ((IOQueue)s).DoWork();
-
-        private readonly object _workSync = new object();
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
-        private bool _doingWork;
+        private int _doingWork;
 
         public override void Schedule(Action<object> action, object state)
         {
-            var work = new Work
-            {
-                Callback = action,
-                State = state
-            };
+            _workItems.Enqueue(new Work(action, state));
 
-            _workItems.Enqueue(work);
-
-            lock (_workSync)
+            // Set working if it wasn't (via atomic Interlocked).
+            if (Interlocked.CompareExchange(ref _doingWork, 1, 0) == 0)
             {
-                if (!_doingWork)
-                {
-                    System.Threading.ThreadPool.QueueUserWorkItem(_doWorkCallback, this);
-                    _doingWork = true;
-                }
+                // Wasn't working, schedule.
+                System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
             }
         }
 
-        private void DoWork()
+        void IThreadPoolWorkItem.Execute()
         {
             while (true)
             {
@@ -45,21 +34,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     item.Callback(item.State);
                 }
 
-                lock (_workSync)
+                // All work done.
+
+                // Set _doingWork (0 == false) prior to checking IsEmpty to catch any missed work in interim.
+                // This doesn't need to be volatile due to the following barrier (i.e. it is volatile).
+                _doingWork = 0;
+
+                // Ensure _doingWork is written before IsEmpty is read.
+                // As they are two different memory locations, we insert a barrier to guarantee ordering.
+                Thread.MemoryBarrier();
+
+                // Check if there is work to do
+                if (_workItems.IsEmpty)
                 {
-                    if (_workItems.IsEmpty)
-                    {
-                        _doingWork = false;
-                        return;
-                    }
+                    // Nothing to do, exit.
+                    break;
                 }
+
+                // Is work, can we set it as active again (via atomic Interlocked), prior to scheduling?
+                if (Interlocked.Exchange(ref _doingWork, 1) == 1)
+                {
+                    // Execute has been rescheduled already, exit.
+                    break;
+                }
+
+                // Is work, wasn't already scheduled so continue loop.
             }
         }
 
-        private struct Work
+        private readonly struct Work
         {
-            public Action<object> Callback;
-            public object State;
+            public readonly Action<object> Callback;
+            public readonly object State;
+
+            public Work(Action<object> callback, object state)
+            {
+                Callback = callback;
+                State = state;
+            }
         }
     }
 }

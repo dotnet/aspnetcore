@@ -6,13 +6,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class HttpHeaders : IHeaderDictionary
+    internal abstract class HttpHeaders : IHeaderDictionary
     {
+        protected long _bits = 0;
         protected long? _contentLength;
         protected bool _isReadOnly;
         protected Dictionary<string, StringValues> MaybeUnknown;
@@ -35,8 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
-                TryGetValueFast(key, out value);
+                TryGetValueFast(key, out var value);
                 return value;
             }
             set
@@ -44,6 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_isReadOnly)
                 {
                     ThrowHeadersReadOnlyException();
+                }
+                if (string.IsNullOrEmpty(key))
+                {
+                    ThrowInvalidEmptyHeaderName();
                 }
                 if (value.Count == 0)
                 {
@@ -61,8 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 // Unlike the IHeaderDictionary version, this getter will throw a KeyNotFoundException.
-                StringValues value;
-                if (!TryGetValueFast(key, out value))
+                if (!TryGetValueFast(key, out var value))
                 {
                     ThrowKeyNotFoundException();
                 }
@@ -74,27 +80,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void ThrowHeadersReadOnlyException()
+        protected static void ThrowHeadersReadOnlyException()
         {
             throw new InvalidOperationException(CoreStrings.HeadersAreReadOnly);
         }
 
-        protected void ThrowArgumentException()
+        protected static void ThrowArgumentException()
         {
             throw new ArgumentException();
         }
 
-        protected void ThrowKeyNotFoundException()
+        protected static void ThrowKeyNotFoundException()
         {
             throw new KeyNotFoundException();
         }
 
-        protected void ThrowDuplicateKeyException()
+        protected static void ThrowDuplicateKeyException()
         {
             throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
 
-        int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
+        public int Count => GetCountFast();
 
         bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
@@ -107,6 +113,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isReadOnly = true;
         }
 
+        // Inline to allow ClearFast to devirtualize in caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             _isReadOnly = false;
@@ -114,26 +122,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected static StringValues AppendValue(in StringValues existing, string append)
+        protected static StringValues AppendValue(StringValues existing, string append)
         {
             return StringValues.Concat(existing, append);
         }
 
-        protected static int BitCount(long value)
-        {
-            // see https://github.com/dotnet/corefx/blob/5965fd3756bc9dd9c89a27621eb10c6931126de2/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected bool TryGetUnknown(string key, ref StringValues value) => MaybeUnknown?.TryGetValue(key, out value) ?? false;
 
-            const ulong Mask01010101 = 0x5555555555555555UL;
-            const ulong Mask00110011 = 0x3333333333333333UL;
-            const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
-            const ulong Mask00000001 = 0x0101010101010101UL;
-
-            var v = (ulong)value;
-
-            v = v - ((v >> 1) & Mask01010101);
-            v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
-            return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
-        }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected bool RemoveUnknown(string key) => MaybeUnknown?.Remove(key) ?? false;
 
         protected virtual int GetCountFast()
         { throw new NotImplementedException(); }
@@ -141,10 +139,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual bool TryGetValueFast(string key, out StringValues value)
         { throw new NotImplementedException(); }
 
-        protected virtual void SetValueFast(string key, in StringValues value)
+        protected virtual void SetValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
-        protected virtual bool AddValueFast(string key, in StringValues value)
+        protected virtual bool AddValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
         protected virtual bool RemoveFast(string key)
@@ -170,6 +168,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 ThrowHeadersReadOnlyException();
             }
+            if (string.IsNullOrEmpty(key))
+            {
+                ThrowInvalidEmptyHeaderName();
+            }
 
             if (value.Count > 0 && !AddValueFast(key, value))
             {
@@ -188,16 +190,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value);
         }
 
         bool IDictionary<string, StringValues>.ContainsKey(string key)
         {
-            StringValues value;
-            return TryGetValueFast(key, out value);
+            return TryGetValueFast(key, out _);
         }
 
         void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
@@ -220,9 +220,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value) &&
                 RemoveFast(item.Key);
         }
@@ -241,31 +240,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return TryGetValueFast(key, out value);
         }
 
-        public static void ValidateHeaderCharacters(in StringValues headerValues)
+        public static void ValidateHeaderValueCharacters(StringValues headerValues)
         {
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
 
             {
-                ValidateHeaderCharacters(headerValues[i]);
+                ValidateHeaderValueCharacters(headerValues[i]);
             }
         }
 
-        public static void ValidateHeaderCharacters(string headerCharacters)
+        public static void ValidateHeaderValueCharacters(string headerCharacters)
         {
             if (headerCharacters != null)
             {
-                foreach (var ch in headerCharacters)
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
+                if (invalid >= 0)
                 {
-                    if (ch < 0x20 || ch > 0x7E)
-                    {
-                        ThrowInvalidHeaderCharacter(ch);
-                    }
+                    ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
                 }
             }
         }
 
-        public static unsafe ConnectionOptions ParseConnection(in StringValues connection)
+        public static void ValidateHeaderNameCharacters(string headerCharacters)
+        {
+            var invalid = HttpCharacters.IndexOfInvalidTokenChar(headerCharacters);
+            if (invalid >= 0)
+            {
+                ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
+            }
+        }
+
+        public static unsafe ConnectionOptions ParseConnection(StringValues connection)
         {
             var connectionOptions = ConnectionOptions.None;
 
@@ -367,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return connectionOptions;
         }
 
-        public static unsafe TransferCoding GetFinalTransferCoding(in StringValues transferEncoding)
+        public static unsafe TransferCoding GetFinalTransferCoding(StringValues transferEncoding)
         {
             var transferEncodingOptions = TransferCoding.None;
 
@@ -439,6 +445,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static void ThrowInvalidHeaderCharacter(char ch)
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format("0x{0:X4}", (ushort)ch)));
+        }
+
+        private static void ThrowInvalidEmptyHeaderName()
+        {
+            throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
         }
     }
 }

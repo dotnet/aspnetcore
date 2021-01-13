@@ -17,7 +17,6 @@ namespace MusicStore
                 .Build();
 
             var builder = new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 .UseIISIntegration()
                 .UseStartup("MusicStore")
@@ -50,6 +49,9 @@ namespace MusicStore
             {
                 builder.UseKestrel();
             }
+
+            // In Proc
+            builder.UseIIS();
 
             builder.ConfigureLogging(factory =>
             {

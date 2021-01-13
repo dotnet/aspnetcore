@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Microsoft.AspNetCore.Http.Authentication;
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -104,5 +102,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
         public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+
+        /// <summary>
+        /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See https://tools.ietf.org/html/rfc7636.
+        /// The default value is `false` but derived handlers should enable this if their provider supports it.
+        /// </summary>
+        public bool UsePkce { get; set; } = false;
     }
 }

@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CA4538F5-9DA8-4139-B891-A13279889F79}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DA474CFD-7419-4747-A583-CCDC1FF71EB5}"
@@ -63,6 +63,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Facebook", "Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj", "{9D5BD889-B84C-4D1A-B2AA-3FC1BF51BF82}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Twitter", "Authentication\Twitter\src\Microsoft.AspNetCore.Authentication.Twitter.csproj", "{82C0816D-7051-4DDB-9B9E-6777973AD7AE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomPolicyProvider", "samples\CustomPolicyProvider\CustomPolicyProvider.csproj", "{38C0E122-64D0-497F-ABB0-C6A9C3349F02}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticFilesAuth", "samples\StaticFilesAuth\StaticFilesAuth.csproj", "{E1E8A599-AB42-4551-8C24-BE4404B65283}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -374,6 +378,30 @@ Global
 		{82C0816D-7051-4DDB-9B9E-6777973AD7AE}.Release|x64.Build.0 = Release|Any CPU
 		{82C0816D-7051-4DDB-9B9E-6777973AD7AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{82C0816D-7051-4DDB-9B9E-6777973AD7AE}.Release|x86.Build.0 = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|x64.Build.0 = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Debug|x86.Build.0 = Debug|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|x64.ActiveCfg = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|x64.Build.0 = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|x86.ActiveCfg = Release|Any CPU
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02}.Release|x86.Build.0 = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|x64.Build.0 = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Debug|x86.Build.0 = Debug|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x64.ActiveCfg = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x64.Build.0 = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x86.ActiveCfg = Release|Any CPU
+		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -404,6 +432,8 @@ Global
 		{B9B5D2E8-1B10-4239-B535-1D66F4F5DACC} = {142C8260-90B5-4D72-9564-17BFDD72F496}
 		{9D5BD889-B84C-4D1A-B2AA-3FC1BF51BF82} = {142C8260-90B5-4D72-9564-17BFDD72F496}
 		{82C0816D-7051-4DDB-9B9E-6777973AD7AE} = {142C8260-90B5-4D72-9564-17BFDD72F496}
+		{38C0E122-64D0-497F-ABB0-C6A9C3349F02} = {CA4538F5-9DA8-4139-B891-A13279889F79}
+		{E1E8A599-AB42-4551-8C24-BE4404B65283} = {CA4538F5-9DA8-4139-B891-A13279889F79}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {39E3AF62-B1FD-4156-92AA-F4FA99B5AD89}

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)BinaryMessageFormatter.cs" Link="BinaryMessageFormatter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
+    <Compile Include="..\test\Internal\Protocol\JsonHubProtocolTestsBase.cs" />
+    <Compile Include="..\test\Internal\Protocol\JsonHubProtocolTests.cs" />
+    <Compile Include="..\test\Internal\Protocol\HubMessageHelpers.cs" />
+    <Compile Include="..\test\Internal\Protocol\TestBinder.cs" />
+    <Compile Include="..\test\Internal\Protocol\TestHubMessageEqualityComparer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SignalRTestUtilsProject)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

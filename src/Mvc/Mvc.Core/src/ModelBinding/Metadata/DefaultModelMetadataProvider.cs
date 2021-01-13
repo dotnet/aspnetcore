@@ -14,26 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// <summary>
     /// A default implementation of <see cref="IModelMetadataProvider"/> based on reflection.
     /// </summary>
-    public class DefaultModelMetadataProvider : ModelMetadataProvider, IModelMetadataProvider2
+    public class DefaultModelMetadataProvider : ModelMetadataProvider
     {
-        private static readonly Func<ParameterInfo, Type, ModelMetadataIdentity> _modelMetadataIdentityForParameter;
-
         private readonly TypeCache _typeCache = new TypeCache();
         private readonly Func<ModelMetadataIdentity, ModelMetadataCacheEntry> _cacheEntryFactory;
         private readonly ModelMetadataCacheEntry _metadataCacheEntryForObjectType;
-
-        static DefaultModelMetadataProvider()
-        {
-            var forParameterMethod = typeof(ModelMetadataIdentity).GetMethod(
-                nameof(ModelMetadataIdentity.ForParameter),
-                BindingFlags.Static | BindingFlags.NonPublic,
-                binder: null,
-                types: new[] { typeof(ParameterInfo), typeof(Type) },
-                modifiers: null);
-
-            _modelMetadataIdentityForParameter = (Func<ParameterInfo, Type, ModelMetadataIdentity>)
-                forParameterMethod.CreateDelegate(typeof(Func<ParameterInfo, Type, ModelMetadataIdentity>));
-        }
 
         /// <summary>
         /// Creates a new <see cref="DefaultModelMetadataProvider"/>.
@@ -94,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var cacheEntry = GetCacheEntry(modelType);
 
             // We're relying on a safe race-condition for Properties - take care only
-            // to set the value onces the properties are fully-initialized.
+            // to set the value once the properties are fully-initialized.
             if (cacheEntry.Details.Properties == null)
             {
                 var key = ModelMetadataIdentity.ForType(modelType);
@@ -118,10 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             => GetMetadataForParameter(parameter, parameter?.ParameterType);
 
         /// <inheritdoc />
-        ModelMetadata IModelMetadataProvider2.GetMetadataForParameter(ParameterInfo parameter, Type modelType)
-            => GetMetadataForParameter(parameter, modelType);
-
-        internal ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
+        public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {
@@ -151,12 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return cacheEntry.Metadata;
         }
 
-
         /// <inheritdoc />
-        ModelMetadata IModelMetadataProvider2.GetMetadataForProperty(PropertyInfo parameter, Type modelType)
-            => GetMetadataForProperty(parameter, modelType);
-
-        internal ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
+        public override ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
         {
             if (propertyInfo == null)
             {
@@ -205,14 +183,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private ModelMetadataCacheEntry GetCacheEntry(ParameterInfo parameter, Type modelType)
         {
             return _typeCache.GetOrAdd(
-                _modelMetadataIdentityForParameter(parameter, modelType),
+                ModelMetadataIdentity.ForParameter(parameter, modelType),
                 _cacheEntryFactory);
         }
 
         private ModelMetadataCacheEntry GetCacheEntry(PropertyInfo property, Type modelType)
         {
             return _typeCache.GetOrAdd(
-                ModelMetadataIdentity.ForProperty(modelType, property.Name, property.DeclaringType),
+                ModelMetadataIdentity.ForProperty(property, modelType, property.DeclaringType),
                 _cacheEntryFactory);
         }
 
@@ -297,8 +275,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 var propertyHelper = propertyHelpers[i];
 
                 var propertyKey = ModelMetadataIdentity.ForProperty(
+                    propertyHelper.Property,
                     propertyHelper.Property.PropertyType,
-                    propertyHelper.Name,
                     key.ModelType);
 
                 var propertyEntry = CreateSinglePropertyDetails(propertyKey, propertyHelper);
@@ -367,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
         }
 
-        private struct ModelMetadataCacheEntry
+        private readonly struct ModelMetadataCacheEntry
         {
             public ModelMetadataCacheEntry(ModelMetadata metadata, DefaultMetadataDetails details)
             {

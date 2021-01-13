@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API",
+    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con un controlador de ejemplo para un servicio RESTful HTTP. Esta plantilla también puede usarse para controladores y vistas de ASP.NET Core MVC."
+  }
+}

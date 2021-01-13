@@ -4,9 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -22,15 +23,15 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     {
-        private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
+        internal const int DefaultMaxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
+        internal const int DefaultMaxModelBindingRecursionDepth = 32;
 
-        // See CompatibilitySwitch.cs for guide on how to implement these.
-        private readonly CompatibilitySwitch<bool> _allowBindingHeaderValuesToNonStringModelTypes;
-        private readonly CompatibilitySwitch<bool> _allowCombiningAuthorizeFilters;
-        private readonly CompatibilitySwitch<bool> _allowValidatingTopLevelNodes;
-        private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
-        private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
-        private readonly ICompatibilitySwitch[] _switches;
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
+
+        private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
+        private int _maxModelBindingCollectionSize = DefaultMaxModelBindingCollectionSize;
+        private int _maxModelBindingRecursionDepth = DefaultMaxModelBindingRecursionDepth;
+        private int? _maxValidationDepth = 32;
 
         /// <summary>
         /// Creates a new instance of <see cref="MvcOptions"/>.
@@ -48,22 +49,17 @@ namespace Microsoft.AspNetCore.Mvc
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
-
-            _allowCombiningAuthorizeFilters = new CompatibilitySwitch<bool>(nameof(AllowCombiningAuthorizeFilters));
-            _allowBindingHeaderValuesToNonStringModelTypes = new CompatibilitySwitch<bool>(nameof(AllowBindingHeaderValuesToNonStringModelTypes));
-            _allowValidatingTopLevelNodes = new CompatibilitySwitch<bool>(nameof(AllowValidatingTopLevelNodes));
-            _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
-            _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
-
-            _switches = new ICompatibilitySwitch[]
-            {
-                _allowCombiningAuthorizeFilters,
-                _allowBindingHeaderValuesToNonStringModelTypes,
-                _allowValidatingTopLevelNodes,
-                _inputFormatterExceptionPolicy,
-                _suppressBindingUndefinedValueToEnumType,
-            };
         }
+
+        /// <summary>
+        /// Gets or sets a value that determines if routing should use endpoints internally, or if legacy routing
+        /// logic should be used. Endpoint routing is used to match HTTP requests to MVC actions, and to generate
+        /// URLs with <see cref="IUrlHelper"/>.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
+        public bool EnableEndpointRouting { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the flag which decides whether body model binding (for example, on an
@@ -76,111 +72,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see cref="ModelStateDictionary"/> if the incoming request body is empty.
         /// </example>
         public bool AllowEmptyInputInBodyModelBinding { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that determines if policies on instances of <see cref="AuthorizeFilter" />
-        /// will be combined into a single effective policy. The default value of the property is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Authorization policies are designed such that multiple authorization policies applied to an endpoint
-        /// should be combined and executed a single policy. The <see cref="AuthorizeFilter"/> (commonly applied
-        /// by <see cref="AuthorizeAttribute"/>) can be applied globally, to controllers, and to actions - which
-        /// specifies multiple authorization policies for an action. In all ASP.NET Core releases prior to 2.1
-        /// these multiple policies would not combine as intended. This compatibility switch configures whether the
-        /// old (unintended) behavior or the new combining behavior will be used when multiple authorization policies
-        /// are applied.
-        /// </para>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
-        /// </remarks>
-        public bool AllowCombiningAuthorizeFilters
-        {
-            get => _allowCombiningAuthorizeFilters.Value;
-            set => _allowCombiningAuthorizeFilters.Value = value;
-        }
-
-        /// <summary>
-        /// Gets or sets a value that determines if <see cref="HeaderModelBinder"/> should bind to types other than
-        /// <see cref="string"/> or a collection of <see cref="string"/>. If set to <c>true</c>,
-        /// <see cref="HeaderModelBinder"/> would bind to simple types (like <see cref="string"/>, <see cref="int"/>,
-        /// <see cref="Enum"/>, <see cref="bool"/> etc.) or a collection of simple types. The default value of the
-        /// property is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
-        /// </remarks>
-        public bool AllowBindingHeaderValuesToNonStringModelTypes
-        {
-            get => _allowBindingHeaderValuesToNonStringModelTypes.Value;
-            set => _allowBindingHeaderValuesToNonStringModelTypes.Value = value;
-        }
-
-        /// <summary>
-        /// Gets or sets a value that determines if model bound action parameters, controller properties, page handler
-        /// parameters, or page model properties are validated (in addition to validating their elements or
-        /// properties). If set to <see langword="true"/>, <see cref="BindRequiredAttribute"/> and
-        /// <c>ValidationAttribute</c>s on these top-level nodes are checked. Otherwise, such attributes are ignored.
-        /// </summary>
-        /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_1"/> or later; <see langword="false"/> otherwise.
-        /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
-        public bool AllowValidatingTopLevelNodes
-        {
-            get => _allowValidatingTopLevelNodes.Value;
-            set => _allowValidatingTopLevelNodes.Value = value;
-        }
 
         /// <summary>
         /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
@@ -206,74 +97,45 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
-        /// Gets or sets a value which determines how the model binding system interprets exceptions thrown by an <see cref="IInputFormatter"/>.
-        /// The default value of the property is <see cref="InputFormatterExceptionPolicy.AllExceptions"/>.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <see cref="InputFormatterExceptionPolicy.AllExceptions"/> unless
-        /// explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value
-        /// <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
-        public InputFormatterExceptionPolicy InputFormatterExceptionPolicy
-        {
-            get => _inputFormatterExceptionPolicy.Value;
-            set => _inputFormatterExceptionPolicy.Value = value;
-        }
-
-        /// <summary>
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the model binding system will bind undefined values to
-        /// enum types. The default value of the property is <c>false</c>.
+        /// Gets or sets a value that detemines if the inference of <see cref="RequiredAttribute"/> for
+        /// for properties and parameters of non-nullable reference types is suppressed. If <c>false</c>
+        /// (the default), then all non-nullable reference types will behave as-if <c>[Required]</c> has
+        /// been applied. If <c>true</c>, this behavior will be suppressed; nullable reference types and
+        /// non-nullable reference types will behave the same for the purposes of validation.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
+        /// This option controls whether MVC model binding and validation treats nullable and non-nullable
+        /// reference types differently.
         /// </para>
         /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// By default, MVC will treat a non-nullable reference type parameters and properties as-if
+        /// <c>[Required]</c> has been applied, resulting in validation errors when no value was bound.
         /// </para>
         /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
+        /// MVC does not support non-nullable reference type annotations on type arguments and type parameter
+        /// contraints. The framework will not infer any validation attributes for generic-typed properties
+        /// or collection elements.
         /// </para>
         /// </remarks>
-        public bool SuppressBindingUndefinedValueToEnumType
-        {
-            get => _suppressBindingUndefinedValueToEnumType.Value;
-            set => _suppressBindingUndefinedValueToEnumType.Value = value;
-        }
+        public bool SuppressImplicitRequiredAttributeForNonNullableReferenceTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
+        /// Gets or sets a value that determines if buffering is disabled for input formatters that
+        /// synchronously read from the HTTP request body.
         /// </summary>
-        public bool SuppressInputFormatterBuffering { get; set; } = false;
+        public bool SuppressInputFormatterBuffering { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag that determines if buffering is disabled for output formatters that
+        /// synchronously write to the HTTP response body.
+        /// </summary>
+        public bool SuppressOutputFormatterBuffering { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -359,10 +221,158 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
 
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
+        /// <summary>
+        /// Gets or sets the maximum depth to constrain the validation visitor when validating. Set to <see langword="null" />
+        /// to disable this feature.
+        /// <para>
+        /// <see cref="ValidationVisitor"/> traverses the object graph of the model being validated. For models
+        /// that are very deep or are infinitely recursive, validation may result in stack overflow.
+        /// </para>
+        /// <para>
+        /// When not <see langword="null"/>, <see cref="ValidationVisitor"/> will throw if
+        /// traversing an object exceeds the maximum allowed validation depth.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The default value is <c>32</c>.
+        /// </value>
+        public int? MaxValidationDepth
         {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
+            get => _maxValidationDepth;
+            set
+            {
+                if (value != null && value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxValidationDepth = value;
+            }
         }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the validation visitor will perform validation of a complex type
+        /// if validation fails for any of its children.
+        /// <seealso cref="ValidationVisitor.ValidateComplexTypesIfChildValidationFails"/>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="false"/>.
+        /// </value>
+        public bool ValidateComplexTypesIfChildValidationFails { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if MVC will remove the suffix "Async" applied to
+        /// controller action names.
+        /// <para>
+        /// <see cref="ControllerActionDescriptor.ActionName"/> is used to construct the route to the action as
+        /// well as in view lookup. When <see langword="true"/>, MVC will trim the suffix "Async" applied
+        /// to action method names.
+        /// For example, the action name for <c>ProductsController.ListProductsAsync</c> will be
+        /// canonicalized as <c>ListProducts.</c>. Consequently, it will be routeable at
+        /// <c>/Products/ListProducts</c> with views looked up at <c>/Views/Products/ListProducts.cshtml</c>.
+        /// </para>
+        /// <para>
+        /// This option does not affect values specified using using <see cref="ActionNameAttribute"/>.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
+        public bool SuppressAsyncSuffixInActionNames { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum size of a complex collection to model bind. When this limit is reached, the model
+        /// binding system will throw an <see cref="InvalidOperationException"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When binding a collection, some element binders may succeed unconditionally and model binding may run out
+        /// of memory. This limit constrains such unbounded collection growth; it is a safeguard against incorrect
+        /// model binders and models.
+        /// </para>
+        /// <para>
+        /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
+        /// informs the developer of an issue in their model or model binder. The developer must correct that issue.
+        /// </para>
+        /// <para>
+        /// This limit does not apply to collections of simple types. When
+        /// <see cref="CollectionModelBinder{TElement}"/> relies entirely on <see cref="IValueProvider"/>s, it cannot
+        /// create collections larger than the available data.
+        /// </para>
+        /// <para>
+        /// A very high value for this option (<c>int.MaxValue</c> for example) effectively removes the limit and is
+        /// not recommended.
+        /// </para>
+        /// </remarks>
+        /// <value>The default value is <c>1024</c>, matching <see cref="FormReader.DefaultValueCountLimit"/>.</value>
+        public int MaxModelBindingCollectionSize
+        {
+            get => _maxModelBindingCollectionSize;
+            set
+            {
+                // Disallowing an empty collection would cause the CollectionModelBinder to throw unconditionally.
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxModelBindingCollectionSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum recursion depth of the model binding system. The
+        /// <see cref="DefaultModelBindingContext"/> will throw an <see cref="InvalidOperationException"/> if more than
+        /// this number of <see cref="IModelBinder"/>s are on the stack. That is, an attempt to recurse beyond this
+        /// level will fail.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For some self-referential models, some binders may succeed unconditionally and model binding may result in
+        /// stack overflow. This limit constrains such unbounded recursion; it is a safeguard against incorrect model
+        /// binders and models. This limit also protects against very deep model type hierarchies lacking
+        /// self-references.
+        /// </para>
+        /// <para>
+        /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
+        /// informs the developer of an issue in their model. The developer must correct that issue.
+        /// </para>
+        /// <para>
+        /// A very high value for this option (<c>int.MaxValue</c> for example) effectively removes the limit and is
+        /// not recommended.
+        /// </para>
+        /// </remarks>
+        /// <value>The default value is <c>32</c>, matching the default <see cref="MaxValidationDepth"/> value.</value>
+        public int MaxModelBindingRecursionDepth
+        {
+            get => _maxModelBindingRecursionDepth;
+            set
+            {
+                // Disallowing one model binder (if supported) would cause the model binding system to throw
+                // unconditionally. DefaultModelBindingContext always allows a top-level binder i.e. its own creation.
+                if (value <= 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxModelBindingRecursionDepth = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the most number of entries of an <see cref="IAsyncEnumerable{T}"/> that
+        /// that <see cref="ObjectResultExecutor"/> will buffer.
+        /// <para>
+        /// When <see cref="ObjectResult.Value" /> is an instance of <see cref="IAsyncEnumerable{T}"/>,
+        /// <see cref="ObjectResultExecutor"/> will eagerly read the enumeration and add to a synchronous collection
+        /// prior to invoking the selected formatter.
+        /// This property determines the most number of entries that the executor is allowed to buffer.
+        /// </para>
+        /// </summary>
+        /// <value>Defaults to <c>8192</c>.</value>
+        public int MaxIAsyncEnumerableBufferLimit { get; set; } = 8192;
+
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }

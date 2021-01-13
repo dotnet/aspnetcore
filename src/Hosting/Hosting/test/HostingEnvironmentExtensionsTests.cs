@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void SetsFullPathToWwwroot()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath("."), new WebHostOptions() { WebRoot = "testroot" });
 
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToWwwrootSubdir()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath("testroot"), new WebHostOptions());
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToNullFileProvider()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
 
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void OverridesEnvironmentFromConfig()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
             env.Initialize(Path.GetFullPath("."), new WebHostOptions() { Environment = "NewName" });

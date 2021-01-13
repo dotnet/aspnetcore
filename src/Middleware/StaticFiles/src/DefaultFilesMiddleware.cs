@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -28,9 +29,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the DefaultFilesMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration options for this middleware.</param>
-        public DefaultFilesMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
+        public DefaultFilesMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
         {
             if (next == null)
             {
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            
+
             _next = next;
             _options = options.Value;
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
@@ -62,9 +63,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            PathString subpath;
-            if (Helpers.IsGetOrHeadMethod(context.Request.Method)
-                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath))
+            if (context.GetEndpoint() == null &&
+                Helpers.IsGetOrHeadMethod(context.Request.Method)
+                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
                 if (dirContents.Exists)
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     for (int matchIndex = 0; matchIndex < _options.DefaultFileNames.Count; matchIndex++)
                     {
                         string defaultFile = _options.DefaultFileNames[matchIndex];
-                        var file = _fileProvider.GetFileInfo(subpath + defaultFile);
+                        var file = _fileProvider.GetFileInfo(subpath.Value + defaultFile);
                         // TryMatchPath will make sure subpath always ends with a "/" by adding it if needed.
                         if (file.Exists)
                         {
@@ -81,8 +82,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                             // This prevents relative links from breaking.
                             if (!Helpers.PathEndsInSlash(context.Request.Path))
                             {
-                                context.Response.StatusCode = 301;
-                                context.Response.Headers[HeaderNames.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
+                                context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
+                                var request = context.Request;
+                                var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
+                                context.Response.Headers[HeaderNames.Location] = redirect;
                                 return Task.CompletedTask;
                             }
 

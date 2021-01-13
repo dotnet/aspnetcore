@@ -333,13 +333,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.RawValue);
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
             var error = Assert.Single(entry.Errors);
-            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
 
             entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[1].Name").Value;
             Assert.Null(entry.RawValue);
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
             error = Assert.Single(entry.Errors);
-            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -968,6 +968,263 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, modelState.ErrorCount);
         }
 
+        // Regression test for #7052
+        [Fact]
+        public async Task CollectionModelBinder_ThrowsOn1025Items_AtTopLevel()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IList<SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        // Ensure CollectionModelBinder allows MaxModelBindingCollectionSize items.
+        [Fact]
+        public async Task CollectionModelBinder_Binds3Items_WithIndices()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IList<SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?Index=0&Index=1&Index=2");
+                },
+                options => options.MaxModelBindingCollectionSize = 3);
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(0, modelState.ErrorCount);
+
+            Assert.True(result.IsModelSet);
+            var locations = Assert.IsType<List<SuccessfulModel>>(result.Model);
+            Assert.Collection(
+                locations,
+                item =>
+                {
+                    Assert.True(item.IsBound);
+                    Assert.Null(item.Name);
+                },
+                item =>
+                {
+                    Assert.True(item.IsBound);
+                    Assert.Null(item.Name);
+                },
+                item =>
+                {
+                    Assert.True(item.IsBound);
+                    Assert.Null(item.Name);
+                });
+        }
+
+        // Ensure CollectionModelBinder disallows one more than MaxModelBindingCollectionSize items.
+        [Fact]
+        public async Task CollectionModelBinder_ThrowsOn4Items_WithIndices()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (3). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IList<SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?Index=0&Index=1&Index=2&Index=3");
+                },
+                options => options.MaxModelBindingCollectionSize = 3);
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        private class SuccessfulContainer
+        {
+            public IList<SuccessfulModel> Successes { get; set; }
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_ThrowsOn1025Items()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'Successes' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(SuccessfulContainer),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers lack matching data.
+                request.QueryString = new QueryString("?Successes[0]=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_CollectionOfSimpleTypes_DoesNotResultInValidationError()
+        {
+            // Regression test for https://github.com/aspnet/AspNetCore/issues/13512
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Collection<string>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?[0]=hello&[1]=");
+                });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(0, modelState.ErrorCount);
+
+            Assert.True(result.IsModelSet);
+            var model = Assert.IsType<Collection<string>>(result.Model);
+            Assert.Collection(
+                model,
+                item => Assert.Equal("hello", item),
+                item => Assert.Null(item));
+
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("[0]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[1]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_CollectionOfNonNullableTypes_AppliesImplicitRequired()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Collection<string>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?[0]=hello&[1]=");
+                });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(0, modelState.ErrorCount);
+
+            Assert.True(result.IsModelSet);
+            var model = Assert.IsType<Collection<string>>(result.Model);
+            Assert.Collection(
+                model,
+                item => Assert.Equal("hello", item),
+                item => Assert.Null(item));
+
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("[0]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[1]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
+        }
+
         private class ClosedGenericCollection : Collection<string>
         {
         }
@@ -978,7 +1235,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitClosedGenericCollection : ICollection<string>
         {
-            private List<string> _data = new List<string>();
+            private readonly List<string> _data = new List<string>();
 
             int ICollection<string>.Count
             {
@@ -1034,7 +1291,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitClosedGenericList : IList<string>
         {
-            private List<string> _data = new List<string>();
+            private readonly List<string> _data = new List<string>();
 
             string IList<string>.this[int index]
             {
@@ -1118,7 +1375,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitCollection<T> : ICollection<T>
         {
-            private List<T> _data = new List<T>();
+            private readonly List<T> _data = new List<T>();
 
             int ICollection<T>.Count
             {
@@ -1174,7 +1431,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitList<T> : IList<T>
         {
-            private List<T> _data = new List<T>();
+            private readonly List<T> _data = new List<T>();
 
             T IList<T>.this[int index]
             {

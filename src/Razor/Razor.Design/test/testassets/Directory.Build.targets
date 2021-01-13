@@ -1,4 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" Condition="!Exists('Before.Directory.Build.props')" />
-  <Import Project="RazorTest.Introspection.targets" />
-</Project>

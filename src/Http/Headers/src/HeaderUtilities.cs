@@ -143,7 +143,7 @@ namespace Microsoft.Net.Http.Headers
                 }
             }
 
-            // Since we never re-use a "found" value in 'y', we expecte 'alreadyFound' to have all fields set to 'true'.
+            // Since we never re-use a "found" value in 'y', we expected 'alreadyFound' to have all fields set to 'true'.
             // Otherwise the two collections can't be equal and we should not get here.
             Contract.Assert(Contract.ForAll(alreadyFound, value => { return value; }),
                 "Expected all values in 'alreadyFound' to be true since collections are considered equal.");
@@ -589,7 +589,16 @@ namespace Microsoft.Net.Http.Headers
 
         public static string FormatDate(DateTimeOffset dateTime, bool quoted)
         {
-            return dateTime.ToRfc1123String(quoted);
+            if (quoted)
+            {
+                return string.Create(31, dateTime, (span, dt) =>
+                {
+                    span[0] = span[30] = '"';
+                    dt.TryFormat(span.Slice(1), out _, "r");
+                });
+            }
+
+            return dateTime.ToString("r");
         }
 
         public static StringSegment RemoveQuotes(StringSegment input)
@@ -616,7 +625,7 @@ namespace Microsoft.Net.Http.Headers
         {
             input = RemoveQuotes(input);
 
-            // First pass to calculate the size of the InplaceStringBuilder
+            // First pass to calculate the size of the string
             var backSlashCount = CountBackslashesForDecodingQuotedString(input);
 
             if (backSlashCount == 0)
@@ -624,26 +633,32 @@ namespace Microsoft.Net.Http.Headers
                 return input;
             }
 
-            var stringBuilder = new InplaceStringBuilder(input.Length - backSlashCount);
-
-            for (var i = 0; i < input.Length; i++)
+            return string.Create(input.Length - backSlashCount, input, (span, segment) =>
             {
-                if (i < input.Length - 1 && input[i] == '\\')
+                var spanIndex = 0;
+                var spanLength = span.Length;
+                for (var i = 0; i < segment.Length && (uint)spanIndex < (uint)spanLength; i++)
                 {
-                    // If there is an backslash character as the last character in the string,
-                    // we will assume that it should be included literally in the unescaped string
-                    // Ex: "hello\\" => "hello\\"
-                    // Also, if a sender adds a quoted pair like '\\''n',
-                    // we will assume it is over escaping and just add a n to the string.
-                    // Ex: "he\\llo" => "hello"
-                    stringBuilder.Append(input[i + 1]);
-                    i++;
-                    continue;
-                }
-                stringBuilder.Append(input[i]);
-            }
+                    int nextIndex = i + 1;
+                    if ((uint)nextIndex < (uint)segment.Length && segment[i] == '\\')
+                    {
+                        // If there is an backslash character as the last character in the string,
+                        // we will assume that it should be included literally in the unescaped string
+                        // Ex: "hello\\" => "hello\\"
+                        // Also, if a sender adds a quoted pair like '\\''n',
+                        // we will assume it is over escaping and just add a n to the string.
+                        // Ex: "he\\llo" => "hello"
+                        span[spanIndex] = segment[nextIndex];
+                        i++;
+                    }
+                    else
+                    {
+                        span[spanIndex] = segment[i];
+                    }
 
-            return stringBuilder.ToString();
+                    spanIndex++;
+                }
+            });
         }
 
         private static int CountBackslashesForDecodingQuotedString(StringSegment input)
@@ -687,25 +702,27 @@ namespace Microsoft.Net.Http.Headers
             // By calling this, we know that the string requires quotes around it to be a valid token.
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
-            var stringBuilder = new InplaceStringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
-            stringBuilder.Append('\"');
+            // 2 for quotes
+            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
+                // Helps to elide the bounds check for span[0]
+                span[span.Length - 1] = span[0] = '\"';
 
-            for (var i = 0; i < input.Length; i++)
-            {
-                if (input[i] == '\\' || input[i] == '\"')
+                var spanIndex = 1;
+                for (var i = 0; i < segment.Length; i++)
                 {
-                    stringBuilder.Append('\\');
+                    if (segment[i] == '\\' || segment[i] == '\"')
+                    {
+                        span[spanIndex++] = '\\';
+                    }
+                    else if ((segment[i] <= 0x1F || segment[i] == 0x7F) && segment[i] != 0x09)
+                    {
+                        // Control characters are not allowed in a quoted-string, which include all characters
+                        // below 0x1F (except for 0x09 (TAB)) and 0x7F.
+                        throw new FormatException($"Invalid control character '{segment[i]}' in input.");
+                    }
+                    span[spanIndex++] = segment[i];
                 }
-                else if ((input[i] <= 0x1F || input[i] == 0x7F) && input[i] != 0x09)
-                {
-                    // Control characters are not allowed in a quoted-string, which include all characters
-                    // below 0x1F (except for 0x09 (TAB)) and 0x7F.
-                    throw new FormatException($"Invalid control character '{input[i]}' in input.");
-                }
-                stringBuilder.Append(input[i]);
-            }
-            stringBuilder.Append('\"');
-            return stringBuilder.ToString();
+            });
         }
 
         private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)

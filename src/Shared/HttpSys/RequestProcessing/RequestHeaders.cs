@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
         {
-            ((IDictionary<string, object>)this).Add(item.Key, item.Value);
+            ((IDictionary<string, StringValues>)this).Add(item.Key,item.Value);
         }
 
         void ICollection<KeyValuePair<string, StringValues>>.Clear()
@@ -124,8 +124,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
         {
-            object value;
-            return ((IDictionary<string, object>)this).TryGetValue(item.Key, out value) && Object.Equals(value, item.Value);
+            return ((IDictionary<string, StringValues>)this).TryGetValue(item.Key, out var value) && Equals(value, item.Value);
         }
 
         void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)

@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
             _localizer.GetAllStrings(includeParentCultures);
 
         /// <inheritdoc />
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
         public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
         {
             if (culture == null)
@@ -92,7 +93,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             return new HtmlLocalizer(_localizer.WithCulture(culture));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -102,6 +105,11 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         protected virtual LocalizedHtmlString ToHtmlString(LocalizedString result) =>
             new LocalizedHtmlString(result.Name, result.Value, result.ResourceNotFound);
 
+        /// <summary>
+        /// Creates a new <see cref="LocalizedHtmlString"/> for a <see cref="LocalizedString"/>.
+        /// </summary>
+        /// <param name="result">The <see cref="LocalizedString"/>.</param>
+        /// <param name="arguments">The value arguments which will be used in construting the message.</param>
         protected virtual LocalizedHtmlString ToHtmlString(LocalizedString result, object[] arguments) =>
             new LocalizedHtmlString(result.Name, result.Value, result.ResourceNotFound, arguments);
     }

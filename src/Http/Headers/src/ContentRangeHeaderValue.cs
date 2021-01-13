@@ -146,14 +146,14 @@ namespace Microsoft.Net.Http.Headers
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append(_unit);
+            sb.Append(_unit.AsSpan());
             sb.Append(' ');
 
             if (HasRange)
             {
-                sb.Append(_from.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
                 sb.Append('-');
-                sb.Append(_to.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {
@@ -163,7 +163,7 @@ namespace Microsoft.Net.Http.Headers
             sb.Append('/');
             if (HasLength)
             {
-                sb.Append(_length.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {

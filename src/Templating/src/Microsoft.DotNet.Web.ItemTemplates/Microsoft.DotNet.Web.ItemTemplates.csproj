@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Description>Web File Templates for Microsoft Template Engine</Description>
-  </PropertyGroup>
-
-</Project>

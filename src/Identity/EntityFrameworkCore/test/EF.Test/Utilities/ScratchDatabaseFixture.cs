@@ -2,28 +2,40 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities;
-using Microsoft.EntityFrameworkCore.Internal;
+using System.Data.Common;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ScratchDatabaseFixture : IDisposable
     {
-        private LazyRef<SqlServerTestStore> _testStore;
+        private readonly SqliteConnection _connection;
 
         public ScratchDatabaseFixture()
         {
-            _testStore = new LazyRef<SqlServerTestStore>(() => SqlServerTestStore.CreateScratch());
+            _connection = new SqliteConnection($"DataSource=D{Guid.NewGuid()}.db");
+
+            using (var context = CreateEmptyContext())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
         }
 
-        public string ConnectionString => _testStore.Value.Connection.ConnectionString;
+        private DbContext CreateEmptyContext()
+            => new DbContext(new DbContextOptionsBuilder().UseSqlite(_connection).Options);
+
+        public DbConnection Connection => _connection;
 
         public void Dispose()
         {
-            if (_testStore.HasValue)
+            using (var context = CreateEmptyContext())
             {
-                _testStore.Value?.Dispose();
+                context.Database.EnsureDeleted();
             }
+
+            _connection.Dispose();
         }
     }
 }

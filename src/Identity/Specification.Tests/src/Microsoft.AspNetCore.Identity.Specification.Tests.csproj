@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <Description>Shared test suite for Asp.Net Identity Core store implementations.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
+    <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,13 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="xunit" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.core" />
+    <Reference Include="xunit.analyzers" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Removing nonexistent package -->
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Testing" />
+  </ItemGroup>
 </Project>

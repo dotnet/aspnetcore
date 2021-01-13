@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">[WixBundleName] — instalacja</String>
+  <String Id="Title">[BundleNameShort]</String>
+  <String Id="SubTitle">[BundleNameSub]</String>
+  <String Id="InstallHeader">Witamy</String>
+  <String Id="InstallMessage">Instalator zainstaluje pakiet [WixBundleName] na Twoim komputerze. Kliknij pozycję Instaluj, aby kontynuować, pozycję Opcje, aby określić katalog instalacyjny, lub pozycję Zamknij, aby zakończyć.</String>
+  <String Id="InstallVersion">Wersja [WixBundleVersion]</String>
+  <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
+  <String Id="HelpHeader">Pomoc dotycząca instalacji</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [katalog] - Instaluje, naprawia, odinstalowuje
+   lub tworzy pełną lokalną kopię pakietu w katalogu. Domyślnie jest używany przełącznik install.
+
+/passive | /quiet -  Wyświetla ograniczony interfejs użytkownika bez monitów albo nie wyświetla ani interfejsu użytkownika,
+   ani monitów. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
+
+/norestart   - Pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
+/log log.txt - Tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Zamknij</String>
+  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Postanowienia licencyjne&lt;/a&gt; dotyczące pakietu [WixBundleName].</String>
+  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się z postanowieniami licencyjnymi</String>
+  <String Id="InstallOptionsButton">&amp;Opcje</String>
+  <String Id="InstallInstallButton">&amp;Zainstaluj</String>
+  <String Id="InstallCloseButton">&amp;Zamknij</String>
+  <String Id="OptionsHeader">Opcje instalacji</String>
+  <String Id="OptionsLocationLabel">Lokalizacja instalacji:</String>
+  <String Id="OptionsBrowseButton">&amp;Przeglądaj</String>
+  <String Id="OptionsOkButton">&amp;OK</String>
+  <String Id="OptionsCancelButton">&amp;Anuluj</String>
+  <String Id="ProgressHeader">Postęp instalacji</String>
+  <String Id="ProgressLabel">Przetwarzanie:</String>
+  <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
+  <String Id="ProgressCancelButton">&amp;Anuluj</String>
+  <String Id="ModifyHeader">Modyfikuj instalację</String>
+  <String Id="ModifyRepairButton">&amp;Napraw</String>
+  <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
+  <String Id="ModifyCloseButton">&amp;Zamknij</String>
+  <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
+  <String Id="SuccessUninstallHeader">Pomyślnie ukończono dezinstalację</String>
+  <String Id="SuccessInstallHeader">Pomyślnie ukończono instalację</String> 
+  <String Id="SuccessHeader">Pomyślnie ukończono instalację</String>	
+  <String Id="SuccessLaunchButton">&amp;Uruchom</String>
+  <String Id="SuccessRestartText">Aby móc korzystać z oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="SuccessRestartButton">&amp;Uruchom ponownie</String>
+  <String Id="SuccessCloseButton">&amp;Zamknij</String>
+  <String Id="FailureHeader">Instalacja nie powiodła się</String>
+  <String Id="FailureInstallHeader">Instalacja nie powiodła się</String>
+  <String Id="FailureUninstallHeader">Dezinstalacja nie powiodła się</String>
+  <String Id="FailureRepairHeader">Naprawa nie powiodła się</String> 
+  <String Id="FailureHyperlinkLogText">Co najmniej jeden problem spowodował niepowodzenie instalacji. Rozwiąż problemy, a następnie ponów próbę instalacji. Aby uzyskać więcej informacji, zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Aby ukończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="FailureRestartButton">&amp;Uruchom ponownie</String>
+  <String Id="FailureCloseButton">&amp;Zamknij</String>
+  <String Id="FilesInUseHeader">Pliki w użyciu</String>
+  <String Id="FilesInUseLabel">Następujące aplikacje korzystają z plików, które muszą zostać zaktualizowane:</String>
+  <String Id="FilesInUseCloseRadioButton">Zamknij &amp;aplikacje i spróbuj je ponownie uruchomić.</String>
+  <String Id="FilesInUseDontCloseRadioButton">&amp;Nie zamykaj aplikacji. Będzie konieczne ponowne uruchomienie.</String>
+  <String Id="FilesInUseOkButton">&amp;OK</String>
+  <String Id="FilesInUseCancelButton">&amp;Anuluj</String>
+
+  <!-- Custom UI strings -->
+  <String Id="Welcome">Witamy w instalatorze produktu [WixBundleName].</String>
+  <String Id="InstallResetIIS">Po zakończeniu instalacji uruchom ponownie usługi IIS. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Usługi IIS nie są włączone na tej maszynie. Jeśli zamierzasz uruchamiać aplikacje platformy ASP.NET Core za pomocą usług IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;postanowienia licencyjne&lt;/a&gt; i &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;oświadczenie o ochronie prywatności&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Po zakończeniu instalacji uruchom ponownie usługi IIS. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Usługi IIS nie są włączone na tej maszynie. Jeśli zamierzasz uruchamiać aplikacje platformy ASP.NET Core za pomocą usług IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+</WixLocalization>

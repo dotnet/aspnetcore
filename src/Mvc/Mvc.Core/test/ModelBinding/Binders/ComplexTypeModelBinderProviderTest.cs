@@ -55,6 +55,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<ComplexTypeModelBinder>(result);
         }
 
+        [Fact]
+        public void Create_ForSupportedType_ReturnsBinder()
+        {
+            // Arrange
+            var provider = new ComplexTypeModelBinderProvider();
+
+            var context = new TestModelBinderProviderContext(typeof(Person));
+            context.OnCreatingBinder(m =>
+            {
+                if (m.ModelType == typeof(int) || m.ModelType == typeof(string))
+                {
+                    return Mock.Of<IModelBinder>();
+                }
+                else
+                {
+                    Assert.False(true, "Not the right model type");
+                    return null;
+                }
+            });
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            Assert.IsType<ComplexTypeModelBinder>(result);
+        }
+
         private class Person
         {
             public string Name { get; set; }

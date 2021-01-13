@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Hosting
     /// <summary>
     /// Commonly used environment names.
     /// </summary>
+    [System.Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.Environments.", error: false)]
     public static class EnvironmentName
     {
         public static readonly string Development = "Development";

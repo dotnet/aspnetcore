@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {

@@ -1,25 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
     public static class TestIdentityFactory
     {
-        public static InMemoryContext CreateContext()
-        {
-            var services = new ServiceCollection();
-            services.AddEntityFrameworkInMemoryDatabase();
-            var serviceProvider = services.BuildServiceProvider();
-
-            var db = new InMemoryContext(new DbContextOptionsBuilder().Options);
-            db.Database.EnsureCreated();
-
-            return db;
-        }
+        private static InMemoryContext CreateContext(SqliteConnection connection)
+            => InMemoryContext.Create(connection);
 
         public static IServiceCollection CreateTestServices()
         {
@@ -37,9 +27,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
             return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
 
-        public static RoleManager<IdentityRole> CreateRoleManager()
-        {
-            return CreateRoleManager(CreateContext());
-        }
+        public static RoleManager<IdentityRole> CreateRoleManager(SqliteConnection connection)
+            => CreateRoleManager(CreateContext(connection));
     }
 }

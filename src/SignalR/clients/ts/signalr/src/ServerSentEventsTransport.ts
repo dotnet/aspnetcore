@@ -4,22 +4,32 @@
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
+import { EventSourceConstructor } from "./Polyfills";
+import { Arg, getDataDetail, Platform, sendMessage } from "./Utils";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: HttpClient;
-    private readonly accessTokenFactory: () => string | Promise<string>;
+    private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logger: ILogger;
     private readonly logMessageContent: boolean;
-    private eventSource: EventSource;
-    private url: string;
+    private readonly eventSourceConstructor: EventSourceConstructor;
+    private eventSource?: EventSource;
+    private url?: string;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean) {
+    public onreceive: ((data: string | ArrayBuffer) => void) | null;
+    public onclose: ((error?: Error) => void) | null;
+
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
+                logMessageContent: boolean, eventSourceConstructor: EventSourceConstructor) {
         this.httpClient = httpClient;
-        this.accessTokenFactory = accessTokenFactory || (() => null);
+        this.accessTokenFactory = accessTokenFactory;
         this.logger = logger;
         this.logMessageContent = logMessageContent;
+        this.eventSourceConstructor = eventSourceConstructor;
+
+        this.onreceive = null;
+        this.onclose = null;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -27,25 +37,33 @@ export class ServerSentEventsTransport implements ITransport {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
 
-        if (typeof (EventSource) === "undefined") {
-            throw new Error("'EventSource' is not supported in your environment.");
-        }
+        this.logger.log(LogLevel.Trace, "(SSE transport) Connecting.");
 
-        this.logger.log(LogLevel.Trace, "(SSE transport) Connecting");
-
-        const token = await this.accessTokenFactory();
-        if (token) {
-            url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
-        }
-
+        // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
         this.url = url;
+
+        if (this.accessTokenFactory) {
+            const token = await this.accessTokenFactory();
+            if (token) {
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+            }
+        }
+
         return new Promise<void>((resolve, reject) => {
             let opened = false;
             if (transferFormat !== TransferFormat.Text) {
                 reject(new Error("The Server-Sent Events transport only supports the 'Text' transfer format"));
+                return;
             }
 
-            const eventSource = new EventSource(url, { withCredentials: true });
+            let eventSource: EventSource;
+            if (Platform.isBrowser || Platform.isWebWorker) {
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true });
+            } else {
+                // Non-browser passes cookies via the dictionary
+                const cookies = this.httpClient.getCookieString(url);
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers: { Cookie: cookies } } as EventSourceInit);
+            }
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
@@ -54,16 +72,14 @@ export class ServerSentEventsTransport implements ITransport {
                             this.logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data, this.logMessageContent)}.`);
                             this.onreceive(e.data);
                         } catch (error) {
-                            if (this.onclose) {
-                                this.onclose(error);
-                            }
+                            this.close(error);
                             return;
                         }
                     }
                 };
 
-                eventSource.onerror = (e: any) => {
-                    const error = new Error(e.message || "Error occurred");
+                eventSource.onerror = (e: MessageEvent) => {
+                    const error = new Error(e.data || "Error occurred");
                     if (opened) {
                         this.close(error);
                     } else {
@@ -78,7 +94,8 @@ export class ServerSentEventsTransport implements ITransport {
                     resolve();
                 };
             } catch (e) {
-                return Promise.reject(e);
+                reject(e);
+                return;
             }
         });
     }
@@ -87,7 +104,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this.eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {
@@ -98,14 +115,11 @@ export class ServerSentEventsTransport implements ITransport {
     private close(e?: Error) {
         if (this.eventSource) {
             this.eventSource.close();
-            this.eventSource = null;
+            this.eventSource = undefined;
 
             if (this.onclose) {
                 this.onclose(e);
             }
         }
     }
-
-    public onreceive: (data: string | ArrayBuffer) => void;
-    public onclose: (error?: Error) => void;
 }

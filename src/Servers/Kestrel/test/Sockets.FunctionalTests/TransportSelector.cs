@@ -1,31 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
+using System;
+using System.Buffers;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public static class TransportSelector
     {
-        public static IWebHostBuilder GetWebHostBuilder()
+        public static IWebHostBuilder GetWebHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null,
+                                                        long? maxReadBufferSize = null)
         {
-            return new WebHostBuilder().UseSockets().ConfigureServices(RemoveDevCert);
-        }
-
-        private static void RemoveDevCert(IServiceCollection services)
-        {
-            // KestrelServerOptionsSetup would scan all system certificates on every test server creation
-            // making test runs very slow
-            foreach (var descriptor in services.ToArray())
+            return new WebHostBuilder().UseSockets(options =>
             {
-                if (descriptor.ImplementationType == typeof(KestrelServerOptionsSetup))
-                {
-                    services.Remove(descriptor);
-                }
-            }
+                options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory;
+                options.MaxReadBufferSize = maxReadBufferSize;
+            });
         }
     }
 }

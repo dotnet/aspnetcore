@@ -7,6 +7,14 @@ namespace Microsoft.AspNetCore.Http
 {
     public static class HttpMethods
     {
+        // We are intentionally using 'static readonly' here instead of 'const'.
+        // 'const' values would be embedded in to each assembly that used them
+        // and each consuming assembly would have a different 'string' instance.
+        // Using .'static readonly' means that all consumers get thee exact same
+        // 'string' instance, which means the 'ReferenceEquals' checks below work
+        // and allow us to optimize comparisons when these constants are used.
+        
+        // Please do NOT change these to 'const'
         public static readonly string Connect = "CONNECT";
         public static readonly string Delete = "DELETE";
         public static readonly string Get = "GET";

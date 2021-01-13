@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // Not exported from index.
+/** @private */
 export class BinaryMessageFormat {
 
     // The length prefix of binary messages is encoded as VarInt. Read the comment in

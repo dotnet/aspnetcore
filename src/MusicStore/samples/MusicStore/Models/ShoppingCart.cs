@@ -18,7 +18,7 @@ namespace MusicStore.Models
             _shoppingCartId = id;
         }
 
-        public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context) 
+        public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context)
             => GetCart(db, GetCartId(context));
 
         public static ShoppingCart GetCart(MusicStoreContext db, string cartId)
@@ -94,7 +94,7 @@ namespace MusicStore.Models
                 .Include(c => c.Album)
                 .ToListAsync();
         }
-        
+
         public Task<List<string>> GetCartAlbumTitles()
         {
             return _dbContext
@@ -115,20 +115,22 @@ namespace MusicStore.Models
                 .SumAsync();
         }
 
-        public Task<decimal> GetTotal()
+        public async Task<decimal> GetTotal()
         {
-            // Multiply album price by count of that album to get 
+            // Multiply album price by count of that album to get
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
-            return _dbContext
+            // No way to do decimal sum on server with SQLite, but client eval is fine here
+            return (await _dbContext
                 .CartItems
                 .Where(c => c.CartId == _shoppingCartId)
                 .Select(c => c.Album.Price * c.Count)
-                .SumAsync();
+                .ToListAsync())
+                .Sum();
         }
 
-        public async Task<int> CreateOrder(Order order)
+        public async Task CreateOrder(Order order)
         {
             decimal orderTotal = 0;
 
@@ -143,7 +145,7 @@ namespace MusicStore.Models
                 var orderDetail = new OrderDetail
                 {
                     AlbumId = item.AlbumId,
-                    OrderId = order.OrderId,
+                    Order = order,
                     UnitPrice = album.Price,
                     Quantity = item.Count,
                 };
@@ -159,9 +161,6 @@ namespace MusicStore.Models
 
             // Empty the shopping cart
             await EmptyCart();
-
-            // Return the OrderId as the confirmation number
-            return order.OrderId;
         }
 
         // We're using HttpContextBase to allow access to sessions.
@@ -171,7 +170,7 @@ namespace MusicStore.Models
 
             if (cartId == null)
             {
-                //A GUID to hold the cartId. 
+                //A GUID to hold the cartId.
                 cartId = Guid.NewGuid().ToString();
 
                 // Send cart Id as a cookie to the client.

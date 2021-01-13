@@ -5,17 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     /// <summary>
     /// An <see cref="ApplicationPart"/> backed by an <see cref="System.Reflection.Assembly"/>.
     /// </summary>
-    public class AssemblyPart :
-        ApplicationPart,
-        IApplicationPartTypeProvider,
-        ICompilationReferencesProvider
+    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider
     {
         /// <summary>
         /// Initializes a new <see cref="AssemblyPart"/> instance.
@@ -39,27 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// <inheritdoc />
         public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
 
-        /// <inheritdoc />
-        public IEnumerable<string> GetReferencePaths()
-        {
-            if (Assembly.IsDynamic)
-            {
-                // Skip loading process for dynamic assemblies. This prevents DependencyContextLoader from reading the
-                // .deps.json file from either manifest resources or the assembly location, which will fail.
-                return Enumerable.Empty<string>();
-            }
-
-            var dependencyContext = DependencyContext.Load(Assembly);
-            if (dependencyContext != null)
-            {
-                return dependencyContext.CompileLibraries.SelectMany(library => library.ResolveReferencePaths());
-            }
-
-            // If an application has been compiled without preserveCompilationContext, return the path to the assembly
-            // as a reference. For runtime compilation, this will allow the compilation to succeed as long as it least
-            // one application part has been compiled with preserveCompilationContext and contains a super set of types
-            // required for the compilation to succeed.
-            return new[] { Assembly.Location };
-        }
+        
     }
 }

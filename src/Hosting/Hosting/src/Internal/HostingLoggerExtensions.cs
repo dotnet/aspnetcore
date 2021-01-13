@@ -4,18 +4,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string correlationId)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, Activity activity)
         {
-            return logger.BeginScope(new HostingLogScope(httpContext, correlationId));
+            return logger.BeginScope(new HostingLogScope(httpContext, activity));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -94,8 +95,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
-            private readonly HttpContext _httpContext;
-            private readonly string _correlationId;
+            private readonly string _path;
+            private readonly string _traceIdentifier;
+            private readonly Activity _activity;
 
             private string _cachedToString;
 
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 get
                 {
-                    return 3;
+                    return 5;
                 }
             }
 
@@ -113,25 +115,37 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     if (index == 0)
                     {
-                        return new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier);
+                        return new KeyValuePair<string, object>("RequestId", _traceIdentifier);
                     }
                     else if (index == 1)
                     {
-                        return new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString());
+                        return new KeyValuePair<string, object>("RequestPath", _path);
                     }
                     else if (index == 2)
                     {
-                        return new KeyValuePair<string, object>("CorrelationId", _correlationId);
+                        return new KeyValuePair<string, object>("SpanId", _activity.GetSpanId());
+                    }
+                    else if (index == 3)
+                    {
+                        return new KeyValuePair<string, object>("TraceId", _activity.GetTraceId());
+                    }
+                    else if (index == 4)
+                    {
+                        return new KeyValuePair<string, object>("ParentId", _activity.GetParentId());
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext, string correlationId)
+            public HostingLogScope(HttpContext httpContext, Activity activity)
             {
-                _httpContext = httpContext;
-                _correlationId = correlationId;
+                _traceIdentifier = httpContext.TraceIdentifier;
+                _path = (httpContext.Request.PathBase.HasValue 
+                         ? httpContext.Request.PathBase + httpContext.Request.Path 
+                         : httpContext.Request.Path).ToString();
+
+                _activity = activity;
             }
 
             public override string ToString()
@@ -140,9 +154,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
-                        "RequestId:{0} RequestPath:{1}",
-                        _httpContext.TraceIdentifier,
-                        _httpContext.Request.Path);
+                        "RequestPath:{0} RequestId:{1}, SpanId:{2}, TraceId:{3}, ParentId:{4}",
+                        _path,
+                        _traceIdentifier,
+                        _activity.GetSpanId(),
+                        _activity.GetTraceId(),
+                        _activity.GetParentId());
                 }
 
                 return _cachedToString;

@@ -2,22 +2,67 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpRequestHeaders : HttpHeaders
+    internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
+        private readonly bool _reuseHeaderValues;
+        private readonly bool _useLatin1;
+        private long _previousBits = 0;
+
+        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
+        {
+            _reuseHeaderValues = reuseHeaderValues;
+            _useLatin1 = useLatin1;
+        }
+
+        public void OnHeadersComplete()
+        {
+            var bitsToClear = _previousBits & ~_bits;
+            _previousBits = 0;
+
+            if (bitsToClear != 0)
+            {
+                // Some previous headers were not reused or overwritten.
+
+                // While they cannot be accessed by the current request (as they were not supplied by it)
+                // there is no point in holding on to them, so clear them now,
+                // to allow them to get collected by the GC.
+                Clear(bitsToClear);
+            }
+        }
+
+        protected override void ClearFast()
+        {
+            if (!_reuseHeaderValues)
+            {
+                // If we aren't reusing headers clear them all
+                Clear(_bits);
+            }
+            else
+            {
+                // If we are reusing headers, store the currently set headers for comparison later
+                _previousBits = _bits;
+            }
+
+            // Mark no headers as currently in use
+            _bits = 0;
+            // Clear ContentLength and any unknown headers as we will never reuse them 
+            _contentLength = null;
+            MaybeUnknown?.Clear();
+        }
+
         private static long ParseContentLength(string value)
         {
-            long parsed;
-            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out parsed))
+            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
@@ -26,34 +71,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void AppendContentLength(Span<byte> value)
+        {
+            if (_contentLength.HasValue)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
+            }
+
+            if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
+                parsed < 0 ||
+                consumed != value.Length)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(_useLatin1));
+            }
+
+            _contentLength = parsed;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void SetValueUnknown(string key, StringValues value)
         {
             Unknown[key] = value;
         }
 
-        public unsafe void Append(Span<byte> name, string value)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
         {
-            fixed (byte* namePtr = &MemoryMarshal.GetReference(name))
-            {
-                Append(namePtr, name.Length, value);
-            }
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe void AppendUnknownHeaders(byte* pKeyBytes, int keyLength, string value)
+        private unsafe void AppendUnknownHeaders(Span<byte> name, string valueString)
         {
-            string key = new string('\0', keyLength);
-            fixed (char* keyBuffer = key)
-            {
-                if (!StringUtilities.TryGetAsciiString(pKeyBytes, keyBuffer, keyLength))
-                {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
-                }
-            }
-
-            StringValues existing;
-            Unknown.TryGetValue(key, out existing);
-            Unknown[key] = AppendValue(existing, value);
+            string key = name.GetHeaderName();
+            Unknown.TryGetValue(key, out var existing);
+            Unknown[key] = AppendValue(existing, valueString);
         }
 
         public Enumerator GetEnumerator()
@@ -70,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             private readonly HttpRequestHeaders _collection;
             private readonly long _bits;
-            private int _state;
+            private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
@@ -79,12 +133,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _collection = collection;
                 _bits = collection._bits;
-                _state = 0;
-                _current = default(KeyValuePair<string, StringValues>);
+                _next = 0;
+                _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
                     ? collection.MaybeUnknown.GetEnumerator()
-                    : default(Dictionary<string, StringValues>.Enumerator);
+                    : default;
             }
 
             public KeyValuePair<string, StringValues> Current => _current;
@@ -97,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _state = 0;
+                _next = 0;
             }
         }
     }

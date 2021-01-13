@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class ForwardedHeadersExtensions
     {
+        private const string ForwardedHeadersAdded = "ForwardedHeadersAdded";
+
         /// <summary>
         /// Forwards proxied headers onto current request
         /// </summary>
@@ -21,7 +23,15 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.UseMiddleware<ForwardedHeadersMiddleware>();
+            // Don't add more than one instance of this middleware to the pipeline using the options from the DI container.
+            // Doing so could cause a request to be processed multiple times and the ForwardLimit to be exceeded.
+            if (!builder.Properties.ContainsKey(ForwardedHeadersAdded))
+            {
+                builder.Properties[ForwardedHeadersAdded] = true;
+                return builder.UseMiddleware<ForwardedHeadersMiddleware>();
+            }
+
+            return builder;
         }
 
         /// <summary>

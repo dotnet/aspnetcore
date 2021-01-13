@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -32,20 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public IHttpRequestFeature GetViaGeneric_First()
         {
             return _collection.Get<IHttpRequestFeature>();
-        }
-
-        [Benchmark]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpSendFileFeature GetViaTypeOf_Last()
-        {
-            return (IHttpSendFileFeature)_collection[typeof(IHttpSendFileFeature)];
-        }
-
-        [Benchmark]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpSendFileFeature GetViaGeneric_Last()
-        {
-            return _collection.Get<IHttpSendFileFeature>();
         }
 
         [Benchmark]
@@ -79,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public HttpProtocolFeatureCollection()
         {
-            var memoryPool = KestrelMemoryPool.Create();
+            var memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -91,26 +76,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new Http1Connection(new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = memoryPool,
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 
             http1Connection.Reset();
 
             _collection = http1Connection;
-        }
-
-        private class SendFileFeature : IHttpSendFileFeature
-        {
-            public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private interface IHttpCustomFeature

@@ -8,12 +8,18 @@ namespace Microsoft.AspNetCore.Authentication
 {
     public class RemoteAuthenticationEvents
     {
+        public Func<AccessDeniedContext, Task> OnAccessDenied { get; set; } = context => Task.CompletedTask;
         public Func<RemoteFailureContext, Task> OnRemoteFailure { get; set; } = context => Task.CompletedTask;
 
         public Func<TicketReceivedContext, Task> OnTicketReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked when there is a remote failure
+        /// Invoked when an access denied error was returned by the remote server.
+        /// </summary>
+        public virtual Task AccessDenied(AccessDeniedContext context) => OnAccessDenied(context);
+
+        /// <summary>
+        /// Invoked when there is a remote failure.
         /// </summary>
         public virtual Task RemoteFailure(RemoteFailureContext context) => OnRemoteFailure(context);
 

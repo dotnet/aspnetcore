@@ -7,9 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -110,12 +108,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             get
             {
                 // url, expectedHref
-                return new TheoryData<HtmlString, string>
+                return new TheoryData<string, string>
                 {
-                   { new HtmlString("~/home/index.html"), "HtmlEncode[[/approot/]]home/index.html" },
-                   { new HtmlString("  ~/home/index.html"), "HtmlEncode[[/approot/]]home/index.html" },
+                   { "~/home/index.html", "HtmlEncode[[/approot/]]home/index.html" },
+                   { "  ~/home/index.html", "HtmlEncode[[/approot/]]home/index.html" },
                    {
-                        new HtmlString("~/home/index.html ~/secondValue/index.html"),
+                        "~/home/index.html ~/secondValue/index.html",
                         "HtmlEncode[[/approot/]]home/index.html ~/secondValue/index.html"
                    },
                 };
@@ -124,14 +122,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 
         [Theory]
         [MemberData(nameof(ResolvableUrlHtmlStringData))]
-        public void Process_ResolvesTildeSlashValues_InHtmlString(object url, string expectedHref)
+        public void Process_ResolvesTildeSlashValues_InHtmlString(string url, string expectedHref)
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 tagName: "a",
                 attributes: new TagHelperAttributeList
                 {
-                    { "href", url }
+                    { "href", new HtmlString(url) }
                 },
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
@@ -223,27 +221,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             get
             {
                 // url
-                return new TheoryData<HtmlString>
+                return new TheoryData<string>
                 {
-                   { new HtmlString("/home/index.html") },
-                   { new HtmlString("~ /home/index.html") },
-                   { new HtmlString("/home/index.html ~/second/wontresolve.html") },
-                   { new HtmlString("~\\home\\index.html") },
-                   { new HtmlString("~\\/home/index.html") },
+                   { "/home/index.html" },
+                   { "~ /home/index.html" },
+                   { "/home/index.html ~/second/wontresolve.html" },
+                   { "~\\home\\index.html" },
+                   { "~\\/home/index.html" },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(UnresolvableUrlHtmlStringData))]
-        public void Process_DoesNotResolveNonTildeSlashValues_InHtmlString(HtmlString url)
+        public void Process_DoesNotResolveNonTildeSlashValues_InHtmlString(string url)
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 tagName: "a",
                 attributes: new TagHelperAttributeList
                 {
-                    { "href", url }
+                    { "href", new HtmlString(url) }
                 },
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();

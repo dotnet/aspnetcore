@@ -1,13 +1,19 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -15,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HubConnectionTests
     {
-        public class ConnectionLifecycle
+        public class ConnectionLifecycle : VerifiableLoggedTest
         {
             // This tactic (using names and a dictionary) allows non-serializable data (like a Func) to be used in a theory AND get it to show in the new hierarchical view in Test Explorer as separate tests you can run individually.
             private static readonly IDictionary<string, Func<HubConnection, Task>> MethodsThatRequireActiveConnection = new Dictionary<string, Func<HubConnection, Task>>()
@@ -27,27 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public static IEnumerable<object[]> MethodsNamesThatRequireActiveConnection => MethodsThatRequireActiveConnection.Keys.Select(k => new object[] { k });
 
-            private HubConnection CreateHubConnection(TestConnection testConnection)
-            {
-                var builder = new HubConnectionBuilder();
-
-                var delegateConnectionFactory = new DelegateConnectionFactory(
-                    testConnection.StartAsync,
-                    connection => ((TestConnection)connection).DisposeAsync());
-                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
-
-                return builder.Build();
-            }
-
-            private HubConnection CreateHubConnection(Func<TransferFormat, Task<ConnectionContext>> connectDelegate, Func<ConnectionContext, Task> disposeDelegate)
-            {
-                var builder = new HubConnectionBuilder();
-
-                var delegateConnectionFactory = new DelegateConnectionFactory(connectDelegate, disposeDelegate);
-                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
-
-                return builder.Build();
-            }
 
             [Fact]
             public async Task StartAsyncStartsTheUnderlyingConnection()
@@ -55,34 +40,37 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    await connection.StartAsync();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
             }
 
             [Fact]
-            public async Task StartAsyncWaitsForPreviousStartIfAlreadyStarting()
+            public async Task StartAsyncThrowsIfPreviousStartIsAlreadyStarting()
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    var firstStart = connection.StartAsync().OrTimeout();
+                    var firstStart = connection.StartAsync();
                     Assert.False(firstStart.IsCompleted);
 
                     // Wait for us to be in IConnectionFactory.ConnectAsync
-                    await syncPoint.WaitForSyncPoint();
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
 
                     // Try starting again
-                    var secondStart = connection.StartAsync().OrTimeout();
+                    var secondStart = connection.StartAsync();
                     Assert.False(secondStart.IsCompleted);
 
                     // Release the sync point
                     syncPoint.Continue();
 
-                    // Both starts should finish fine
-                    await firstStart;
-                    await secondStart;
+                    // The first start should finish fine, but the second throws an InvalidOperationException.
+                    await firstStart.OrTimeout();
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => secondStart).OrTimeout();
                 });
             }
 
@@ -91,25 +79,29 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var createCount = 0;
-                Task<ConnectionContext> ConnectionFactory(TransferFormat format)
+                ValueTask<ConnectionContext> ConnectionFactory(EndPoint endPoint)
                 {
                     createCount += 1;
-                    return new TestConnection().StartAsync(format);
+                    return new TestConnection().StartAsync();
                 }
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
+                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
-                Task DisposeAsync(ConnectionContext connection)
+                await AsyncUsing(builder.Build(), async connection =>
                 {
-                    return ((TestConnection)connection).DisposeAsync();
-                }
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                await AsyncUsing(CreateHubConnection(ConnectionFactory, DisposeAsync), async connection =>
-                {
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+
                     await connection.StopAsync().OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(2, createCount);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
             }
 
@@ -119,52 +111,80 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // Set up StartAsync to wait on the syncPoint when starting
                 var createCount = 0;
                 var onDisposeForFirstConnection = SyncPoint.Create(out var syncPoint);
-                Task<ConnectionContext> ConnectionFactory(TransferFormat format)
+                ValueTask<ConnectionContext> ConnectionFactory(EndPoint endPoint)
                 {
                     createCount += 1;
-                    return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync(format);
+                    return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync();
                 }
 
-                Task DisposeAsync(ConnectionContext connection) => ((TestConnection)connection).DisposeAsync();
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
+                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
-                await AsyncUsing(CreateHubConnection(ConnectionFactory, DisposeAsync), async connection =>
+                await AsyncUsing(builder.Build(), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
 
-                    var stopTask = connection.StopAsync().OrTimeout();
+                    var stopTask = connection.StopAsync();
 
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
-                    await syncPoint.WaitForSyncPoint();
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
 
-                    // We should be able to start now, and StopAsync hasn't completed, nor will it complete while Starting
+                    // We should not yet be able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
-                    await connection.StartAsync().OrTimeout();
+                    var startTask = connection.StartAsync();
                     Assert.False(stopTask.IsCompleted);
 
                     // When we release the sync point, the StopAsync task will finish
                     syncPoint.Continue();
-                    await stopTask;
+                    await stopTask.OrTimeout();
+
+                    // Which will then allow StartAsync to finish.
+                    await startTask.OrTimeout();
                 });
             }
 
             [Fact]
             public async Task StartAsyncWithFailedHandshakeCanBeStopped()
             {
-                var testConnection = new TestConnection(autoHandshake: false);
-                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
-                {
-                    testConnection.Transport.Input.Complete();
-                    try
-                    {
-                        await connection.StartAsync();
-                    }
-                    catch
-                    { }
+                var handshakeConnectionErrorLogged = false;
 
-                    await connection.StopAsync();
-                    Assert.True(testConnection.Started.IsCompleted);
-                });
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    if (writeContext.LoggerName == typeof(HubConnection).FullName)
+                    {
+                        if (writeContext.EventId.Name == "ErrorReceivingHandshakeResponse")
+                        {
+                            handshakeConnectionErrorLogged = true;
+                            return true;
+                        }
+
+                        return writeContext.EventId.Name == "ErrorStartingConnection";
+                    }
+
+                    return false;
+                }
+
+                using (StartVerifiableLog(ExpectedErrors))
+                {
+                    var testConnection = new TestConnection(autoHandshake: false);
+                    await AsyncUsing(CreateHubConnection(testConnection, loggerFactory: LoggerFactory), async connection =>
+                    {
+                        testConnection.Transport.Input.Complete();
+                        try
+                        {
+                            await connection.StartAsync().OrTimeout();
+                        }
+                        catch
+                        { }
+
+                        await connection.StopAsync().OrTimeout();
+                        Assert.True(testConnection.Started.IsCompleted);
+                    });
+                }
+
+                Assert.True(handshakeConnectionErrorLogged, "The connnection error during the handshake wasn't logged.");
             }
 
             [Theory]
@@ -176,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => method(connection));
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => method(connection)).OrTimeout();
                     Assert.Equal($"The '{name}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -192,27 +212,79 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
                     // Start, and wait for the sync point to be hit
-                    var startTask = connection.StartAsync().OrTimeout();
+                    var startTask = connection.StartAsync();
                     Assert.False(startTask.IsCompleted);
-                    await syncPoint.WaitForSyncPoint();
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
 
                     // Run the method, but it will be waiting for the lock
-                    var targetTask = method(connection).OrTimeout();
+                    var targetTask = method(connection);
 
                     // Release the SyncPoint
                     syncPoint.Continue();
 
                     // Wait for start to finish
-                    await startTask;
+                    await startTask.OrTimeout();
 
                     // We need some special logic to ensure InvokeAsync completes.
                     if (string.Equals(name, nameof(HubConnection.InvokeCoreAsync)))
                     {
-                        await ForceLastInvocationToComplete(testConnection);
+                        await ForceLastInvocationToComplete(testConnection).OrTimeout();
                     }
 
                     // Wait for the method to complete.
-                    await targetTask;
+                    await targetTask.OrTimeout();
+                });
+            }
+
+            [Fact]
+            public async Task StatusIsNotConnectedUntilStartAsyncIsFinished()
+            {
+                // Set up StartAsync to wait on the syncPoint when starting
+                var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    // Start, and wait for the sync point to be hit
+                    var startTask = connection.StartAsync();
+                    Assert.False(startTask.IsCompleted);
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
+
+                    Assert.Equal(HubConnectionState.Connecting, connection.State);
+
+                    // Release the SyncPoint
+                    syncPoint.Continue();
+
+                    // Wait for start to finish
+                    await startTask.OrTimeout();
+
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+                });
+            }
+
+            [Fact]
+            public async Task StatusIsDisconnectedInCloseEvent()
+            {
+                var testConnection = new TestConnection();
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    var closed = new TaskCompletionSource<object>();
+                    connection.Closed += exception =>
+                    {
+                        closed.TrySetResult(null);
+                        Assert.Equal(HubConnectionState.Disconnected, connection.State);
+                        return Task.CompletedTask;
+                    };
+
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+
+                    await connection.StopAsync().OrTimeout();
+                    await testConnection.Disposed.OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await closed.Task.OrTimeout();
                 });
             }
 
@@ -247,13 +319,38 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
 
                     await connection.StopAsync().OrTimeout();
                     await testConnection.Disposed.OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
                     await connection.StopAsync().OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+                });
+            }
+
+            [Fact]
+            public async Task StopAsyncOnInactiveConnectionDoesNotAffectNextStartAsync()
+            {
+                // Regression test:
+                // If there wasn't an active underlying connection, StopAsync would leave a CTS canceled which would cause the next StartAsync to fail
+                var testConnection = new TestConnection();
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StopAsync().OrTimeout();
+                    Assert.False(testConnection.Disposed.IsCompleted);
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
             }
 
@@ -277,7 +374,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await closed.Task.OrTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -290,8 +387,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connectionClosed = new TaskCompletionSource<object>();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
-                    testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
                     connection.Closed += (e) =>
                     {
                         connectionClosed.TrySetResult(null);
@@ -302,20 +397,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.True(testConnection.Started.IsCompleted);
 
                     // Start shutting down and complete the transport side
-                    var stopTask = connection.StopAsync().OrTimeout();
+                    var stopTask = connection.StopAsync();
                     testConnection.CompleteFromTransport();
 
                     // Wait for the connection to close.
-                    await testConnectionClosed.Task.OrTimeout();
+                    await testConnection.Transport.Input.CompleteAsync();
 
                     // The stop should be completed.
-                    await stopTask;
+                    await stopTask.OrTimeout();
 
                     // The HubConnection should now be closed.
                     await connectionClosed.Task.OrTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
 
                     await testConnection.Disposed.OrTimeout();
@@ -344,16 +439,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testConnection.CompleteFromTransport();
 
                     // Start stopping manually (these can't be synchronized by a Sync Point because the transport is disposed outside the lock)
-                    var stopTask = connection.StopAsync().OrTimeout();
+                    var stopTask = connection.StopAsync();
 
                     await testConnection.Disposed.OrTimeout();
 
                     // Wait for the stop task to complete and the closed event to fire
-                    await stopTask;
+                    await stopTask.OrTimeout();
                     await connectionClosed.Task.OrTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -372,94 +467,151 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     // Stop and invoke the method. These two aren't synchronizable via a Sync Point any more because the transport is disposed
                     // outside the lock :(
-                    var disposeTask = connection.StopAsync().OrTimeout();
-                    var targetTask = method(connection).OrTimeout();
+                    var disposeTask = connection.StopAsync();
+
+                    // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
+
+                    var targetTask = method(connection);
 
                     // Release the sync point
                     syncPoint.Continue();
 
                     // Wait for the method to complete, with an expected error.
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => targetTask);
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => targetTask).OrTimeout();
                     Assert.Equal($"The '{methodName}' method cannot be called if the connection is not active", ex.Message);
 
-                    await disposeTask;
+                    await disposeTask.OrTimeout();
                 });
             }
 
             [Fact]
             public async Task ClientTimesoutWhenHandshakeResponseTakesTooLong()
             {
-                var connection = new TestConnection(autoHandshake: false);
-                var hubConnection = CreateHubConnection(connection);
-                try
-                {
-                    hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+                var handshakeTimeoutLogged = false;
 
-                    await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync().OrTimeout());
-                }
-                finally
+                bool ExpectedErrors(WriteContext writeContext)
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
-                    await connection.DisposeAsync().OrTimeout();
+                    if (writeContext.LoggerName == typeof(HubConnection).FullName)
+                    {
+                        if (writeContext.EventId.Name == "ErrorHandshakeTimedOut")
+                        {
+                            handshakeTimeoutLogged = true;
+                            return true;
+                        }
+
+                        return writeContext.EventId.Name == "ErrorStartingConnection";
+                    }
+
+                    return false;
                 }
+
+                using (StartVerifiableLog(ExpectedErrors))
+                {
+                    var connection = new TestConnection(autoHandshake: false);
+                    var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                    try
+                    {
+                        hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+
+                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync()).OrTimeout();
+                        Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
+                    }
+                    finally
+                    {
+                        await hubConnection.DisposeAsync().OrTimeout();
+                        await connection.DisposeAsync().OrTimeout();
+                    }
+                }
+
+                Assert.True(handshakeTimeoutLogged, "The handshake timeout wasn't logged.");
             }
 
             [Fact]
             public async Task StartAsyncWithTriggeredCancellationTokenIsCanceled()
             {
-                var onStartCalled = false;
-                var connection = new TestConnection(onStart: () =>
+                using (StartVerifiableLog())
                 {
-                    onStartCalled = true;
-                    return Task.CompletedTask;
-                });
-                var hubConnection = CreateHubConnection(connection);
-                try
-                {
-                    await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true)).OrTimeout());
-                    Assert.False(onStartCalled);
-                }
-                finally
-                {
-                    await hubConnection.DisposeAsync().OrTimeout();
-                    await connection.DisposeAsync().OrTimeout();
+                    var onStartCalled = false;
+                    var connection = new TestConnection(onStart: () =>
+                    {
+                        onStartCalled = true;
+                        return Task.CompletedTask;
+                    });
+                    var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                    try
+                    {
+                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
+                        Assert.False(onStartCalled);
+                    }
+                    finally
+                    {
+                        await hubConnection.DisposeAsync().OrTimeout();
+                        await connection.DisposeAsync().OrTimeout();
+                    }
                 }
             }
 
             [Fact]
             public async Task StartAsyncCanTriggerCancellationTokenToCancelHandshake()
             {
-                var cts = new CancellationTokenSource();
-                var connection = new TestConnection(onStart: () =>
+                var handshakeCancellationLogged = false;
+
+                bool ExpectedErrors(WriteContext writeContext)
                 {
-                    cts.Cancel();
-                    return Task.CompletedTask;
-                }, autoHandshake: false);
-                var hubConnection = CreateHubConnection(connection);
-                // We want to make sure the cancellation is because of the token passed to StartAsync
-                hubConnection.HandshakeTimeout = Timeout.InfiniteTimeSpan;
-                try
-                {
-                    var startTask = hubConnection.StartAsync(cts.Token);
-                    var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
-                    Assert.Equal("The operation was canceled.", exception.Message);
+                    if (writeContext.LoggerName == typeof(HubConnection).FullName)
+                    {
+                        if (writeContext.EventId.Name == "ErrorHandshakeCanceled")
+                        {
+                            handshakeCancellationLogged = true;
+                            return true;
+                        }
+
+                        return writeContext.EventId.Name == "ErrorStartingConnection";
+                    }
+
+                    return false;
                 }
-                finally
+
+                using (StartVerifiableLog(ExpectedErrors))
                 {
-                    await hubConnection.DisposeAsync().OrTimeout();
-                    await connection.DisposeAsync().OrTimeout();
+                    var cts = new CancellationTokenSource();
+                    TestConnection connection = null;
+
+                    connection = new TestConnection(autoHandshake: false);
+
+                    var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                    // We want to make sure the cancellation is because of the token passed to StartAsync
+                    hubConnection.HandshakeTimeout = Timeout.InfiniteTimeSpan;
+
+                    try
+                    {
+                        var startTask = hubConnection.StartAsync(cts.Token);
+
+                        await connection.ReadSentTextMessageAsync().OrTimeout();
+                        cts.Cancel();
+
+                        // We aren't worried about the exact message and it's localized so asserting it is non-trivial.
+                        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask).OrTimeout();
+                    }
+                    finally
+                    {
+                        await hubConnection.DisposeAsync().OrTimeout();
+                        await connection.DisposeAsync().OrTimeout();
+                    }
                 }
+
+                Assert.True(handshakeCancellationLogged, "The handshake cancellation wasn't logged.");
             }
 
             [Fact]
             public async Task HubConnectionClosesWithErrorIfTerminatedWithPartialMessage()
             {
-                var builder = new HubConnectionBuilder();
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
                 var innerConnection = new TestConnection();
 
                 var delegateConnectionFactory = new DelegateConnectionFactory(
-                    format => innerConnection.StartAsync(format),
-                    connection => ((TestConnection)connection).DisposeAsync());
+                    endPoint => innerConnection.StartAsync());
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
                 var hubConnection = builder.Build();
@@ -496,13 +648,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 try
                 {
+                    // Using OrTimeout here will hide any timeout issues in the test :(.
                     await action(connection);
                 }
                 finally
                 {
                     // Dispose isn't under test here, so fire and forget so that errors/timeouts here don't cause
                     // test errors that mask the real errors.
-                    _ = connection.DisposeAsync();
+                    _  = connection.DisposeAsync();
                 }
             }
         }

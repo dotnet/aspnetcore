@@ -4,12 +4,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class ContentResult : ActionResult
+    public class ContentResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or set the content representing the body of the response.

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = new FeatureReferences<IHttpRequestFeature>(features);
+            _features.Initalize(features);
         }
 
         private IHttpRequestFeature HttpRequestFeature =>

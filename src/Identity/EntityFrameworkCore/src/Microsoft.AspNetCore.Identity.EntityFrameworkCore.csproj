@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity provider that uses Entity Framework Core.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;entityframeworkcore;identity;membership</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>

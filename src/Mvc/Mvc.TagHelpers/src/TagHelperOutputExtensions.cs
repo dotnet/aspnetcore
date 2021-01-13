@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var copiedAttribute = false;
 
                 // We iterate context.AllAttributes backwards since we prioritize TagHelperOutput values occurring
-                // before the current context.AllAttribtes[i].
+                // before the current context.AllAttributes[i].
                 for (var i = context.AllAttributes.Count - 1; i >= 0; i--)
                 {
                     // We look for the original attribute so we can restore the exact attribute name the user typed in
@@ -116,8 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
                 else if (string.Equals(attribute.Key, "class", StringComparison.OrdinalIgnoreCase))
                 {
-                    TagHelperAttribute classAttribute;
-                    var found = tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute);
+                    var found = tagHelperOutput.Attributes.TryGetAttribute("class", out var classAttribute);
                     Debug.Assert(found);
 
                     var newAttribute = new TagHelperAttribute(
@@ -322,13 +321,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagHelperOutput tagHelperOutput,
             TagHelperContext context)
         {
-            var existingAttribute = context.AllAttributes[allAttributeIndex];
+            var allAttributes = context.AllAttributes;
+            var existingAttribute = allAttributes[allAttributeIndex];
 
             // Move backwards through context.AllAttributes from the provided index until we find a familiar attribute
             // in tagHelperOutput where we can insert the copied value after the familiar one.
             for (var i = allAttributeIndex - 1; i >= 0; i--)
             {
-                var previousName = context.AllAttributes[i].Name;
+                var previousName = allAttributes[i].Name;
                 var index = IndexOfFirstMatch(previousName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
@@ -337,11 +337,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
             }
 
+            // Read interface .Count once rather than per iteration
+            var allAttributesCount = allAttributes.Count;
             // Move forward through context.AllAttributes from the provided index until we find a familiar attribute in
             // tagHelperOutput where we can insert the copied value.
-            for (var i = allAttributeIndex + 1; i < context.AllAttributes.Count; i++)
+            for (var i = allAttributeIndex + 1; i < allAttributesCount; i++)
             {
-                var nextName = context.AllAttributes[i].Name;
+                var nextName = allAttributes[i].Name;
                 var index = IndexOfFirstMatch(nextName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
@@ -356,7 +358,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private static int IndexOfFirstMatch(string name, TagHelperAttributeList attributes)
         {
-            for (var i = 0; i < attributes.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 if (string.Equals(name, attributes[i].Name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -394,8 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var wroteLeft = false;
                 if (_left != null)
                 {
-                    var htmlContent = _left as IHtmlContent;
-                    if (htmlContent != null)
+                    if (_left is IHtmlContent htmlContent)
                     {
                         // Ignore case where htmlContent is HtmlString.Empty. At worst, will add a leading space to the
                         // generated attribute value.

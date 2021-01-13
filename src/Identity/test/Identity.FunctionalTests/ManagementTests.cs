@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AngleSharp.Dom.Html;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.TestHost;
@@ -42,7 +43,23 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
             // Act & Assert
-            await UserStories.EnableTwoFactorAuthentication(index);
+            Assert.NotNull(await UserStories.EnableTwoFactorAuthentication(index));
+        }
+
+        [Fact]
+        public async Task CannotEnableTwoFactorAuthenticationWithoutCookieConsent()
+        {
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            Assert.Null(await UserStories.EnableTwoFactorAuthentication(index, consent: false));
         }
 
         [Fact]
@@ -53,9 +70,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             void ConfigureTestServices(IServiceCollection services) =>
                 services.SetupTestEmailSender(emails);
 
-            var client = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
-                .CreateClient();
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
@@ -74,21 +91,30 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             // Arrange
             var emails = new ContosoEmailSender();
-            var client = ServerFactory
-                .CreateClient();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupTestEmailSender(emails);
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+            var failedClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             var newEmail = "updatedEmail@example.com";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var manageIndex = await UserStories.SendUpdateProfileAsync(index, newEmail);
+            var email = await UserStories.SendUpdateEmailAsync(index, newEmail);
 
             // Act & Assert
-            var pageUserName = manageIndex.GetUserName();
-            Assert.Equal(newEmail, pageUserName);
-            var pageEmail = manageIndex.GetEmail();
-            Assert.Equal(newEmail, pageEmail);
+            Assert.Equal(2, emails.SentEmails.Count);
+            await UserStories.ConfirmEmailAsync(emails.SentEmails[1], client);
+
+            // Verify can login with new email, fails with old
+            await UserStories.LoginExistingUserAsync(newClient, newEmail, password);
+            await UserStories.LoginFailsWithWrongPasswordAsync(failedClient, userName, password);
+
         }
 
         [Fact]
@@ -194,6 +220,28 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
+        public async Task CanSeeExternalLoginProviderDisplayName()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) => services.SetupTestThirdPartyLogin();
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+
+            // Act
+            var userName = Guid.NewGuid().ToString();
+            var email = $"{userName}@example.com";
+            var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            var manage = await index.ClickManageLinkWithExternalLoginAsync();
+            var externalLogins = await manage.ClickExternalLoginsAsync();
+
+            // Assert
+            Assert.Contains("Contoso", externalLogins.ExternalLoginDisplayName.TextContent);
+        }
+
+        [Fact]
         public async Task CanResetAuthenticator()
         {
             // Arrange
@@ -218,6 +266,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
             // Use a new client to simulate a new browser session.
+            await UserStories.AcceptCookiePolicy(newClient);
             var index = await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
             await UserStories.ResetAuthenticator(index);
 

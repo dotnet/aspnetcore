@@ -258,8 +258,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             if (childContent == null)
             {
                 _startTagHelperWritingScope(null);
-                await _executeChildContentAsync();
-                childContent = _endTagHelperWritingScope();
+                try
+                {
+                    await _executeChildContentAsync();
+                }
+                finally
+                {
+                    childContent = _endTagHelperWritingScope();
+                }
             }
 
             Debug.Assert(!Output.IsContentModified);
@@ -292,8 +298,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             if (!useCachedResult || childContent == null)
             {
                 _startTagHelperWritingScope(encoder);
-                await _executeChildContentAsync();
-                childContent = _endTagHelperWritingScope();
+                try
+                {
+                    await _executeChildContentAsync();
+                }
+                finally
+                {
+                    childContent = _endTagHelperWritingScope();
+                }
 
                 if (encoder == null)
                 {

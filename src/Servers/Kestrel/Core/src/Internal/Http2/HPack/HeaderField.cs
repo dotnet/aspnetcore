@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public struct HeaderField
+    internal readonly struct HeaderField
     {
         // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
         public const int RfcOverhead = 32;
@@ -25,6 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public int Length => GetLength(Name.Length, Value.Length);
 
-        public static int GetLength(int nameLength, int valueLenth) => nameLength + valueLenth + 32;
+        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + 32;
     }
 }

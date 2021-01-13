@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(KestrelSharedSourceRoot)test\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
   </ItemGroup>
 
   <ItemGroup>

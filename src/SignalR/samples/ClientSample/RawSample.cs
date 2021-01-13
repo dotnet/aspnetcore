@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 
 namespace ClientSample
 {
@@ -34,10 +33,18 @@ namespace ClientSample
             baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
 
             Console.WriteLine($"Connecting to {baseUrl}...");
-            var connection = new HttpConnection(new Uri(baseUrl));
+
+            var connectionOptions = new HttpConnectionOptions
+            {
+                Url = new Uri(baseUrl),
+                DefaultTransferFormat = TransferFormat.Text,
+            };
+
+            var connection = new HttpConnection(connectionOptions, loggerFactory: null);
+
             try
             {
-                await connection.StartAsync(TransferFormat.Text);
+                await connection.StartAsync();
 
                 Console.WriteLine($"Connected to {baseUrl}");
                 var shutdown = new TaskCompletionSource<object>();

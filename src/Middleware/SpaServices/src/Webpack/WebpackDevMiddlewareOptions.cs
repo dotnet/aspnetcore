@@ -1,3 +1,7 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SpaServices.Webpack
@@ -5,6 +9,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
     /// <summary>
     /// Options for configuring a Webpack dev middleware compiler.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class WebpackDevMiddlewareOptions
     {
         /// <summary>
@@ -30,10 +35,10 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         /// </summary>
         public bool ReactHotModuleReplacement { get; set; }
 
-        /// <summary> 
+        /// <summary>
         /// Specifies additional options to be passed to the Webpack Hot Middleware client, if used.
-        /// </summary> 
-        public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; } 
+        /// </summary>
+        public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; }
 
         /// <summary>
         /// Specifies the Webpack configuration file to be used. If not set, defaults to 'webpack.config.js'.

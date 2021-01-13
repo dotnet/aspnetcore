@@ -73,9 +73,9 @@ namespace Microsoft.Net.Http.Headers
         {
             var header = new StringBuilder();
 
-            header.Append(_name);
+            header.Append(_name.AsSpan());
             header.Append("=");
-            header.Append(_value);
+            header.Append(_value.AsSpan());
 
             return header.ToString();
         }

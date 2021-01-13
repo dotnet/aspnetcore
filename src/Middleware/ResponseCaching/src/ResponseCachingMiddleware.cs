@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+
+        // see https://tools.ietf.org/html/rfc7232#section-4.1
+        private static readonly string[] HeadersToIncludeIn304 =
+            new[] { "Cache-Control", "Content-Location", "Date", "ETag", "Expires", "Vary" };
 
         private readonly RequestDelegate _next;
         private readonly ResponseCachingOptions _options;
@@ -30,17 +34,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
             ILoggerFactory loggerFactory,
-            IResponseCachingPolicyProvider policyProvider,
-            IResponseCachingKeyProvider keyProvider)
+            ObjectPoolProvider poolProvider)
             : this(
                 next,
                 options,
                 loggerFactory,
-                policyProvider,
+                new ResponseCachingPolicyProvider(),
                 new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions
                 {
                     SizeLimit = options.Value.SizeLimit
-                })), keyProvider)
+                })),
+                new ResponseCachingKeyProvider(poolProvider, options))
         { }
 
         // for testing
@@ -138,8 +142,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task<bool> TryServeCachedResponseAsync(ResponseCachingContext context, IResponseCacheEntry cacheEntry)
         {
-            var cachedResponse = cacheEntry as CachedResponse;
-            if (cachedResponse == null)
+            if (!(cacheEntry is CachedResponse cachedResponse))
             {
                 return false;
             }
@@ -155,8 +158,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Check conditional request rules
                 if (ContentIsNotModified(context))
                 {
-                    _logger.LogNotModifiedServed();
+                    _logger.NotModifiedServed();
                     context.HttpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+
+                    if (context.CachedResponseHeaders != null)
+                    {
+                        foreach (var key in HeadersToIncludeIn304)
+                        {
+                            if (context.CachedResponseHeaders.TryGetValue(key, out var values))
+                            {
+                                context.HttpContext.Response.Headers[key] = values;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -186,7 +200,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                             context.HttpContext.Abort();
                         }
                     }
-                    _logger.LogCachedResponseServed();
+                    _logger.CachedResponseServed();
                 }
                 return true;
             }
@@ -199,8 +213,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             context.BaseKey = _keyProvider.CreateBaseKey(context);
             var cacheEntry = await _cache.GetAsync(context.BaseKey);
 
-            var cachedVaryByRules = cacheEntry as CachedVaryByRules;
-            if (cachedVaryByRules != null)
+            if (cacheEntry is CachedVaryByRules cachedVaryByRules)
             {
                 // Request contains vary rules, recompute key(s) and try again
                 context.CachedVaryByRules = cachedVaryByRules;
@@ -223,12 +236,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.OnlyIfCachedString))
             {
-                _logger.LogGatewayTimeoutServed();
+                _logger.GatewayTimeoutServed();
                 context.HttpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
                 return true;
             }
 
-            _logger.LogNoResponseServed();
+            _logger.NoResponseServed();
             return false;
         }
 
@@ -281,7 +294,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
-                    _logger.LogVaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
+                    _logger.VaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
                     storeVaryByEntry = true;
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
@@ -351,12 +364,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     context.CachedResponse.Body = bufferStream;
-                    _logger.LogResponseCached();
+                    _logger.ResponseCached();
                     await _cache.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
                 }
                 else
                 {
-                    _logger.LogResponseContentLengthMismatchNotCached();
+                    _logger.ResponseContentLengthMismatchNotCached();
                 }
             }
             else
@@ -420,13 +433,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 () => StartResponseAsync(context));
             context.HttpContext.Response.Body = context.ResponseCachingStream;
 
-            // Shim IHttpSendFileFeature
-            context.OriginalSendFileFeature = context.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (context.OriginalSendFileFeature != null)
-            {
-                context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCachingStream));
-            }
-
             // Add IResponseCachingFeature
             AddResponseCachingFeature(context.HttpContext);
         }
@@ -438,9 +444,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Unshim response stream
             context.HttpContext.Response.Body = context.OriginalResponseStream;
-
-            // Unshim IHttpSendFileFeature
-            context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
             // Remove IResponseCachingFeature
             RemoveResponseCachingFeature(context.HttpContext);
@@ -455,7 +458,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 if (ifNoneMatchHeader.Count == 1 && StringSegment.Equals(ifNoneMatchHeader[0], EntityTagHeaderValue.Any.Tag, StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Logger.LogNotModifiedIfNoneMatchStar();
+                    context.Logger.NotModifiedIfNoneMatchStar();
                     return true;
                 }
 
@@ -470,7 +473,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         var requestETag = ifNoneMatchEtags[i];
                         if (eTag.Compare(requestETag, useStrongComparison: false))
                         {
-                            context.Logger.LogNotModifiedIfNoneMatchMatched(requestETag);
+                            context.Logger.NotModifiedIfNoneMatchMatched(requestETag);
                             return true;
                         }
                     }
@@ -492,7 +495,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     if (HeaderUtilities.TryParseDate(ifModifiedSince.ToString(), out modifiedSince) &&
                         modified <= modifiedSince)
                     {
-                        context.Logger.LogNotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
+                        context.Logger.NotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
                         return true;
                     }
                 }

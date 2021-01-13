@@ -1,0 +1,23 @@
+parameters:
+  ChannelId: 0
+
+jobs:
+- job: gatherDrop
+  displayName: Gather Drop
+  dependsOn: setupMaestroVars
+  condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.ChannelId }}))
+  variables:
+    - name: BARBuildId
+      value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+    - task: PowerShell@2
+      displayName: Darc gather-drop
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/post-build/darc-gather-drop.ps1
+        arguments: -BarBuildId $(BARBuildId) 
+          -DropLocation $(Agent.BuildDirectory)/Temp/Drop/ 
+          -MaestroApiAccessToken $(MaestroApiAccessToken)
+          -MaestroApiEndPoint $(MaestroApiEndPoint)
+          -MaestroApiVersion $(MaestroApiVersion)

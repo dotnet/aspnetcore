@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Owin;
@@ -34,11 +33,11 @@ namespace Microsoft.AspNetCore.Builder
             {
                 Func<RequestDelegate, RequestDelegate> middleware1 = next1 =>
                 {
-                    AppFunc exitMiddlware = env =>
+                    AppFunc exitMiddleware = env =>
                     {
                         return next1((HttpContext)env[typeof(HttpContext).FullName]);
                     };
-                    var app = middleware(exitMiddlware);
+                    var app = middleware(exitMiddleware);
                     return httpContext =>
                     {
                         // Use the existing OWIN env if there is one.

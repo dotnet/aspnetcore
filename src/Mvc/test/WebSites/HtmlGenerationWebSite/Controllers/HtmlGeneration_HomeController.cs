@@ -238,6 +238,11 @@ namespace HtmlGenerationWebSite.Controllers
             return View();
         }
 
+        public IActionResult ValidationProviderAttribute() => View();
+
+        [HttpPost]
+        public IActionResult ValidationProviderAttribute(ValidationProviderAttributeModel model) => View(model);
+
         public IActionResult PartialTagHelperWithoutModel() => View();
 
         public IActionResult StatusMessage() => View(new StatusMessageModel { Message = "Some status message"});

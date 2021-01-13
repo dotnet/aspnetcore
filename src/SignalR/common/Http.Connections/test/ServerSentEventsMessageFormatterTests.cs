@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(payload));
 
             var output = new MemoryStream();
-            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output);
+            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var buffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(Encoding.UTF8.GetBytes(payload));
 
             var output = new MemoryStream();
-            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output);
+            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }

@@ -1,0 +1,23 @@
+@if (StringAttributeBefore != null)
+{
+    <div string="@StringAttributeBefore"
+         bool="@BoolAttributeBefore"
+         @attributes="@UnmatchedValues">
+    </div>
+}
+else
+{
+    <div @attributes="@UnmatchedValues"
+         string="@StringAttributeAfter"
+         bool="@BoolAttributeAfter">
+    </div>
+}
+
+@code {
+    [Parameter] public string StringAttributeBefore { get; set; }
+    [Parameter] public bool BoolAttributeBefore { get; set; }
+    [Parameter] public string StringAttributeAfter { get; set; }
+    [Parameter] public bool? BoolAttributeAfter { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
+}

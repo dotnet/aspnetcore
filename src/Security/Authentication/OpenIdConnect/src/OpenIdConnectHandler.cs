@@ -12,14 +12,17 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
@@ -29,7 +32,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOptions>, IAuthenticationSignOutHandler
     {
         private const string NonceProperty = "N";
-
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
@@ -122,10 +124,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // If the identifier cannot be found, bypass the session identifier checks: this may indicate that the
             // authentication cookie was already cleared, that the session identifier was lost because of a lossy
             // external/application cookie conversion or that the identity provider doesn't support sessions.
-            var sid = (await Context.AuthenticateAsync(Options.SignOutScheme))
-                          ?.Principal
-                          ?.FindFirst(JwtRegisteredClaimNames.Sid)
-                          ?.Value;
+            var principal = (await Context.AuthenticateAsync(Options.SignOutScheme))?.Principal;
+
+            var sid = principal?.FindFirst(JwtRegisteredClaimNames.Sid)?.Value;
             if (!string.IsNullOrEmpty(sid))
             {
                 // Ensure a 'sid' parameter was sent by the identity provider.
@@ -138,6 +139,23 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 if (!string.Equals(sid, message.Sid, StringComparison.Ordinal))
                 {
                     Logger.RemoteSignOutSessionIdInvalid();
+                    return true;
+                }
+            }
+
+            var iss = principal?.FindFirst(JwtRegisteredClaimNames.Iss)?.Value;
+            if (!string.IsNullOrEmpty(iss))
+            {
+                // Ensure a 'iss' parameter was sent by the identity provider.
+                if (string.IsNullOrEmpty(message.Iss))
+                {
+                    Logger.RemoteSignOutIssuerMissing();
+                    return true;
+                }
+                // Ensure the 'iss' parameter corresponds to the 'iss' stored in the authentication ticket.
+                if (!string.Equals(iss, message.Iss, StringComparison.Ordinal))
+                {
+                    Logger.RemoteSignOutIssuerInvalid();
                     return true;
                 }
             }
@@ -186,7 +204,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 properties.RedirectUri = BuildRedirectUriIfRelative(Options.SignedOutRedirectUri);
                 if (string.IsNullOrWhiteSpace(properties.RedirectUri))
                 {
-                    properties.RedirectUri = CurrentUri;
+                    properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
                 }
             }
             Logger.PostSignOutRedirect(properties.RedirectUri);
@@ -239,7 +257,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
@@ -250,7 +268,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
             }
 
-            Logger.SignedOut(Scheme.Name);
+            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
         /// <summary>
@@ -276,12 +294,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 if (signOut.Result.Handled)
                 {
-                    Logger.SignoutCallbackRedirectHandledResponse();
+                    Logger.SignOutCallbackRedirectHandledResponse();
                     return true;
                 }
                 if (signOut.Result.Skipped)
                 {
-                    Logger.SignoutCallbackRedirectSkipped();
+                    Logger.SignOutCallbackRedirectSkipped();
                     return false;
                 }
                 if (signOut.Result.Failure != null)
@@ -305,6 +323,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            await HandleChallengeAsyncInternal(properties);
+            var location = Context.Response.Headers[HeaderNames.Location];
+            if (location == StringValues.Empty)
+            {
+                location = "(not set)";
+            }
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "(not set)";
+            }
+            Logger.HandleChallenge(location, cookie);
+        }
+
+        private async Task HandleChallengeAsyncInternal(AuthenticationProperties properties)
+        {
             Logger.EnteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(GetType().FullName);
 
             // order for local RedirectUri
@@ -312,7 +346,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // 2. CurrentUri if RedirectUri is not set)
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
             Logger.PostAuthenticationLocalRedirect(properties.RedirectUri);
 
@@ -332,6 +366,24 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Prompt = properties.GetParameter<string>(OpenIdConnectParameterNames.Prompt) ?? Options.Prompt,
                 Scope = string.Join(" ", properties.GetParameter<ICollection<string>>(OpenIdConnectParameterNames.Scope) ?? Options.Scope),
             };
+
+            // https://tools.ietf.org/html/rfc7636
+            if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
+            {
+                var bytes = new byte[32];
+                CryptoRandom.GetBytes(bytes);
+                var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
+
+                // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
+                properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+
+                using var sha256 = SHA256.Create();
+                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
+
+                message.Parameters.Add(OAuthConstants.CodeChallengeKey, codeChallenge);
+                message.Parameters.Add(OAuthConstants.CodeChallengeMethodKey, OAuthConstants.CodeChallengeMethodS256);
+            }
 
             // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
@@ -409,7 +461,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
@@ -482,7 +534,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 authorizationResponse = messageReceivedContext.ProtocolMessage;
                 properties = messageReceivedContext.Properties;
 
-                if (properties == null)
+                if (properties == null || properties.Items.Count == 0)
                 {
                     // Fail if state is missing, it's required for the correlation id.
                     if (string.IsNullOrEmpty(authorizationResponse.State))
@@ -520,6 +572,20 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
+                    // Note: access_denied errors are special protocol errors indicating the user didn't
+                    // approve the authorization demand requested by the remote authorization server.
+                    // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                    // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                    // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
+                    if (string.Equals(authorizationResponse.Error, "access_denied", StringComparison.Ordinal))
+                    {
+                        var result = await HandleAccessDeniedErrorAsync(properties);
+                        if (!result.None)
+                        {
+                            return result;
+                        }
+                    }
+
                     return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null), properties);
                 }
 
@@ -665,10 +731,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 }
                 else
                 {
-                    var identity = (ClaimsIdentity)user.Identity;
-                    foreach (var action in Options.ClaimActions)
+                    using (var payload = JsonDocument.Parse("{}"))
                     {
-                        action.Run(null, identity, ClaimsIssuer);
+                        var identity = (ClaimsIdentity)user.Identity;
+                        foreach (var action in Options.ClaimActions)
+                        {
+                            action.Run(payload.RootElement, identity, ClaimsIssuer);
+                        }
                     }
                 }
 
@@ -806,42 +875,46 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
 
-            JObject user;
+            JsonDocument user;
             var contentType = responseMessage.Content.Headers.ContentType;
             if (contentType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
             {
-                user = JObject.Parse(userInfoResponse);
+                user = JsonDocument.Parse(userInfoResponse);
             }
             else if (contentType.MediaType.Equals("application/jwt", StringComparison.OrdinalIgnoreCase))
             {
                 var userInfoEndpointJwt = new JwtSecurityToken(userInfoResponse);
-                user = JObject.FromObject(userInfoEndpointJwt.Payload);
+                user = JsonDocument.Parse(userInfoEndpointJwt.Payload.SerializeToJson());
             }
             else
             {
                 return HandleRequestResult.Fail("Unknown response type: " + contentType.MediaType, properties);
             }
 
-            var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(principal, properties, message, user);
-            if (userInformationReceivedContext.Result != null)
+            using (user)
             {
-                return userInformationReceivedContext.Result;
-            }
-            principal = userInformationReceivedContext.Principal;
-            properties = userInformationReceivedContext.Properties;
-            user = userInformationReceivedContext.User;
+                var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(principal, properties, message, user);
+                if (userInformationReceivedContext.Result != null)
+                {
+                    return userInformationReceivedContext.Result;
+                }
+                principal = userInformationReceivedContext.Principal;
+                properties = userInformationReceivedContext.Properties;
+                using (var updatedUser = userInformationReceivedContext.User)
+                {
+                    Options.ProtocolValidator.ValidateUserInfoResponse(new OpenIdConnectProtocolValidationContext()
+                    {
+                        UserInfoEndpointResponse = userInfoResponse,
+                        ValidatedIdToken = jwt,
+                    });
 
-            Options.ProtocolValidator.ValidateUserInfoResponse(new OpenIdConnectProtocolValidationContext()
-            {
-                UserInfoEndpointResponse = userInfoResponse,
-                ValidatedIdToken = jwt,
-            });
+                    var identity = (ClaimsIdentity)principal.Identity;
 
-            var identity = (ClaimsIdentity)principal.Identity;
-
-            foreach (var action in Options.ClaimActions)
-            {
-                action.Run(user, identity, ClaimsIssuer);
+                    foreach (var action in Options.ClaimActions)
+                    {
+                        action.Run(user.RootElement, identity, ClaimsIssuer);
+                    }
+                }
             }
 
             return HandleRequestResult.Success(new AuthenticationTicket(principal, properties, Scheme.Name));
@@ -1043,6 +1116,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 RedirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey]
             };
 
+            // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see HandleChallengeAsyncInternal
+            if (properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
+            {
+                tokenEndpointRequest.Parameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                properties.Items.Remove(OAuthConstants.CodeVerifierKey);
+            }
+
             var context = new AuthorizationCodeReceivedContext(Context, Scheme, Options, properties)
             {
                 ProtocolMessage = authorizationResponse,
@@ -1097,7 +1177,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return context;
         }
 
-        private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JObject user)
+        private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JsonDocument user)
         {
             Logger.UserInformationReceived(user.ToString());
 
@@ -1229,12 +1309,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Logger.ResponseError(message.Error, description, errorUri);
             }
 
-            return new OpenIdConnectProtocolException(string.Format(
+            var ex = new OpenIdConnectProtocolException(string.Format(
                 CultureInfo.InvariantCulture,
                 Resources.MessageContainsError,
                 message.Error,
                 description,
                 errorUri));
+            ex.Data["error"] = message.Error;
+            ex.Data["error_description"] = description;
+            ex.Data["error_uri"] = errorUri;
+            return ex;
         }
     }
 }

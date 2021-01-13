@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal int StatusCode { get; }
+        public int StatusCode { get; }
 
         internal StringValues AllowedHeader { get; }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
-        public static void Throw(RequestRejectionReason reason, HttpMethod method)
+        internal static void Throw(RequestRejectionReason reason, HttpMethod method)
             => throw GetException(reason, method.ToString().ToUpperInvariant());
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
-        internal static void Throw(RequestRejectionReason reason, in StringValues detail)
+        internal static void Throw(RequestRejectionReason reason, StringValues detail)
         {
             throw GetException(reason, detail.ToString());
         }

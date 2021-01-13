@@ -1,19 +1,4 @@
 <Project>
-
-  <PropertyGroup>
-    <RepositoryRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..\..\'))</RepositoryRoot>
-    <RootOutputPath>$(RepositoryRoot)artifacts/</RootOutputPath>
-    <BaseOutputPath>$(RootOutputPath)bin/$(Configuration)/$(MSBuildProjectName)/</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
-    <BaseIntermediateOutputPath>$(RootOutputPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
-    <IntermediateOutputPath Condition=" '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(IntermediateOutputPath)$(Platform)/</IntermediateOutputPath>
-
-    <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
-    <!-- Name = aspnet-runtime-internal because .wixlib files are only produced so we can hand them off to the dotnet/cli repo. -->
-    <WixlibBaseFileName>$(RuntimeInstallerBaseName)-internal</WixlibBaseFileName>
-  </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <Import Project="Wix.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />

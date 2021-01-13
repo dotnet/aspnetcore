@@ -88,9 +88,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
             services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
             services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
-            services.TryAddScoped<UserManager<TUser>, AspNetUserManager<TUser>>();
-            services.TryAddScoped<SignInManager<TUser>, SignInManager<TUser>>();
-            services.TryAddScoped<RoleManager<TRole>, AspNetRoleManager<TRole>>();
+            services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
+            services.TryAddScoped<UserManager<TUser>>();
+            services.TryAddScoped<SignInManager<TUser>>();
+            services.TryAddScoped<RoleManager<TRole>>();
 
             if (setupAction != null)
             {
@@ -117,6 +118,5 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The services.</returns>
         public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
             => services.Configure(IdentityConstants.ExternalScheme, configure);
-
     }
 }

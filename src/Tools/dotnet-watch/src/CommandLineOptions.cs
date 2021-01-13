@@ -53,6 +53,10 @@ Environment variables:
   DOTNET_WATCH
   dotnet-watch sets this variable to '1' on all child processes launched.
 
+  DOTNET_WATCH_ITERATION
+  dotnet-watch sets this variable to '1' and increments by one each time
+  a file is changed and the command is restarted.
+
 Remarks:
   The special option '--' is used to delimit the end of the options and
   the beginning of arguments that will be passed to the child dotnet process.

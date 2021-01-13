@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { TextMessageFormat } from "./TextMessageFormat";
+import { isArrayBuffer } from "./Utils";
 
 /** @private */
 export interface HandshakeRequestMessage {
@@ -12,6 +13,7 @@ export interface HandshakeRequestMessage {
 /** @private */
 export interface HandshakeResponseMessage {
     readonly error: string;
+    readonly minorVersion: number;
 }
 
 /** @private */
@@ -26,7 +28,7 @@ export class HandshakeProtocol {
         let messageData: string;
         let remainingData: any;
 
-        if (data instanceof ArrayBuffer) {
+        if (isArrayBuffer(data) || (typeof Buffer !== "undefined" && data instanceof Buffer)) {
             // Format is binary but still need to read JSON text from handshake response
             const binaryData = new Uint8Array(data);
             const separatorIndex = binaryData.indexOf(TextMessageFormat.RecordSeparatorCode);
@@ -55,7 +57,11 @@ export class HandshakeProtocol {
 
         // At this point we should have just the single handshake message
         const messages = TextMessageFormat.parse(messageData);
-        responseMessage = JSON.parse(messages[0]);
+        const response = JSON.parse(messages[0]);
+        if (response.type) {
+            throw new Error("Expected a handshake response from the server.");
+        }
+        responseMessage = response;
 
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed

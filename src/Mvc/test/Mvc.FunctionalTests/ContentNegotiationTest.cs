@@ -10,15 +10,15 @@ using System.Text;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public ContentNegotiationTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ContentNegotiationTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

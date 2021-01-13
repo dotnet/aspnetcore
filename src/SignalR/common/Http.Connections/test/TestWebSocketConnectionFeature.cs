@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
@@ -13,7 +14,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     {
         public TestWebSocketConnectionFeature()
         { }
-
         public TestWebSocketConnectionFeature(SyncPoint sync)
         {
             _sync = sync;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 {
                     if (_internalBuffer.Buffer == null || _internalBuffer.Buffer.Length == 0)
                     {
-                        await _input.WaitToReadAsync();
+                        await _input.WaitToReadAsync(cancellationToken);
 
                         if (_input.TryRead(out var message))
                         {

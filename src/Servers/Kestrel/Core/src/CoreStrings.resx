@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -351,9 +351,6 @@
   <data name="EndPointRequiresAtLeastOneProtocol" xml:space="preserve">
     <value>An endpoint must be configured to serve at least one protocol.</value>
   </data>
-  <data name="EndPointRequiresTlsForHttp1AndHttp2" xml:space="preserve">
-    <value>Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.</value>
-  </data>
   <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
     <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
   </data>
@@ -487,15 +484,12 @@
     <value>The endpoint {endpointName} is missing the required 'Url' parameter.</value>
   </data>
   <data name="NoCertSpecifiedNoDevelopmentCertificateFound" xml:space="preserve">
-    <value>Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found.
+    <value>Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found or is out of date.
 To generate a developer certificate run 'dotnet dev-certs https'. To trust the certificate (Windows and macOS only) run 'dotnet dev-certs https --trust'.
 For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.</value>
   </data>
   <data name="MultipleCertificateSources" xml:space="preserve">
     <value>The endpoint {endpointName} specified multiple certificate sources.</value>
-  </data>
-  <data name="Http2NotSupported" xml:space="preserve">
-    <value>HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.</value>
   </data>
   <data name="WritingToResponseBodyAfterResponseCompleted" xml:space="preserve">
     <value>Cannot write to the response body, the response has completed.</value>
@@ -514,6 +508,111 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="ConnectionTimedOutByServer" xml:space="preserve">
     <value>The connection was timed out by the server.</value>
+  </data>
+  <data name="Http2ErrorFrameOverLimit" xml:space="preserve">
+    <value>The received frame size of {size} exceeds the limit {limit}.</value>
+  </data>
+  <data name="Http2ErrorMinTlsVersion" xml:space="preserve">
+    <value>Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.</value>
+  </data>
+  <data name="Http2ErrorInvalidPreface" xml:space="preserve">
+    <value>Invalid HTTP/2 connection preface.</value>
+  </data>
+  <data name="InvalidEmptyHeaderName" xml:space="preserve">
+    <value>Header name cannot be a null or empty string.</value>
+  </data>
+  <data name="ConnectionOrStreamAbortedByCancellationToken" xml:space="preserve">
+    <value>The connection or stream was aborted because a write operation was aborted with a CancellationToken.</value>
+  </data>
+  <data name="Http2ErrorInitialWindowSizeInvalid" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ErrorWindowUpdateSizeInvalid" xml:space="preserve">
+    <value>The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ConnectionFaulted" xml:space="preserve">
+    <value>The HTTP/2 connection faulted.</value>
+  </data>
+  <data name="Http2StreamResetByClient" xml:space="preserve">
+    <value>The client reset the request stream.</value>
+  </data>
+  <data name="Http2StreamAborted" xml:space="preserve">
+    <value>The request stream was aborted.</value>
+  </data>
+  <data name="Http2ErrorFlowControlWindowExceeded" xml:space="preserve">
+    <value>The client sent more data than what was available in the flow-control window.</value>
+  </data>
+  <data name="Http2ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http2ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http2StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
+  <data name="Http2StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
+  <data name="Http2StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http2StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http2StreamErrorAfterHeaders" xml:space="preserve">
+    <value>An error occurred after the response headers were sent, a reset is being sent.</value>
+  </data>
+  <data name="Http2ErrorMaxStreams" xml:space="preserve">
+    <value>A new stream was refused because this connection has reached its stream limit.</value>
+  </data>
+  <data name="GreaterThanZeroRequired" xml:space="preserve">
+    <value>A value greater than zero is required.</value>
+  </data>
+  <data name="ArgumentOutOfRange" xml:space="preserve">
+    <value>A value between {min} and {max} is required.</value>
+  </data>
+  <data name="HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock" xml:space="preserve">
+    <value>Dynamic tables size update did not occur at the beginning of the first header block.</value>
+  </data>
+  <data name="HPackErrorNotEnoughBuffer" xml:space="preserve">
+    <value>The given buffer was too small to encode any headers.</value>
+  </data>
+  <data name="HPackErrorIntegerTooBig" xml:space="preserve">
+    <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
+  </data>
+  <data name="ConnectionAbortedByClient" xml:space="preserve">
+    <value>The client closed the connection.</value>
+  </data>
+  <data name="Http2ErrorStreamAborted" xml:space="preserve">
+    <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
+  </data>
+  <data name="ProtocolSelectionFailed" xml:space="preserve">
+    <value>HTTP protocol selection failed.</value>
+  </data>
+  <data name="ServerShutdownDuringConnectionInitialization" xml:space="preserve">
+    <value>Server shutdown started during connection initialization.</value>
+  </data>
+  <data name="StartAsyncBeforeGetMemory" xml:space="preserve">
+    <value>Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().</value>
+  </data>
+  <data name="Http2MinDataRateNotSupported" xml:space="preserve">
+    <value>This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.</value>
+  </data>
+  <data name="RequestTrailersNotAvailable" xml:space="preserve">
+    <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
+  </data>
+  <data name="HTTP2NoTlsOsx" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
+  </data>
+  <data name="HTTP2NoTlsWin7" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.</value>
+  </data>
+  <data name="Http2StreamResetByApplication" xml:space="preserve">
+    <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
+  </data>
+  <data name="Http2TellClientToCalmDown" xml:space="preserve">
+    <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
   <data name="BadDeveloperCertificateState" xml:space="preserve">
     <value>The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.</value>

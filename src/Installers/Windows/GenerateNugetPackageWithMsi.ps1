@@ -12,10 +12,12 @@ param(
     [Parameter(Mandatory=$true)][string]$RepoRoot,
     [Parameter(Mandatory=$true)][string]$MajorVersion,
     [Parameter(Mandatory=$true)][string]$MinorVersion,
-    [Parameter(Mandatory=$true)][string]$PackageId
+    [Parameter(Mandatory=$true)][string]$PackageIcon,
+    [Parameter(Mandatory=$true)][string]$PackageIconFullPath,
+    [Parameter(Mandatory=$true)][string]$PackageLicenseExpression
 )
 
-$NuGetDir = Join-Path $RepoRoot "obj\Tools\nuget\$Name\$Architecture"
+$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Name\$Architecture"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 
 if (-not (Test-Path $NuGetDir)) {
@@ -23,10 +25,15 @@ if (-not (Test-Path $NuGetDir)) {
 }
 
 if (-not (Test-Path $NuGetExe)) {
-    # Using 3.5.0 to workaround https://github.com/NuGet/Home/issues/5016
+    # Using 5.3.0 to workaround https://github.com/NuGet/Home/issues/5016
     Write-Output "Downloading nuget.exe to $NuGetExe"
-    wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+    wget https://dist.nuget.org/win-x86-commandline/v5.3.0/nuget.exe -OutFile $NuGetExe
 }
 
-& $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;ID=$PackageId`;
+& $NuGetExe pack $NuspecFile `
+    -Version $PackageVersion `
+    -OutputDirectory $OutputDirectory `
+    -NoDefaultExcludes `
+    -NoPackageAnalysis `
+    -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;PackageIcon=$PackageIcon`;PackageIconFullPath=$PackageIconFullPath`;PackageLicenseExpression=$PackageLicenseExpression`;
 Exit $LastExitCode

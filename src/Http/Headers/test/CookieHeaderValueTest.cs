@@ -286,7 +286,7 @@ namespace Microsoft.Net.Http.Headers
         public void CookieHeaderValue_ParseList_ExcludesInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
         {
             var results = CookieHeaderValue.ParseList(input);
-            // ParseList aways returns a list, even if empty. TryParseList may return null (via out).
+            // ParseList always returns a list, even if empty. TryParseList may return null (via out).
             Assert.Equal(cookies ?? new List<CookieHeaderValue>(), results);
         }
 

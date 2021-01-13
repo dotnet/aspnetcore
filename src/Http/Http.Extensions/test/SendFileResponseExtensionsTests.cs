@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -23,32 +24,15 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
             var context = new DefaultHttpContext();
             var response = context.Response;
-            var fakeFeature = new FakeSendFileFeature();
-            context.Features.Set<IHttpSendFileFeature>(fakeFeature);
+            var fakeFeature = new FakeResponseBodyFeature();
+            context.Features.Set<IHttpResponseBodyFeature>(fakeFeature);
 
             await response.SendFileAsync("bob", 1, 3, CancellationToken.None);
 
-            Assert.Equal("bob", fakeFeature.name);
-            Assert.Equal(1, fakeFeature.offset);
-            Assert.Equal(3, fakeFeature.length);
-            Assert.Equal(CancellationToken.None, fakeFeature.token);
-        }
-
-        private class FakeSendFileFeature : IHttpSendFileFeature
-        {
-            public string name = null;
-            public long offset = 0;
-            public long? length = null;
-            public CancellationToken token;
-
-            public Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
-            {
-                this.name = path;
-                this.offset = offset;
-                this.length = length;
-                this.token = cancellation;
-                return Task.FromResult(0);
-            }
+            Assert.Equal("bob", fakeFeature.Name);
+            Assert.Equal(1, fakeFeature.Offset);
+            Assert.Equal(3, fakeFeature.Length);
+            Assert.Equal(CancellationToken.None, fakeFeature.Token);
         }
 
         [Fact]
@@ -65,21 +49,33 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         }
 
         [Fact]
-        public async Task SendFile_ThrowsWhenCanceled()
+        public async Task SendFile_Stream_ThrowsWhenCanceled()
         {
             var body = new MemoryStream();
             var context = new DefaultHttpContext();
             var response = context.Response;
             response.Body = body;
 
-            await Assert.ThrowsAsync<OperationCanceledException>(
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
                 () => response.SendFileAsync("testfile1kb.txt", 1, 3, new CancellationToken(canceled: true)));
 
             Assert.Equal(0, body.Length);
         }
 
         [Fact]
-        public async Task SendFile_AbortsSilentlyWhenRequestCanceled()
+        public async Task SendFile_Feature_ThrowsWhenCanceled()
+        {
+            var context = new DefaultHttpContext();
+            var fakeFeature = new FakeResponseBodyFeature();
+            context.Features.Set<IHttpResponseBodyFeature>(fakeFeature);
+            var response = context.Response;
+
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => response.SendFileAsync("testfile1kb.txt", 1, 3, new CancellationToken(canceled: true)));
+        }
+
+        [Fact]
+        public async Task SendFile_Stream_AbortsSilentlyWhenRequestCanceled()
         {
             var body = new MemoryStream();
             var context = new DefaultHttpContext();
@@ -90,6 +86,59 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             await response.SendFileAsync("testfile1kb.txt", 1, 3, CancellationToken.None);
 
             Assert.Equal(0, body.Length);
+        }
+
+        [Fact]
+        public async Task SendFile_Feature_AbortsSilentlyWhenRequestCanceled()
+        {
+            var context = new DefaultHttpContext();
+            var fakeFeature = new FakeResponseBodyFeature();
+            context.Features.Set<IHttpResponseBodyFeature>(fakeFeature);
+            var token = new CancellationToken(canceled: true);
+            context.RequestAborted = token;
+            var response = context.Response;
+
+            await response.SendFileAsync("testfile1kb.txt", 1, 3, CancellationToken.None);
+
+            Assert.Equal(token, fakeFeature.Token);
+        }
+
+        private class FakeResponseBodyFeature : IHttpResponseBodyFeature
+        {
+            public string Name { get; set; } = null;
+            public long Offset { get; set; } = 0;
+            public long? Length { get; set; } = null;
+            public CancellationToken Token { get; set; }
+
+            public Stream Stream => throw new System.NotImplementedException();
+
+            public PipeWriter Writer => throw new System.NotImplementedException();
+
+            public Task CompleteAsync()
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void DisableBuffering()
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+            {
+                Name = path;
+                Offset = offset;
+                Length = length;
+                Token = cancellation;
+
+                cancellation.ThrowIfCancellationRequested();
+                return Task.FromResult(0);
+            }
+
+            public Task StartAsync(CancellationToken token = default)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

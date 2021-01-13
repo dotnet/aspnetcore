@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Creates a new <see cref="RouteValueProvider"/>. 
+        /// Creates a new <see cref="RouteValueProvider"/>.
         /// </summary>
         /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
         /// <param name="values">The values.</param>
@@ -86,10 +85,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            object value;
-            if (_values.TryGetValue(key, out value))
+            if (key.Length == 0)
             {
-                var stringValue = value as string ?? value?.ToString() ?? string.Empty;
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a route value
+                // an empty key which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
+            }
+
+            if (_values.TryGetValue(key, out var value))
+            {
+                var stringValue = value as string ?? Convert.ToString(value, Culture) ?? string.Empty;
                 return new ValueProviderResult(stringValue, Culture);
             }
             else

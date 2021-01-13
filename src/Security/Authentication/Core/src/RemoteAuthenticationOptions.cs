@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
@@ -90,6 +89,22 @@ namespace Microsoft.AspNetCore.Authentication
         public PathString CallbackPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the optional path the user agent is redirected to if the user
+        /// doesn't approve the authorization demand requested by the remote server.
+        /// This property is not set by default. In this case, an exception is thrown
+        /// if an access_denied response is returned by the remote authorization server.
+        /// </summary>
+        public PathString AccessDeniedPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the parameter used to convey the original location
+        /// of the user before the remote challenge was triggered up to the access denied page.
+        /// This property is only used when the <see cref="AccessDeniedPath"/> is explicitly specified.
+        /// </summary>
+        // Note: this deliberately matches the default parameter name used by the cookie handler.
+        public string ReturnUrlParameter { get; set; } = "ReturnUrl";
+
+        /// <summary>
         /// Gets or sets the authentication scheme corresponding to the middleware
         /// responsible of persisting user's identity after a successful authentication.
         /// This value typically corresponds to a cookie middleware registered in the Startup class.
@@ -110,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
         /// This property is set to <c>false</c> by default to reduce
         /// the size of the final authentication cookie.
         /// </summary>

@@ -1,30 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <Import Project="$(RepoRoot)src\Servers\IIS\build\testsite.props" />
 
   <PropertyGroup>
     <Description>Music store application on ASP.NET Core</Description>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RuntimeIdentifiers Condition="'$(Configuration)' != 'RuntimeStore'">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-    <Configurations>Debug;Release;RuntimeStore</Configurations>
-    <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
+    <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <InProcessTestSite>true</InProcessTestSite>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
-
-  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
 
   <ItemGroup>
     <Content Update="ForTesting\**\*" CopyToPublishDirectory="Never" Condition=" '$(PublishForTesting)' != 'true' " />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(Configuration)' == 'RuntimeStore' ">
-    <Reference Include="Microsoft.AspNetCore.All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' OR '$(Configuration)' != 'RuntimeStore' ">
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
@@ -33,14 +25,18 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Session" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <Target Name="VerifyPrecompiledViews" AfterTargets="Publish">

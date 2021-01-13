@@ -14,11 +14,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 {
-    /// <summary>
-    /// Infrastructure
-    /// </summary>
-    [Obsolete("This type is for internal use only and will be removed in a future version.")]
-    public abstract class BaseView
+    internal abstract class BaseView
     {
         /// <summary>
         /// The request context

@@ -41,5 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// in this list, to be consumed later by an <see cref="Validation.IModelValidatorProvider"/>.
         /// </remarks>
         public IList<object> ValidatorMetadata { get; } = new List<object>();
+
+        /// <summary>
+        /// Gets a value that indicates if the model has validators .
+        /// </summary>
+        public bool? HasValidators { get; set; }
     }
 }

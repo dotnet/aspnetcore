@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class WebSocketsTransport
+    internal partial class WebSocketsTransport
     {
         private static class Log
         {
@@ -61,10 +61,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 LoggerMessage.Define(LogLevel.Information, new EventId(16, "ClosingWebSocket"), "Closing WebSocket.");
 
             private static readonly Action<ILogger, Exception> _closingWebSocketFailed =
-                LoggerMessage.Define(LogLevel.Information, new EventId(17, "ClosingWebSocketFailed"), "Closing webSocket failed.");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(17, "ClosingWebSocketFailed"), "Closing webSocket failed.");
 
             private static readonly Action<ILogger, Exception> _cancelMessage =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(18, "CancelMessage"), "Canceled passing message to application.");
+
+            private static readonly Action<ILogger, Exception> _startedTransport =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(19, "StartedTransport"), "Started transport.");
 
             public static void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl)
             {
@@ -154,6 +157,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             public static void CancelMessage(ILogger logger)
             {
                 _cancelMessage(logger, null);
+            }
+
+            public static void StartedTransport(ILogger logger)
+            {
+                _startedTransport(logger, null);
             }
         }
     }

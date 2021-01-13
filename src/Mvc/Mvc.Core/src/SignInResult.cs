@@ -6,14 +6,13 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.SignInAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
     /// </summary>
     public class SignInResult : ActionResult
     {
@@ -37,18 +36,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
         public SignInResult(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            AuthenticationScheme = authenticationScheme;
-            Principal = principal;
+            AuthenticationScheme = authenticationScheme ?? throw new ArgumentNullException(nameof(authenticationScheme));
+            Principal = principal ?? throw new ArgumentNullException(nameof(principal));
             Properties = properties;
         }
 

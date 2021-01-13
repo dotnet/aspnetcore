@@ -137,11 +137,11 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else if (sizeParameter != null)
                 {
-                    sizeParameter.Value = value.Value.ToString(CultureInfo.InvariantCulture);
+                    sizeParameter.Value = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    string sizeString = value.Value.ToString(CultureInfo.InvariantCulture);
+                    string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
                     _parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
@@ -155,7 +155,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (!StringSegment.IsNullOrEmpty(fileName))
             {
-                FileName = Sanatize(fileName);
+                FileName = Sanitize(fileName);
             }
             else
             {
@@ -166,7 +166,7 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>
         /// Sets the FileName parameter using encodings appropriate for MIME headers.
-        /// The FileNameStar paraemter is removed.
+        /// The FileNameStar parameter is removed.
         /// </summary>
         /// <param name="fileName"></param>
         public void SetMimeFileName(StringSegment fileName)
@@ -324,7 +324,7 @@ namespace Microsoft.Net.Http.Headers
             else
             {
                 // Must always be quoted
-                var dateString = HeaderUtilities.FormatDate(date.Value, quoted: true);
+                var dateString = HeaderUtilities.FormatDate(date.GetValueOrDefault(), quoted: true);
                 if (dateParameter != null)
                 {
                     dateParameter.Value = dateString;
@@ -434,7 +434,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Replaces characters not suitable for HTTP headers with '_' rather than MIME encoding them.
-        private StringSegment Sanatize(StringSegment input)
+        private StringSegment Sanitize(StringSegment input)
         {
             var result = input;
 
@@ -444,7 +444,7 @@ namespace Microsoft.Net.Http.Headers
                 for (int i = 0; i < result.Length; i++)
                 {
                     var c = result[i];
-                    if ((int)c > 0x7f)
+                    if ((int)c > 0x7f || (int)c < 0x20)
                     {
                         c = '_'; // Replace out-of-range characters
                     }
@@ -472,7 +472,7 @@ namespace Microsoft.Net.Http.Headers
 
             for (int i = 0; i < input.Length; i++)
             {
-                if ((int)input[i] > 0x7f)
+                if ((int)input[i] > 0x7f || (int)input[i] < 0x20)
                 {
                     return true;
                 }

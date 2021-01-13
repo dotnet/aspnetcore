@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -53,10 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
-            SetContentType(context, result);
-            SetContentDispositionHeader(context, result);
-
+            
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
 
@@ -83,6 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 response.StatusCode = StatusCodes.Status412PreconditionFailed;
                 return (range: null, rangeLength: 0, serveBody: false);
             }
+
+            SetContentType(context, result);
+            SetContentDispositionHeader(context, result);
 
             if (fileLength.HasValue)
             {
@@ -323,6 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // the current length of the selected resource.  e.g. */length
                 response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
                 httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(fileLength);
+                response.ContentLength = 0;
 
                 return (range: null, rangeLength: 0, serveBody: false);
             }

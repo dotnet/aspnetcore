@@ -54,11 +54,15 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 }
 
                 // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Items.Count; i++)
+                var items = Items;
+                // Read interface .Count once rather than per iteration
+                var itemsCount = items.Count;
+                for (var i = 0; i < itemsCount; i++)
                 {
-                    if (NameEquals(name, Items[i]))
+                    var attribute = items[i];
+                    if (NameEquals(name, attribute))
                     {
-                        return Items[i];
+                        return attribute;
                     }
                 }
 
@@ -126,16 +130,20 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Perf: Avoid allocating enumerator
             List<TagHelperAttribute> matchedAttributes = null;
-            for (var i = 0; i < Items.Count; i++)
+            var items = Items;
+            // Read interface .Count once rather than per iteration
+            var itemsCount = items.Count;
+            for (var i = 0; i < itemsCount; i++)
             {
-                if (NameEquals(name, Items[i]))
+                var attribute = items[i];
+                if (NameEquals(name, attribute))
                 {
                     if (matchedAttributes == null)
                     {
                         matchedAttributes = new List<TagHelperAttribute>();
                     }
 
-                    matchedAttributes.Add(Items[i]);
+                    matchedAttributes.Add(attribute);
                 }
             }
             attributes = matchedAttributes ?? EmptyList;
@@ -158,9 +166,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            for (var i = 0; i < Items.Count; i++)
+            var items = Items;
+            // Read interface .Count once rather than per iteration
+            var itemsCount = items.Count;
+            for (var i = 0; i < itemsCount; i++)
             {
-                if (NameEquals(name, Items[i]))
+                if (NameEquals(name, items[i]))
                 {
                     return i;
                 }

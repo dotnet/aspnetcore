@@ -8,19 +8,19 @@ namespace Microsoft.AspNetCore.Routing.Logging
 {
     internal static class RouterMiddlewareLoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _requestDidNotMatchRoutes;
+        private static readonly Action<ILogger, Exception> _requestNotMatched;
 
         static RouterMiddlewareLoggerExtensions()
         {
-            _requestDidNotMatchRoutes = LoggerMessage.Define(
+            _requestNotMatched = LoggerMessage.Define(
                 LogLevel.Debug,
-                1,
-                "Request did not match any routes.");
+                new EventId(1, "RequestNotMatched"),
+                "Request did not match any routes");
         }
 
-        public static void RequestDidNotMatchRoutes(this ILogger logger)
+        public static void RequestNotMatched(this ILogger logger)
         {
-            _requestDidNotMatchRoutes(logger, null);
+            _requestNotMatched(logger, null);
         }
     }
 }

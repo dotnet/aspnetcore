@@ -10,5 +10,6 @@ namespace Microsoft.AspNetCore.SignalR
     {
         Type GetReturnType(string invocationId);
         IReadOnlyList<Type> GetParameterTypes(string methodName);
+        Type GetStreamItemType(string streamId);
     }
 }

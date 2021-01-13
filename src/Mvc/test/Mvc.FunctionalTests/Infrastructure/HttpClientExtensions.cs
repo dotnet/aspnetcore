@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync(requestUri);
             await AssertStatusCodeAsync(response, HttpStatusCode.OK);
 
+            return await GetHtmlDocumentAsync(response);
+        }
+
+        public static async Task<IHtmlDocument> GetHtmlDocumentAsync(this HttpResponseMessage response)
+        {
             var content = await response.Content.ReadAsStringAsync();
             var parser = new HtmlParser();
             var document = parser.Parse(content);
@@ -36,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 return response;
             }
 
-            string responseContent = null;
+            string responseContent = string.Join(Environment.NewLine, response.Headers);
             try
             {
                 responseContent = await response.Content.ReadAsStringAsync();
@@ -48,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             throw new StatusCodeMismatchException
             {
-                ExpectedStatusCode = HttpStatusCode.OK,
+                ExpectedStatusCode = expectedStatusCode,
                 ActualStatusCode = response.StatusCode,
                 ResponseContent = responseContent,
             };
@@ -66,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 get
                 {
-                    return $"Excepted status code 200. Actual {ActualStatusCode}. Response Content:" + Environment.NewLine + ResponseContent;
+                    return $"Excepted status code {ExpectedStatusCode}. Actual {ActualStatusCode}. Response Content:" + Environment.NewLine + ResponseContent;
                 }
             }
         }

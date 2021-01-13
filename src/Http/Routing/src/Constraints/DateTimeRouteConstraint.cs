@@ -26,16 +26,6 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -46,17 +36,15 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value) && value != null)
+            if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 if (value is DateTime)
                 {
                     return true;
                 }
 
-                DateTime result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+                return DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
             }
 
             return false;

@@ -4,21 +4,30 @@
 -->
 
 <Project>
-  <Target Name="GenerateHostingStartupDeps" Condition="'@(HostingStartupPackageReference->Count())' != '0'" BeforeTargets="_GetPackageFiles" >
+
+  <Target Name="GenerateHostingStartupDeps" BeforeTargets="_GetPackageFiles" >
 
     <PropertyGroup>
       <_TemplatesDirectory>$(MSBuildThisFileDirectory)..\content\</_TemplatesDirectory>
-      <_DepsOutputDirectory>$(RepositoryRoot).w\se\</_DepsOutputDirectory>
+      <_DepsOutputDirectory>$(IntermediateOutputPath)\se\</_DepsOutputDirectory>
       <_WorkingDirectory>$(_DepsOutputDirectory)\depswork</_WorkingDirectory>
       <_BasePackagePath>content\additionaldeps\</_BasePackagePath>
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
       <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
+      <_RsRestoreSources>
+        $(RestoreAdditionalProjectSources);
+        $(ArtifactsShippingPackagesDir);
+        $(ArtifactsNonShippingPackagesDir)
+      </_RsRestoreSources>
+
       <ManifestFileContents>
       <![CDATA[
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Remove="Internal.AspNetCore.Sdk" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" IsImplicitlyDefined="true"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="%(HostingStartupPackageReference.Identity)" Version="%(HostingStartupPackageReference.Version)" />
   </ItemGroup>
 </Project>
@@ -26,8 +35,18 @@
       </ManifestFileContents>
     </PropertyGroup>
 
+    <ItemGroup Condition="'@(HostingStartupRuntimeStoreTargets->Count())' == '0'">
+      <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="win-x64" />
+      <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="win-x86" />
+    </ItemGroup>
+
     <ItemGroup>
       <_TemplateFiles Include="$(MSBuildThisFileDirectory)\HostingStartup\*.cs*" />
+      <!--
+        Always use Major.Minor.0 so that if we have to produce a new SiteExtension during a patch build it will still work for non-patch runtimes.
+        i.e. 3.0.0 dotnet will search for 3.0.0 and below and wouldn't find a 3.0.1 folder path
+        Side effect, also removes the -ci or -servicing label.
+      -->
       <_HostingStartupPackageReference
         Include="%(HostingStartupPackageReference.Identity)"
         Source="%(HostingStartupPackageReference.Source)"
@@ -36,7 +55,7 @@
         Project="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\HostingStartup.csproj"
         DepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\p\HostingStartup.deps.json"
         TrimmedDepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\%(HostingStartupPackageReference.Identity).deps.json"
-        PackagePath="$(_BasePackagePath)%(HostingStartupPackageReference.Identity)\shared\Microsoft.AspNetCore.App\$(MicrosoftAspNetCoreAppPackageVersion)\"
+        PackagePath="$(_BasePackagePath)\shared\Microsoft.AspNetCore.App\$(AspNetCoreMajorMinorVersion).0\"
          />
     </ItemGroup>
     <MakeDir Directories="$(_DepsOutputDirectory)" />
@@ -44,22 +63,16 @@
     <!-- Generate runtime store -->
     <WriteLinesToFile File="$(_RuntimeStoreManifestFile)" Lines="$(ManifestFileContents)" Overwrite="true" Encoding="Unicode"/>
 
-    <PropertyGroup>
-      <_CommonProperties>
-        AspNetUniverseBuildOffline=true;
-        DotNetRestoreSourcePropsPath=$(DotNetRestoreSourcePropsPath);
-        DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath);
-        BuildNumber=$(BuildNumber);
-        Configuration=$(Configuration);
-        IsFinalBuild=$(IsFinalBuild);
-        MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
-        RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-      </_CommonProperties>
-    </PropertyGroup>
-
     <MSBuild Projects="$(_RuntimeStoreManifestFile)"
              Targets="ComposeStore"
-             Properties="TargetFramework=%(HostingStartupRuntimeStoreTargets.Identity);RuntimeIdentifier=%(HostingStartupRuntimeStoreTargets.Runtime);ComposeDir=$(_RuntimeStoreOutput)\%(HostingStartupRuntimeStoreTargets.Runtime);SkipOptimization=true;$(_CommonProperties)" />
+             Properties="
+              TargetFramework=%(HostingStartupRuntimeStoreTargets.Identity);
+              RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
+              RuntimeIdentifier=%(HostingStartupRuntimeStoreTargets.Runtime);
+              ComposeDir=$(_RuntimeStoreOutput)\%(HostingStartupRuntimeStoreTargets.Runtime);
+              SkipOptimization=true;
+              DisablePackageReferenceRestrictions=true;
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
     <!-- Generate deps -->
     <RemoveDir Directories="%(_HostingStartupPackageReference.WorkingDirectory)" />
 
@@ -67,11 +80,27 @@
 
     <MSBuild Projects="%(_HostingStartupPackageReference.Project)"
              Targets="Restore"
-             Properties="HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);UseAppHost=false;NoBuild=false;$(_CommonProperties)" />
+             Properties="
+              __DummyTarget=Restore;
+              HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
+              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
+              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              UseAppHost=false;
+              NoBuild=false;
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
 
     <MSBuild Projects="%(_HostingStartupPackageReference.Project)"
              Targets="Publish"
-             Properties="PublishDir=%(_HostingStartupPackageReference.WorkingDirectory)\p;HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);UseAppHost=false;NoBuild=false;IncludeMainProjectInDepsFile=false;$(_CommonProperties)" />
+             Properties="
+              PublishDir=%(_HostingStartupPackageReference.WorkingDirectory)\p;
+              HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
+              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
+              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              UseAppHost=false;
+              NoBuild=false;
+              IncludeMainProjectInDepsFile=false" />
     <Copy SourceFiles="%(_HostingStartupPackageReference.DepsFile)" DestinationFiles="%(_HostingStartupPackageReference.TrimmedDepsFile)" />
 
     <ItemGroup>

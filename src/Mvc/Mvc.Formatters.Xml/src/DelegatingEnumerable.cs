@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     /// <summary>
     /// Serializes <see cref="IEnumerable{T}"/> types by delegating them through a concrete implementation.
     /// </summary>
-    /// <typeparam name="TWrapped">The wrapping or original type of the <see cref="IEnumerable{T}"/> 
+    /// <typeparam name="TWrapped">The wrapping or original type of the <see cref="IEnumerable{T}"/>
     /// to proxy.</typeparam>
-    /// <typeparam name="TDeclared">The type parameter of the original <see cref="IEnumerable{T}"/> 
+    /// <typeparam name="TDeclared">The type parameter of the original <see cref="IEnumerable{T}"/>
     /// to proxy.</typeparam>
     public class DelegatingEnumerable<TWrapped, TDeclared> : IEnumerable<TWrapped>
     {
@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         private readonly IWrapperProvider _wrapperProvider;
 
         /// <summary>
-        /// Initializes a <see cref="DelegatingEnumerable{TWrapped, TDeclared}"/>. 
+        /// Initializes a <see cref="DelegatingEnumerable{TWrapped, TDeclared}"/>.
         /// </summary>
         /// <remarks>
-        /// This constructor is necessary for <see cref="System.Runtime.Serialization.DataContractSerializer"/> 
+        /// This constructor is necessary for <see cref="System.Runtime.Serialization.DataContractSerializer"/>
         /// to serialize.
         /// </remarks>
         public DelegatingEnumerable()
@@ -64,7 +64,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// This type will never be used for deserialization, but we are required to implement the add
         /// method so that the type can be serialized. This will never be called.
         /// </summary>
-        /// <param name="item">The item to add. Unused.</param>
+        /// <param name="item">The item to add.</param>
+        /// <exception cref="NotImplementedException">Thrown unconditionally.</exception>
         public void Add(object item)
         {
             throw new NotImplementedException();

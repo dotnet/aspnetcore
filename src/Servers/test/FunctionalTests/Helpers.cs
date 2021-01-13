@@ -19,7 +19,7 @@ namespace ServerComparison.FunctionalTests
                 var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.sln"));
                 if (solutionFileInfo.Exists)
                 {
-                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets", "TestSites"));
+                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "..", "..","testassets", "ServerComparison.TestSites"));
                 }
 
                 directoryInfo = directoryInfo.Parent;
@@ -29,35 +29,11 @@ namespace ServerComparison.FunctionalTests
             throw new Exception($"Solution root could not be found using {applicationBasePath}");
         }
 
-        public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
+        public static string GetNginxConfigContent(string nginxConfig)
         {
             var applicationBasePath = AppContext.BaseDirectory;
-
-            string content = null;
-            if (serverType == ServerType.IISExpress)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
-            }
-            else if (serverType == ServerType.Nginx)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
-            }
-
+            var content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
             return content;
-        }
-
-        public static string GetTargetFramework(RuntimeFlavor runtimeFlavor)
-        {
-            if (runtimeFlavor == RuntimeFlavor.Clr)
-            {
-                return "net461";
-            }
-            else if (runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                return "netcoreapp2.1";
-            }
-
-            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}'");
         }
     }
 }

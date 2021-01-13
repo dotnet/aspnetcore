@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public KeyValuePair<string, string>? ReadNextPair()
         {
             ReadNextPairImpl();
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await ReadNextPairAsyncImpl(cancellationToken);
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
@@ -189,11 +189,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
-        private bool TryReadWord(char seperator, int limit, out string value)
+        private bool TryReadWord(char separator, int limit, out string value)
         {
             do
             {
-                if (ReadChar(seperator, limit, out value))
+                if (ReadChar(separator, limit, out value))
                 {
                     return true;
                 }
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return false;
         }
 
-        private bool ReadChar(char seperator, int limit, out string word)
+        private bool ReadChar(char separator, int limit, out string word)
         {
             // End
             if (_bufferCount == 0)
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var c = _buffer[_bufferOffset++];
             _bufferCount--;
 
-            if (c == seperator)
+            if (c == separator)
             {
                 word = BuildWord();
                 return true;
@@ -283,14 +283,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator.GetResults();
         }
 
-        private bool ReadSucceded()
+        private bool ReadSucceeded()
         {
             return _currentKey != null && _currentValue != null;
         }
 
         private void Append(ref KeyValueAccumulator accumulator)
         {
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 accumulator.Append(_currentKey, _currentValue);
                 if (accumulator.ValueCount > ValueCountLimit)

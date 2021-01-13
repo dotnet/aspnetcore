@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -56,17 +57,34 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public void AddEntityFrameworkStoresCanInferKey()
         {
             var services = new ServiceCollection();
+            services.AddLogging()
+                .AddSingleton(new TestDbContext(new DbContextOptionsBuilder<TestDbContext>().Options));
             // This used to throw
             var builder = services.AddIdentity<GuidUser, GuidRole>().AddEntityFrameworkStores<TestDbContext>();
+
+            var sp = services.BuildServiceProvider();
+            using (var csope = sp.CreateScope())
+            {
+                Assert.NotNull(sp.GetRequiredService<UserManager<GuidUser>>());
+                Assert.NotNull(sp.GetRequiredService<RoleManager<GuidRole>>());
+            }
         }
 
         [Fact]
         public void AddEntityFrameworkStoresCanInferKeyWithGenericBase()
         {
             var services = new ServiceCollection();
+            services.AddLogging()
+                .AddSingleton(new TestDbContext(new DbContextOptionsBuilder<TestDbContext>().Options));
             // This used to throw
-            var builder = services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>().AddEntityFrameworkStores<TestDbContext>();
-        }
+            var builder = services.AddIdentityCore<IdentityUser<Guid>>().AddRoles<IdentityRole<Guid>>().AddEntityFrameworkStores<TestDbContext>();
 
+            var sp = services.BuildServiceProvider();
+            using (var csope = sp.CreateScope())
+            {
+                Assert.NotNull(sp.GetRequiredService<UserManager<IdentityUser<Guid>>>());
+                Assert.NotNull(sp.GetRequiredService<RoleManager<IdentityRole<Guid>>>());
+            }
+        }
     }
 }

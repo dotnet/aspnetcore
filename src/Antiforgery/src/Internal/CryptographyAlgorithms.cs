@@ -3,9 +3,9 @@
 
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public static class CryptographyAlgorithms
+    internal static class CryptographyAlgorithms
     {
         public static SHA256 CreateSHA256()
         {

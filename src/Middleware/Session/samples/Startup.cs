@@ -12,23 +12,27 @@ namespace SessionSample
 {
     public class Startup
     {
+        public Startup()
+        {
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds a default in-memory implementation of IDistributedCache
+            // Uncomment the following line to use the in-memory implementation of IDistributedCache
             services.AddDistributedMemoryCache();
 
             // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
             // Note that this would require setting up the session state database.
-            //services.AddSqlServerCache(o =>
+            //services.AddDistributedSqlServerCache(o =>
             //{
-            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
+            //    o.ConnectionString = Configuration["AppSettings:ConnectionString"];
             //    o.SchemaName = "dbo";
             //    o.TableName = "Sessions";
             //});
 
             // Uncomment the following line to use the Redis implementation of IDistributedCache.
             // This will override any previously registered IDistributedCache service.
-            //services.AddDistributedRedisCache(o =>
+            //services.AddStackExchangeRedisCache(o =>
             //{
             //    o.Configuration = "localhost";
             //    o.InstanceName = "SampleInstance";

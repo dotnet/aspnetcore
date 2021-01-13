@@ -1,44 +1,69 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnet-Identity.DefaultUI.WebSite-80C658D8-CED7-467F-9B47-75DA3BC1A16D</UserSecretsId>
+    <IdentityDefaultUIFramework>Bootstrap3</IdentityDefaultUIFramework>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\test\InMemory.Test\InMemoryUserStore.cs" LinkBase="Services" />
-    <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\**\*.cs" LinkBase="Data" />
+    <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\*.cs" LinkBase="Data" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Google" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.CookiePolicy" />
-    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Rewrite" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
-    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <Reference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+    <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
+      <_Parameter1>$(IdentityDefaultUIFramework)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
+  <Target Name="_SetBootstrapFrameworkVersion">
+    <ItemGroup>
+      <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
+        <AdditionalProperties>IdentityDefaultUIFramework=$(IdentityDefaultUIFramework)</AdditionalProperties>
+      </_StaticWebAssetsProjectReference>
+    </ItemGroup>
+  </Target>
 </Project>

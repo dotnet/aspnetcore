@@ -1,0 +1,10 @@
+{
+    "version": "0.0.0",
+    "name": "GenericHostWebSite",
+    "description": "Web site demonstrating various validations.",
+    "private":  true,
+    "devDependencies": {
+        "grunt": "^0.4.5",
+        "grunt-bower-task": "^0.4.0"
+    }
+}

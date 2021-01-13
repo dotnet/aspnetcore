@@ -1,19 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <!-- Ugly hack - Wix doesn't accept build numbers larger than 65535, and AzDo's BuildIds are larger than that.
-         The largest we ever got on TeamCity was 31363, so we want to be in the range of 31364 - 65535. To achieve this we take the
-         AzDO build number modulo 34172 (65545 - 31363 = 34172), and add 31364 to that to give us a number in the desired range. -->
-    <InstallerBuildNumber>$(BuildNumber)</InstallerBuildNumber>
-    <InstallerBuildNumberModulo Condition="'$(BuildNumber)' != 't000'">$([MSBuild]::Modulo($(BuildNumber), 34172))</InstallerBuildNumberModulo>
-    <InstallerBuildNumber Condition="'$(BuildNumber)' != 't000'">$([MSBuild]::Add($(InstallerBuildNumberModulo), 31364))</InstallerBuildNumber>
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(InstallerBuildNumber)</Version>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
     <Cultures>en-US</Cultures>
-    <BaseOutputPath>$(RootOutputPath)bin/$(Configuration)/installers/</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
   </PropertyGroup>
 
   <!-- Additional parameters for Light/Candle-->
@@ -33,12 +24,8 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
-    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
     <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
-    <GenerateNupkgPowershellScript>$(RepositoryRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>

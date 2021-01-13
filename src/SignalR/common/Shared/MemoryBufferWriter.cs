@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (_completedSegments != null)
             {
-                // Copy full segments                
+                // Copy full segments
                 var count = _completedSegments.Count;
                 for (var i = 0; i < count; i++)
                 {
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         public override void Write(ReadOnlySpan<byte> span)
         {
             if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan(_position)))

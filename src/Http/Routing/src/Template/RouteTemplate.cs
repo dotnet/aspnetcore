@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -12,6 +13,32 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class RouteTemplate
     {
         private const string SeparatorString = "/";
+
+        public RouteTemplate(RoutePattern other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            // RequiredValues will be ignored. RouteTemplate doesn't support them.
+
+            TemplateText = other.RawText;
+            Segments = new List<TemplateSegment>(other.PathSegments.Select(p => new TemplateSegment(p)));
+            Parameters = new List<TemplatePart>();
+            for (var i = 0; i < Segments.Count; i++)
+            {
+                var segment = Segments[i];
+                for (var j = 0; j < segment.Parts.Count; j++)
+                {
+                    var part = segment.Parts[j];
+                    if (part.IsParameter)
+                    {
+                        Parameters.Add(part);
+                    }
+                }
+            }
+        }
 
         public RouteTemplate(string template, List<TemplateSegment> segments)
         {
@@ -77,6 +104,17 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Converts the <see cref="RouteTemplate"/> to the equivalent 
+        /// <see cref="RoutePattern"/>
+        /// </summary>
+        /// <returns>A <see cref="RoutePattern"/>.</returns>
+        public RoutePattern ToRoutePattern()
+        {
+            var segments = Segments.Select(s => s.ToRoutePatternPathSegment());
+            return RoutePatternFactory.Pattern(TemplateText, segments);
         }
     }
 }

@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -62,6 +62,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public ModelStateDictionary ModelState => PageContext?.ModelState;
 
+        /// <summary>
+        /// Gets or sets the <see cref="IModelMetadataProvider"/>.
+        /// </summary>
+        public IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                _metadataProvider ??= HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
+                return _metadataProvider;
+            }
+            set => _metadataProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         private IObjectModelValidator ObjectValidator
         {
             get
@@ -72,19 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 }
 
                 return _objectValidator;
-            }
-        }
-
-        private IModelMetadataProvider MetadataProvider
-        {
-            get
-            {
-                if (_metadataProvider == null)
-                {
-                    _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
-                }
-
-                return _metadataProvider;
             }
         }
 
@@ -111,45 +111,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <inheritdoc />
         public override void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    BeginContextEvent,
-                    new
-                    {
-                        httpContext = ViewContext,
-                        path = Path,
-                        position = position,
-                        length = length,
-                        isLiteral = isLiteral,
-                    });
-            }
+            // noop
         }
 
         /// <inheritdoc />
         public override void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    EndContextEvent,
-                    new
-                    {
-                        httpContext = ViewContext,
-                        path = Path,
-                    });
-            }
+            // noop
         }
 
         /// <summary>
         /// Creates a <see cref="BadRequestResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestResult BadRequest()
             => new BadRequestResult();
 
@@ -158,7 +132,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestObjectResult BadRequest(object error)
             => new BadRequestObjectResult(error);
 
@@ -167,7 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
         {
             if (modelState == null)
@@ -245,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => Content(content, (MediaTypeHeaderValue)null);
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
         /// <paramref name="content"/> string and a content type.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -255,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => Content(content, MediaTypeHeaderValue.Parse(contentType));
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
         /// <paramref name="content"/> string, a <paramref name="contentType"/>, and <paramref name="contentEncoding"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -274,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
         /// <paramref name="content"/> string and a <paramref name="contentType"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -321,14 +293,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// challenge.</param>
         /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
         /// <remarks>
-        /// Some authentication schemes, such as cookies, will convert <see cref="StatusCodes.Status403Forbidden"/> to 
+        /// Some authentication schemes, such as cookies, will convert <see cref="StatusCodes.Status403Forbidden"/> to
         /// a redirect to show a login page.
         /// </remarks>
         public virtual ForbidResult Forbid(AuthenticationProperties properties)
             => new ForbidResult(properties);
 
         /// <summary>
-        /// Creates a <see cref="ForbidResult"/> (<see cref="StatusCodes.Status403Forbidden"/> by default) with the 
+        /// Creates a <see cref="ForbidResult"/> (<see cref="StatusCodes.Status403Forbidden"/> by default) with the
         /// specified authentication schemes and <paramref name="properties" />.
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
@@ -434,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
-        /// Creates a <see cref="LocalRedirectResult"/> object that redirects 
+        /// Creates a <see cref="LocalRedirectResult"/> object that redirects
         /// (<see cref="StatusCodes.Status302Found"/>) to the specified local <paramref name="localUrl"/>.
         /// </summary>
         /// <param name="localUrl">The local URL to redirect to.</param>
@@ -467,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Creates a <see cref="LocalRedirectResult"/> object with <see cref="LocalRedirectResult.Permanent"/> set to
-        /// false and <see cref="LocalRedirectResult.PreserveMethod"/> set to true 
+        /// false and <see cref="LocalRedirectResult.PreserveMethod"/> set to true
         /// (<see cref="StatusCodes.Status307TemporaryRedirect"/>) using the specified <paramref name="localUrl"/>.
         /// </summary>
         /// <param name="localUrl">The local URL to redirect to.</param>
@@ -484,7 +456,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Creates a <see cref="LocalRedirectResult"/> object with <see cref="LocalRedirectResult.Permanent"/> set to
-        /// true and <see cref="LocalRedirectResult.PreserveMethod"/> set to true 
+        /// true and <see cref="LocalRedirectResult.PreserveMethod"/> set to true
         /// (<see cref="StatusCodes.Status308PermanentRedirect"/>) using the specified <paramref name="localUrl"/>.
         /// </summary>
         /// <param name="localUrl">The local URL to redirect to.</param>
@@ -556,7 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Creates a <see cref="RedirectResult"/> object with <see cref="RedirectResult.Permanent"/> set to false
-        /// and <see cref="RedirectResult.PreserveMethod"/> set to true (<see cref="StatusCodes.Status307TemporaryRedirect"/>) 
+        /// and <see cref="RedirectResult.PreserveMethod"/> set to true (<see cref="StatusCodes.Status307TemporaryRedirect"/>)
         /// using the specified <paramref name="url"/>.
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
@@ -573,7 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Creates a <see cref="RedirectResult"/> object with <see cref="RedirectResult.Permanent"/> set to true
-        /// and <see cref="RedirectResult.PreserveMethod"/> set to true (<see cref="StatusCodes.Status308PermanentRedirect"/>) 
+        /// and <see cref="RedirectResult.PreserveMethod"/> set to true (<see cref="StatusCodes.Status308PermanentRedirect"/>)
         /// using the specified <paramref name="url"/>.
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
@@ -597,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => RedirectToAction(actionName, routeValues: null);
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified action using the 
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified action using the
         /// <paramref name="actionName"/> and <paramref name="routeValues"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
@@ -607,7 +579,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => RedirectToAction(actionName, controllerName: null, routeValues: routeValues);
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified action using the 
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified action using the
         /// <paramref name="actionName"/> and the <paramref name="controllerName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
@@ -661,15 +633,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new RedirectToActionResult(actionName, controllerName, routeValues, fragment);
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified action with 
-        /// <see cref="RedirectToActionResult.Permanent"/> set to false and <see cref="RedirectToActionResult.PreserveMethod"/> 
-        /// set to true, using the specified <paramref name="actionName"/>, <paramref name="controllerName"/>, 
+        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified action with
+        /// <see cref="RedirectToActionResult.Permanent"/> set to false and <see cref="RedirectToActionResult.PreserveMethod"/>
+        /// set to true, using the specified <paramref name="actionName"/>, <paramref name="controllerName"/>,
         /// <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
         /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
-        /// <param name="fragment">The fragment to add to the URL.</param>       
+        /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPreserveMethod(
             string actionName = null,
@@ -687,7 +659,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
         /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
@@ -698,8 +670,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
-        /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/> 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
+        /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>
         /// and <paramref name="routeValues"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
@@ -711,8 +683,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
-        /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/> 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
+        /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>
         /// and <paramref name="controllerName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
@@ -724,7 +696,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
         /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>,
         /// <paramref name="controllerName"/>, and <paramref name="fragment"/>.
         /// </summary>
@@ -741,7 +713,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
         /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>,
         /// <paramref name="controllerName"/>, and <paramref name="routeValues"/>.
         /// </summary>
@@ -758,7 +730,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with
         /// <see cref="RedirectToActionResult.Permanent"/> set to true using the specified <paramref name="actionName"/>,
         /// <paramref name="controllerName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
@@ -782,16 +754,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status308PermanentRedirect"/>) to the specified action with 
+        /// Redirects (<see cref="StatusCodes.Status308PermanentRedirect"/>) to the specified action with
         /// <see cref="RedirectToActionResult.Permanent"/> set to true and <see cref="RedirectToActionResult.PreserveMethod"/>
-        /// set to true, using the specified <paramref name="actionName"/>, <paramref name="controllerName"/>, 
+        /// set to true, using the specified <paramref name="actionName"/>, <paramref name="controllerName"/>,
         /// <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
         /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>        
+        /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanentPreserveMethod(
             string actionName = null,
             string controllerName = null,
@@ -868,14 +840,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified route with 
+        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified route with
         /// <see cref="RedirectToRouteResult.Permanent"/> set to false and <see cref="RedirectToRouteResult.PreserveMethod"/>
         /// set to true, using the specified <paramref name="routeName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="routeName">The name of the route.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>       
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePreserveMethod(
             string routeName = null,
             object routeValues = null,
@@ -890,7 +862,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with
         /// <see cref="RedirectToRouteResult.Permanent"/> set to true using the specified <paramref name="routeName"/>.
         /// </summary>
         /// <param name="routeName">The name of the route.</param>
@@ -901,7 +873,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with
         /// <see cref="RedirectToRouteResult.Permanent"/> set to true using the specified <paramref name="routeValues"/>.
         /// </summary>
         /// <param name="routeValues">The parameters for a route.</param>
@@ -925,7 +897,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with 
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with
         /// <see cref="RedirectToRouteResult.Permanent"/> set to true using the specified <paramref name="routeName"/>
         /// and <paramref name="fragment"/>.
         /// </summary>
@@ -960,7 +932,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeName">The name of the route.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>       
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePermanentPreserveMethod(
             string routeName = null,
             object routeValues = null,
@@ -1103,7 +1075,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new RedirectToPageResult(pageName, pageHandler, routeValues, permanent: true, fragment: fragment);
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified page with 
+        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified page with
         /// <see cref="RedirectToRouteResult.Permanent"/> set to false and <see cref="RedirectToRouteResult.PreserveMethod"/>
         /// set to true, using the specified <paramref name="pageName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
@@ -1111,7 +1083,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns> 
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToPageResult RedirectToPagePreserveMethod(
             string pageName = null,
             string pageHandler = null,
@@ -1136,7 +1108,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>  
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToPageResult RedirectToPagePermanentPreserveMethod(
             string pageName = null,
             string pageHandler = null,
@@ -1218,6 +1190,110 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new UnauthorizedResult();
 
         /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName)
+        {
+            return Partial(viewName, model: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render and the model object.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <param name="model">The model to be passed into the partial.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName, object model)
+        {
+            // ViewContext.ViewData is an instance of ViewDataDictionary<MyPageModel>, but we need an instance
+            // of ViewDataDictionary<MyPartialViewModel>.
+            var viewData = new ViewDataDictionary(MetadataProvider, ViewContext.ViewData.ModelState)
+            {
+                Model = model,
+            };
+
+            return new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewData = viewData
+            };
+        }
+
+        #region ViewComponentResult
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(string componentName)
+        {
+            return ViewComponent(componentName, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(Type componentType)
+        {
+            return ViewComponent(componentType, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
+        /// containing the invocation arguments.
+        /// </param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(string componentName, object arguments)
+        {
+            return new ViewComponentResult
+            {
+                ViewComponentName = componentName,
+                Arguments = arguments,
+                ViewData = ViewContext.ViewData,
+                TempData = TempData
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
+        /// containing the invocation arguments.
+        /// </param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(Type componentType, object arguments)
+        {
+            return new ViewComponentResult
+            {
+                ViewComponentType = componentType,
+                Arguments = arguments,
+                ViewData = ViewContext.ViewData,
+                TempData = TempData
+            };
+        }
+        #endregion
+
+        /// <summary>
         /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
         /// <see cref="IValueProvider"/>.
         /// </summary>
@@ -1259,7 +1335,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             {
                 throw new ArgumentNullException(nameof(prefix));
             }
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await TryUpdateModelAsync(model, prefix, valueProvider);
         }
 
@@ -1331,7 +1413,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -1369,7 +1456,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -1494,7 +1586,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,

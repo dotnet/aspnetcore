@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack-react",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Helpers for using Webpack with React in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
@@ -17,12 +17,12 @@
     "url": "https://github.com/aspnet/JavaScriptServices.git"
   },
   "devDependencies": {
-    "@types/webpack": "^2.2.0",
+    "@types/webpack": "^4.4.0",
     "rimraf": "^2.5.4",
     "typescript": "^2.0.0",
-    "webpack": "^2.2.0"
+    "webpack": "^4.16.0"
   },
   "peerDependencies": {
-    "webpack": "^2.2.0"
+    "webpack": "^4.0.0"
   }
 }

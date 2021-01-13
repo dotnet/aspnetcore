@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -27,20 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly IModelBinderProvider[] _providers;
         private readonly ConcurrentDictionary<Key, IModelBinder> _cache;
         private readonly IServiceProvider _serviceProvider;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="IServiceProvider"/>.</para>
-        /// <para>Creates a new <see cref="ModelBinderFactory"/>.</para>
-        /// </summary>
-        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="options">The <see cref="IOptions{TOptions}"/> for <see cref="MvcOptions"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(IServiceProvider) + ".")]
-        public ModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options)
-            : this(metadataProvider, options, GetDefaultServices())
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="ModelBinderFactory"/>.
@@ -275,15 +260,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelBinder CreateBinder(ModelMetadata metadata)
             {
-                return CreateBinder(
-                    metadata,
-                    new BindingInfo()
-                    {
-                        BinderModelName = metadata.BinderModelName,
-                        BinderType = metadata.BinderType,
-                        BindingSource = metadata.BindingSource,
-                        PropertyFilterProvider = metadata.PropertyFilterProvider,
-                    });
+                var bindingInfo = new BindingInfo();
+                bindingInfo.TryApplyBindingInfo(metadata);
+
+                return CreateBinder(metadata, bindingInfo);
             }
 
             public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
@@ -315,7 +295,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // the ParameterDescriptor) or in a call to TryUpdateModel (no BindingInfo) or as a collection element.
         //
         // We need to be able to tell the difference between these things to avoid over-caching.
-        private struct Key : IEquatable<Key>
+        private readonly struct Key : IEquatable<Key>
         {
             private readonly ModelMetadata _metadata;
             private readonly object _token; // Explicitly using ReferenceEquality for tokens.

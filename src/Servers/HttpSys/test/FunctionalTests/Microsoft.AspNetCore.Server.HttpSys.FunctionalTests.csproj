@@ -1,13 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>HttpSys.FunctionalTests</TestGroupName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="System.Net.Http.WinHttpHandler" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!--Imitate IIS Express so we can use it's cert bindings-->
+    <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 
 </Project>

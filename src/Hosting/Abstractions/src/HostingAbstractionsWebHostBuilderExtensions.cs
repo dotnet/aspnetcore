@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseConfiguration(this IWebHostBuilder hostBuilder, IConfiguration configuration)
         {
-            foreach (var setting in configuration.AsEnumerable())
+            foreach (var setting in configuration.AsEnumerable(makePathsRelative: true))
             {
                 hostBuilder.UseSetting(setting.Key, setting.Value);
             }

@@ -3,10 +3,12 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -19,8 +21,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 .UseRequestCulture<TStartup>("en-GB", "en-US")
                 .UseEnvironment("Production")
                 .ConfigureServices(
-                    services => services.Configure<MvcCompatibilityOptions>(
-                        options => options.CompatibilityVersion = CompatibilityVersion.Version_2_1));
+                    services =>
+                    {
+                        var testSink = new TestSink();
+                        var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    });
         }
 
         protected override TestServer CreateServer(IWebHostBuilder builder)
@@ -32,6 +38,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 CultureInfo.CurrentCulture = new CultureInfo("en-GB");
                 CultureInfo.CurrentUICulture = new CultureInfo("en-US");
                 return base.CreateServer(builder);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUICulture;
+            }
+        }
+
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUICulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("en-GB");
+                CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+                return base.CreateHost(builder);
             }
             finally
             {

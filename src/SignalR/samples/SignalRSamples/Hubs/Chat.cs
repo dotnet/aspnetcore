@@ -9,58 +9,60 @@ namespace SignalRSamples.Hubs
 {
     public class Chat : Hub
     {
-        public override async Task OnConnectedAsync()
+        public override Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("Send", $"{Context.ConnectionId} joined");
+            var name = Context.GetHttpContext().Request.Query["name"];
+            return Clients.All.SendAsync("Send", $"{name} joined the chat");
         }
 
-        public override async Task OnDisconnectedAsync(Exception ex)
+        public override Task OnDisconnectedAsync(Exception exception)
         {
-            await Clients.Others.SendAsync("Send", $"{Context.ConnectionId} left");
+            var name = Context.GetHttpContext().Request.Query["name"];
+            return Clients.All.SendAsync("Send", $"{name} left the chat");
         }
 
-        public Task Send(string message)
+        public Task Send(string name, string message)
         {
-            return Clients.All.SendAsync("Send", $"{Context.ConnectionId}: {message}");
+            return Clients.All.SendAsync("Send", $"{name}: {message}");
         }
 
-        public Task SendToOthers(string message)
+        public Task SendToOthers(string name, string message)
         {
-            return Clients.Others.SendAsync("Send", $"{Context.ConnectionId}: {message}");
+            return Clients.Others.SendAsync("Send", $"{name}: {message}");
         }
 
-        public Task SendToConnection(string connectionId, string message)
+        public Task SendToConnection(string connectionId, string name, string message)
         {
-            return Clients.Client(connectionId).SendAsync("Send", $"Private message from {Context.ConnectionId}: {message}");
+            return Clients.Client(connectionId).SendAsync("Send", $"Private message from {name}: {message}");
         }
 
-        public Task SendToGroup(string groupName, string message)
+        public Task SendToGroup(string groupName, string name ,string message)
         {
-            return Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId}@{groupName}: {message}");
+            return Clients.Group(groupName).SendAsync("Send", $"{name}@{groupName}: {message}");
         }
 
-        public Task SendToOthersInGroup(string groupName, string message)
+        public Task SendToOthersInGroup(string groupName, string name,string message)
         {
-            return Clients.OthersInGroup(groupName).SendAsync("Send", $"{Context.ConnectionId}@{groupName}: {message}");
+            return Clients.OthersInGroup(groupName).SendAsync("Send", $"{name}@{groupName}: {message}");
         }
 
-        public async Task JoinGroup(string groupName)
+        public async Task JoinGroup(string groupName, string name)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-            await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} joined {groupName}");
+            await Clients.Group(groupName).SendAsync("Send", $"{name} joined {groupName}");
         }
 
-        public async Task LeaveGroup(string groupName)
+        public async Task LeaveGroup(string groupName, string name)
         {
-            await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} left {groupName}");
+            await Clients.Group(groupName).SendAsync("Send", $"{name} left {groupName}");
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
 
-        public Task Echo(string message)
+        public Task Echo(string name, string message)
         {
-            return Clients.Caller.SendAsync("Send", $"{Context.ConnectionId}: {message}");
+            return Clients.Caller.SendAsync("Send", $"{name}: {message}");
         }
     }
 }

@@ -59,5 +59,10 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
             throw new InvalidOperationException("Unexpected binder call");
         }
+
+        public Type GetStreamItemType(string streamId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
-        /// <returns></returns>
+        /// <returns>The task.</returns>
         public static Task SignOutAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignOutAsync(context, scheme, properties);
 

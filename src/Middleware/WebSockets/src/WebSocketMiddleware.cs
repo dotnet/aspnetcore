@@ -4,13 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.WebSockets.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets
 {
@@ -18,8 +22,11 @@ namespace Microsoft.AspNetCore.WebSockets
     {
         private readonly RequestDelegate _next;
         private readonly WebSocketOptions _options;
+        private readonly ILogger _logger;
+        private readonly bool _anyOriginAllowed;
+        private readonly List<string> _allowedOrigins;
 
-        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options)
+        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options, ILoggerFactory loggerFactory)
         {
             if (next == null)
             {
@@ -32,6 +39,10 @@ namespace Microsoft.AspNetCore.WebSockets
 
             _next = next;
             _options = options.Value;
+            _allowedOrigins = _options.AllowedOrigins.Select(o => o.ToLowerInvariant()).ToList();
+            _anyOriginAllowed = _options.AllowedOrigins.Count == 0 || _options.AllowedOrigins.Contains("*", StringComparer.Ordinal);
+
+            _logger = loggerFactory.CreateLogger<WebSocketMiddleware>();
 
             // TODO: validate options.
         }
@@ -42,7 +53,25 @@ namespace Microsoft.AspNetCore.WebSockets
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
             {
-                context.Features.Set<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
+                var webSocketFeature = new UpgradeHandshake(context, upgradeFeature, _options);
+                context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
+
+                if (!_anyOriginAllowed)
+                {
+                    // Check for Origin header
+                    var originHeader = context.Request.Headers[HeaderNames.Origin];
+
+                    if (!StringValues.IsNullOrEmpty(originHeader) && webSocketFeature.IsWebSocketRequest)
+                    {
+                        // Check allowed origins to see if request is allowed
+                        if (!_allowedOrigins.Contains(originHeader.ToString(), StringComparer.Ordinal))
+                        {
+                            _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader);
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            return Task.CompletedTask;
+                        }
+                    }
+                }
             }
 
             return _next(context);
@@ -53,6 +82,7 @@ namespace Microsoft.AspNetCore.WebSockets
             private readonly HttpContext _context;
             private readonly IHttpUpgradeFeature _upgradeFeature;
             private readonly WebSocketOptions _options;
+            private bool? _isWebSocketRequest;
 
             public UpgradeHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options)
             {
@@ -65,19 +95,26 @@ namespace Microsoft.AspNetCore.WebSockets
             {
                 get
                 {
-                    if (!_upgradeFeature.IsUpgradableRequest)
+                    if (_isWebSocketRequest == null)
                     {
-                        return false;
-                    }
-                    var headers = new List<KeyValuePair<string, string>>();
-                    foreach (string headerName in HandshakeHelpers.NeededHeaders)
-                    {
-                        foreach (var value in _context.Request.Headers.GetCommaSeparatedValues(headerName))
+                        if (!_upgradeFeature.IsUpgradableRequest)
                         {
-                            headers.Add(new KeyValuePair<string, string>(headerName, value));
+                            _isWebSocketRequest = false;
+                        }
+                        else
+                        {
+                            var headers = new List<KeyValuePair<string, string>>();
+                            foreach (string headerName in HandshakeHelpers.NeededHeaders)
+                            {
+                                foreach (var value in _context.Request.Headers.GetCommaSeparatedValues(headerName))
+                                {
+                                    headers.Add(new KeyValuePair<string, string>(headerName, value));
+                                }
+                            }
+                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, headers);
                         }
                     }
-                    return HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, headers);
+                    return _isWebSocketRequest.Value;
                 }
             }
 
@@ -109,17 +146,13 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[Constants.Headers.SecWebSocketKey]);
+                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
 
-                var responseHeaders = HandshakeHelpers.GenerateResponseHeaders(key, subProtocol);
-                foreach (var headerPair in responseHeaders)
-                {
-                    _context.Response.Headers[headerPair.Key] = headerPair.Value;
-                }
+                HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
             }
         }
     }

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,10 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TestCommon" />
-
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
   </ItemGroup>
 
 </Project>

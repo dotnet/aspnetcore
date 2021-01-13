@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/Hosting/issues/1214")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()
@@ -47,8 +46,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
+// https://github.com/aspnet/AspNetCore/issues/8247
+#pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
+#pragma warning restore 0618
 
                 var deploymentParameters = new DeploymentParameters(
                     applicationPath,
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = "netcoreapp2.1",
+                    TargetFramework = Tfm.NetCoreApp31,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false
@@ -114,7 +116,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 }
             }
         }
-
 
         private static void SendSIGINT(int processId)
         {

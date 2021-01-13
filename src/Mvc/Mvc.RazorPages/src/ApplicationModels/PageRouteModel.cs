@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -56,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             RelativePath = other.RelativePath;
             ViewEnginePath = other.ViewEnginePath;
             AreaName = other.AreaName;
+            RouteParameterTransformer = other.RouteParameterTransformer;
 
             Properties = new Dictionary<object, object>(other.Properties);
             Selectors = new List<SelectorModel>(other.Selectors.Select(m => new SelectorModel(m)));
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<SelectorModel> Selectors { get; }
 
         /// <summary>
-        /// Gets a collection of route values that must be present in the <see cref="RouteData.Values"/> 
+        /// Gets a collection of route values that must be present in the <see cref="RouteData.Values"/>
         /// for the corresponding page to be selected.
         /// </summary>
         /// <remarks>
@@ -114,5 +114,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </para>
         /// </remarks>
         public IDictionary<string, string> RouteValues { get; }
+
+        /// <summary>
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
+        /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This feature only applies when using endpoint routing.
+        /// </para>
+        /// </remarks>
+        public IOutboundParameterTransformer RouteParameterTransformer { get; set; }
     }
 }

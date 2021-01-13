@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -21,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url)
         {
-            hubConnectionBuilder.WithUrlCore(new Uri(url), null, _ => { });
+            hubConnectionBuilder.WithUrlCore(new Uri(url), null, null);
             return hubConnectionBuilder;
         }
 
@@ -43,11 +47,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
         /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url, HttpTransportType transports)
         {
-            hubConnectionBuilder.WithUrlCore(new Uri(url), transports, _ => { });
+            hubConnectionBuilder.WithUrlCore(new Uri(url), transports, null);
             return hubConnectionBuilder;
         }
 
@@ -56,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
         /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <param name="configureHttpConnection">The delegate that configures the <see cref="HttpConnection"/>.</param>
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url, HttpTransportType transports, Action<HttpConnectionOptions> configureHttpConnection)
@@ -73,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, Uri url)
         {
-            hubConnectionBuilder.WithUrlCore(url, null, _ => { });
+            hubConnectionBuilder.WithUrlCore(url, null, null);
             return hubConnectionBuilder;
         }
 
@@ -95,11 +99,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
         /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType transports)
         {
-            hubConnectionBuilder.WithUrlCore(url, transports, _ => { });
+            hubConnectionBuilder.WithUrlCore(url, transports, null);
             return hubConnectionBuilder;
         }
 
@@ -108,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
         /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <param name="configureHttpConnection">The delegate that configures the <see cref="HttpConnection"/>.</param>
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType transports, Action<HttpConnectionOptions> configureHttpConnection)
@@ -138,8 +142,44 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 hubConnectionBuilder.Services.Configure(configureHttpConnection);
             }
 
+            // Add HttpConnectionOptionsDerivedHttpEndPoint so HubConnection can read the Url from HttpConnectionOptions
+            // without the Signal.Client.Core project taking a new dependency on Http.Connections.Client.
+            hubConnectionBuilder.Services.AddSingleton<EndPoint, HttpConnectionOptionsDerivedHttpEndPoint>();
+
+            // Configure the HttpConnection so that it uses the correct transfer format for the configured IHubProtocol.
+            hubConnectionBuilder.Services.AddSingleton<IConfigureOptions<HttpConnectionOptions>, HubProtocolDerivedHttpOptionsConfigurer>();
+
+            // If and when HttpConnectionFactory is made public, it can be moved out of this assembly and into Http.Connections.Client.
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory, HttpConnectionFactory>();
             return hubConnectionBuilder;
+        }
+
+        private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
+        {
+            public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
+                : base(httpConnectionOptions.Value.Url)
+            {
+            }
+        }
+
+        private class HubProtocolDerivedHttpOptionsConfigurer : IConfigureNamedOptions<HttpConnectionOptions>
+        {
+            private readonly TransferFormat _defaultTransferFormat;
+
+            public HubProtocolDerivedHttpOptionsConfigurer(IHubProtocol hubProtocol)
+            {
+                _defaultTransferFormat = hubProtocol.TransferFormat;
+            }
+
+            public void Configure(string name, HttpConnectionOptions options)
+            {
+                Configure(options);
+            }
+
+            public void Configure(HttpConnectionOptions options)
+            {
+                options.DefaultTransferFormat = _defaultTransferFormat;
+            }
         }
     }
 }

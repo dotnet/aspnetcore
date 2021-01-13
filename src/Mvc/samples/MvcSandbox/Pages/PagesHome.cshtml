@@ -1,5 +1,5 @@
 ﻿@page
-@model TestModel
+@model PagesHome
 @{
 
     ViewData["Title"] = "Hello from pages";
@@ -11,21 +11,7 @@
     public string Message { get; set; }
 }
 
-<div class="row">
-    <div class="col-md-3">
-        <h2>RazorPages says Hello @Model.Name!</h2>
-        <ul>
-            <li>This file should give you a quick view of a Mvc Razor Page in action.</li>
-        </ul>
-        <p>Message from TempData: @Message</p>
-        @{ 
-            Message = $"You visited this page at {DateTime.Now}.";
-        }
-    </div>
-
-    <form method="post">
-        <label>Say hello to <input type="text" name="name" /></label>
-        <input type="submit" value="Say" />
-    </form>
-          
+<div class="text-center">
+    <h1 class="display-4">Pages Home</h1>
+    <p>This sandbox should give you a quick view of a basic MVC application.</p>
 </div>

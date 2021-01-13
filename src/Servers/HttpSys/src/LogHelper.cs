@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (logger == null)
             {
-                Console.WriteLine(location + Environment.NewLine + exception.ToString());
+                Debug.WriteLine(location + Environment.NewLine + exception.ToString());
             }
             else
             {

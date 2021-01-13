@@ -1,23 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Libuv.BindTests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\BindTests\**\*.cs" />
-    <Compile Include="..\Libuv.FunctionalTests\TransportSelector.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\**\*.cs" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
+    <!-- https://github.com/aspnet/AspNetCore/issues/8046 -->
+    <HelixProjectPlatform Remove="OSX" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Compile Include="..\BindTests\**\*.cs" />
+    <Compile Include="..\Libuv.FunctionalTests\TransportSelector.cs" />
+    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+   </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
   </ItemGroup>
 
 </Project>

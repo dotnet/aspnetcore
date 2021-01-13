@@ -1,0 +1,39 @@
+@using System.Threading
+
+<input @bind-value=@InputText @bind-value:event="oninput" />
+<p id="test-result">@InputText</p>
+
+<p>
+    This component introduces lag during typing. It's not precisely the same as network latency,
+    but is similar enough that it surfaces what would be the same bugs if we didn't have mitigations.
+    That is:
+    <ul>
+        <li>
+            Your keystrokes get queued up and by the time they are processed, they no longer match the event
+            handler ID in the render tree
+        </li>
+        <li>
+            By the time the render output is processed, the textbox contents have already been edited further.
+        </li>
+    </ul>
+</p>
+<p>
+    The point of this test is to show that even in this hostile environment, we don't break the ability
+    to type normally, nor do we lose any of your typed characters.
+</p>
+
+
+
+@code {
+    string _inputText;
+
+    string InputText
+    {
+        get => _inputText;
+        set
+        {
+            Thread.Sleep(100);
+            _inputText = value;
+        }
+    }
+}

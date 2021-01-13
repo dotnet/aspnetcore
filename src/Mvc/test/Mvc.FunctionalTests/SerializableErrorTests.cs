@@ -7,8 +7,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -22,22 +20,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        public static TheoryData AcceptHeadersData
+        public static TheoryData<string> AcceptHeadersData
         {
             get
             {
-                var data = new TheoryData<string>
+                return new TheoryData<string>
                 {
+                    "application/xml-dcs",
                     "application/xml-xmlser"
                 };
-
-                // Mono issue - https://github.com/aspnet/External/issues/18
-                if (!TestPlatformHelper.IsMono)
-                {
-                    data.Add("application/xml-dcs");
-                }
-
-                return data;
             }
         }
 
@@ -62,19 +53,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
-        // This is fixed in mono 4.3.0.
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("application/xml-xmlser")]
-        [InlineData("application/xml-dcs")]
+        [Theory]
+        [MemberData(nameof(AcceptHeadersData))]
         public async Task PostedSerializableError_IsBound(string acceptHeader)
         {
             // Arrange
             var expectedXml = "<Error><key1>key1-error</key1><key2>The input was not valid.</key2></Error>";
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/LogErrors");
-            request.Content = new StringContent(expectedXml, Encoding.UTF8, acceptHeader);
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/LogErrors")
+            {
+                Content = new StringContent(expectedXml, Encoding.UTF8, acceptHeader)
+            };
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptHeader));
 
             // Act
@@ -89,25 +77,80 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
-        // This is fixed in mono 4.3.0.
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("application/xml-xmlser")]
-        [InlineData("application/xml-dcs")]
-        public async Task IsReturnedInExpectedFormat(string acceptHeader)
+        public static TheoryData<string, string> InvalidInputAndHeadersData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    {
+                        "application/xml-dcs",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employee xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                    {
+                        "application/xml-xmlser",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employee>" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidInputAndHeadersData))]
+        public async Task IsReturnedInExpectedFormat(string acceptHeader, string inputXml)
         {
             // Arrange
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<Employee xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +
-                "<Id>2</Id><Name>foo</Name></Employee>";
             var expected = "<Error><Id>The field Id must be between 10 and 100.</Id>" +
                 "<Name>The field Name must be a string or array type with a minimum " +
                 "length of '15'.</Name></Error>";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(acceptHeader));
-            request.Content = new StringContent(input, Encoding.UTF8, "application/xml-dcs");
+            request.Content = new StringContent(inputXml, Encoding.UTF8, acceptHeader);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var responseData = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, responseData);
+        }
+
+        public static TheoryData<string, string> IncorrectTopLevelInputAndHeadersData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    {
+                        "application/xml-dcs",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employees xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                    {
+                        "application/xml-xmlser",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employees>" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IncorrectTopLevelInputAndHeadersData))]
+        public async Task IncorrectTopLevelElement_ReturnsExpectedError(string acceptHeader, string inputXml)
+        {
+            // Arrange
+            var expected = "<Error><MVC-Empty>An error occurred while deserializing input data.</MVC-Empty></Error>";
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(acceptHeader));
+            request.Content = new StringContent(inputXml, Encoding.UTF8, acceptHeader);
 
             // Act
             var response = await Client.SendAsync(request);

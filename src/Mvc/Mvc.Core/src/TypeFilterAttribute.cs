@@ -34,12 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="type">The <see cref="Type"/> of filter to create.</param>
         public TypeFilterAttribute(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            ImplementationType = type;
+            ImplementationType = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         /// <summary>
@@ -73,11 +68,17 @@ namespace Microsoft.AspNetCore.Mvc
             if (_factory == null)
             {
                 var argumentTypes = Arguments?.Select(a => a.GetType())?.ToArray();
-
                 _factory = ActivatorUtilities.CreateFactory(ImplementationType, argumentTypes ?? Type.EmptyTypes);
             }
 
-            return (IFilterMetadata)_factory(serviceProvider, Arguments);
+            var filter = (IFilterMetadata)_factory(serviceProvider, Arguments);
+            if (filter is IFilterFactory filterFactory)
+            {
+                // Unwrap filter factories
+                filter = filterFactory.CreateInstance(serviceProvider);
+            }
+
+            return filter;
         }
     }
 }

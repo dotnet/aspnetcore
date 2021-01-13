@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class RequestBuilder
     {
-        private readonly TestServer _server;
         private readonly HttpRequestMessage _req;
 
         /// <summary>
@@ -23,20 +22,20 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="path"></param>
         public RequestBuilder(TestServer server, string path)
         {
-            if (server == null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            _server = server;
+            TestServer = server ?? throw new ArgumentNullException(nameof(server));
             _req = new HttpRequestMessage(HttpMethod.Get, path);
         }
+
+        /// <summary>
+        /// Gets the <see cref="TestServer"/> instance for which the request is being built.
+        /// </summary>
+        public TestServer TestServer { get; }
 
         /// <summary>
         /// Configure any HttpRequestMessage properties.
         /// </summary>
         /// <param name="configure"></param>
-        /// <returns></returns>
+        /// <returns>This <see cref="RequestBuilder"/> for chaining.</returns>
         public RequestBuilder And(Action<HttpRequestMessage> configure)
         {
             if (configure == null)
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>This <see cref="RequestBuilder"/> for chaining.</returns>
         public RequestBuilder AddHeader(string name, string value)
         {
             if (!_req.Headers.TryAddWithoutValidation(name, value))
@@ -75,31 +74,31 @@ namespace Microsoft.AspNetCore.TestHost
         /// Set the request method and start processing the request.
         /// </summary>
         /// <param name="method"></param>
-        /// <returns></returns>
+        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
         public Task<HttpResponseMessage> SendAsync(string method)
         {
             _req.Method = new HttpMethod(method);
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
 
         /// <summary>
         /// Set the request method to GET and start processing the request.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
         public Task<HttpResponseMessage> GetAsync()
         {
             _req.Method = HttpMethod.Get;
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
 
         /// <summary>
         /// Set the request method to POST and start processing the request.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
         public Task<HttpResponseMessage> PostAsync()
         {
             _req.Method = HttpMethod.Post;
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
     }
 }

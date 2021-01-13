@@ -1,0 +1,18 @@
+<h1>Sign In</h1>
+<div>
+    <form asp-controller="Account" asp-action="Signin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+        <div>
+            <label>User Name</label>
+            <input id="UserName" type="text" name="userName" />
+        </div>
+
+        <div>
+            <label>Date of Birth (MM/DD/YYYY)</label>
+            <input id="DOB" type="text" name="birthDate" />
+        </div>
+
+        <div>
+            <button type="submit">Sign In</button>
+        </div>
+    </form>
+</div>

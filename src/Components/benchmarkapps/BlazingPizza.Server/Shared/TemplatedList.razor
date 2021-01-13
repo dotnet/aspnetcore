@@ -1,0 +1,36 @@
+@typeparam TItem
+
+@if (items == null)
+{
+    @LoadingContent
+}
+else if (items.Count == 0)
+{
+    @EmptyContent
+}
+else
+{
+    <div class="list-group @ListGroupClass">
+        @foreach (var item in items)
+        {
+            <div class="list-group-item">
+                @ItemContent(item)
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    List<TItem> items;
+
+    [Parameter] public Func<Task<List<TItem>>> Loader { get; set; }
+    [Parameter] public RenderFragment LoadingContent { get; set; }
+    [Parameter] public RenderFragment EmptyContent { get; set; }
+    [Parameter] public RenderFragment<TItem> ItemContent { get; set; }
+    [Parameter] public string ListGroupClass { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        items = await Loader();
+    }
+}

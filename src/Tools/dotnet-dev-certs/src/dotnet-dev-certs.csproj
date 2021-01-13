@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
     <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
     <PackageTags>dotnet;developercertificates</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <!-- This is a requirement for Microsoft tool packages only. -->
-    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
