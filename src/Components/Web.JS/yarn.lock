@@ -205,9 +205,9 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@dotnet/jsinterop@https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview9.19415.3.tgz":
+"@dotnet/jsinterop@https://pkgs.dev.azure.com/dnceng/public/_apis/packaging/feeds/40ffd17d-412e-4e95-b1ca-c5e6b3774cd2/npm/packages/@dotnet/jsinterop/versions/3.0.0-preview9.19415.3/content":
   version "3.0.0-preview9.19415.3"
-  resolved "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview9.19415.3.tgz#f44f482897c612e8d174b8f6d8795d2cda75d643"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_apis/packaging/feeds/40ffd17d-412e-4e95-b1ca-c5e6b3774cd2/npm/packages/@dotnet/jsinterop/versions/3.0.0-preview9.19415.3/content#f44f482897c612e8d174b8f6d8795d2cda75d643"
 
 "@jest/console@^24.7.1", "@jest/console@^24.9.0":
   version "24.9.0"
