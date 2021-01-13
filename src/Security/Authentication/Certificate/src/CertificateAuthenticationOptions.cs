@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// The application may implement the interface fully, or it may create an instance of CertificateAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public new CertificateAuthenticationEvents Events
+        public new CertificateAuthenticationEvents? Events
         {
-            get { return (CertificateAuthenticationEvents)base.Events; }
+            get { return (CertificateAuthenticationEvents?)base.Events; }
 
             set { base.Events = value; }
         }
