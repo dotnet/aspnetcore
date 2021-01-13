@@ -7,7 +7,7 @@ below to ensure a smooth review and merge process for your PR. -->
 - [ ] You've read the [Contributor Guide](https://github.com/dotnet/aspnetcore/blob/master/CONTRIBUTING.md) and [Code of Conduct](https://github.com/dotnet/aspnetcore/blob/master/CONTRIBUTING.md).
 - [ ] You've included unit or integration tests for your change, where applicable.
 - [ ] You've included inline docs for your change, where applicable.
-- [ ] There's an open issue for the PR that you are making. If you'd like to purpose a new feature or change, please open an issue to discuss the change or find an existing issue.
+- [ ] There's an open issue for the PR that you are making. If you'd like to propose a new feature or change, please open an issue to discuss the change or find an existing issue.
 
 <!-- Once all that is done, you're ready to go. Open the PR with the content below. -->
 
@@ -19,4 +19,3 @@ Detail 1
 Detail 2
 
 Addresses #bugnumber (in this specific format)
-
