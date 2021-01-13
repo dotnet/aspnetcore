@@ -1,15 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -146,9 +148,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task RejectsRequestWithContentLengthAndUpgrade()
+        public async Task AcceptsRequestWithContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.False(feature.IsUpgradableRequest);
+                Assert.Equal(1, context.Request.ContentLength);
+                Assert.Equal(1, await context.Request.Body.ReadAsync(new byte[10], 0, 10));
+            }, new TestServiceContext(LoggerFactory)))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",
@@ -156,22 +164,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "Content-Length: 1",
                     "Connection: Upgrade",
                     "",
-                    "");
+                    "A");
 
-                await connection.ReceiveForcedEnd(
-                    "HTTP/1.1 400 Bad Request",
-                    "Connection: close",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "Content-Length: 0",
-                    "",
-                    "");
+                await connection.Receive("HTTP/1.1 200 OK");
             }
         }
 
         [Fact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.True(feature.IsUpgradableRequest);
+
+                if (HttpMethods.IsPost(context.Request.Method))
+                {
+                    Assert.Equal(0, context.Request.ContentLength);
+                }
+
+                Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[10], 0, 10));
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -193,9 +206,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
+        public async Task AcceptsRequestWithChunkedEncodingAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                Assert.Null(context.Request.ContentLength);
+                Assert.False(feature.IsUpgradableRequest);
+                Assert.True(HttpMethods.IsPost(context.Request.Method));
+                Assert.False(feature.IsUpgradableRequest);
+                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal(11, await context.Request.Body.ReadAsync(new byte[12], 0, 12));
+            }, new TestServiceContext(LoggerFactory)))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",
@@ -203,14 +225,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "Transfer-Encoding: chunked",
                     "Connection: Upgrade",
                     "",
-                    "");
-                await connection.ReceiveForcedEnd(
-                    "HTTP/1.1 400 Bad Request",
-                    "Connection: close",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "Content-Length: 0",
+                    "B", "Hello World",
+                    "0",
                     "",
                     "");
+                await connection.Receive("HTTP/1.1 200 OK");
             }
         }
 
