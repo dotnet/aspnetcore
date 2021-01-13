@@ -8,7 +8,7 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>11</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>12</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <ComponentsWebAssemblyMajorVersion>3</ComponentsWebAssemblyMajorVersion>
     <ComponentsWebAssemblyMinorVersion>2</ComponentsWebAssemblyMinorVersion>
@@ -67,9 +67,9 @@
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.1-beta4-20127-10</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.10-servicing.20519.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.11-servicing.20566.6</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.11</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.1.1</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -79,7 +79,7 @@
     <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>4.7.1</SystemDrawingCommonPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.3</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.7.4</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.7.2</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.8.1</SystemReflectionMetadataPackageVersion>
@@ -100,16 +100,16 @@
     <!-- Packages from aspnet/Blazor -->
     <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from aspnet/Extensions -->
-    <InternalAspNetCoreAnalyzersPackageVersion>3.1.11-servicing.20560.5</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.11-servicing.20560.5</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.1.11-servicing.20560.5</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>3.1.11-servicing.20567.16</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.11-servicing.20567.16</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.1.11-servicing.20567.16</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.1.11</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>3.1.11</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>3.1.11</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>3.1.11</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>3.1.11</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.1.11</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>3.1.11</MicrosoftExtensionsConfigurationBinderPackageVersion>
@@ -132,10 +132,10 @@
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.1.11</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>3.1.11</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>3.1.11</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>3.1.11</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>3.1.11</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>3.1.11</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>3.1.11</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
     <MicrosoftExtensionsLocalizationPackageVersion>3.1.11</MicrosoftExtensionsLocalizationPackageVersion>
@@ -147,16 +147,16 @@
     <MicrosoftExtensionsLoggingEventSourcePackageVersion>3.1.11</MicrosoftExtensionsLoggingEventSourcePackageVersion>
     <MicrosoftExtensionsLoggingEventLogPackageVersion>3.1.11</MicrosoftExtensionsLoggingEventLogPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.1.11</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>3.1.11</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>3.1.11</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.1.11</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>3.1.11</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>3.1.11</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
+    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.1.11</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.11-servicing.20560.5</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.11-servicing.20567.16</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.1.11</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>3.1.8-servicing.20420.4</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.1.11</MicrosoftJSInteropPackageVersion>
@@ -218,6 +218,7 @@
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftDataODataPackageVersion>5.8.4</MicrosoftDataODataPackageVersion>
     <MicrosoftDataServicesClientPackageVersion>5.8.4</MicrosoftDataServicesClientPackageVersion>
+    <MicrosoftDotNetSignCheckVersion>1.0.0-beta.20569.8</MicrosoftDotNetSignCheckVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelLoggingPackageVersion>5.5.0</MicrosoftIdentityModelLoggingPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.5.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
