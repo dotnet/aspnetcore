@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         MissingHostHeader,
         MultipleHostHeaders,
         InvalidHostHeader,
-        UpgradeRequestCannotHavePayload,
         RequestBodyExceedsContentLength
     }
 }

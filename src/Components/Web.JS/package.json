@@ -16,7 +16,7 @@
   "devDependencies": {
     "@aspnet/signalr": "link:../../SignalR/clients/ts/signalr",
     "@aspnet/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
-    "@dotnet/jsinterop": "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview9.19415.3.tgz",
+    "@dotnet/jsinterop": "https://pkgs.dev.azure.com/dnceng/public/_apis/packaging/feeds/40ffd17d-412e-4e95-b1ca-c5e6b3774cd2/npm/packages/@dotnet/jsinterop/versions/3.0.0-preview9.19415.3/content",
     "@types/emscripten": "^1.39.3",
     "@types/jest": "^24.9.1",
     "@types/jsdom": "11.0.6",
