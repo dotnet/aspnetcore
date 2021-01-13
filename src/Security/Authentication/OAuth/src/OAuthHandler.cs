@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <returns>The response <see cref="OAuthTokenResponse"/>.</returns>
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(OAuthCodeExchangeContext context)
         {
-            var tokenRequestParameters = new Dictionary<string, string>()
+            var tokenRequestParameters = new Dictionary<string, string?>()
             {
                 { "client_id", Options.ClientId },
                 { "redirect_uri", context.RedirectUri },
@@ -204,11 +204,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see BuildChallengeUrl
             if (context.Properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
             {
-                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier!);
                 context.Properties.Items.Remove(OAuthConstants.CodeVerifierKey);
             }
 
-            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters!);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, user.RootElement);
                 await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
             }
         }
 
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
             var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
 
-            var parameters = new Dictionary<string, string>
+            var parameters = new Dictionary<string, string?>
             {
                 { "client_id", Options.ClientId },
                 { "scope", scope },

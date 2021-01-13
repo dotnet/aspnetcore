@@ -5,6 +5,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;owin</PackageTags>
+    <!-- Nullable disabled because package is not a commonly used. -->
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

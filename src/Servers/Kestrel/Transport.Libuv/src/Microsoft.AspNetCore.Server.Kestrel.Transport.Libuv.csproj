@@ -8,6 +8,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- This package is obsolete in 5.0, will be removed in 6.0 -->
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
+    <!-- Nullable disabled because package is being removed. -->
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
