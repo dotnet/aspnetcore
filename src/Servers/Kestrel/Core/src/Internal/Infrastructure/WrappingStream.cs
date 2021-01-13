@@ -107,8 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override void EndWrite(IAsyncResult asyncResult)
             => _inner.EndWrite(asyncResult);
 
+#pragma warning disable CS0672, SYSLIB0010 // Overrides obsolete member
         public override object InitializeLifetimeService()
             => _inner.InitializeLifetimeService();
+#pragma warning restore CS0672, SYSLIB0010 // Overrides obsolete member
 
         public override void Close()
             => _inner.Close();
