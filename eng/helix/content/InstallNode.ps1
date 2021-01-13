@@ -54,7 +54,8 @@ else {
 }
 
 Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
-New-Item -Path "$InstallDir" -ItemType "directory" -Force	move $tempDir\$nodeFile $InstallDir
+New-Item -Path "$InstallDir" -ItemType "directory" -Force
+move $tempDir\$nodeFile $InstallDir
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"
