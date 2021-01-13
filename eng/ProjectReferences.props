@@ -147,7 +147,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.NET.Sdk.BlazorWebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
