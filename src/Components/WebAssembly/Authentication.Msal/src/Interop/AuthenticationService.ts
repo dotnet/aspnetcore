@@ -1,5 +1,4 @@
 import * as Msal from '@azure/msal-browser';
-import { StringDict } from '@azure/msal-common';
 
 interface AccessTokenRequestOptions {
     scopes: string[];
@@ -13,7 +12,7 @@ interface AccessTokenResult {
 
 interface AccessToken {
     value: string;
-    expires: Date;
+    expires: Date | null;
     grantedScopes: string[];
 }
 
@@ -36,7 +35,7 @@ interface AuthenticationResult {
 }
 
 interface AuthorizeService {
-    getUser(): Promise<StringDict | undefined>;
+    getUser(): Promise<object | undefined>;
     getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult>;
     signIn(state: any): Promise<AuthenticationResult>;
     completeSignIn(state: any): Promise<AuthenticationResult>;
@@ -52,7 +51,7 @@ interface AuthorizeServiceConfiguration extends Msal.Configuration {
 
 class MsalAuthorizeService implements AuthorizeService {
     private readonly _msalApplication: Msal.PublicClientApplication;
-    private _account: Msal.AccountInfo | undefined;
+    private _account: Msal.AccountInfo | undefined | null;
     private _redirectCallback: Promise<AuthenticationResult | null> | undefined;
     private _requestedScopes: string[] | undefined;
 
@@ -178,10 +177,10 @@ class MsalAuthorizeService implements AuthorizeService {
                     if (!account) {
                         return this.error("No account to get tokens for.");
                     }
-                    const silentRequest = {
+                    const silentRequest : Msal.SilentRequest = {
                         redirectUri: request.redirectUri,
                         account: account,
-                        scopes: request.scopes.concat(request.extraScopesToConsent || [])
+                        scopes: request?.scopes?.concat(request.extraScopesToConsent || []) || []
                     };
                     await this._msalApplication.acquireTokenSilent(silentRequest);
                 }
@@ -198,9 +197,9 @@ class MsalAuthorizeService implements AuthorizeService {
     async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
         const loginMode = this._settings.loginMode.toLowerCase();
         if (loginMode === 'redirect') {
-            return this.signInWithRedirect(request);
+            return this.signInWithRedirect(<Msal.RedirectRequest> request);
         } else {
-            return this.signInWithPopup(request);
+            return this.signInWithPopup(<Msal.PopupRequest> request);
         }
     }
 
