@@ -313,17 +313,17 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20580.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20621.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>79333c52da3f213509ab79bd92924660e04e668c</Sha>
+      <Sha>f1c7a4b1bcd028e17f2714b7e6f30ec1abd1a03f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.20580.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.20621.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>79333c52da3f213509ab79bd92924660e04e668c</Sha>
+      <Sha>f1c7a4b1bcd028e17f2714b7e6f30ec1abd1a03f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20580.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20621.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>79333c52da3f213509ab79bd92924660e04e668c</Sha>
+      <Sha>f1c7a4b1bcd028e17f2714b7e6f30ec1abd1a03f</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
