@@ -211,7 +211,7 @@
     <BaselinePackageReference Include="Microsoft.JSInterop" Version="[5.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[5.0.1, )" />
- </ItemGroup>
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Authentication-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' ">
     <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
