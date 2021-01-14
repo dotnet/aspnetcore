@@ -41,60 +41,60 @@ Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.RequestPath.se
 Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware
 Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext
 Microsoft.Extensions.DependencyInjection.DirectoryBrowserServiceExtensions
-~Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.get -> System.Collections.Generic.IList<string>
-~Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.set -> void
-~Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFilesOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) -> void
-~Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.DirectoryBrowserOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) -> void
-~Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.Formatter.get -> Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter
-~Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.Formatter.set -> void
-~Microsoft.AspNetCore.Builder.FileServerOptions.DefaultFilesOptions.get -> Microsoft.AspNetCore.Builder.DefaultFilesOptions
-~Microsoft.AspNetCore.Builder.FileServerOptions.DirectoryBrowserOptions.get -> Microsoft.AspNetCore.Builder.DirectoryBrowserOptions
-~Microsoft.AspNetCore.Builder.FileServerOptions.StaticFileOptions.get -> Microsoft.AspNetCore.Builder.StaticFileOptions
-~Microsoft.AspNetCore.Builder.StaticFileOptions.ContentTypeProvider.get -> Microsoft.AspNetCore.StaticFiles.IContentTypeProvider
-~Microsoft.AspNetCore.Builder.StaticFileOptions.ContentTypeProvider.set -> void
-~Microsoft.AspNetCore.Builder.StaticFileOptions.DefaultContentType.get -> string
-~Microsoft.AspNetCore.Builder.StaticFileOptions.DefaultContentType.set -> void
-~Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.get -> System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext>
-~Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.set -> void
-~Microsoft.AspNetCore.Builder.StaticFileOptions.StaticFileOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) -> void
-~Microsoft.AspNetCore.StaticFiles.DefaultFilesMiddleware.DefaultFilesMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DefaultFilesOptions> options) -> void
-~Microsoft.AspNetCore.StaticFiles.DefaultFilesMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.DirectoryBrowserMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DirectoryBrowserOptions> options) -> void
-~Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.DirectoryBrowserMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, System.Text.Encodings.Web.HtmlEncoder encoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DirectoryBrowserOptions> options) -> void
-~Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.FileExtensionContentTypeProvider(System.Collections.Generic.IDictionary<string, string> mapping) -> void
-~Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.Mappings.get -> System.Collections.Generic.IDictionary<string, string>
-~Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.TryGetContentType(string subpath, out string contentType) -> bool
-~Microsoft.AspNetCore.StaticFiles.HtmlDirectoryFormatter.HtmlDirectoryFormatter(System.Text.Encodings.Web.HtmlEncoder encoder) -> void
-~Microsoft.AspNetCore.StaticFiles.IContentTypeProvider.TryGetContentType(string subpath, out string contentType) -> bool
-~Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter.GenerateContentAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo> contents) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.FileProvider.set -> void
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.FileProvider.set -> void
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.SharedOptions.get -> Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions
-~Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.SharedOptionsBase(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) -> void
-~Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware.StaticFileMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.StaticFileOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.Context.get -> Microsoft.AspNetCore.Http.HttpContext
-~Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.File.get -> Microsoft.Extensions.FileProviders.IFileInfo
-~Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.StaticFileResponseContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.Extensions.FileProviders.IFileInfo file) -> void
-~static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.DefaultFilesOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, string requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.DirectoryBrowserOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, string requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.FileServerOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, bool enableDirectoryBrowsing) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, string requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.StaticFileOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, string requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string filePath) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
-~static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
-~static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string filePath) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
-~static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
-~static Microsoft.Extensions.DependencyInjection.DirectoryBrowserServiceExtensions.AddDirectoryBrowser(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-~virtual Microsoft.AspNetCore.StaticFiles.HtmlDirectoryFormatter.GenerateContentAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo> contents) -> System.Threading.Tasks.Task
+Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.get -> System.Collections.Generic.IList<string!>!
+Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFileNames.set -> void
+Microsoft.AspNetCore.Builder.DefaultFilesOptions.DefaultFilesOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions! sharedOptions) -> void
+Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.DirectoryBrowserOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions! sharedOptions) -> void
+Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.Formatter.get -> Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter?
+Microsoft.AspNetCore.Builder.DirectoryBrowserOptions.Formatter.set -> void
+Microsoft.AspNetCore.Builder.FileServerOptions.DefaultFilesOptions.get -> Microsoft.AspNetCore.Builder.DefaultFilesOptions!
+Microsoft.AspNetCore.Builder.FileServerOptions.DirectoryBrowserOptions.get -> Microsoft.AspNetCore.Builder.DirectoryBrowserOptions!
+Microsoft.AspNetCore.Builder.FileServerOptions.StaticFileOptions.get -> Microsoft.AspNetCore.Builder.StaticFileOptions!
+Microsoft.AspNetCore.Builder.StaticFileOptions.ContentTypeProvider.get -> Microsoft.AspNetCore.StaticFiles.IContentTypeProvider!
+Microsoft.AspNetCore.Builder.StaticFileOptions.ContentTypeProvider.set -> void
+Microsoft.AspNetCore.Builder.StaticFileOptions.DefaultContentType.get -> string?
+Microsoft.AspNetCore.Builder.StaticFileOptions.DefaultContentType.set -> void
+Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.get -> System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext!>!
+Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.set -> void
+Microsoft.AspNetCore.Builder.StaticFileOptions.StaticFileOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions! sharedOptions) -> void
+~Microsoft.AspNetCore.StaticFiles.DefaultFilesMiddleware.DefaultFilesMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DefaultFilesOptions!>! options) -> void
+Microsoft.AspNetCore.StaticFiles.DefaultFilesMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+~Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.DirectoryBrowserMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DirectoryBrowserOptions!>! options) -> void
+~Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.DirectoryBrowserMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnv, System.Text.Encodings.Web.HtmlEncoder! encoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DirectoryBrowserOptions!>! options) -> void
+Microsoft.AspNetCore.StaticFiles.DirectoryBrowserMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.FileExtensionContentTypeProvider(System.Collections.Generic.IDictionary<string!, string!>! mapping) -> void
+Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.Mappings.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider.TryGetContentType(string! subpath, out string! contentType) -> bool
+Microsoft.AspNetCore.StaticFiles.HtmlDirectoryFormatter.HtmlDirectoryFormatter(System.Text.Encodings.Web.HtmlEncoder! encoder) -> void
+Microsoft.AspNetCore.StaticFiles.IContentTypeProvider.TryGetContentType(string! subpath, out string! contentType) -> bool
+Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter.GenerateContentAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo!>! contents) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider?
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions.FileProvider.set -> void
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider?
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.FileProvider.set -> void
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.SharedOptions.get -> Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions!
+Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase.SharedOptionsBase(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions! sharedOptions) -> void
+Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+~Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware.StaticFileMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.StaticFileOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.Context.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.File.get -> Microsoft.Extensions.FileProviders.IFileInfo!
+Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext.StaticFileResponseContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.Extensions.FileProviders.IFileInfo! file) -> void
+static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.DefaultFilesOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DefaultFilesExtensions.UseDefaultFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.DirectoryBrowserOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DirectoryBrowserExtensions.UseDirectoryBrowser(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.FileServerOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, bool enableDirectoryBrowsing) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.FileServerExtensions.UseFileServer(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.StaticFileOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StaticFileExtensions.UseStaticFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! requestPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! filePath) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! filePath, Microsoft.AspNetCore.Builder.StaticFileOptions! options) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, string! filePath) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, string! filePath, Microsoft.AspNetCore.Builder.StaticFileOptions! options) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.DirectoryBrowserServiceExtensions.AddDirectoryBrowser(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.StaticFiles.HtmlDirectoryFormatter.GenerateContentAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo!>! contents) -> System.Threading.Tasks.Task!
