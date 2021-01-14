@@ -2,28 +2,28 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>5.0.1</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>5.0.2</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: AspNetCoreRuntime.5.0.x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.5.0.x64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: AspNetCoreRuntime.5.0.x86-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.5.0.x86' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: dotnet-sql-cache-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.ApiAuthorization.IdentityServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.2, )" />
     <BaselinePackageReference Include="IdentityServer4" Version="[4.1.0, )" />
     <BaselinePackageReference Include="IdentityServer4.AspNetIdentity" Version="[4.1.0, )" />
     <BaselinePackageReference Include="IdentityServer4.EntityFramework" Version="[4.1.0, )" />
@@ -37,108 +37,108 @@
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-arm-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-arm' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-arm64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-musl-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-musl-arm64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-musl-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-musl-x64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.linux-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.linux-x64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.osx-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.osx-x64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-arm-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-arm' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-arm64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-arm64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x64' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x86-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x86' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.AzureAD.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.AzureADB2C.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Certificate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Facebook-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Facebook' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.JwtBearer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[6.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.MicrosoftAccount-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Negotiate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="System.DirectoryServices.Protocols" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.OpenIdConnect-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[6.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Twitter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.WsFederation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[6.7.1, )" />
@@ -146,110 +146,110 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authorization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.SiteExtension-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.SiteExtension' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Analyzers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Analyzers' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Authorization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Forms-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.Web-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[5.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Authentication-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.DevServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.DevServer' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Server-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Server' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.JSInterop.WebAssembly" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.JSInterop.WebAssembly" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ConcurrencyLimiter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
@@ -257,86 +257,86 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Cryptography.Internal-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Cryptography.KeyDerivation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[5.0.2, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
@@ -346,8 +346,8 @@
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
@@ -356,8 +356,8 @@
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
@@ -368,14 +368,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HeaderPropagation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
@@ -383,50 +383,50 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.WindowsServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Net.Http" Version="[4.3.4, )" />
     <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Features-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[5.0.0, )" />
@@ -442,27 +442,27 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
@@ -474,185 +474,185 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Metadata-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.MiddlewareAnalysis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Testing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.TestHost" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.TestHost" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Razor.Language-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Language' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Libuv" Version="[1.10.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Threading.Channels" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Threading.Channels" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Threading.Channels" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Net.Sockets" Version="[4.3.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[5.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="MessagePack" Version="[2.1.90, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="MessagePack" Version="[2.1.90, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Specification.Tests-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[5.0.2, )" />
     <BaselinePackageReference Include="xunit.assert" Version="[2.4.1, )" />
     <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.4.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="MessagePack" Version="[2.1.90, )" />
@@ -661,65 +661,65 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.TestHost-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' AND '$(TargetFramework)' == 'netcoreapp5.0' ">
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[5.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Authentication.WebAssembly.Msal-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.CodeAnalysis.Razor-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[3.8.0, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[3.8.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.dotnet-openapi-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.dotnet-openapi' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.Client.ItemTemplates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.Client.ItemTemplates' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.ItemTemplates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ItemTemplates' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.ProjectTemplates.5.0-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ProjectTemplates.5.0' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.ApiDescription.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ApiDescription.Client' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.ApiDescription.Server-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ApiDescription.Server' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[5.0.0, )" />
@@ -735,42 +735,42 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[5.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[5.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Embedded-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND '$(TargetFramework)' == 'net50' ">
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[5.0.0, )" />
@@ -780,73 +780,73 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Identity.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Identity.Stores-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization.Abstractions' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Localization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[5.0.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.AzureAppServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[5.0.0, )" />
@@ -867,11 +867,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.WebEncoders-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, )" />
@@ -889,13 +889,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.JSInterop.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' AND '$(TargetFramework)' == 'net50' ">
-    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[5.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[5.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.JSInterop-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' ">
-    <BaselinePackageVersion>5.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>5.0.2</BaselinePackageVersion>
   </PropertyGroup>
 </Project>

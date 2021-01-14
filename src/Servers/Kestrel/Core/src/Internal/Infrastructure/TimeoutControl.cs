@@ -89,6 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return;
             }
 
+            var timeout = false;
+
             lock (_readTimingLock)
             {
                 if (!_readTimingEnabled)
@@ -107,10 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     var elapsedSeconds = (double)_readTimingElapsedTicks / TimeSpan.TicksPerSecond;
                     var rate = _readTimingBytesRead / elapsedSeconds;
 
-                    if (rate < _minReadRate.BytesPerSecond && !Debugger.IsAttached)
-                    {
-                        _timeoutHandler.OnTimeout(TimeoutReason.ReadDataRate);
-                    }
+                    timeout = rate < _minReadRate.BytesPerSecond && !Debugger.IsAttached;
                 }
 
                 // PauseTimingReads() cannot just set _timingReads to false. It needs to go through at least one tick
@@ -122,10 +121,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     _readTimingPauseRequested = false;
                 }
             }
+
+            if (timeout)
+            {
+                // Run callbacks outside of the lock
+                _timeoutHandler.OnTimeout(TimeoutReason.ReadDataRate);
+            }
         }
 
         private void CheckForWriteDataRateTimeout(long timestamp)
         {
+            var timeout = false;
+
             lock (_writeTimingLock)
             {
                 // Assume overly long tick intervals are the result of server resource starvation.
@@ -137,10 +144,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     _writeTimingTimeoutTimestamp += extraTimeForTick;
                 }
 
-                if (_concurrentAwaitingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
-                {
-                    _timeoutHandler.OnTimeout(TimeoutReason.WriteDataRate);
-                }
+                timeout = _concurrentAwaitingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached;
+            }
+
+            if (timeout)
+            {
+                // Run callbacks outside of the lock
+                _timeoutHandler.OnTimeout(TimeoutReason.WriteDataRate);
             }
         }
 

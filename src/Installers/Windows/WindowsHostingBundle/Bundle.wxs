@@ -44,7 +44,7 @@
         <?endif?>
 
         <PayloadGroup Id="PG_Resources">
-            <?foreach lcid in 2052;1028;1029;1031;3082;1036;1040;1041;1042;1045;1046;1049;1055?>
+            <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
             <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
             <Payload Id="PL_Strings_$(var.lcid)" SourceFile="$(var.lcid)\Strings.wxl" Name="$(var.lcid)\Strings.wxl" Compressed="yes"/>
             <?endforeach?>

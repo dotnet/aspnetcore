@@ -155,7 +155,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
     <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
-    <FrameworkListOutputPath>$(SharedFxLayoutTargetDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
@@ -549,7 +549,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
+      <_PackageFiles Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
