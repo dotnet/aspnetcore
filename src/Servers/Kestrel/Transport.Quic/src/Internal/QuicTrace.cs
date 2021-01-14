@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(StreamPause)), @"Stream id ""{ConnectionId}"" paused.");
         private static readonly Action<ILogger, string, Exception?> _streamResume =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(StreamResume)), @"Stream id ""{ConnectionId}"" resumed.");
-        private static readonly Action<ILogger, string, Exception?> _streamShutdownWrite =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes.");
+        private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".");
         private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" aborted by application, exception: ""{Reason}"".");
 
@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _streamResume(_logger, streamId, null);
         }
 
-        public void StreamShutdownWrite(string streamId, Exception? ex)
+        public void StreamShutdownWrite(string streamId, string reason)
         {
-            _streamShutdownWrite(_logger, streamId, ex);
+            _streamShutdownWrite(_logger, streamId, reason, null);
         }
 
         public void StreamAbort(string streamId, Exception ex)
