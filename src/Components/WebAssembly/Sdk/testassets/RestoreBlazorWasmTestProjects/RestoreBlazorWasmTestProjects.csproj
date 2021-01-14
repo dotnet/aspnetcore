@@ -9,6 +9,7 @@
     <ProjectReference Include="..\blazorwasm\blazorwasm.csproj" />
     <ProjectReference Include="..\blazorwasm-minimal\blazorwasm-minimal.csproj" />
     <ProjectReference Include="..\blazorwasm-fxref\blazorwasm-fxref.csproj" />
+    <ProjectReference Include="..\BlazorMultipleApps.Server\BlazorMultipleApps.Server.csproj" />
   </ItemGroup>
 
 </Project>
