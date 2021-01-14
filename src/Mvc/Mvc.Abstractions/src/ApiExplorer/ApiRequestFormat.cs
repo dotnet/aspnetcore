@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// The formatter used to read this request.
         /// </summary>
-        public IInputFormatter Formatter { get; set; }
+        public IInputFormatter Formatter { get; set; } = default!;
 
         /// <summary>
         /// The media type of the request.
         /// </summary>
-        public string MediaType { get; set; }
+        public string MediaType { get; set; } = default!;
     }
 }

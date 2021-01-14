@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     {
                         Assert.Equal(RenderTreeEditType.StepOut, edit.Type);
                     });
-                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString());
+                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -487,7 +488,8 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
         {
             // Arrange: Render a component with an event handler
-            var renderer = new TestRenderer {
+            var renderer = new TestRenderer
+            {
                 ShouldHandleExceptions = true
             };
 
@@ -2087,6 +2089,238 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RenderBatch_HandlesSynchronousExceptionsInAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => throw exception1));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            var innerException = Assert.Single(aex.Flatten().InnerExceptions);
+            Assert.Same(exception1, innerException);
+        }
+
+        [Fact]
+        public void RenderBatch_CanDisposeSynchronousAsyncDisposableImplementations()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => default));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public void RenderBatch_CanDisposeAsynchronousAsyncDisposables()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => semaphore.Release();
+            var exception1 = new InvalidOperationException();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; }));
+                    builder.CloseComponent();
+                }
+            });
+
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Continue execution
+            tcs.SetResult();
+            Assert.False(semaphore.WaitOne(10));
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public void RenderBatch_HandlesAsynchronousExceptionsInAsyncDisposableComponents()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => semaphore.Release();
+            var exception1 = new InvalidOperationException();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; throw exception1; }));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Continue execution
+            tcs.SetResult();
+            semaphore.WaitOne();
+            var aex = Assert.IsType<InvalidOperationException>(Assert.Single(renderer.HandledExceptions));
+            Assert.Same(exception1, aex);
+        }
+
+        [Fact]
+        public void RenderBatch_ReportsSynchronousCancelationsAsErrors()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => throw new TaskCanceledException()));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            Assert.IsType<TaskCanceledException>(Assert.Single(aex.Flatten().InnerExceptions));
+        }
+
+        [Fact]
+        public void RenderBatch_ReportsAsynchronousCancelationsAsErrors()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled += () => semaphore.Release();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(
+                        1,
+                        nameof(AsyncDisposableComponent.AsyncDisposeAction),
+                        (Func<ValueTask>)(() => new ValueTask(tcs.Task)));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Cancel execution
+            tcs.SetCanceled();
+
+            semaphore.WaitOne();
+            var aex = Assert.IsType<TaskCanceledException>(Assert.Single(renderer.HandledExceptions));
+        }
+
+        [Fact]
         public void RenderBatch_DoesNotDisposeComponentMultipleTimes()
         {
             // Arrange
@@ -2575,7 +2809,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanCombineBindAndConditionalAttribute()
         {
-            // This test represents https://github.com/aspnet/Blazor/issues/624
+            // This test represents https://github.com/dotnet/blazor/issues/624
 
             // Arrange: Rendered with textbox enabled
             var renderer = new TestRenderer();
@@ -2589,7 +2823,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Toggle the checkbox
             var eventArgs = new ChangeEventArgs { Value = true };
-            var renderTask =  renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+            var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
 
             Assert.True(renderTask.IsCompletedSuccessfully);
             var latestBatch = renderer.Batches.Last();
@@ -2810,8 +3044,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(10, component.OnAfterRenderCallCount);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
+        [Fact]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered
@@ -3574,11 +3807,71 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);
             Assert.Contains(exception2, aex.InnerExceptions);
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_CapturesSyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => { disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_CapturesAsyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            var disposal = renderer.DisposeAsync();
+            Assert.False(disposed);
+            Assert.False(disposal.IsCompleted);
+
+            tcs.TrySetResult();
+            await disposal;
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
         }
 
         [Theory]
@@ -3732,6 +4025,68 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // It's enough to assert about one of the messages
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromConstructorParameter()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            var renderer = new TestRenderer(serviceProvider, componentActivator);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromServiceProvider()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            serviceProvider.AddService<IComponentActivator>(componentActivator);
+            var renderer = new TestRenderer(serviceProvider);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public async Task ThrowsIfComponentProducesInvalidRenderTree()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "myElem");
+            });
+            var rootComponentId = renderer.AssignRootComponentId(component);
+
+            // Act/Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        }
+
+        private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
+        {
+            public List<Type> RequestedComponentTypes { get; } = new List<Type>();
+
+            public IComponent CreateInstance(Type componentType)
+            {
+                RequestedComponentTypes.Add(componentType);
+                return new TResult();
+            }
         }
 
         private class NoOpRenderer : Renderer
@@ -4095,6 +4450,24 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Disposed = true;
                 DisposeAction?.Invoke();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+            }
+        }
+
+        private class AsyncDisposableComponent : AutoRenderComponent, IAsyncDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            [Parameter]
+            public Func<ValueTask> AsyncDisposeAction { get; set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return AsyncDisposeAction == null ? default : AsyncDisposeAction.Invoke();
             }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)

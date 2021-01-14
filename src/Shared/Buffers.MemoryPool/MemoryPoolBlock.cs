@@ -25,7 +25,7 @@ namespace System.Buffers
             Pool = pool;
             Slab = slab;
 
-            Memory = MemoryMarshal.CreateFromPinnedArray(slab.Array, _offset, _length);
+            Memory = MemoryMarshal.CreateFromPinnedArray(slab.PinnedArray, _offset, _length);
         }
 
         /// <summary>

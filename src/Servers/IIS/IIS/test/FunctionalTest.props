@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <HelixTimeout>00:45:00</HelixTimeout>
+    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">01:00:00</HelixTimeout>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="BuildAssets" AfterTargets="Build">
+  <Target Name="BuildAssets" AfterTargets="Build" Condition="'$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
       <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
     </MSBuild>

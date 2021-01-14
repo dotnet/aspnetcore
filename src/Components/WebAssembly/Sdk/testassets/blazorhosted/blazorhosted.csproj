@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\blazorwasm\blazorwasm.csproj" />
+  </ItemGroup>
+
+</Project>

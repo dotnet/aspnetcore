@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Remove="@(PackageReference)" />
-    <PackageReference Include="dotnet-ef" Version="$(DotNetEfPackageVersion)" />
+    <PackageReference Include="dotnet-ef" Version="$(DotNetEfVersion)" />
   </ItemGroup>
 
   <!-- This project doesn't build anything. -->

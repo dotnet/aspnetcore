@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
                     // Will throw because the exception in the connection adapter will close the connection.
-                    await Assert.ThrowsAsync<IOException>(async () =>
+                    await Assert.ThrowsAnyAsync<IOException>(async () =>
                     {
                         await connection.Send(
                            "POST / HTTP/1.0",
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
                 }
-                await server.StopAsync();
             }
         }
     }

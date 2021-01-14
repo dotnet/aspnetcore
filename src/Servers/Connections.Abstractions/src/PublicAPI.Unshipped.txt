@@ -1,0 +1,23 @@
+#nullable enable
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder.Build() -> Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder.Use(System.Func<Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!, Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!>! middleware) -> Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder!
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionFactory
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionFactory.ConnectAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext!>
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener.AcceptAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext?>
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener.EndPoint.get -> System.Net.EndPoint!
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener.UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListenerFactory
+Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListenerFactory.BindAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener!>
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionBuilder
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionBuilder.Build() -> Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionBuilder.MultiplexedConnectionBuilder(System.IServiceProvider! applicationServices) -> void
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionBuilder.Use(System.Func<Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!, Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate!>! middleware) -> Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder!
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext.MultiplexedConnectionContext() -> void
+Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate
+abstract Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
+abstract Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext.ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>

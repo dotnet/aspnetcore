@@ -1,4 +1,4 @@
-@using Microsoft.JSInterop
+﻿@using Microsoft.JSInterop
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
 @using System.Text.Json
@@ -46,6 +46,8 @@
     <p id="@nameof(SyncExceptionFromAsyncMethod)">@SyncExceptionFromAsyncMethod?.Message</p>
     <h2>@nameof(AsyncExceptionFromAsyncMethod)</h2>
     <p id="@nameof(AsyncExceptionFromAsyncMethod)">@AsyncExceptionFromAsyncMethod?.Message</p>
+    <h2>@nameof(JSObjectReferenceInvokeNonFunctionException)</h2>
+    <p id="@nameof(JSObjectReferenceInvokeNonFunctionException)">@JSObjectReferenceInvokeNonFunctionException?.Message</p>
 </div>
 @if (DoneWithInterop)
 {
@@ -59,6 +61,7 @@
     public JSException ExceptionFromSyncMethod { get; set; }
     public JSException SyncExceptionFromAsyncMethod { get; set; }
     public JSException AsyncExceptionFromAsyncMethod { get; set; }
+    public JSException JSObjectReferenceInvokeNonFunctionException { get; set; }
 
     public IDictionary<string, object> ReceiveDotNetObjectByRefResult { get; set; } = new Dictionary<string, object>();
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
@@ -134,6 +137,28 @@
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
 
+        var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
+        ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");
+        ReturnValues["jsObjectReference.nested.add"] = (await jsObjectReference.InvokeAsync<int>("nested.add", 2, 3)).ToString();
+        ReturnValues["addViaJSObjectReference"] = (await JSRuntime.InvokeAsync<int>("addViaJSObjectReference", jsObjectReference, 2, 3)).ToString();
+
+        try
+        {
+            await jsObjectReference.InvokeAsync<object>("nonFunction");
+        }
+        catch (JSException e)
+        {
+            JSObjectReferenceInvokeNonFunctionException = e;
+        }
+
+        var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
+        ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
+
+        if (shouldSupportSyncInterop)
+        {
+            InvokeInProcessJSInterop();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -161,6 +186,22 @@
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
         ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+    }
+
+    public void InvokeInProcessJSInterop()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
+        ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
+
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
+        var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
+        ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+        {
+            Message = "Sent from .NET",
+            NumberField = 42,
+        }).ToString();
     }
 
     public class PassDotNetObjectByRefArgs

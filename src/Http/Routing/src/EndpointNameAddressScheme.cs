@@ -73,8 +73,7 @@ namespace Microsoft.AspNetCore.Routing
             // OK we need to report some duplicates.
             var duplicates = endpoints
                 .GroupBy(e => GetEndpointName(e))
-                .Where(g => g.Key != null)
-                .Where(g => g.Count() > 1);
+                .Where(g => g.Key != null && g.Count() > 1);
 
             var builder = new StringBuilder();
             builder.AppendLine(Resources.DuplicateEndpointNameHeader);
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.Routing
 
             throw new InvalidOperationException(builder.ToString());
 
-            string GetEndpointName(Endpoint endpoint)
+            string? GetEndpointName(Endpoint endpoint)
             {
                 if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {

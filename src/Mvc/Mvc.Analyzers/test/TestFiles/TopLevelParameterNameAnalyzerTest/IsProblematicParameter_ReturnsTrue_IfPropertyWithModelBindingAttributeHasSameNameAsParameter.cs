@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFi
 {
     public class IsProblematicParameter_ReturnsTrue_IfPropertyWithModelBindingAttributeHasSameNameAsParameter
     {
-        [ModelBinder(typeof(ComplexTypeModelBinder), Name = "model")]
+        [ModelBinder(typeof(ComplexObjectModelBinder), Name = "model")]
         public string Different { get; set; }
 
         public void ActionMethod(

@@ -13,16 +13,9 @@
     <PublishWindowsPdb>false</PublishWindowsPdb>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(UseVSTestRunner)' != 'true'">
     <!-- Xunit output is piped into a file anyways, so color codes aren't useful. -->
     <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) -nocolor</TestRunnerAdditionalArguments>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
-    <NoWarn>$(NoWarn);NU5131</NoWarn>
-    <!-- Workaround until https://github.com/aspnet/AspNetCore-Internal/issues/3103 is resolved -->
-    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Workaround https://github.com/dotnet/roslyn/issues/27975 -->

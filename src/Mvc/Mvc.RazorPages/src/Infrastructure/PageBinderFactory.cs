@@ -78,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                        valueProvider,
                        property,
                        modelMetadata,
-                       value: null);
+                       value: null,
+                       container: instance);
 
                     if (result.IsModelSet)
                     {
@@ -159,7 +160,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         valueProvider,
                         parameter,
                         modelMetadata,
-                        value: null);
+                        value: null,
+                        container: null); // Parameters do not have containers.
 
                     if (result.IsModelSet)
                     {

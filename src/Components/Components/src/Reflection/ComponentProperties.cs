@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
-                    if (!writers.WritersByName.TryGetValue(parameterName, out var writer))
+                    if (!writers.TryGetValue(parameterName, out var writer))
                     {
                         // Case 1: There is nowhere to put this value.
                         ThrowForUnknownIncomingParameterName(targetType, parameterName);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 // Logic with components with a CaptureUnmatchedValues parameter
                 var isCaptureUnmatchedValuesParameterSetExplicitly = false;
-                Dictionary<string, object> unmatched = null;
+                Dictionary<string, object>? unmatched = null;
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
@@ -82,33 +82,47 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    var isUnmatchedValue = !writers.WritersByName.TryGetValue(parameterName, out var writer);
-
-                    if ((isUnmatchedValue && parameter.Cascading) || (writer != null && !writer.Cascading && parameter.Cascading))
+                    if (writers.TryGetValue(parameterName, out var writer))
                     {
-                        // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
-                        // parameter to be set with a cascading value.
-                        //
-                        // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
-                        ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
-                        throw null; // Unreachable
-
-                    }
-                    else if (isUnmatchedValue ||
-
-                        // Allow unmatched parameters to collide with the names of cascading parameters. This is
-                        // valid because cascading parameter names are not part of the public API. There's no
-                        // way for the user of a component to know what the names of cascading parameters
-                        // are.
-                        (writer.Cascading && !parameter.Cascading))
-                    {
-                        unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        unmatched[parameterName] = parameter.Value;
+                        if (!writer.Cascading && parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else if (writer.Cascading && !parameter.Cascading)
+                        {
+                            // Allow unmatched parameters to collide with the names of cascading parameters. This is
+                            // valid because cascading parameter names are not part of the public API. There's no
+                            // way for the user of a component to know what the names of cascading parameters
+                            // are.
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
+                        else
+                        {
+                            SetProperty(target, writer, parameterName, parameter.Value);
+                        }
                     }
                     else
                     {
-                        Debug.Assert(writer != null);
-                        SetProperty(target, writer, parameterName, parameter.Value);
+                        if (parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else
+                        {
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
                     }
                 }
 
@@ -120,17 +134,17 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     // 2. We also don't want to implicitly copy a value the user gives us.
                     //
                     // Either one of those implementation choices would do something unexpected.
-                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
                     throw null; // Unreachable
                 }
                 else if (unmatched != null)
                 {
                     // We had some unmatched values, set the CaptureUnmatchedValues property
-                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
                 }
             }
 
-            static void SetProperty(object target, IPropertySetter writer, string parameterName, object value)
+            static void SetProperty(object target, PropertySetter writer, string parameterName, object value)
             {
                 try
                 {
@@ -148,6 +162,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
 
+        [DoesNotReturn]
         private static void ThrowForUnknownIncomingParameterName(Type targetType, string parameterName)
         {
             // We know we're going to throw by this stage, so it doesn't matter that the following
@@ -176,6 +191,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
+        [DoesNotReturn]
         private static void ThrowForSettingCascadingParameterWithNonCascadingValue(Type targetType, string parameterName)
         {
             throw new InvalidOperationException(
@@ -183,6 +199,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 $"but it does not have [{nameof(ParameterAttribute)}] applied.");
         }
 
+        [DoesNotReturn]
         private static void ThrowForSettingParameterWithCascadingValue(Type targetType, string parameterName)
         {
             throw new InvalidOperationException(
@@ -190,6 +207,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 $"using a cascading value.");
         }
 
+        [DoesNotReturn]
         private static void ThrowForCaptureUnmatchedValuesConflict(Type targetType, string parameterName, Dictionary<string, object> unmatched)
         {
             throw new InvalidOperationException(
@@ -198,6 +216,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 string.Join(Environment.NewLine, unmatched.Keys.OrderBy(k => k)));
         }
 
+        [DoesNotReturn]
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters(Type targetType)
         {
             // We don't care about perf here, we want to report an accurate and useful error.
@@ -215,6 +234,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 string.Join(Environment.NewLine, propertyNames));
         }
 
+        [DoesNotReturn]
         private static void ThrowForInvalidCaptureUnmatchedValuesParameterType(Type targetType, PropertyInfo propertyInfo)
         {
             throw new InvalidOperationException(
@@ -225,9 +245,15 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
         private class WritersForType
         {
+            private const int MaxCachedWriterLookups = 100;
+            private readonly Dictionary<string, PropertySetter> _underlyingWriters;
+            private readonly ConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
+
             public WritersForType(Type targetType)
             {
-                WritersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
+                _underlyingWriters = new Dictionary<string, PropertySetter>(StringComparer.OrdinalIgnoreCase);
+                _referenceEqualityWritersCache = new ConcurrentDictionary<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
+
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
                     var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
@@ -245,16 +271,19 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             $"The type '{targetType.FullName}' declares a parameter matching the name '{propertyName}' that is not public. Parameters must be public.");
                     }
 
-                    var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: cascadingParameterAttribute != null);
+                    var propertySetter = new PropertySetter(targetType, propertyInfo)
+                    {
+                        Cascading = cascadingParameterAttribute != null,
+                    };
 
-                    if (WritersByName.ContainsKey(propertyName))
+                    if (_underlyingWriters.ContainsKey(propertyName))
                     {
                         throw new InvalidOperationException(
                             $"The type '{targetType.FullName}' declares more than one parameter matching the " +
                             $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
                     }
 
-                    WritersByName.Add(propertyName, propertySetter);
+                    _underlyingWriters.Add(propertyName, propertySetter);
 
                     if (parameterAttribute != null && parameterAttribute.CaptureUnmatchedValues)
                     {
@@ -272,17 +301,44 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
                         }
 
-                        CaptureUnmatchedValuesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: false);
+                        CaptureUnmatchedValuesWriter = new PropertySetter(targetType, propertyInfo);
                         CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
                     }
                 }
             }
 
-            public Dictionary<string, IPropertySetter> WritersByName { get; }
+            public PropertySetter? CaptureUnmatchedValuesWriter { get; }
 
-            public IPropertySetter CaptureUnmatchedValuesWriter { get; }
+            public string? CaptureUnmatchedValuesPropertyName { get; }
 
-            public string CaptureUnmatchedValuesPropertyName { get; }
+            public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out PropertySetter writer)
+            {
+                // In intensive parameter-passing scenarios, one of the most expensive things we do is the
+                // lookup from parameterName to writer. Pre-5.0 that was because of the string hashing.
+                // To optimize this, we now have a cache in front of the lookup which is keyed by parameterName's
+                // object identity (not its string hash). So in most cases we can resolve the lookup without
+                // having to hash the string. We only fall back on hashing the string if the cache gets full,
+                // which would only be in very unusual situations because components don't typically have many
+                // parameters, and the parameterName strings usually come from compile-time constants.
+                if (!_referenceEqualityWritersCache.TryGetValue(parameterName, out writer))
+                {
+                    _underlyingWriters.TryGetValue(parameterName, out writer);
+
+                    // Note that because we're not locking around this, it's possible we might
+                    // actually write more than MaxCachedWriterLookups entries due to concurrent
+                    // writes. However this won't cause any problems.
+                    // Also note that the value we're caching might be 'null'. It's valid to cache
+                    // lookup misses just as much as hits, since then we can more quickly identify
+                    // incoming values that don't have a corresponding writer and thus will end up
+                    // being passed as catch-all parameter values.
+                    if (_referenceEqualityWritersCache.Count < MaxCachedWriterLookups)
+                    {
+                        _referenceEqualityWritersCache.TryAdd(parameterName, writer);
+                    }
+                }
+
+                return writer != null;
+            }
         }
     }
 }

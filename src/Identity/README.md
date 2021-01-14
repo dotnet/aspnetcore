@@ -11,6 +11,8 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
 
 **IMPORTANT: Extensions are built by a variety of sources and not maintained as part of the ASP.NET Identity project. When considering a third party provider, be sure to evaluate quality, licensing, compatibility, support, etc. to ensure they meet your requirements.**
 
+* [ASP.NET Identity Azure Table Storage Provider](https://dlmelendez.github.io/identityazuretable/)
+* [ASP.NET Identity CosmosDB SQL Provider](https://github.com/dlmelendez/identitycosmosdb)
 * ASP.NET Identity MongoDB Providers:
   * [By Tugberk Ugurlu](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
   * [By Alexandre Spieser](https://github.com/alexandre-spieser/AspNetCore.Identity.MongoDbCore)
@@ -22,6 +24,6 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
  * [ASP.NET Identity Cassandra Provider](https://github.com/lkubis/AspNetCore.Identity.Cassandra)
  * [ASP.NET Identity Firebase Provider](https://github.com/aguacongas/Identity.Firebase)
  * [ASP.NET Identity Redis Provider](https://github.com/aguacongas/Identity.Redis)
- * [ASP.NET Identity DocumentDB](https://github.com/FelschR/AspNetCore.Identity.DocumentDB)
+ * [ASP.NET Identity DocumentDB](https://github.com/codekoenig/AspNetCore.Identity.DocumentDb)
  * [ASP.NET Identity Amazon Cognito Provider](https://github.com/aws/aws-aspnet-cognito-identity-provider)
  * [ASP.NET Identity Marten Provider](https://github.com/yetanotherchris/Marten.AspNetIdentity)

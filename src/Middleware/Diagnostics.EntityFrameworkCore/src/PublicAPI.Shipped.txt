@@ -1,0 +1,27 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.DatabaseErrorPageExtensions
+Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions
+Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions.DatabaseErrorPageOptions() -> void
+Microsoft.AspNetCore.Builder.MigrationsEndPointExtensions
+Microsoft.AspNetCore.Builder.MigrationsEndPointOptions
+Microsoft.AspNetCore.Builder.MigrationsEndPointOptions.MigrationsEndPointOptions() -> void
+Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseDeveloperPageExceptionFilter
+Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseDeveloperPageExceptionFilter.HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext! errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext!, System.Threading.Tasks.Task!>! next) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseErrorPageMiddleware
+Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware
+Microsoft.Extensions.DependencyInjection.DatabaseDeveloperPageExceptionFilterServiceExtensions
+static Microsoft.AspNetCore.Builder.MigrationsEndPointOptions.DefaultPath -> Microsoft.AspNetCore.Http.PathString
+static Microsoft.Extensions.DependencyInjection.DatabaseDeveloperPageExceptionFilterServiceExtensions.AddDatabaseDeveloperPageExceptionFilter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions.MigrationsEndPointPath.get -> Microsoft.AspNetCore.Http.PathString
+virtual Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions.MigrationsEndPointPath.set -> void
+virtual Microsoft.AspNetCore.Builder.MigrationsEndPointOptions.Path.get -> Microsoft.AspNetCore.Http.PathString
+virtual Microsoft.AspNetCore.Builder.MigrationsEndPointOptions.Path.set -> void
+~Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseDeveloperPageExceptionFilter.DatabaseDeveloperPageExceptionFilter(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseDeveloperPageExceptionFilter!>! logger, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions!>! options) -> void
+~Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseErrorPageMiddleware.DatabaseErrorPageMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions!>! options) -> void
+~Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware.MigrationsEndPointMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware!>! logger, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.MigrationsEndPointOptions!>! options) -> void
+static Microsoft.AspNetCore.Builder.DatabaseErrorPageExtensions.UseDatabaseErrorPage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DatabaseErrorPageExtensions.UseDatabaseErrorPage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.MigrationsEndPointExtensions.UseMigrationsEndPoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.MigrationsEndPointExtensions.UseMigrationsEndPoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.MigrationsEndPointOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+virtual Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseErrorPageMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!

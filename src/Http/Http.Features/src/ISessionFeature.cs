@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides access to the <see cref="ISession"/> for the current request.
+    /// </summary>
     public interface ISessionFeature
     {
+        /// <summary>
+        /// The <see cref="ISession"/> for the current request.
+        /// </summary>
         ISession Session { get; set; }
     }
 }

@@ -47,6 +47,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The display name for the provider.
         /// </value>
+        /// <remarks>
+        /// Examples of the display name may be local, FACEBOOK, Google, etc.
+        /// </remarks>
         public string ProviderDisplayName { get; set; }
     }
 }

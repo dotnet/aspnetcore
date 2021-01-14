@@ -44,9 +44,11 @@ describe("HttpClient", () => {
             });
 
             await testClient.get("http://localhost", {
+                headers: { "X-HEADER": "VALUE"},
                 timeout: 42,
             });
             expect(request.timeout).toEqual(42);
+            expect(request.headers).toEqual({ "X-HEADER": "VALUE"});
         });
     });
 
@@ -86,9 +88,11 @@ describe("HttpClient", () => {
             });
 
             await testClient.post("http://localhost", {
+                headers: { "X-HEADER": "VALUE"},
                 timeout: 42,
             });
             expect(request.timeout).toEqual(42);
+            expect(request.headers).toEqual({ "X-HEADER": "VALUE"});
         });
     });
 });

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Components
         /// If no name is specified, then descendant components will receive the
         /// value based the type of value they are requesting.
         /// </summary>
-        [Parameter] public string Name { get; set; }
+        [Parameter] public string? Name { get; set; }
 
         /// <summary>
         /// If true, indicates that <see cref="Value"/> will not change. This is a
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.Components
 
             _hasSetParametersPreviously = true;
 
-            // It's OK for the value to be null, but some "Value" param must be suppled
+            // It's OK for the value to be null, but some "Value" param must be supplied
             // because it serves no useful purpose to have a <CascadingValue> otherwise.
             if (!hasSuppliedValue)
             {

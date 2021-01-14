@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,8 +52,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 
+        /// <summary>
+        /// The <see cref="PropertyInfo"/>.
+        /// </summary>
         public PropertyInfo PropertyInfo { get; }
 
+        /// <summary>
+        /// Gets or sets the property name.
+        /// </summary>
         public string PropertyName
         {
             get => Name;

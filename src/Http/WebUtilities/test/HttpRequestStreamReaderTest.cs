@@ -7,13 +7,14 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class HttpResponseStreamReaderTest
+    public class HttpRequestStreamReaderTest
     {
         private static readonly char[] CharData = new char[]
         {
@@ -53,6 +54,22 @@ namespace Microsoft.AspNetCore.WebUtilities
             var result = await reader.ReadToEndAsync();
 
             Assert.Equal(5000, result.Length);
+        }
+
+        [Fact]
+        public static async Task ReadToEndAsync_Reads_Asynchronously()
+        {
+            // Arrange
+            var stream = new AsyncOnlyStreamWrapper(GetLargeStream());
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+            var streamReader = new StreamReader(GetLargeStream());
+            string expected = await streamReader.ReadToEndAsync();
+
+            // Act
+            var actual = await reader.ReadToEndAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -118,7 +135,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public static async Task Read_ReadInTwoChunks()
+        public static async Task ReadAsync_ReadInTwoChunks()
         {
             // Arrange
             var reader = CreateReader();
@@ -135,29 +152,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        [Fact]
-        public static void ReadLine_ReadMultipleLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadMultipleLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
             var valueString = new string(CharData);
 
             // Act & Assert
-            var data = reader.ReadLine();
+            var data = await action(reader);
             Assert.Equal(valueString.Substring(0, valueString.IndexOf('\r')), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\r') + 1, 3), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\n') + 1, 2), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal((valueString.Substring(valueString.LastIndexOf('\n') + 1)), data);
         }
 
-        [Fact]
-        public static void ReadLine_ReadWithNoNewlines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadWithNoNewlines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
@@ -166,33 +185,165 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Act
             reader.Read(temp, 0, 1);
-            var data = reader.ReadLine();
+            var data = await action(reader);
 
             // Assert
             Assert.Equal(valueString.Substring(1, valueString.IndexOf('\r') - 1), data);
         }
 
-        [Fact]
-        public static async Task ReadLineAsync_MultipleContinuousLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_MultipleContinuousLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
-            writer.Write("\n\n\r\r\n");
+            writer.Write("\n\n\r\r\n\r");
             writer.Flush();
             stream.Position = 0;
 
             var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
 
             // Act & Assert
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
             {
-                var data = await reader.ReadLineAsync();
+                var data = await action(reader);
                 Assert.Equal(string.Empty, data);
             }
 
-            var eol = await reader.ReadLineAsync();
-            Assert.Null(eol);
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_CarriageReturnAndLineFeedAcrossBufferBundaries(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("123456789\r\nfoo");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8, 10);
+
+            // Act & Assert
+            var data = await action(reader);
+            Assert.Equal("123456789", data);
+
+            data = await action(reader);
+            Assert.Equal("foo", data);
+
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_EOF(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_NewLineOnly(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("\r\n");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var empty = await action(reader);
+            Assert.Equal(string.Empty, empty);
+        }
+
+        [Fact]
+        public static void Read_Span_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public static void Read_Span_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
         }
 
         [Theory]
@@ -204,8 +355,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var httpRequestStreamReader = new HttpRequestStreamReader(stream, encoding, 1, bytePool, charPool);
             });
         }
-
-
 
         [Theory]
         [InlineData(0)]
@@ -242,26 +391,36 @@ namespace Microsoft.AspNetCore.WebUtilities
             });
         }
 
-        [Fact]
-        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync()
+        [Theory]
+        [MemberData(nameof(HttpRequestDisposeDataAsync))]
+        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync(Func<HttpRequestStreamReader, Task> action)
         {
             var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
             httpRequestStreamReader.Dispose();
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
-            {
-                return httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
-            });
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => action(httpRequestStreamReader));
         }
+
         private static HttpRequestStreamReader CreateReader()
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+        }
+
+        private static HttpRequestStreamReader CreateReader(int bufferSize)
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8, bufferSize);
+        }
+
+        private static MemoryStream CreateStream()
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
             writer.Write(CharData);
             writer.Flush();
             stream.Position = 0;
-
-            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+            return stream;
         }
 
         private static MemoryStream GetSmallStream()
@@ -284,12 +443,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             return new MemoryStream(data.ToArray());
         }
 
-        public static IEnumerable<object[]> HttpRequestNullData()
+        public static IEnumerable<object?[]> HttpRequestNullData()
         {
-            yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
+            yield return new object?[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
         }
 
         public static IEnumerable<object[]> HttpRequestDisposeData()
@@ -302,12 +461,117 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  var res = httpRequestStreamReader.Read(new char[10], 0, 1);
             })};
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                 var res = httpRequestStreamReader.Read(new Span<char>(new char[10], 0, 1));
+            })};
 
             yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
             {
                 var res = httpRequestStreamReader.Peek();
             })};
 
+        }
+
+        public static IEnumerable<object[]> HttpRequestDisposeDataAsync()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
+            })};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new Memory<char>(new char[10], 0, 1));
+            })};
+        }
+
+        public static IEnumerable<object[]> ReadLineData()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string?>>((httpRequestStreamReader) =>
+                 Task.FromResult(httpRequestStreamReader.ReadLine())
+            )};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string?>>((httpRequestStreamReader) =>
+                 httpRequestStreamReader.ReadLineAsync()
+            )};
+        }
+
+        private class AsyncOnlyStreamWrapper : Stream
+        {
+            private readonly Stream _inner;
+
+            public AsyncOnlyStreamWrapper(Stream inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool CanRead => _inner.CanRead;
+
+            public override bool CanSeek => _inner.CanSeek;
+
+            public override bool CanWrite => _inner.CanWrite;
+
+            public override long Length => _inner.Length;
+
+            public override long Position
+            {
+                get => _inner.Position;
+                set => _inner.Position = value;
+            }
+
+            public override void Flush()
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                return _inner.FlushAsync(cancellationToken);
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                return _inner.Seek(offset, origin);
+            }
+
+            public override void SetLength(long value)
+            {
+                _inner.SetLength(value);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return _inner.WriteAsync(buffer, offset, count, cancellationToken);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                _inner.Dispose();
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                return _inner.DisposeAsync();
+            }
+
+            private Exception SyncOperationForbiddenException()
+            {
+                return new InvalidOperationException("The stream cannot be accessed synchronously");
+            }
         }
     }
 }

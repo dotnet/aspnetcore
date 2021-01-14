@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="user">The <see cref="ClaimsPrincipal"/> user.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
         /// <returns>A task.</returns>
-        Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties);
+        Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties);
     }
 }

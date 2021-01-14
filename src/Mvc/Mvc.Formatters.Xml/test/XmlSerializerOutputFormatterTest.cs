@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [Fact]
-        public async Task XmlSerializerOutputFormatterDoesntFlushOutputStream()
+        public async Task XmlSerializerOutputFormatterWritesContentLengthResponse()
         {
             // Arrange
             var sampleInput = new DummyClass { SampleInt = 10 };
@@ -411,10 +411,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
 
             var response = outputFormatterContext.HttpContext.Response;
-            response.Body = FlushReportingStream.GetThrowingStream();
+            response.Body = Stream.Null;
 
             // Act & Assert
             await formatter.WriteAsync(outputFormatterContext);
+
+            Assert.NotNull(outputFormatterContext.HttpContext.Response.ContentLength);
         }
 
         public static IEnumerable<object[]> TypesForGetSupportedContentTypes

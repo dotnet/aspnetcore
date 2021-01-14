@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
         private async Task StartSending(WebSocket socket)
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {

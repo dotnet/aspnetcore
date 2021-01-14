@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,11 +10,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBindContext
     {
-        public ICollection<string> Addresses { get; set; }
-        public List<ListenOptions> ListenOptions { get; set; }
-        public KestrelServerOptions ServerOptions { get; set; }
-        public ILogger Logger { get; set; }
+        public AddressBindContext(
+            ServerAddressesFeature serverAddressesFeature,
+            KestrelServerOptions serverOptions,
+            ILogger logger,
+            Func<ListenOptions, Task> createBinding)
+        {
+            ServerAddressesFeature = serverAddressesFeature;
+            ServerOptions = serverOptions;
+            Logger = logger;
+            CreateBinding = createBinding;
+        }
 
-        public Func<ListenOptions, Task> CreateBinding { get; set; }
+        public ServerAddressesFeature ServerAddressesFeature { get; }
+        public ICollection<string> Addresses => ServerAddressesFeature.InternalCollection;
+
+        public KestrelServerOptions ServerOptions { get; }
+        public ILogger Logger { get; }
+
+        public Func<ListenOptions, Task> CreateBinding { get; }
     }
 }

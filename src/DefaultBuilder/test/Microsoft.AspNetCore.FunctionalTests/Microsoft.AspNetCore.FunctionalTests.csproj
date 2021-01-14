@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/10424 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/10424 -->
     <BuildHelixPayload>false</BuildHelixPayload>
     <BaseOutputPath />
     <OutputPath />
@@ -26,6 +25,5 @@
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\StartWithIApplicationBuilderUrlApp\StartWithIApplicationBuilderUrlApp.csproj" ReferenceOutputAssemblies="false" />
 
     <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

@@ -26,7 +26,7 @@ try {
                 logLevel: config.LOG_INFO,
                 autoWatch: false,
                 singleRun: false,
-                concurrency: Infinity,
+                concurrency: 1,
 
                 // Log browser messages to a file, not the terminal.
                 browserConsoleLogOptions: {

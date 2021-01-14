@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
+
+import { MessagePackOptions } from "./MessagePackOptions";
 
 import {
     CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
@@ -32,15 +33,30 @@ export class MessagePackHubProtocol implements IHubProtocol {
     private readonly voidResult = 2;
     private readonly nonVoidResult = 3;
 
+    private readonly messagePackOptions?: any;
+
+    /**
+     *
+     * @param messagePackOptions MessagePack options passed to msgpack5
+     */
+    constructor(messagePackOptions?: MessagePackOptions) {
+        if (messagePackOptions) {
+            this.messagePackOptions = {
+                ...messagePackOptions,
+                compatibilityMode: false,
+            };
+        }
+    }
+
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
-     * @param {ArrayBuffer | Buffer} input An ArrayBuffer or Buffer containing the serialized representation.
+     * @param {ArrayBuffer} input An ArrayBuffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
-    public parseMessages(input: ArrayBuffer | Buffer, logger: ILogger): HubMessage[] {
+    public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
         // The interface does allow "string" to be passed in, but this implementation does not. So let's throw a useful error.
-        if (!(input instanceof Buffer) && !(isArrayBuffer(input))) {
-            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer or Buffer.");
+        if (!(isArrayBuffer(input))) {
+            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer.");
         }
 
         if (logger === null) {
@@ -90,8 +106,9 @@ export class MessagePackHubProtocol implements IHubProtocol {
             throw new Error("Invalid payload.");
         }
 
-        const msgpack = msgpack5();
-        const properties = msgpack.decode(Buffer.from(input));
+        const msgpack = msgpack5(this.messagePackOptions);
+        // To avoid using the Buffer type we cast to 'any'. msgpack5 works with Uint8Array's
+        const properties = msgpack.decode(input as any);
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }
@@ -220,23 +237,35 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-        invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
+        const msgpack = msgpack5(this.messagePackOptions);
+        let payload: any;
+        if (invocationMessage.streamIds) {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
+        } else {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-        streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+        const msgpack = msgpack5(this.messagePackOptions);
+        let payload: any;
+        if (streamInvocationMessage.streamIds) {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+        } else {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamItem(streamItemMessage: StreamItemMessage): ArrayBuffer {
-        const msgpack = msgpack5();
+        const msgpack = msgpack5(this.messagePackOptions);
         const payload = msgpack.encode([MessageType.StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
         streamItemMessage.item]);
 
@@ -244,7 +273,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
-        const msgpack = msgpack5();
+        const msgpack = msgpack5(this.messagePackOptions);
         const resultKind = completionMessage.error ? this.errorResult : completionMessage.result ? this.nonVoidResult : this.voidResult;
 
         let payload: any;
@@ -264,7 +293,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5();
+        const msgpack = msgpack5(this.messagePackOptions);
         const payload = msgpack.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
 
         return BinaryMessageFormat.write(payload.slice());

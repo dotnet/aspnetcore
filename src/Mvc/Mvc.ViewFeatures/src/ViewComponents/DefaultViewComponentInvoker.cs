@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -93,7 +95,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             await result.ExecuteAsync(context);
         }
 
-#nullable enable
         private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
         {
             var component = _viewComponentFactory.CreateViewComponent(context);
@@ -112,15 +113,33 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
                 if (returnType == typeof(Task<IViewComponentResult>))
                 {
-                    resultAsObject = await (Task<IViewComponentResult>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<IViewComponentResult>)task;
                 }
                 else if (returnType == typeof(Task<string>))
                 {
-                    resultAsObject = await (Task<string>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<string>)task;
                 }
                 else if (returnType == typeof(Task<IHtmlContent>))
                 {
-                    resultAsObject = await (Task<IHtmlContent>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<IHtmlContent>)task;
                 }
                 else
                 {
@@ -149,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var stopwatch = ValueStopwatch.StartNew();
-                object result;
+                object? result;
 
                 try
                 {
@@ -169,9 +188,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 return viewComponentResult;
             }
         }
-#nullable restore
 
-        private static IViewComponentResult CoerceToViewComponentResult(object value)
+        private static IViewComponentResult CoerceToViewComponentResult(object? value)
         {
             if (value == null)
             {
@@ -199,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 typeof(IViewComponentResult).Name));
         }
 
-        private static object[] PrepareArguments(
+        private static object?[]? PrepareArguments(
             IDictionary<string, object> parameters,
             ObjectMethodExecutor objectMethodExecutor)
         {
@@ -210,12 +228,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 return null;
             }
 
-            var arguments = new object[count];
+            var arguments = new object?[count];
             for (var index = 0; index < count; index++)
             {
                 var parameterInfo = declaredParameterInfos[index];
 
-                if (!parameters.TryGetValue(parameterInfo.Name, out var value))
+                if (!parameters.TryGetValue(parameterInfo.Name!, out var value))
                 {
                     value = objectMethodExecutor.GetDefaultValueForParameter(index);
                 }

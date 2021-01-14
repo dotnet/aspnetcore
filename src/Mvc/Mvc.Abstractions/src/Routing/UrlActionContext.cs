@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// The name of the action method that <see cref="IUrlHelper.Action(UrlActionContext)"/> uses to generate URLs.
         /// </summary>
-        public string Action
+        public string? Action
         {
             get;
             set;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// The name of the controller that <see cref="IUrlHelper.Action(UrlActionContext)"/> uses to generate URLs.
         /// </summary>
-        public string Controller
+        public string? Controller
         {
             get;
             set;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// The object that contains the route values that <see cref="IUrlHelper.Action(UrlActionContext)"/>
         /// uses to generate URLs.
         /// </summary>
-        public object Values
+        public object? Values
         {
             get;
             set;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// The protocol for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates,
         /// such as "http" or "https"
         /// </summary>
-        public string Protocol
+        public string? Protocol
         {
             get;
             set;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// The host name for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates.
         /// </summary>
-        public string Host
+        public string? Host
         {
             get;
             set;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// The fragment for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates.
         /// </summary>
-        public string Fragment
+        public string? Fragment
         {
             get;
             set;

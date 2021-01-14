@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // The sequence of actions we take is optimized to avoid doing expensive work
             // like creating substrings, creating route value dictionaries, and calling
             // into policies like versioning.
-            var path = httpContext.Request.Path.Value;
+            var path = httpContext.Request.Path.Value!;
 
             // First tokenize the path into series of segments.
             Span<PathSegment> buffer = stackalloc PathSegment[_maxSegmentCount];
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     // We want to create a new array for the route values based on Slots
                     // as a prototype.
                     var prototype = candidate.Slots;
-                    var slots = new KeyValuePair<string, object>[prototype.Length];
+                    var slots = new KeyValuePair<string, object?>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
                     {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         private void ProcessCaptures(
-            KeyValuePair<string, object>[] slots,
+            KeyValuePair<string, object?>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             string path,
             ReadOnlySpan<PathSegment> segments)
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     var segment = segments[segmentIndex];
                     if (parameterName != null && segment.Length > 0)
                     {
-                        slots[slotIndex] = new KeyValuePair<string, object>(
+                        slots[slotIndex] = new KeyValuePair<string, object?>(
                             parameterName,
                             path.Substring(segment.Start, segment.Length));
                     }
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         private void ProcessCatchAll(
-            KeyValuePair<string, object>[] slots,
+            KeyValuePair<string, object?>[] slots,
             in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
             ReadOnlySpan<PathSegment> segments)
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if ((uint)segmentIndex < (uint)segments.Length)
             {
                 var segment = segments[segmentIndex];
-                slots[catchAll.slotIndex] = new KeyValuePair<string, object>(
+                slots[catchAll.slotIndex] = new KeyValuePair<string, object?>(
                     catchAll.parameterName,
                     path.Substring(segment.Start));
             }
@@ -333,6 +333,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public static readonly EventId CandidateValid = new EventId(1005, "CandiateValid");
         }
 
+#nullable disable
         private static class Logger
         {
             private static readonly Action<ILogger, string, Exception> _candidatesNotFound = LoggerMessage.Define<string>(

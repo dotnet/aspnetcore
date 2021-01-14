@@ -28,4 +28,12 @@
     <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
+  <!-- Properties for light/lit command package drop generation -->
+  <PropertyGroup>
+    <!-- Directory for the unzipped directory -->
+    <WixCommandObjDir>$(ArtifactsObjDir)/WixCommandPackages</WixCommandObjDir>
+    <!-- Directory for the zipped up wixpack command package -->
+    <WixCommandPackagesDir>$(InstallersOutputPath)</WixCommandPackagesDir>
+  </PropertyGroup>
+
 </Project>

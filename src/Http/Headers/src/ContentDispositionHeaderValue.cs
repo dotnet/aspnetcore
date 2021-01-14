@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
@@ -12,7 +13,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
-    // Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+    /// <summary>
+    /// Represents the value of a <c>Content-Disposition</c> header.
+    /// </summary>
+    /// <remarks>
+    /// Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+    /// </remarks>
     public class ContentDispositionHeaderValue
     {
         private const string FileNameString = "filename";
@@ -29,7 +35,7 @@ namespace Microsoft.Net.Http.Headers
             = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
         // Use list instead of dictionary since we may have multiple parameters with the same name.
-        private ObjectCollection<NameValueHeaderValue> _parameters;
+        private ObjectCollection<NameValueHeaderValue>? _parameters;
         private StringSegment _dispositionType;
 
         private ContentDispositionHeaderValue()
@@ -37,12 +43,19 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentDispositionHeaderValue"/>.
+        /// </summary>
+        /// <param name="dispositionType">A <see cref="StringSegment"/> that represents a content disposition type.</param>
         public ContentDispositionHeaderValue(StringSegment dispositionType)
         {
             CheckDispositionTypeFormat(dispositionType, "dispositionType");
             _dispositionType = dispositionType;
         }
 
+        /// <summary>
+        /// Gets or sets a content disposition type.
+        /// </summary>
         public StringSegment DispositionType
         {
             get { return _dispositionType; }
@@ -53,6 +66,9 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets a collection of parameters included the <c>Content-Disposition</c> header.
+        /// </summary>
         public IList<NameValueHeaderValue> Parameters
         {
             get
@@ -67,53 +83,74 @@ namespace Microsoft.Net.Http.Headers
 
         // Helpers to access specific parameters in the list
 
+        /// <summary>
+        /// Gets or sets the name of the content body part.
+        /// </summary>
         public StringSegment Name
         {
             get { return GetName(NameString); }
             set { SetName(NameString, value); }
         }
 
-
+        /// <summary>
+        /// Gets or sets a value that suggests how to construct a filename for storing the message payload
+        /// to be used if the entity is detached and stored in a separate file.
+        /// </summary>
         public StringSegment FileName
         {
             get { return GetName(FileNameString); }
             set { SetName(FileNameString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that suggests how to construct filenames for storing message payloads
+        /// to be used if the entities are detached and stored in a separate files.
+        /// </summary>
         public StringSegment FileNameStar
         {
             get { return GetName(FileNameStarString); }
             set { SetName(FileNameStarString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was created.
+        /// </summary>
         public DateTimeOffset? CreationDate
         {
             get { return GetDate(CreationDateString); }
             set { SetDate(CreationDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was last modified.
+        /// </summary>
         public DateTimeOffset? ModificationDate
         {
             get { return GetDate(ModificationDateString); }
             set { SetDate(ModificationDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was last read.
+        /// </summary>
         public DateTimeOffset? ReadDate
         {
             get { return GetDate(ReadDateString); }
             set { SetDate(ReadDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the approximate size, in bytes, of the file.
+        /// </summary>
         public long? Size
         {
             get
             {
                 var sizeParameter = NameValueHeaderValue.Find(_parameters, SizeString);
-                long value;
                 if (sizeParameter != null)
                 {
                     var sizeString = sizeParameter.Value;
-                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out value))
+                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out var value))
                     {
                         return value;
                     }
@@ -128,7 +165,7 @@ namespace Microsoft.Net.Http.Headers
                     // Remove parameter
                     if (sizeParameter != null)
                     {
-                        _parameters.Remove(sizeParameter);
+                        _parameters!.Remove(sizeParameter);
                     }
                 }
                 else if (value < 0)
@@ -141,8 +178,8 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
-                    _parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
+                    var sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
+                    Parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
         }
@@ -175,12 +212,14 @@ namespace Microsoft.Net.Http.Headers
             FileName = fileName;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return _dispositionType + NameValueHeaderValue.ToString(_parameters, ';', true);
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
             var other = obj as ContentDispositionHeaderValue;
 
@@ -193,25 +232,37 @@ namespace Microsoft.Net.Http.Headers
                 HeaderUtilities.AreEqualCollections(_parameters, other._parameters);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             // The dispositionType string is case-insensitive.
             return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_dispositionType) ^ NameValueHeaderValue.GetHashCode(_parameters);
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="ContentDispositionHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static ContentDispositionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out ContentDispositionHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="ContentDispositionHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="ContentDispositionHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentDispositionHeaderValue? parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue parsedValue)
+        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -253,7 +304,7 @@ namespace Microsoft.Net.Http.Headers
 
         private static int GetDispositionTypeExpressionLength(StringSegment input, int startIndex, out StringSegment dispositionType)
         {
-            Contract.Requires((input != null) && (input.Length > 0) && (startIndex < input.Length));
+            Contract.Requires((input.Length > 0) && (startIndex < input.Length));
 
             // This method just parses the disposition type string, it does not parse parameters.
             dispositionType = null;
@@ -318,7 +369,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (dateParameter != null)
                 {
-                    _parameters.Remove(dateParameter);
+                    _parameters!.Remove(dateParameter);
                 }
             }
             else
@@ -343,7 +394,7 @@ namespace Microsoft.Net.Http.Headers
             var nameParameter = NameValueHeaderValue.Find(_parameters, parameter);
             if (nameParameter != null)
             {
-                string result;
+                string? result;
                 // filename*=utf-8'lang'%7FMyString
                 if (parameter.EndsWith("*", StringComparison.Ordinal))
                 {
@@ -375,7 +426,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (nameParameter != null)
                 {
-                    _parameters.Remove(nameParameter);
+                    _parameters!.Remove(nameParameter);
                 }
             }
             else
@@ -497,7 +548,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Attempt to decode MIME encoded strings
-        private bool TryDecodeMime(StringSegment input, out string output)
+        private bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             Contract.Assert(input != null);
 
@@ -582,7 +633,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Attempt to decode using RFC 5987 encoding.
         // encoding'language'my%20string
-        private bool TryDecode5987(StringSegment input, out string output)
+        private bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             output = null;
 
@@ -593,7 +644,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var decoded = new StringBuilder();
-            byte[] unescapedBytes = null;
+            byte[]? unescapedBytes = null;
             try
             {
                 var encoding = Encoding.GetEncoding(parts[0].ToString());

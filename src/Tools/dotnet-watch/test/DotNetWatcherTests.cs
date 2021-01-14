@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -22,8 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new KitchenSinkApp(logger);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Fact]
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
@@ -35,8 +34,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal("1", envValue);
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open")]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();
@@ -54,6 +53,57 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 File.SetLastWriteTime(source, DateTime.Now);
                 await _app.HasRestarted(TimeSpan.FromMinutes(1));
             }
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23854")]
+        public async Task RunsWithNoRestoreOnOrdinaryFileChanges()
+        {
+            _app.DotnetWatchArgs.Add("--verbose");
+
+            await _app.StartWatcherAsync(arguments: new[] { "wait" });
+            var source = Path.Combine(_app.SourceDirectory, "Program.cs");
+            const string messagePrefix = "watch : Running dotnet with the following arguments: run";
+
+            // Verify that the first run does not use --no-restore
+            Assert.Contains(_app.Process.Output, p => string.Equals(messagePrefix + " -- wait", p.Trim()));
+
+            for (var i = 0; i < 3; i++)
+            {
+                File.SetLastWriteTime(source, DateTime.Now);
+                var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+
+                Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
+
+                await _app.HasRestarted();
+            }
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23854")]
+        public async Task RunsWithRestoreIfCsprojChanges()
+        {
+            _app.DotnetWatchArgs.Add("--verbose");
+
+            await _app.StartWatcherAsync(arguments: new[] { "wait" });
+            var source = Path.Combine(_app.SourceDirectory, "KitchenSink.csproj");
+            const string messagePrefix = "watch : Running dotnet with the following arguments: run";
+
+            // Verify that the first run does not use --no-restore
+            Assert.Contains(_app.Process.Output, p => string.Equals(messagePrefix + " -- wait", p.Trim()));
+
+            File.SetLastWriteTime(source, DateTime.Now);
+            var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+
+            // csproj changed. Do not expect a --no-restore
+            Assert.Equal(messagePrefix + " -- wait", message.Trim());
+
+            await _app.HasRestarted();
+
+            // regular file changed after csproj changes. Should use --no-restore
+            File.SetLastWriteTime(Path.Combine(_app.SourceDirectory, "Program.cs"), DateTime.Now);
+            message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+            Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
         }
 
         public void Dispose()

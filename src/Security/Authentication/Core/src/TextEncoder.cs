@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Allows encoding and decoding base-64 url encoded text.
+    /// </summary>
     public static class Base64UrlTextEncoder
     {
         /// <summary>

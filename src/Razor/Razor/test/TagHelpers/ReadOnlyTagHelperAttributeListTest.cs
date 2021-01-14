@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 {
                     { new[] { first }, first.Name, 0 },
                     { new[] { first, second }, first.Name, 0 },
-                    { new[] { first, second }, second.Name.ToUpper(), 1 },
+                    { new[] { first, second }, second.Name.ToUpperInvariant(), 1 },
                     { new[] { first, second, third}, second.Name, 1 },
-                    { new[] { first, second, third }, third.Name.ToLower(), 2 },
+                    { new[] { first, second, third }, third.Name.ToLowerInvariant(), 2 },
                     { new[] { first, first, second, third}, first.Name, 0 },
 
                     // Bad lookups

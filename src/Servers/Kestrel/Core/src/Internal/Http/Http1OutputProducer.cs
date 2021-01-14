@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class Http1OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
+    internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     {
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         // "HTTP/1.1 100 Continue\r\n\r\n"
@@ -33,10 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private readonly string _connectionId;
         private readonly ConnectionContext _connectionContext;
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
+        private readonly IHttpOutputAborter _outputAborter;
         private readonly TimingPipeFlusher _flusher;
-        private readonly MemoryPool<byte> _memoryPool;
 
         // This locks access to all of the below fields
         private readonly object _contextLock = new object();
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _currentMemoryPrefixBytes;
 
         private readonly ConcurrentPipeWriter _pipeWriter;
-        private IMemoryOwner<byte> _fakeMemoryOwner;
+        private IMemoryOwner<byte>? _fakeMemoryOwner;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
         // We need to know the size of the data written to the chunk before calling Advance on the
@@ -67,9 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // Fields needed to store writes before calling either startAsync or Write/FlushAsync
         // These should be cleared by the end of the request
-        private List<CompletedBuffer> _completedSegments;
+        private List<CompletedBuffer>? _completedSegments;
         private Memory<byte> _currentSegment;
-        private IMemoryOwner<byte> _currentSegmentOwner;
+        private IMemoryOwner<byte>? _currentSegmentOwner;
         private int _position;
         private bool _startCalled;
 
@@ -77,19 +78,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             PipeWriter pipeWriter,
             string connectionId,
             ConnectionContext connectionContext,
+            MemoryPool<byte> memoryPool,
             IKestrelTrace log,
             ITimeoutControl timeoutControl,
             IHttpMinResponseDataRateFeature minResponseDataRateFeature,
-            MemoryPool<byte> memoryPool)
+            IHttpOutputAborter outputAborter)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
             _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
+            _memoryPool = memoryPool;
             _log = log;
             _minResponseDataRateFeature = minResponseDataRateFeature;
+            _outputAborter = outputAborter;
+
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
-            _memoryPool = memoryPool;
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -168,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
 
-                return _flusher.FlushAsync(_minResponseDataRateFeature.MinDataRate, bytesWritten, this, cancellationToken);
+                return _flusher.FlushAsync(_minResponseDataRateFeature.MinDataRate, bytesWritten, _outputAborter, cancellationToken);
             }
 
             static ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
@@ -188,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // If there is an empty write, we still need to update the current chunk
                 producer._currentChunkMemoryUpdated = false;
 
-                return producer._flusher.FlushAsync(producer._minResponseDataRateFeature.MinDataRate, bytesWritten, producer, token);
+                return producer._flusher.FlushAsync(producer._minResponseDataRateFeature.MinDataRate, bytesWritten, producer._outputAborter, token);
             }
         }
 
@@ -328,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
+        public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
             lock (_contextLock)
             {
@@ -345,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
         {
             writer.Write(HttpVersion11Bytes);
             var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
@@ -477,7 +481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(ContinueBytes);
         }
 
-        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -497,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -585,7 +589,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _flusher.FlushAsync(
                 _minResponseDataRateFeature.MinDataRate,
                 bytesWritten,
-                this,
+                _outputAborter,
                 cancellationToken);
         }
 
@@ -737,14 +741,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// </summary>
         private readonly struct CompletedBuffer
         {
-            private readonly IMemoryOwner<byte> _memoryOwner;
+            private readonly IMemoryOwner<byte>? _memoryOwner;
 
             public Memory<byte> Buffer { get; }
             public int Length { get; }
 
             public ReadOnlySpan<byte> Span => Buffer.Span.Slice(0, Length);
 
-            public CompletedBuffer(IMemoryOwner<byte> owner, Memory<byte> buffer, int length)
+            public CompletedBuffer(IMemoryOwner<byte>? owner, Memory<byte> buffer, int length)
             {
                 _memoryOwner = owner;
 

@@ -9,12 +9,12 @@ import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger, Platform } from "./Utils";
+import { Arg, createLogger, getUserAgentHeader, Platform } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
 const enum ConnectionState {
-    Connecting = "Connecting ",
+    Connecting = "Connecting",
     Connected = "Connected",
     Disconnected = "Disconnected",
     Disconnecting = "Disconnecting",
@@ -38,16 +38,6 @@ export interface IAvailableTransport {
 }
 
 const MAX_REDIRECTS = 100;
-
-let WebSocketModule: any = null;
-let EventSourceModule: any = null;
-if (Platform.isNode && typeof require !== "undefined") {
-    // In order to ignore the dynamic require in webpack builds we need to do this magic
-    // @ts-ignore: TS doesn't know about these names
-    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    WebSocketModule = requireFunc("ws");
-    EventSourceModule = requireFunc("eventsource");
-}
 
 /** @private */
 export class HttpConnection implements IConnection {
@@ -81,21 +71,37 @@ export class HttpConnection implements IConnection {
         this.baseUrl = this.resolveUrl(url);
 
         options = options || {};
-        options.logMessageContent = options.logMessageContent || false;
+        options.logMessageContent = options.logMessageContent === undefined ? false : options.logMessageContent;
+        if (typeof options.withCredentials === "boolean" || options.withCredentials === undefined) {
+            options.withCredentials = options.withCredentials === undefined ? true : options.withCredentials;
+        } else {
+            throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
+        }
+
+        let webSocketModule: any = null;
+        let eventSourceModule: any = null;
+
+        if (Platform.isNode && typeof require !== "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+            webSocketModule = requireFunc("ws");
+            eventSourceModule = requireFunc("eventsource");
+        }
 
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
         } else if (Platform.isNode && !options.WebSocket) {
-            if (WebSocketModule) {
-                options.WebSocket = WebSocketModule;
+            if (webSocketModule) {
+                options.WebSocket = webSocketModule;
             }
         }
 
         if (!Platform.isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
         } else if (Platform.isNode && !options.EventSource) {
-            if (typeof EventSourceModule !== "undefined") {
-                options.EventSource = EventSourceModule;
+            if (typeof eventSourceModule !== "undefined") {
+                options.EventSource = eventSourceModule;
             }
         }
 
@@ -293,26 +299,28 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        let headers;
+        const headers = {};
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
             if (token) {
-                headers = {
-                    ["Authorization"]: `Bearer ${token}`,
-                };
+                headers[`Authorization`] = `Bearer ${token}`;
             }
         }
+
+        const [name, value] = getUserAgentHeader();
+        headers[name] = value;
 
         const negotiateUrl = this.resolveNegotiateUrl(url);
         this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
-                headers,
+                headers: { ...headers, ...this.options.headers },
+                withCredentials: this.options.withCredentials,
             });
 
             if (response.statusCode !== 200) {
-                return Promise.reject(new Error(`Unexpected status code returned from negotiate ${response.statusCode}`));
+                return Promise.reject(new Error(`Unexpected status code returned from negotiate '${response.statusCode}'`));
             }
 
             const negotiateResponse = JSON.parse(response.content as string) as INegotiateResponse;
@@ -395,14 +403,14 @@ export class HttpConnection implements IConnection {
                 if (!this.options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
+                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket, this.options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this.options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource);
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!, this.options.headers || {});
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
+                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!, this.options.headers || {});
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
@@ -465,8 +473,8 @@ export class HttpConnection implements IConnection {
         }
 
         if (this.connectionState === ConnectionState.Connecting) {
-            this.logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection hasn't yet left the in the connecting state.`);
-            return;
+            this.logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection is still in the connecting state.`);
+            throw new Error(`HttpConnection.stopConnection(${error}) was called while the connection is still in the connecting state.`);
         }
 
         if (this.connectionState === ConnectionState.Disconnecting) {
@@ -625,7 +633,7 @@ export class TransportSendQueue {
             offset += item.byteLength;
         }
 
-        return result;
+        return result.buffer;
     }
 }
 

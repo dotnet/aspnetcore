@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.FileProviders;
-using System;
 
 namespace Microsoft.AspNetCore.SpaServices
 {
@@ -15,6 +14,7 @@ namespace Microsoft.AspNetCore.SpaServices
     public class SpaOptions
     {
         private PathString _defaultPage = "/index.html";
+        private string _packageManagerCommand = "npm";
 
         /// <summary>
         /// Constructs a new instance of <see cref="SpaOptions"/>.
@@ -30,8 +30,10 @@ namespace Microsoft.AspNetCore.SpaServices
         internal SpaOptions(SpaOptions copyFromOptions)
         {
             _defaultPage = copyFromOptions.DefaultPage;
+            _packageManagerCommand = copyFromOptions.PackageManagerCommand;
             DefaultPageStaticFileOptions = copyFromOptions.DefaultPageStaticFileOptions;
             SourcePath = copyFromOptions.SourcePath;
+            DevServerPort = copyFromOptions.DevServerPort;
         }
 
         /// <summary>
@@ -68,6 +70,31 @@ namespace Microsoft.AspNetCore.SpaServices
         /// development. The directory may not exist in published applications.
         /// </summary>
         public string SourcePath { get; set; }
+
+        /// <summary>
+        /// Controls whether the development server should be used with a dynamic or fixed port.
+        /// </summary>
+        public int DevServerPort { get; set; } = default(int);
+
+        /// <summary>
+        /// Gets or sets the name of the package manager executable, (e.g npm,
+        /// yarn) to run the SPA.
+        ///
+        /// The default value is 'npm'.
+        /// </summary>
+        public string PackageManagerCommand
+        {
+            get => _packageManagerCommand;
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException($"The value for {nameof(PackageManagerCommand)} cannot be null or empty.");
+                }
+
+                _packageManagerCommand = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the maximum duration that a request will wait for the SPA

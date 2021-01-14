@@ -4,15 +4,16 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Libuv.BindTests</TestGroupName>
+    <!-- https://github.com/dotnet/aspnetcore/issues/22114 -->
+    <SkipHelixQueues>Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- https://github.com/aspnet/AspNetCore/issues/8046 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8046 -->
     <HelixProjectPlatform Remove="OSX" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="..\BindTests\**\*.cs" />
     <Compile Include="..\Libuv.FunctionalTests\TransportSelector.cs" />
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />

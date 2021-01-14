@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Indicates the device type that caused the event.
         /// Must be one of the strings mouse, pen or touch, or an empty string.
         /// </summary>
-        public string PointerType { get; set; }
+        public string PointerType { get; set; } = default!;
 
         /// <summary>
         /// Indicates if the pointer represents the primary pointer of this pointer type.

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked if Authorization fails and results in a Forbidden response  
+        /// Invoked if Authorization fails and results in a Forbidden response.
         /// </summary>
         public Func<ForbiddenContext, Task> OnForbidden { get; set; } = context => Task.CompletedTask;
 
@@ -36,14 +36,29 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// </summary>
         public Func<JwtBearerChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
 
+        /// <summary>
+        /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
+        /// </summary>
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
+        /// <summary>
+        /// Invoked if Authorization fails and results in a Forbidden response  
+        /// </summary>
         public virtual Task Forbidden(ForbiddenContext context) => OnForbidden(context);
 
+        /// <summary>
+        /// Invoked when a protocol message is first received.
+        /// </summary>
         public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
 
+        /// <summary>
+        /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
+        /// </summary>
         public virtual Task TokenValidated(TokenValidatedContext context) => OnTokenValidated(context);
 
+        /// <summary>
+        /// Invoked before a challenge is sent back to the caller.
+        /// </summary>
         public virtual Task Challenge(JwtBearerChallengeContext context) => OnChallenge(context);
     }
 }

@@ -4,7 +4,9 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Defaults to 32kb.
         /// </param>
         /// <param name="bufferLimit">
-        /// The maximum amouont of bytes that the <see cref="FileBufferingWriteStream"/> is allowed to buffer.
+        /// The maximum amount of bytes that the <see cref="FileBufferingWriteStream"/> is allowed to buffer.
         /// </param>
         /// <param name="tempFileDirectoryAccessor">Provides the location of the directory to write buffered contents to.
         /// When unspecified, uses the value specified by the environment variable <c>ASPNETCORE_TEMP</c> if available, otherwise
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public FileBufferingWriteStream(
             int memoryThreshold = DefaultMemoryThreshold,
             long? bufferLimit = null,
-            Func<string> tempFileDirectoryAccessor = null)
+            Func<string>? tempFileDirectoryAccessor = null)
         {
             if (memoryThreshold < 0)
             {
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         internal PagedByteBuffer PagedByteBuffer { get; }
 
-        internal FileStream FileStream { get; private set; }
+        internal FileStream? FileStream { get; private set; }
 
         internal bool Disposed { get; private set; }
 
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                // If the MemoryStream is incapable of accomodating the content to be written
+                // If the MemoryStream is incapable of accommodating the content to be written
                 // spool to disk.
                 EnsureFileStream();
 
@@ -178,15 +180,45 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="destination">The <see cref="Stream" /> to drain buffered contents to.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
         /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public async Task DrainBufferAsync(Stream destination, CancellationToken cancellationToken = default)
         {
             // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"
             // unspooled content. Copy the FileStream content first when available.
             if (FileStream != null)
             {
-                FileStream.Position = 0;
-                await FileStream.CopyToAsync(destination, cancellationToken);
+                // We make a new stream for async reads from disk and async writes to the destination
+                await using var readStream = new FileStream(FileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite, bufferSize: 1, useAsync: true);
 
+                await readStream.CopyToAsync(destination, cancellationToken);
+
+                // This is created with delete on close
+                await FileStream.DisposeAsync();
+                FileStream = null;
+            }
+
+            await PagedByteBuffer.MoveToAsync(destination, cancellationToken);
+        }
+
+        /// <summary>
+        /// Drains buffered content to <paramref name="destination"/>.
+        /// </summary>
+        /// <param name="destination">The <see cref="PipeWriter" /> to drain buffered contents to.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
+        /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public async Task DrainBufferAsync(PipeWriter destination, CancellationToken cancellationToken = default)
+        {
+            // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"
+            // unspooled content. Copy the FileStream content first when available.
+            if (FileStream != null)
+            {
+                // We make a new stream for async reads from disk and async writes to the destination
+                await using var readStream = new FileStream(FileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite, bufferSize: 1, useAsync: true);
+
+                await readStream.CopyToAsync(destination, cancellationToken);
+
+                // This is created with delete on close
                 await FileStream.DisposeAsync();
                 FileStream = null;
             }
@@ -218,6 +250,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        [MemberNotNull(nameof(FileStream))]
         private void EnsureFileStream()
         {
             if (FileStream == null)
@@ -227,10 +260,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 FileStream = new FileStream(
                     tempFileName,
                     FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.Delete,
+                    FileAccess.Write,
+                    FileShare.Delete | FileShare.ReadWrite,
                     bufferSize: 1,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+                    FileOptions.SequentialScan | FileOptions.DeleteOnClose);
             }
         }
 
@@ -238,7 +271,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (Disposed)
             {
-                throw new ObjectDisposedException(nameof(FileBufferingReadStream));
+                throw new ObjectDisposedException(nameof(FileBufferingWriteStream));
             }
         }
 

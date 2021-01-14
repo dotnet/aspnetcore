@@ -1,0 +1,48 @@
+#nullable enable
+Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler
+Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.CookieContainerHandler() -> void
+Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler
+Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.MaxRedirects.get -> int
+Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.RedirectHandler() -> void
+Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.RedirectHandler(int maxRedirects) -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Dispose() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.WebApplicationFactory() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.~WebApplicationFactory() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.AllowAutoRedirect.get -> bool
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.AllowAutoRedirect.set -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.HandleCookies.get -> bool
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.HandleCookies.set -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.MaxAutomaticRedirections.get -> int
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.MaxAutomaticRedirections.set -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.WebApplicationFactoryClientOptions() -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.Priority.get -> int
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Dispose(bool disposing) -> void
+~Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.Container.get -> System.Net.CookieContainer
+~Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.CookieContainerHandler(System.Net.CookieContainer cookieContainer) -> void
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ClientOptions.get -> Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateClient() -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateClient(Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions options) -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaultClient(System.Uri baseAddress, params System.Net.Http.DelegatingHandler[] handlers) -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateDefaultClient(params System.Net.Http.DelegatingHandler[] handlers) -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Factories.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>>
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Server.get -> Microsoft.AspNetCore.TestHost.TestServer
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.WithWebHostBuilder(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder> configuration) -> Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.BaseAddress.get -> System.Uri
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions.BaseAddress.set -> void
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.ContentRootPath.get -> string
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.ContentRootTest.get -> string
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.Key.get -> string
+~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.WebApplicationFactoryContentRootAttribute(string key, string contentRootPath, string contentRootTest, string priority) -> void
+~override Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
+~override Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureClient(System.Net.Http.HttpClient client) -> void
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) -> void
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder) -> Microsoft.Extensions.Hosting.IHost
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHostBuilder() -> Microsoft.Extensions.Hosting.IHostBuilder
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) -> Microsoft.AspNetCore.TestHost.TestServer
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateWebHostBuilder() -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.GetTestAssemblies() -> System.Collections.Generic.IEnumerable<System.Reflection.Assembly>
+~virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.Services.get -> System.IServiceProvider

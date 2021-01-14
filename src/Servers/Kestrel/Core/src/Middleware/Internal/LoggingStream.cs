@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -145,109 +146,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return;
             }
 
-            var builder = new StringBuilder($"{method}[{buffer.Length}] ");
+            var builder = new StringBuilder();
+            builder.Append(method);
+            builder.Append("[");
+            builder.Append(buffer.Length);
+            builder.Append("]");
+
+            if (buffer.Length > 0)
+            {
+                builder.AppendLine();
+            }
+
+            var charBuilder = new StringBuilder();
 
             // Write the hex
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append(buffer[i].ToString("X2"));
+                builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
                 builder.Append(" ");
-            }
-            builder.AppendLine();
-            builder.Append("{0}");
 
-            var rawDataBuilder = new StringBuilder();
-            // Write the bytes as if they were ASCII
-            for (int i = 0; i < buffer.Length; i++)
-            {
                 var bufferChar = (char)buffer[i];
-                if (Char.IsControl(bufferChar))
+                if (char.IsControl(bufferChar))
                 {
-                    rawDataBuilder.Append("\\x");
-                    rawDataBuilder.Append(buffer[i].ToString("X2"));
-                    continue;
+                    charBuilder.Append(".");
                 }
-                rawDataBuilder.Append(bufferChar);
+                else
+                {
+                    charBuilder.Append(bufferChar);
+                }
+
+                if ((i + 1) % 16 == 0)
+                {
+                    builder.Append("  ");
+                    builder.Append(charBuilder.ToString());
+                    if (i != buffer.Length - 1)
+                    {
+                        builder.AppendLine();
+                    }
+                    charBuilder.Clear();
+                }
+                else if ((i + 1) % 8 == 0)
+                {
+                    builder.Append(" ");
+                    charBuilder.Append(" ");
+                }
             }
 
-            _logger.LogDebug(builder.ToString(), rawDataBuilder.ToString());
+            // Different than charBuffer.Length since charBuffer contains an extra " " after the 8th byte.
+            var numBytesInLastLine = buffer.Length % 16;
+
+            if (numBytesInLastLine > 0)
+            {
+                // 2 (between hex and char blocks) + num bytes left (3 per byte)
+                var padLength = 2 + (3 * (16 - numBytesInLastLine));
+                // extra for space after 8th byte
+                if (numBytesInLastLine < 8)
+                {
+                    padLength++;
+                }
+
+                builder.Append(new string(' ', padLength));
+                builder.Append(charBuilder.ToString());
+            }
+
+            _logger.LogDebug(builder.ToString());
         }
 
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
+            return TaskToApm.End<int>(asyncResult);
         }
 
-        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
-            var tcs = new TaskCompletionSource<int>(state);
-            var task = ReadAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<int>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(task2.Result);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
-        }
-
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            ((Task<object>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
-        {
-            var tcs = new TaskCompletionSource<object>(state);
-            var task = WriteAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<object>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(null);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
+            TaskToApm.End(asyncResult);
         }
     }
 }

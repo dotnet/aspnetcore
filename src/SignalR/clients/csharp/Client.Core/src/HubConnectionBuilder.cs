@@ -80,6 +80,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // Prevents from being displayed in intellisense
+        /// <summary>
+        /// Gets the <see cref="Type"/> of the current instance.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public new Type GetType()
         {

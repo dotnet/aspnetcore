@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -223,6 +224,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
         /// <param name="registryKey">The location in the registry where keys should be stored.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder PersistKeysToRegistry(this IDataProtectionBuilder builder, RegistryKey registryKey)
         {
             if (builder == null)
@@ -356,6 +358,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <remarks>
         /// This API is only supported on Windows platforms.
         /// </remarks>
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder ProtectKeysWithDpapi(this IDataProtectionBuilder builder)
         {
             if (builder == null)
@@ -378,6 +381,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <remarks>
         /// This API is only supported on Windows platforms.
         /// </remarks>
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder ProtectKeysWithDpapi(this IDataProtectionBuilder builder, bool protectToLocalMachine)
         {
             if (builder == null)
@@ -408,6 +412,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// See https://msdn.microsoft.com/en-us/library/windows/desktop/hh706794(v=vs.85).aspx
         /// for more information on DPAPI-NG. This API is only supported on Windows 8 / Windows Server 2012 and higher.
         /// </remarks>
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder ProtectKeysWithDpapiNG(this IDataProtectionBuilder builder)
         {
             if (builder == null)
@@ -435,6 +440,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// and <paramref name="flags"/> arguments.
         /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
         /// </remarks>
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder ProtectKeysWithDpapiNG(this IDataProtectionBuilder builder, string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
         {
             if (builder == null)
@@ -523,6 +529,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
@@ -551,6 +558,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [SupportedOSPlatform("windows")]
         public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)

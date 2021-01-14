@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         private readonly PipeReader _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
-        private readonly HttpConnectionContext _connection;
+        private readonly HttpConnectionContext? _connection;
 
         public ServerSentEventsServerTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
             : this(application, connectionId, connection: null, loggerFactory)
         { }
 
-        public ServerSentEventsServerTransport(PipeReader application, string connectionId, HttpConnectionContext connection, ILoggerFactory loggerFactory)
+        public ServerSentEventsServerTransport(PipeReader application, string connectionId, HttpConnectionContext? connection, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;
@@ -35,10 +35,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             context.Response.ContentType = "text/event-stream";
-            context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache,no-store";
+            context.Response.Headers[HeaderNames.Pragma] = "no-cache";
 
             // Make sure we disable all response buffering for SSE
-            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
             bufferingFeature.DisableBuffering();
 
             context.Response.Headers[HeaderNames.ContentEncoding] = "identity";
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
         private static class Log
         {
-            private static readonly Action<ILogger, long, Exception> _sseWritingMessage =
+            private static readonly Action<ILogger, long, Exception?> _sseWritingMessage =
                 LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {Count} byte message.");
 
             public static void SSEWritingMessage(ILogger logger, long count)

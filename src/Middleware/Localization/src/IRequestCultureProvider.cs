@@ -19,6 +19,6 @@ namespace Microsoft.AspNetCore.Localization
         ///     The determined <see cref="ProviderCultureResult"/>.
         ///     Returns <c>null</c> if the provider couldn't determine a <see cref="ProviderCultureResult"/>.
         /// </returns>
-        Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext);
+        Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext);
     }
 }

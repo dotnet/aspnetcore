@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// Specifies the name of the header value that is used by the antiforgery system. If <c>null</c> then
         /// antiforgery validation will only consider form data.
         /// </summary>
-        public string HeaderName { get; set; } = AntiforgeryTokenHeaderName;
+        public string? HeaderName { get; set; } = AntiforgeryTokenHeaderName;
 
         /// <summary>
         /// Specifies whether to suppress the generation of X-Frame-Options header

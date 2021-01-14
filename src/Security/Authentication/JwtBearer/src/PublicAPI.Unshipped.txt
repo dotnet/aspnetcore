@@ -1,0 +1,4 @@
+#nullable enable
+~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Backchannel.get -> System.Net.Http.HttpClient
+~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Backchannel.set -> void
+

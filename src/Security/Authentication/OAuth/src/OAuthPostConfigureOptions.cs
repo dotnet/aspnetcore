@@ -18,11 +18,16 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes the <see cref="OAuthPostConfigureOptions{TOptions, THandler}"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public OAuthPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
         }
 
+        /// <inheritdoc />
         public void PostConfigure(string name, TOptions options)
         {
             options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;

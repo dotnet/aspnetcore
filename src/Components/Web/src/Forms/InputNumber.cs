@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// An input component for editing numeric values.
-    /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
+    /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="short"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
     public class InputNumber<TValue> : InputBase<TValue>
     {
-        private static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
+        private readonly static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 
         static InputNumber()
         {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
             if (targetType == typeof(int) ||
                 targetType == typeof(long) ||
+                targetType == typeof(short) ||
                 targetType == typeof(float) ||
                 targetType == typeof(double) ||
                 targetType == typeof(decimal))
@@ -48,12 +50,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(3, "type", "number");
             builder.AddAttribute(4, "class", CssClass);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValueAsString));
-            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out result))
             {
@@ -62,17 +64,17 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(ParsingErrorMessage, FieldIdentifier.FieldName);
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }
 
         /// <summary>
-        /// Formats the value as a string. Derived classes can override this to determine the formating used for <c>CurrentValueAsString</c>.
+        /// Formats the value as a string. Derived classes can override this to determine the formatting used for <c>CurrentValueAsString</c>.
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected override string FormatValueAsString(TValue value)
+        protected override string? FormatValueAsString(TValue? value)
         {
             // Avoiding a cast to IFormattable to avoid boxing.
             switch (value)
@@ -85,6 +87,9 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 case long @long:
                     return BindConverter.FormatValue(@long, CultureInfo.InvariantCulture);
+
+                case short @short:
+                    return BindConverter.FormatValue(@short, CultureInfo.InvariantCulture);
 
                 case float @float:
                     return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture);

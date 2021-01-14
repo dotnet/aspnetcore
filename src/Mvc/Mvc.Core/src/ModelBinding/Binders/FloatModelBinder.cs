@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
@@ -63,9 +65,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             try
             {
                 var value = valueProviderResult.FirstValue;
-                var culture = valueProviderResult.Culture;
 
-                object model;
+                object? model;
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     // Parse() method trims the value (with common NumberStyles) then throws if the result is empty.
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
                 else if (type == typeof(float))
                 {
-                    model = float.Parse(value, _supportedStyles, culture);
+                    model = float.Parse(value, _supportedStyles, valueProviderResult.Culture);
                 }
                 else
                 {

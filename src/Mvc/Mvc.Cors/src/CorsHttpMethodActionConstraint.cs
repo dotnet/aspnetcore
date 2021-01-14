@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.Cors
     {
         private readonly string OriginHeader = "Origin";
         private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
-        private readonly string PreflightHttpMethod = "OPTIONS";
 
         public CorsHttpMethodActionConstraint(HttpMethodActionConstraint constraint)
             : base(constraint.HttpMethods)
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
             var request = context.RouteContext.HttpContext.Request;
             // Perf: Check http method before accessing the Headers collection.
-            if (string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+            if (Http.HttpMethods.IsOptions(request.Method) &&
                 request.Headers.ContainsKey(OriginHeader) &&
                 request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))

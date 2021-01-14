@@ -56,5 +56,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <see cref="IHtmlHelper.ValidationSummary"/> and other overloads.
         /// </summary>
         public string ValidationSummaryMessageElement { get; set; } = "span";
+
+        /// <summary>
+        /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
+        /// </summary>
+        public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; } = CheckBoxHiddenInputRenderMode.EndOfForm;
     }
 }

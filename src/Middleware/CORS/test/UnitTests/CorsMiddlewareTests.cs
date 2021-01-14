@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -27,20 +28,27 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_MatchesPolicy_OnCaseInsensitiveAccessControlRequestMethod(string accessControlRequestMethod)
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                               .WithMethods("PUT"));
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                   .WithMethods("PUT"));
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Actual request.
@@ -60,22 +68,29 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_MatchPolicy_SetsResponseHeaders()
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                               .WithMethods("PUT")
-                               .WithHeaders("Header1")
-                               .WithExposedHeaders("AllowedHeader"));
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                   .WithMethods("PUT")
+                                   .WithHeaders("Header1")
+                                   .WithExposedHeaders("AllowedHeader"));
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Actual request.
@@ -102,24 +117,31 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policy.Origins.Add(OriginUrl);
             policy.Methods.Add("PUT");
 
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors("customPolicy");
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddCors(options =>
+                        app.UseCors("customPolicy");
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services =>
                     {
-                        options.AddPolicy("customPolicy", policy);
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("customPolicy", policy);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Preflight request.
@@ -144,24 +166,31 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policy.Headers.Add("Header1");
             policy.ExposedHeaders.Add("AllowedHeader");
 
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors("customPolicy");
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddCors(options =>
+                        app.UseCors("customPolicy");
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services =>
                     {
-                        options.AddPolicy("customPolicy", policy);
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("customPolicy", policy);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Preflight request.
@@ -202,24 +231,31 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 .AllowCredentials()
                 .Build();
 
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors("customPolicy");
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddCors(options =>
+                        app.UseCors("customPolicy");
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services =>
                     {
-                        options.AddPolicy("customPolicy", policy);
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("customPolicy", policy);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Preflight request.
@@ -260,22 +296,29 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task PreFlightRequest_DoesNotMatchPolicy_SetsResponseHeadersAndReturnsNoContent()
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                               .WithMethods("PUT")
-                               .WithHeaders("Header1")
-                               .WithExposedHeaders("AllowedHeader"));
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                   .WithMethods("PUT")
+                                   .WithHeaders("Header1")
+                                   .WithExposedHeaders("AllowedHeader"));
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Preflight request.
@@ -288,28 +331,37 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
                 Assert.Empty(response.Headers);
             }
+
+            await host.StartAsync();
         }
 
         [Fact]
         public async Task CorsRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                               .WithMethods("PUT")
-                               .WithHeaders("Header1")
-                               .WithExposedHeaders("AllowedHeader"));
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                   .WithMethods("PUT")
+                                   .WithHeaders("Header1")
+                                   .WithExposedHeaders("AllowedHeader"));
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Actual request.
@@ -387,38 +439,45 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task PreFlight_MatchesDefaultPolicy_SetsResponseHeaders()
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddCors(options =>
+                        app.UseCors();
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services =>
                     {
-                        options.AddDefaultPolicy(policyBuilder =>
+                        services.AddCors(options =>
                         {
-                            policyBuilder
-                            .WithOrigins(OriginUrl)
-                            .WithMethods("PUT")
-                            .WithHeaders("Header1")
-                            .WithExposedHeaders("AllowedHeader")
-                            .Build();
-                        });
-                        options.AddPolicy("policy2", policyBuilder =>
-                        {
-                            policyBuilder
-                            .WithOrigins("http://test.example.com")
-                            .Build();
+                            options.AddDefaultPolicy(policyBuilder =>
+                            {
+                                policyBuilder
+                                .WithOrigins(OriginUrl)
+                                .WithMethods("PUT")
+                                .WithHeaders("Header1")
+                                .WithExposedHeaders("AllowedHeader")
+                                .Build();
+                            });
+                            options.AddPolicy("policy2", policyBuilder =>
+                            {
+                                policyBuilder
+                                .WithOrigins("http://test.example.com")
+                                .Build();
+                            });
                         });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Preflight request.
@@ -453,23 +512,30 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_SetsResponseHeaders()
         {
             // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                            .WithMethods("PUT")
-                            .WithHeaders("Header1")
-                            .WithExposedHeaders("AllowedHeader"));
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        context.Response.Headers.Add("Test", "Should-Appear");
-                        await context.Response.WriteAsync("Cross origin response");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                .WithMethods("PUT")
+                                .WithHeaders("Header1")
+                                .WithExposedHeaders("AllowedHeader"));
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.Add("Test", "Should-Appear");
+                            await context.Response.WriteAsync("Cross origin response");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-            using (var server = new TestServer(hostBuilder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Actual request.
@@ -506,39 +572,46 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             // Arrange
             var exceptionSeen = true;
-            var hostBuilder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    // Simulate ExceptionHandler middleware
-                    app.Use(async (context, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        try
+                        // Simulate ExceptionHandler middleware
+                        app.Use(async (context, next) =>
                         {
-                            await next();
-                        }
-                        catch (Exception)
+                            try
+                            {
+                                await next();
+                            }
+                            catch (Exception)
+                            {
+                                exceptionSeen = true;
+                                context.Response.Clear();
+                                context.Response.StatusCode = 500;
+                            }
+                        });
+
+                        app.UseCors(builder =>
+                            builder.WithOrigins(OriginUrl)
+                                .WithMethods("PUT")
+                                .WithHeaders("Header1")
+                                .WithExposedHeaders("AllowedHeader"));
+
+                        app.Run(context =>
                         {
-                            exceptionSeen = true;
-                            context.Response.Clear();
-                            context.Response.StatusCode = 500;
-                        }
-                    });
+                            context.Response.Headers.Add("Test", "Should-Not-Exist");
+                            throw new Exception("Runtime error");
+                        });
+                    })
+                    .ConfigureServices(services => services.AddCors());
+                }).Build();
 
-                    app.UseCors(builder =>
-                        builder.WithOrigins(OriginUrl)
-                            .WithMethods("PUT")
-                            .WithHeaders("Header1")
-                            .WithExposedHeaders("AllowedHeader"));
+            await host.StartAsync();
 
-                    app.Run(context =>
-                    {
-                        context.Response.Headers.Add("Test", "Should-Not-Exist");
-                        throw new Exception("Runtime error");
-                    });
-                })
-                .ConfigureServices(services => services.AddCors());
-
-            using (var server = new TestServer(hostBuilder))
+            using (var server = host.GetTestServer())
             {
                 // Act
                 // Actual request.

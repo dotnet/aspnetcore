@@ -43,7 +43,7 @@ namespace BasicViews
                 throw new ArgumentException("Connection string must be specified for {databaseType}.");
             }
 
-            switch (databaseType.ToUpper())
+            switch (databaseType.ToUpperInvariant())
             {
 #if !NET461
                 case "MYSQL":
@@ -73,7 +73,7 @@ namespace BasicViews
                     _isSQLite = true;
                     services
                         .AddEntityFrameworkSqlite()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlite("Data Source=BasicViews.db"));
+                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlite("Data Source=BasicViews.db;Cache=Shared"));
                     break;
 
                 case "SQLSERVER":

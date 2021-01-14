@@ -12,11 +12,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<MyHub>
+    public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
     {
-        public override HubLifetimeManager<MyHub> CreateNewHubLifetimeManager()
+        public override HubLifetimeManager<Hub> CreateNewHubLifetimeManager()
         {
-            return new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+            return new DefaultHubLifetimeManager<Hub>(new Logger<DefaultHubLifetimeManager<Hub>>(NullLoggerFactory.Instance));
         }
 
         [Fact]
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
@@ -65,10 +65,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
@@ -89,10 +89,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
             }
@@ -111,10 +111,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
             }
@@ -134,10 +134,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
             }
@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
@@ -186,10 +186,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.False(sendTask.IsCompleted);
                 cts.Cancel();
                 await sendTask.OrTimeout();
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection1.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
             }
@@ -215,10 +215,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
@@ -245,10 +245,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection2.ConnectionAborted.Register(t =>
                 {
-                    ((TaskCompletionSource<object>)t).SetResult(null);
+                    ((TaskCompletionSource)t).SetResult();
                 }, tcs);
                 await tcs.Task.OrTimeout();
                 Assert.False(connection1.ConnectionAborted.IsCancellationRequested);

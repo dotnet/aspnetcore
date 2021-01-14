@@ -1,25 +1,28 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Internal
 {
     internal class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
     {
-        private Timer _timer;
-        private Action _callback;
+        private Timer? _timer;
+        private Action? _callback;
         private static readonly Action _callbackCompleted = () => { };
 
         private readonly TimeSpan _period;
 
         private readonly TimeSpan _dueTime;
+        private readonly object _lockObj = new object();
         private bool _disposed;
         private bool _running = true;
-        private object _lockObj = new object();
 
         public TimerAwaitable(TimeSpan dueTime, TimeSpan period)
         {
@@ -40,26 +43,20 @@ namespace Microsoft.AspNetCore.Internal
 
                     if (_timer == null)
                     {
-                        // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
-                        bool restoreFlow = false;
-                        try
+                        // This fixes the cycle by using a WeakReference to the state object. The object graph now looks like this:
+                        // Timer -> TimerHolder -> TimerQueueTimer -> WeakReference<TimerAwaitable> -> Timer -> ...
+                        // If TimerAwaitable falls out of scope, the timer should be released.
+                        _timer = NonCapturingTimer.Create(state =>
                         {
-                            if (!ExecutionContext.IsFlowSuppressed())
+                            var weakRef = (WeakReference<TimerAwaitable>)state!;
+                            if (weakRef.TryGetTarget(out var thisRef))
                             {
-                                ExecutionContext.SuppressFlow();
-                                restoreFlow = true;
+                                thisRef.Tick();
                             }
-
-                            _timer = new Timer(state => ((TimerAwaitable)state).Tick(), this, _dueTime, _period);
-                        }
-                        finally
-                        {
-                            // Restore the current ExecutionContext
-                            if (restoreFlow)
-                            {
-                                ExecutionContext.RestoreFlow();
-                            }
-                        }
+                        },
+                        state: new WeakReference<TimerAwaitable>(this),
+                        dueTime: _dueTime,
+                        period: _period);
                     }
                 }
             }

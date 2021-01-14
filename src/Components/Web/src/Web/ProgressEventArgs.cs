@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Components.Web
         /// <summary>
         /// Gets or sets the type of the event.
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
     }
 }

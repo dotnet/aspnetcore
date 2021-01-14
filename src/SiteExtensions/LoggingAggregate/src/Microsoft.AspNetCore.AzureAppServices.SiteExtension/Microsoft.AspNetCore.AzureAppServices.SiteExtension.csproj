@@ -3,7 +3,7 @@
   <PropertyGroup>
     <title>ASP.NET Core Logging Integration</title>
     <Description>This site extension enables logging integration for ASP.NET Core applications on Azure App Service.</Description>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -15,20 +15,40 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
-    <IsShippingPackage>true</IsShippingPackage>
-    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
-    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
-    <!-- When updating this add the previous SiteExtension(s) to the list above -->
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" Version="$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels.Replace('.','-'))" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels.Replace('.','-'))" PrivateAssets="All" />
+    <!--
+      Bundle in most down-level versions of the runtime-specific site extension packages. When updating
+      $(DefaultNetCoreTargetFramework), add previous SiteExtension packages to the list below. Remove
+      entries when packages aren't needed in the bundle anymore.
+      -->
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" PrivateAssets="All" />
+    <!--
+      Coming soon...
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" PrivateAssets="All" />
+    -->
+    <!--
+      Bundle the just-built LB.csproj package content into this one the easy way. See
+      UpdateLatestPackageReferences for the hard way.
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
+        Condition=" '$(IsShipping)' == 'false' "
+        PrivateAssets="All"
+        Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
+        Condition=" '$(IsShipping)' == 'false' "
+        PrivateAssets="All"
+        Version="$(PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,8 +61,13 @@
     <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
-    <!-- Cannot assume this project and LB.csproj have the same package version. -->
+  <!--
+    Cannot assume this project and LB.csproj have the same package version because this creates a shipping
+    package in non-preview builds and LB.csproj never creates a shipping package.
+  -->
+  <Target Name="UpdateLatestPackageReferences"
+      BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences"
+      Condition=" '$(IsShipping)' == 'true' ">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
     <MSBuild Projects="$(RepoRoot)src\SiteExtensions\LoggingBranch\LB.csproj"
         Targets="_GetPackageVersionInfo"
@@ -51,17 +76,24 @@
     </MSBuild>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86"
-          Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
-          PrivateAssets="All" />
-      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64"
-          Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
-          PrivateAssets="All" />
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64"
+          PrivateAssets="All"
+          Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86"
+          PrivateAssets="All"
+          Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
     </ItemGroup>
+  </Target>
 
+  <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <!-- LB.csproj package content is bundled into this one. -->
-      <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
+      <!--
+        The x64 & x86 SiteExtension packages have identical deps.json files. We include only the x64 files to
+        avoid build warnings.
+      -->
+      <ContentFilesToPack
+          Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*"
+          Exclude="$(NugetPackageRoot)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json"/>
 
       <!-- Temporarily skip the common files -->
       <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />

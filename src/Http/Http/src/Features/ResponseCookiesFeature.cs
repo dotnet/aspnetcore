@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Http.Features
     public class ResponseCookiesFeature : IResponseCookiesFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
 
-        private FeatureReferences<IHttpResponseFeature> _features;
-        private IResponseCookies _cookiesCollection;
+        private readonly IFeatureCollection _features;
+        private IResponseCookies? _cookiesCollection;
 
         /// <summary>
         /// Initializes a new <see cref="ResponseCookiesFeature"/> instance.
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <see cref="IResponseCookiesFeature"/> and the <see cref="IHttpResponseFeature"/>.
         /// </param>
         public ResponseCookiesFeature(IFeatureCollection features)
-            : this(features, builderPool: null)
         {
+            _features = features ?? throw new ArgumentNullException(nameof(features));
         }
 
         /// <summary>
@@ -38,17 +38,11 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <see cref="IResponseCookiesFeature"/> and the <see cref="IHttpResponseFeature"/>.
         /// </param>
         /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
-        public ResponseCookiesFeature(IFeatureCollection features, ObjectPool<StringBuilder> builderPool)
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
+        public ResponseCookiesFeature(IFeatureCollection features, ObjectPool<StringBuilder>? builderPool)
         {
-            if (features == null)
-            {
-                throw new ArgumentNullException(nameof(features));
-            }
-
-            _features.Initalize(features);
+            _features = features ?? throw new ArgumentNullException(nameof(features));
         }
-
-        private IHttpResponseFeature HttpResponseFeature => _features.Fetch(ref _features.Cache, _nullResponseFeature);
 
         /// <inheritdoc />
         public IResponseCookies Cookies
@@ -57,8 +51,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (_cookiesCollection == null)
                 {
-                    var headers = HttpResponseFeature.Headers;
-                    _cookiesCollection = new ResponseCookies(headers, null);
+                    _cookiesCollection = new ResponseCookies(_features);
                 }
 
                 return _cookiesCollection;

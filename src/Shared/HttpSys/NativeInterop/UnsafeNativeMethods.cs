@@ -5,6 +5,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
+// Remove once HttpSys has enabled nullable
+#nullable enable
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static unsafe class UnsafeNclNativeMethods

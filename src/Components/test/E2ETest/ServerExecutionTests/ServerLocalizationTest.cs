@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [InlineData("fr-FR", "Bonjour!")]
         public void CanSetCultureAndReadLocalizedResources(string culture, string message)
         {
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
+            var selector = new SelectElement(Browser.Exists(By.Id("culture-selector")));
             selector.SelectByValue(culture);
 
             // Click the link to return back to the test page
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
             Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
 
-            var messageDisplay = Browser.FindElement(By.Id("message-display"));
+            var messageDisplay = Browser.Exists(By.Id("message-display"));
             Assert.Equal(message, messageDisplay.Text);
         }
     }

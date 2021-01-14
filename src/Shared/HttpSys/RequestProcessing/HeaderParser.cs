@@ -4,6 +4,9 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
+// Remove once HttpSys has enabled nullable
+#nullable enable
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderParser

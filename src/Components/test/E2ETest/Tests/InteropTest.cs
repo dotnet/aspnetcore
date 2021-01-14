@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26288")]
         public void CanInvokeDotNetMethods()
         {
             // Arrange
@@ -55,10 +57,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["result7Async"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["result8Async"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["result9Async"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["roundTripJSObjectReferenceAsync"] = @"""successful""",
+                ["invokeDisposedJSObjectReferenceExceptionAsync"] = @"""JS object instance with ID",
                 ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
                 ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
                 ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
                 ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
+                ["JSObjectReferenceInvokeNonFunctionException"] = "The value 'nonFunction' is not a function.",
                 ["resultReturnDotNetObjectByRefAsync"] = "1001",
                 ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",
                 ["instanceMethodStringValueUpperAsync"] = @"""MY STRING""",
@@ -69,6 +74,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["testDtoAsync"] = "Same",
                 ["returnPrimitiveAsync"] = "123",
                 ["returnArrayAsync"] = "first,second",
+                ["jsObjectReference.identity"] = "Invoked from JSObjectReference",
+                ["jsObjectReference.nested.add"] = "5",
+                ["addViaJSObjectReference"] = "5",
+                ["jsObjectReferenceModule"] = "Returned from module!",
                 ["syncGenericInstanceMethod"] = @"""Initial value""",
                 ["asyncGenericInstanceMethod"] = @"""Updated value 1""",
             };
@@ -93,6 +102,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["result7"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["result8"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["result9"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["roundTripJSObjectReference"] = @"""successful""",
+                ["invokeDisposedJSObjectReferenceException"] = @"""JS object instance with ID",
                 ["ThrowException"] = @"""System.InvalidOperationException: Threw an exception!",
                 ["ExceptionFromSyncMethod"] = "Function threw an exception!",
                 ["resultReturnDotNetObjectByRefSync"] = "1000",
@@ -100,6 +111,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["instanceMethodStringValueUpper"] = @"""MY STRING""",
                 ["instanceMethodIncomingByRef"] = "123",
                 ["instanceMethodOutgoingByRef"] = "1234",
+                ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
+                ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
                 ["stringValueUpperSync"] = "MY STRING",
                 ["testDtoNonSerializedValueSync"] = "99999",
                 ["testDtoSync"] = "Same",
@@ -121,15 +134,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var actualValues = new Dictionary<string, string>();
 
             // Act
-            var interopButton = Browser.FindElement(By.Id("btn-interop"));
+            var interopButton = Browser.Exists(By.Id("btn-interop"));
             interopButton.Click();
 
-            var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(d => d.FindElement(By.Id("done-with-interop")));
+            Browser.Exists(By.Id("done-with-interop"));
 
             foreach (var expectedValue in expectedValues)
             {
-                var currentValue = Browser.FindElement(By.Id(expectedValue.Key));
+                var currentValue = Browser.Exists(By.Id(expectedValue.Key));
                 actualValues.Add(expectedValue.Key, currentValue.Text);
             }
 

@@ -1,4 +1,4 @@
-@using System.ComponentModel.DataAnnotations
+﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
@@ -40,6 +40,35 @@
         </InputSelect>
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
+    <p class="airline">
+        <InputRadioGroup @bind-Value="person.Airline">
+            Airline:
+            <br>
+            @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
+            {
+                <InputRadio Value="airline" extra="additional" />
+                @airline.ToString();
+                <br>
+            }
+        </InputRadioGroup>
+    </p>
+    <p class="nested-radio-group">
+        Pick one color and one country:
+        <InputRadioGroup Name="country" @bind-Value="person.Country">
+            <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor">
+                <InputRadio Name="color" Value="Color.Red" />red<br>
+                <InputRadio Name="country" Value="Country.Japan" />japan<br>
+                <InputRadio Name="color" Value="Color.Green" />green<br>
+                <InputRadio Name="country" Value="Country.Yemen" />yemen<br>
+                <InputRadio Name="color" Value="Color.Blue" />blue<br>
+                <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
+                <InputRadio Name="color" Value="Color.Orange" />orange<br>
+            </InputRadioGroup>
+        </InputRadioGroup>
+    </p>
+    <p class="socks">
+        Socks color: <InputText @bind-Value="person.SocksColor" />
+    </p>
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
     </p>
@@ -72,6 +101,7 @@
     protected override void OnInitialized()
     {
         editContext = new EditContext(person);
+        editContext.SetFieldCssClassProvider(new CustomFieldCssClassProvider());
         customValidationMessageStore = new ValidationMessageStore(editContext);
     }
 
@@ -109,10 +139,29 @@
         [Required, EnumDataType(typeof(TicketClass))]
         public TicketClass TicketClass { get; set; }
 
+        [Required]
+        [Range(typeof(Airline), nameof(Airline.BestAirline), nameof(Airline.NoNameAirline), ErrorMessage = "Pick a valid airline.")]
+        public Airline Airline { get; set; } = Airline.Unknown;
+
+        [Required, EnumDataType(typeof(Color))]
+        public Color? FavoriteColor { get; set; } = null;
+
+        [Required, EnumDataType(typeof(Country))]
+        public Country? Country { get; set; } = null;
+
+        [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
+        public string SocksColor { get; set; }
+
         public string Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
+
+    enum Airline { BestAirline, CoolAirline, NoNameAirline, Unknown }
+
+    enum Color { Red, Green, Blue, Orange }
+
+    enum Country { Japan, Yemen, Latvia }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 

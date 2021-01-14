@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void ScriptTagHelper_DoesNotUseMemoryCacheInstanceFromDI()
         {
             // Arrange
-            var activator = new DefaultTagHelperActivator(new TypeActivatorCache());
+            var activator = new DefaultTagHelperActivator();
             var viewContext = CreateViewContext();
 
             var scriptTagHelper = activator.Create<ScriptTagHelper>(viewContext);
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void LinkTagHelper_DoesNotUseMemoryCacheInstanceFromDI()
         {
             // Arrange
-            var activator = new DefaultTagHelperActivator(new TypeActivatorCache());
+            var activator = new DefaultTagHelperActivator();
             var viewContext = CreateViewContext();
 
             var linkTagHelper = activator.Create<LinkTagHelper>(viewContext);

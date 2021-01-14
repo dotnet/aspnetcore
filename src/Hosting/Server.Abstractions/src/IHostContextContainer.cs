@@ -8,8 +8,11 @@ namespace Microsoft.AspNetCore.Hosting.Server.Abstractions
     /// its <typeparamref name="TContext"/> between requests.
     /// </summary>
     /// <typeparam name="TContext">The <see cref="IHttpApplication{TContext}"/> Host context</typeparam>
-    public interface IHostContextContainer<TContext>
+    public interface IHostContextContainer<TContext> where TContext : notnull
     {
-        TContext HostContext { get; set; }
+        /// <summary>
+        /// Represents the <typeparamref name="TContext"/>  of the host.
+        /// </summary>
+        TContext? HostContext { get; set; }
     }
 }

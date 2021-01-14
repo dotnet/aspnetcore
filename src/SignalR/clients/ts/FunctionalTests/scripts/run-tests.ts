@@ -35,11 +35,11 @@ process.on("unhandledRejection", (reason) => {
     process.exit(1);
 });
 
-// Don't let us hang the build. If this process takes more than 10 minutes, we're outta here
+// If this process takes more than 20 minutes, we're outta here
 setTimeout(() => {
-    console.error("Bail out! Tests took more than 10 minutes to run. Aborting.");
+    console.error("Bail out! Tests took more than 20 minutes to run. Aborting.");
     process.exit(1);
-}, 1000 * 60 * 10);
+}, 1000 * 60 * 20);
 
 function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<RegExpMatchArray> {
     return new Promise<string[]>((resolve, reject) => {
@@ -245,7 +245,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "netcoreapp3.1", "SignalR.Client.FunctionalTestApp.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net6.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";

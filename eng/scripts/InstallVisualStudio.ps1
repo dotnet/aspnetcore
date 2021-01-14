@@ -23,7 +23,7 @@
     Run the installer without UI and wait for installation to complete.
 .LINK
     https://visualstudio.com
-    https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md
+    https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
 .EXAMPLE
     To install VS 2019 Enterprise, run this command in PowerShell:
 
@@ -111,14 +111,13 @@ if (Test-path $InstallPath) {
 $arguments += `
     '--productId', $productId, `
     '--installPath', "`"$InstallPath`"", `
-    '--in', "`"$responseFile`"", `
-    '--norestart'
+    '--in', "`"$responseFile`""
 
 if ($Passive) {
-    $arguments += '--passive'
+    $arguments += '--passive', '--norestart'
 }
 if ($Quiet) {
-    $arguments += '--quiet', '--wait'
+    $arguments += '--quiet', '--wait', '--norestart'
 }
 
 Write-Host

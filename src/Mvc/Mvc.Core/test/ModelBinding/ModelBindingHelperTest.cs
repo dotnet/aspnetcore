@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -359,10 +359,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var ex = Assert.Throws<InvalidOperationException>(() =>
                         ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            Assert.Equal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "The passed expression of expression node type '{0}' is invalid." +
+                    " Only simple member access expressions for model properties are supported.",
+                    expression.Body.NodeType),
+                ex.Message);
         }
 
         public static IEnumerable<object[]> InvalidExpressionDataSet
@@ -490,7 +492,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -570,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -760,7 +762,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             foreach (var entry in dictionary.Keys)
             {
-                if (entry.StartsWith(prefix))
+                if (entry.StartsWith(prefix, StringComparison.Ordinal))
                 {
                     Assert.Empty(dictionary[entry].Errors);
                     Assert.Equal(ModelValidationState.Unvalidated, dictionary[entry].ValidationState);

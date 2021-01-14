@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -28,8 +30,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// <param name="logger">The <see cref="Logger{T}"/> to write messages to.</param>
         /// <param name="options">The options to control the behavior of the middleware.</param>
         public MigrationsEndPointMiddleware(
-            RequestDelegate next, 
-            ILogger<MigrationsEndPointMiddleware> logger, 
+            RequestDelegate next,
+            ILogger<MigrationsEndPointMiddleware> logger,
             IOptions<MigrationsEndPointOptions> options)
         {
             if (next == null)
@@ -72,23 +74,24 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                 if (db != null)
                 {
+                    var dbName = db.GetType().FullName!;
                     try
                     {
-                        _logger.ApplyingMigrations(db.GetType().FullName);
+                        _logger.ApplyingMigrations(dbName);
 
-                        db.Database.Migrate();
+                        await db.Database.MigrateAsync();
 
                         context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                         context.Response.Headers.Add("Pragma", new[] { "no-cache" });
-                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
+                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
 
-                        _logger.MigrationsApplied(db.GetType().FullName);
+                        _logger.MigrationsApplied(dbName);
                     }
                     catch (Exception ex)
                     {
-                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName) + ex;
+                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(dbName) + ex;
 
-                        _logger.MigrationsEndPointMiddlewareException(db.GetType().FullName, ex);
+                        _logger.MigrationsEndPointMiddlewareException(dbName, ex);
 
                         throw new InvalidOperationException(message, ex);
                     }
@@ -100,7 +103,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             }
         }
 
-        private static async Task<DbContext> GetDbContext(HttpContext context, ILogger logger)
+        private static async Task<DbContext?> GetDbContext(HttpContext context, ILogger logger)
         {
             var form = await context.Request.ReadFormAsync();
             var contextTypeName = form["context"];
@@ -114,31 +117,24 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 return null;
             }
 
-            var contextType = Type.GetType(contextTypeName);
+            // Look for DbContext classes registered in the service provider
+            var registeredContexts = context.RequestServices.GetServices<DbContextOptions>()
+                .Select(o => o.ContextType);
 
-            if (contextType == null)
+            if (!registeredContexts.Any(c => string.Equals(contextTypeName, c.AssemblyQualifiedName)))
             {
-                var message = Strings.FormatMigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
+                var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextTypeName);
 
-                logger.InvalidContextType(contextTypeName);
+                logger.ContextNotRegistered(contextTypeName);
 
                 await WriteErrorToResponse(context.Response, message);
 
                 return null;
             }
 
-            var db = (DbContext)context.RequestServices.GetService(contextType);
+            var contextType = Type.GetType(contextTypeName)!;
 
-            if (db == null)
-            {
-                var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
-
-                logger.ContextNotRegistered(contextType.FullName);
-
-                await WriteErrorToResponse(context.Response, message);
-
-                return null;
-            }
+            var db = (DbContext?)context.RequestServices.GetService(contextType);
 
             return db;
         }
@@ -147,7 +143,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.Headers.Add("Pragma", new[] { "no-cache" });
-            response.Headers.Add("Cache-Control", new[] { "no-cache" });
+            response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
             response.ContentType = "text/plain";
 
             // Padding to >512 to ensure IE doesn't hide the message

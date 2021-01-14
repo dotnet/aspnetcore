@@ -1,0 +1,51 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder
+Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Http.Connections.ConnectionOptions
+Microsoft.AspNetCore.Http.Connections.ConnectionOptions.ConnectionOptions() -> void
+Microsoft.AspNetCore.Http.Connections.ConnectionOptions.DisconnectTimeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.Connections.ConnectionOptions.DisconnectTimeout.set -> void
+Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup
+Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup.Configure(Microsoft.AspNetCore.Http.Connections.ConnectionOptions! options) -> void
+Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup.ConnectionOptionsSetup() -> void
+Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature
+Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.set -> void
+Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature
+Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature.TransportType.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType
+Microsoft.AspNetCore.Http.Connections.HttpConnectionContextExtensions
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.get -> long
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthorizationData.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData!>!
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.HttpConnectionDispatcherOptions() -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.LongPolling.get -> Microsoft.AspNetCore.Http.Connections.LongPollingOptions!
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MinimumProtocolVersion.get -> int
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MinimumProtocolVersion.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportMaxBufferSize.get -> long
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportMaxBufferSize.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.Transports.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.Transports.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.WebSockets.get -> Microsoft.AspNetCore.Http.Connections.WebSocketOptions!
+Microsoft.AspNetCore.Http.Connections.LongPollingOptions
+Microsoft.AspNetCore.Http.Connections.LongPollingOptions.LongPollingOptions() -> void
+Microsoft.AspNetCore.Http.Connections.LongPollingOptions.PollTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Http.Connections.LongPollingOptions.PollTimeout.set -> void
+Microsoft.AspNetCore.Http.Connections.NegotiateMetadata
+Microsoft.AspNetCore.Http.Connections.NegotiateMetadata.NegotiateMetadata() -> void
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.CloseTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.CloseTimeout.set -> void
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.SubProtocolSelector.get -> System.Func<System.Collections.Generic.IList<string!>!, string!>?
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.SubProtocolSelector.set -> void
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.WebSocketOptions() -> void
+Microsoft.Extensions.DependencyInjection.ConnectionsDependencyInjectionExtensions
+static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions.MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern) -> Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder!
+static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions.MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>? configureOptions) -> Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder!
+static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions.MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions! options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder!>! configure) -> Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder!
+static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions.MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder!>! configure) -> Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder!
+static Microsoft.AspNetCore.Http.Connections.ConnectionOptionsSetup.DefaultDisconectTimeout -> System.TimeSpan
+static Microsoft.AspNetCore.Http.Connections.HttpConnectionContextExtensions.GetHttpContext(this Microsoft.AspNetCore.Connections.ConnectionContext! connection) -> Microsoft.AspNetCore.Http.HttpContext?
+static Microsoft.Extensions.DependencyInjection.ConnectionsDependencyInjectionExtensions.AddConnections(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ConnectionsDependencyInjectionExtensions.AddConnections(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Connections.ConnectionOptions!>! options) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

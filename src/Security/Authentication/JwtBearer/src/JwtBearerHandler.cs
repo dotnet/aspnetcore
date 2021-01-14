@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,10 +18,17 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
+    /// <summary>
+    /// An <see cref="AuthenticationHandler{TOptions}"/> that can perform JWT-bearer based authentication.
+    /// </summary>
     public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
         private OpenIdConnectConfiguration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -37,6 +43,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             set => base.Events = value;
         }
 
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new JwtBearerEvents());
 
         /// <summary>
@@ -192,6 +199,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             var authResult = await HandleAuthenticateOnceSafeAsync();
@@ -265,6 +273,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        /// <inheritdoc />
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
@@ -274,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         
         private static string CreateErrorDescription(Exception authFailure)
         {
-            IEnumerable<Exception> exceptions;
+            IReadOnlyCollection<Exception> exceptions;
             if (authFailure is AggregateException agEx)
             {
                 exceptions = agEx.InnerExceptions;
@@ -284,7 +293,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 exceptions = new[] { authFailure };
             }
 
-            var messages = new List<string>();
+            var messages = new List<string>(exceptions.Count);
 
             foreach (var ex in exceptions)
             {

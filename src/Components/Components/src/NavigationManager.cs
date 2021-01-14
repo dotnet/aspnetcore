@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Routing;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Provides an abstraction for querying and mananging URI navigation.
+    /// Provides an abstraction for querying and managing URI navigation.
     /// </summary>
     public abstract class NavigationManager
     {
@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        private EventHandler<LocationChangedEventArgs> _locationChanged;
+        private EventHandler<LocationChangedEventArgs>? _locationChanged;
 
         // For the baseUri it's worth storing as a System.Uri so we can do operations
         // on that type. System.Uri gives us access to the original string anyway.
-        private Uri _baseUri;
+        private Uri? _baseUri;
 
         // The URI. Always represented an absolute URI.
-        private string _uri;
+        private string? _uri;
 
         private bool _isInitialized;
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components
             get
             {
                 AssertInitialized();
-                return _baseUri.OriginalString;
+                return _baseUri!.OriginalString;
             }
             protected set
             {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components
                     value = NormalizeBaseUri(value);
                 }
 
-                _baseUri = new Uri(value, UriKind.Absolute);
+                _baseUri = new Uri(value!, UriKind.Absolute);
             }
         }
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components
             get
             {
                 AssertInitialized();
-                return _uri;
+                return _uri!;
             }
             protected set
             {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Allows derived classes to lazyly self-initialize. Implementations that support lazy-initialization should override
+        /// Allows derived classes to lazily self-initialize. Implementations that support lazy-initialization should override
         /// this method and call <see cref="Initialize(string, string)" />.
         /// </summary>
         protected virtual void EnsureInitialized()
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components
         public Uri ToAbsoluteUri(string relativeUri)
         {
             AssertInitialized();
-            return new Uri(_baseUri, relativeUri);
+            return new Uri(_baseUri!, relativeUri);
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A relative URI path.</returns>
         public string ToBaseRelativePath(string uri)
         {
-            if (uri.StartsWith(_baseUri.OriginalString, StringComparison.Ordinal))
+            if (uri.StartsWith(_baseUri!.OriginalString, StringComparison.Ordinal))
             {
                 // The absolute URI must be of the form "{baseUri}something" (where
                 // baseUri ends with a slash), and from that we return "something"
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components
         {
             try
             {
-                _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isInterceptedLink));
+                _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, isInterceptedLink));
             }
             catch (Exception ex)
             {
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
-        private static void Validate(Uri baseUri, string uri)
+        private static void Validate(Uri? baseUri, string uri)
         {
             if (baseUri == null || uri == null)
             {

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Logging;
@@ -12,22 +14,34 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Base class implementation of an <see cref="IRouter"/>.
+    /// </summary>
     public abstract class RouteBase : IRouter, INamedRouter
     {
         private readonly object _loggersLock = new object();
 
-        private TemplateMatcher _matcher;
-        private TemplateBinder _binder;
-        private ILogger _logger;
-        private ILogger _constraintLogger;
+        private TemplateMatcher? _matcher;
+        private TemplateBinder? _binder;
+        private ILogger? _logger;
+        private ILogger? _constraintLogger;
 
+        /// <summary>
+        /// Creates a new <see cref="RouteBase"/> instance.
+        /// </summary>
+        /// <param name="template">The route template.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="constraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="defaults">The default values for parameters in the route.</param>
+        /// <param name="constraints">The constraints for the route.</param>
+        /// <param name="dataTokens">The data tokens for the route.</param>
         public RouteBase(
-            string template,
-            string name,
+            string? template,
+            string? name,
             IInlineConstraintResolver constraintResolver,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens)
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens)
         {
             if (constraintResolver == null)
             {
@@ -54,21 +68,46 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <summary>
+        /// Gets the set of constraints associated with each route.
+        /// </summary>
         public virtual IDictionary<string, IRouteConstraint> Constraints { get; protected set; }
 
+        /// <summary>
+        /// Gets the resolver used for resolving inline constraints.
+        /// </summary>
         protected virtual IInlineConstraintResolver ConstraintResolver { get; set; }
 
+        /// <summary>
+        /// Gets the data tokens associated with the route.
+        /// </summary>
         public virtual RouteValueDictionary DataTokens { get; protected set; }
 
+        /// <summary>
+        /// Gets the default values for each route parameter.
+        /// </summary>
         public virtual RouteValueDictionary Defaults { get; protected set; }
 
-        public virtual string Name { get; protected set; }
+        /// <inheritdoc />
+        public virtual string? Name { get; protected set; }
 
+        /// <summary>
+        /// Gets the <see cref="RouteTemplate"/> associated with the route.
+        /// </summary>
         public virtual RouteTemplate ParsedTemplate { get; protected set; }
 
+        /// <summary>
+        /// Executes asynchronously whenever routing occurs.
+        /// </summary>
+        /// <param name="context">A <see cref="RouteContext"/> instance.</param>
         protected abstract Task OnRouteMatched(RouteContext context);
 
-        protected abstract VirtualPathData OnVirtualPathGenerated(VirtualPathContext context);
+        /// <summary>
+        /// Executes whenever a virtual path is dervied from a <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
+        /// <returns>A <see cref="VirtualPathData"/> instance.</returns>
+        protected abstract VirtualPathData? OnVirtualPathGenerated(VirtualPathContext context);
 
         /// <inheritdoc />
         public virtual Task RouteAsync(RouteContext context)
@@ -106,13 +145,13 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.RequestMatchedRoute(Name, ParsedTemplate.TemplateText);
+            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText!);
 
             return OnRouteMatched(context);
         }
 
         /// <inheritdoc />
-        public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             EnsureBinder(context.HttpContext);
             EnsureLoggers(context.HttpContext);
@@ -166,12 +205,18 @@ namespace Microsoft.AspNetCore.Routing
             return pathData;
         }
 
+        /// <summary>
+        /// Extracts constatins from a given <see cref="RouteTemplate"/>.
+        /// </summary>
+        /// <param name="inlineConstraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
+        /// <param name="parsedTemplate">A <see cref="RouteTemplate"/> instance.</param>
+        /// <param name="constraints">A collection of constraints on the route template.</param>
         protected static IDictionary<string, IRouteConstraint> GetConstraints(
             IInlineConstraintResolver inlineConstraintResolver,
             RouteTemplate parsedTemplate,
-            IDictionary<string, object> constraints)
+            IDictionary<string, object>? constraints)
         {
-            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText);
+            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText!);
 
             if (constraints != null)
             {
@@ -185,21 +230,26 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (parameter.IsOptional)
                 {
-                    constraintBuilder.SetOptional(parameter.Name);
+                    constraintBuilder.SetOptional(parameter.Name!);
                 }
 
                 foreach (var inlineConstraint in parameter.InlineConstraints)
                 {
-                    constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
+                    constraintBuilder.AddResolvedConstraint(parameter.Name!, inlineConstraint.Constraint);
                 }
             }
 
             return constraintBuilder.Build();
         }
 
+        /// <summary>
+        /// Gets the default values for parameters in a templates.
+        /// </summary>
+        /// <param name="parsedTemplate">A <see cref="RouteTemplate"/> instance.</param>
+        /// <param name="defaults">A collection of defaults for each parameter.</param>
         protected static RouteValueDictionary GetDefaults(
             RouteTemplate parsedTemplate,
-            RouteValueDictionary defaults)
+            RouteValueDictionary? defaults)
         {
             var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
 
@@ -215,7 +265,7 @@ namespace Microsoft.AspNetCore.Routing
                               parameter.Name));
                     }
 #else
-                    if (result.ContainsKey(parameter.Name))
+                    if (result.ContainsKey(parameter.Name!))
                     {
                         throw new InvalidOperationException(
                           Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
@@ -223,7 +273,7 @@ namespace Microsoft.AspNetCore.Routing
                     }
                     else
                     {
-                        result.Add(parameter.Name, parameter.DefaultValue);
+                        result.Add(parameter.Name!, parameter.DefaultValue);
                     }
 #endif
                 }
@@ -245,6 +295,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_binder))]
         private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
@@ -254,6 +305,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_logger), nameof(_constraintLogger))]
         private void EnsureLoggers(HttpContext context)
         {
             // We check first using the _logger to see if the loggers have been initialized to avoid taking
@@ -265,19 +317,25 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (_logger != null)
                     {
-                        // Multiple threads might have tried to accquire the lock at the same time. Technically
+                        // Multiple threads might have tried to acquire the lock at the same time. Technically
                         // there is nothing wrong if things get reinitialized by a second thread, but its easy
                         // to prevent by just rechecking and returning here.
+                        Debug.Assert(_constraintLogger != null);
+
                         return;
                     }
 
                     var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                    _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
-                    _logger = factory.CreateLogger(typeof(RouteBase).FullName);
+                    _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName!);
+                    _logger = factory.CreateLogger(typeof(RouteBase).FullName!);
                 }
+
             }
+
+            Debug.Assert(_constraintLogger != null);
         }
 
+        [MemberNotNull(nameof(_matcher))]
         private void EnsureMatcher()
         {
             if (_matcher == null)
@@ -286,9 +344,10 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
-            return ParsedTemplate.TemplateText;
+            return ParsedTemplate.TemplateText!;
         }
     }
 }

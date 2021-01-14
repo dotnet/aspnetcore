@@ -12,5 +12,16 @@ namespace HtmlGenerationWebSite.Areas.Customer.Controllers
         {
             return View("Customer");
         }
+
+        [HttpGet]
+        public IActionResult CustomerWithRecords()
+        {
+            return View("CustomerWithRecords");
+        }
+
+        public IActionResult CustomerWithRecords(Models.CustomerRecord customer)
+        {
+            return View("CustomerWithRecords");
+        }
     }
 }

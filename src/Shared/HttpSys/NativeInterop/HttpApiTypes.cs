@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Http;
+
+// Remove once HttpSys has enabled nullable
+#nullable enable
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
@@ -32,6 +36,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpServerListenEndpointProperty,
             HttpServerChannelBindProperty,
             HttpServerProtectionLevelProperty,
+            HttpServerDelegationProperty = 16
         }
 
         // Currently only one request info type is supported but the enum is for future extensibility.
@@ -51,6 +56,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpResponseInfoTypeQosProperty,
         }
 
+        internal enum HTTP_REQUEST_PROPERTY
+        {
+            HttpRequestPropertyIsb,
+            HttpRequestPropertyTcpInfoV0,
+            HttpRequestPropertyQuicStats,
+            HttpRequestPropertyTcpInfoV1,
+            HttpRequestPropertySni,
+            HttpRequestPropertyStreamError,
+        }
+
         internal enum HTTP_TIMEOUT_TYPE
         {
             EntityBody,
@@ -59,6 +74,33 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             IdleConnection,
             HeaderWait,
             MinSendRate,
+        }
+
+        internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID : uint
+        {
+            DelegateRequestReservedProperty,
+            DelegateRequestDelegateUrlProperty
+        }
+
+        internal enum HTTP_FEATURE_ID
+        {
+            HttpFeatureUnknown = 0,
+            HttpFeatureResponseTrailers = 1,
+            HttpFeatureApiTimings = 2,
+            HttpFeatureDelegateEx = 3,
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
+        {
+            internal HTTP_DELEGATE_REQUEST_PROPERTY_ID PropertyId;
+            internal uint PropertyInfoLength;
+            internal IntPtr PropertyInfo;
+        }
+
+        internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
+        {
+            internal uint ErrorCode;
         }
 
         internal const int MaxTimeout = 6;
@@ -88,6 +130,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             [FieldOffset(8)]
             internal FromFileHandle fromFile;
+
+            [FieldOffset(8)]
+            internal Trailers trailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -104,6 +149,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal ulong offset;
             internal ulong count;
             internal IntPtr fileHandle;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Trailers
+        {
+            internal ushort trailerCount;
+            internal IntPtr pTrailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -336,19 +388,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpVerbMaximum = 20,
         }
 
-        internal static readonly string[] HttpVerbs = new string[]
+        internal static readonly string?[] HttpVerbs = new string?[]
         {
                 null,
                 "Unknown",
                 "Invalid",
-                "OPTIONS",
-                "GET",
-                "HEAD",
-                "POST",
-                "PUT",
-                "DELETE",
-                "TRACE",
-                "CONNECT",
+                HttpMethods.Options,
+                HttpMethods.Get,
+                HttpMethods.Head,
+                HttpMethods.Post,
+                HttpMethods.Put,
+                HttpMethods.Delete,
+                HttpMethods.Trace,
+                HttpMethods.Connect,
                 "TRACK",
                 "MOVE",
                 "COPY",
@@ -362,10 +414,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal enum HTTP_DATA_CHUNK_TYPE : int
         {
-            HttpDataChunkFromMemory = 0,
-            HttpDataChunkFromFileHandle = 1,
-            HttpDataChunkFromFragmentCache = 2,
-            HttpDataChunkMaximum = 3,
+            HttpDataChunkFromMemory,
+            HttpDataChunkFromFileHandle,
+            HttpDataChunkFromFragmentCache,
+            HttpDataChunkFromFragmentCacheEx,
+            HttpDataChunkTrailers,
+            HttpDataChunkMaximum,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -624,6 +678,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             OpenExisting = 1,
             // The handle to the request queue created using this flag cannot be used to perform I/O operations. This flag can be set only when the request queue handle is created.
             Controller = 2,
+            Delegation = 8
         }
 
         internal static class HTTP_RESPONSE_HEADER_ID

@@ -23,11 +23,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         /// <summary>
-        /// The value to use for Claim.Type when creating a Claim.
+        /// Gets the value to use for <see cref="Claim.Value"/>when creating a Claim.
         /// </summary>
         public string ClaimType { get; }
 
-        // The value to use for Claim.ValueType when creating a Claim.
+        /// <summary>
+        /// Gets the value to use for <see cref="Claim.ValueType"/> when creating a Claim. 
+        /// </summary>
         public string ValueType { get; }
 
         /// <summary>

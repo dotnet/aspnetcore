@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,16 +8,34 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
+    /// <summary>
+    /// A file provider <see cref="RazorProjectItem"/>.
+    /// </summary>
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
         private string _root;
         private string _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 
+        /// <summary>
+        /// Intializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
+        /// </summary>
+        /// <param name="fileInfo">The file info.</param>
+        /// <param name="basePath">The base path.</param>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="root">The root.</param>
         public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root) : this(fileInfo, basePath, filePath, root, fileKind: null)
         {
         }
 
+        /// <summary>
+        /// Intializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
+        /// </summary>
+        /// <param name="fileInfo">The file info.</param>
+        /// <param name="basePath">The base path.</param>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="root">The root.</param>
+        /// <param name="fileKind">The kind of file.</param>
         public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind)
         {
             FileInfo = fileInfo;
@@ -27,18 +45,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _root = root;
         }
 
+        /// <summary>
+        /// The <see cref="IFileInfo"/>.
+        /// </summary>
         public IFileInfo FileInfo { get; }
 
+        /// <inheritdoc/>
         public override string BasePath { get; }
 
+        /// <inheritdoc/>
         public override string FilePath { get; }
 
+        /// <inheritdoc/>
         public override string FileKind { get; }
 
+        /// <inheritdoc/>
         public override bool Exists => FileInfo.Exists;
 
+        /// <inheritdoc/>
         public override string PhysicalPath => FileInfo.PhysicalPath;
 
+        /// <inheritdoc/>
         public override string RelativePhysicalPath
         {
             get
@@ -64,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             }
         }
 
+        /// <inheritdoc/>
         public override Stream Read()
         {
             return FileInfo.CreateReadStream();

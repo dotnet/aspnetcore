@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,24 +8,33 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
     {
         private readonly ActionEndpointFactory _endpointFactory;
+        private readonly OrderedEndpointsSequenceProvider _orderSequence;
 
-        public PageActionEndpointDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory)
+        public PageActionEndpointDataSource(
+            PageActionEndpointDataSourceIdProvider dataSourceIdProvider,
+            IActionDescriptorCollectionProvider actions,
+            ActionEndpointFactory endpointFactory,
+            OrderedEndpointsSequenceProvider orderedEndpoints)
             : base(actions)
         {
+            DataSourceId = dataSourceIdProvider.CreateId();
             _endpointFactory = endpointFactory;
-
+            _orderSequence = orderedEndpoints;
             DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions);
 
             // IMPORTANT: this needs to be the last thing we do in the constructor.
             // Change notifications can happen immediately!
             Subscribe();
         }
+
+        public int DataSourceId { get; }
 
         public PageActionEndpointConventionBuilder DefaultBuilder { get; }
 
@@ -47,6 +56,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return endpoints;
         }
+
+        internal void AddDynamicPageEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state, int? order = null)
+        {
+            CreateInertEndpoints = true;
+            lock (Lock)
+            {
+                order ??= _orderSequence.GetNext();
+
+                endpoints.Map(
+                    pattern,
+                    context =>
+                    {
+                        throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                    })
+                    .Add(b =>
+                    {
+                        ((RouteEndpointBuilder)b).Order = order.Value;
+                        b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(transformerType, state));
+                        b.Metadata.Add(new PageEndpointDataSourceIdMetadata(DataSourceId));
+                    });
+            }
+        }
     }
 }
-

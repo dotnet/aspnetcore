@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,6 +76,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
+                    if (page.CompiledPageDescriptor != null)
+                    {
+                        candidates.ReplaceEndpoint(i, page.CompiledPageDescriptor.Endpoint, candidate.Values);
+                        continue;
+                    }
+
                     // We found an endpoint instance that has a PageActionDescriptor, but not a
                     // CompiledPageActionDescriptor. Update the CandidateSet.
                     Task<CompiledPageActionDescriptor> compiled;
@@ -90,13 +96,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                     if (compiled.IsCompletedSuccessfully)
                     {
+                        page.CompiledPageDescriptor = compiled.Result;
                         candidates.ReplaceEndpoint(i, compiled.Result.Endpoint, candidate.Values);
                     }
                     else
                     {
                         // In the most common case, GetOrAddAsync will return a synchronous result.
                         // Avoid going async since this is a fairly hot path.
-                        return ApplyAsyncAwaited(candidates, compiled, i);
+                        return ApplyAsyncAwaited(page, candidates, compiled, i);
                     }
                 }
             }
@@ -104,13 +111,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return Task.CompletedTask;
         }
 
-        private async Task ApplyAsyncAwaited(CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
+        private async Task ApplyAsyncAwaited(PageActionDescriptor previousPage, CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
         {
             var compiled = await actionDescriptorTask;
+            previousPage.CompiledPageDescriptor = compiled;
+
             candidates.ReplaceEndpoint(index, compiled.Endpoint, candidates[index].Values);
 
             for (var i = index + 1; i < candidates.Count; i++)
             {
+                if (!candidates.IsValidCandidate(i))
+                {
+                    continue;
+                }
+
                 var candidate = candidates[i];
                 var endpoint = candidate.Endpoint;
 
@@ -118,6 +132,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 if (page != null)
                 {
                     compiled = await _loader.LoadAsync(page);
+                    page.CompiledPageDescriptor = compiled;
+
                     candidates.ReplaceEndpoint(i, compiled.Endpoint, candidates[i].Values);
                 }
             }

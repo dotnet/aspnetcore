@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
@@ -33,16 +34,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        /// <param name="encoder"></param>
-        /// <param name="clock"></param>
+        /// <inheritdoc />
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new NegotiateEvents Events
@@ -57,12 +55,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new NegotiateEvents());
 
-        private bool IsHttp2 => string.Equals("HTTP/2", Request.Protocol, StringComparison.OrdinalIgnoreCase);
+        private bool IsSupportedProtocol => HttpProtocol.IsHttp11(Request.Protocol) || HttpProtocol.IsHttp10(Request.Protocol);
 
         /// <summary>
         /// Intercepts incomplete Negotiate authentication handshakes and continues or completes them.
         /// </summary>
-        /// <returns>True if a response was generated, false otherwise.</returns>
+        /// <returns><see langword="true" /> if a response was generated, otherwise <see langword="false"/>.</returns>
         public async Task<bool> HandleRequestAsync()
         {
             AuthPersistence persistence = null;
@@ -80,10 +78,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 _requestProcessed = true;
 
-                if (IsHttp2)
+                if (!IsSupportedProtocol)
                 {
-                    // HTTP/2 is not supported. Do not throw because this may be running on a server that supports
-                    // both HTTP/1 and HTTP/2.
+                    // HTTP/1.0 and HTTP/1.1 are supported. Do not throw because this may be running on a server that supports
+                    // additional protocols.
                     return false;
                 }
 
@@ -129,9 +127,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 _negotiateState ??= Options.StateFactory.CreateInstance();
 
                 var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
-                Logger.LogInformation(errorType.ToString());
                 if (errorType != BlobErrorType.None)
                 {
+                    Logger.NegotiateError(errorType.ToString());
                     _negotiateState.Dispose();
                     _negotiateState = null;
                     if (persistence?.State != null)
@@ -291,7 +289,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 throw new InvalidOperationException("AuthenticateAsync must not be called before the UseAuthentication middleware runs.");
             }
 
-            if (IsHttp2)
+            if (!IsSupportedProtocol)
             {
                 // Not supported. We don't throw because Negotiate may be set as the default auth
                 // handler on a server that's running HTTP/1 and HTTP/2. We'll challenge HTTP/2 requests
@@ -314,7 +312,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             // things like ClaimsTransformation run per request.
             var identity = _negotiateState.GetIdentity();
             ClaimsPrincipal user;
-            if (identity is WindowsIdentity winIdentity)
+            if (OperatingSystem.IsWindows() && identity is WindowsIdentity winIdentity)
             {
                 user = new WindowsPrincipal(winIdentity);
                 Response.RegisterForDispose(winIdentity);
@@ -324,10 +322,37 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 user = new ClaimsPrincipal(new ClaimsIdentity(identity));
             }
 
-            var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+            AuthenticatedContext authenticatedContext;
+
+            if (Options.LdapSettings.EnableLdapClaimResolution)
             {
-                Principal = user
-            };
+                var ldapContext = new LdapContext(Context, Scheme, Options, Options.LdapSettings)
+                {
+                    Principal = user
+                };
+
+                await Events.RetrieveLdapClaims(ldapContext);
+
+                if (ldapContext.Result != null)
+                {
+                    return ldapContext.Result;
+                }
+
+                await LdapAdapter.RetrieveClaimsAsync(ldapContext.LdapSettings, ldapContext.Principal.Identity as ClaimsIdentity, Logger);
+
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = ldapContext.Principal
+                };
+            }
+            else
+            {
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = user
+                };
+            }
+
             await Events.Authenticated(authenticatedContext);
 
             if (authenticatedContext.Result != null)

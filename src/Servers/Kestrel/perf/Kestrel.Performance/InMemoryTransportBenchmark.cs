@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -33,22 +34,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly string _plaintextPipelinedExpectedResponse =
             string.Concat(Enumerable.Repeat(_plaintextExpectedResponse, RequestParsingData.Pipelining));
 
-        private IWebHost _host;
+        private IHost _host;
         private InMemoryConnection _connection;
 
         [GlobalSetup(Target = nameof(Plaintext) + "," + nameof(PlaintextPipelined))]
         public void GlobalSetupPlaintext()
         {
             var transportFactory = new InMemoryTransportFactory(connectionsPerEndPoint: 1);
-
-            _host = new WebHostBuilder()
-                // Prevent VS from attaching to hosting startup which could impact results
-                .UseSetting("preventHostingStartup", "true")
-                .UseKestrel()
-                // Bind to a single non-HTTPS endpoint
-                .UseUrls("http://127.0.0.1:5000")
+            
+            _host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        // Prevent VS from attaching to hosting startup which could impact results
+                        .UseSetting("preventHostingStartup", "true")
+                        .UseKestrel()
+                        // Bind to a single non-HTTPS endpoint
+                        .UseUrls("http://127.0.0.1:5000")
+                        .Configure(app => app.UseMiddleware<PlaintextMiddleware>());
+                })                
                 .ConfigureServices(services => services.AddSingleton<IConnectionListenerFactory>(transportFactory))
-                .Configure(app => app.UseMiddleware<PlaintextMiddleware>())
                 .Build();
 
             _host.Start();
@@ -66,8 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var response = Encoding.ASCII.GetString(await _connection.GetResponseAsync(expectedResponse.Length));
 
             // Exclude date header since the value changes on every request
-            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:"));
-            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:"));
+            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
+            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
 
             if (!Enumerable.SequenceEqual(expectedResponseLines, responseLines))
             {

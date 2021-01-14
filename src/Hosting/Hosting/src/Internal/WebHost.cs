@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -32,17 +33,17 @@ namespace Microsoft.AspNetCore.Hosting
         private static readonly string DeprecatedServerUrlsKey = "server.urls";
 
         private readonly IServiceCollection _applicationServiceCollection;
-        private IStartup _startup;
-        private ApplicationLifetime _applicationLifetime;
-        private HostedServiceExecutor _hostedServiceExecutor;
+        private IStartup? _startup;
+        private ApplicationLifetime? _applicationLifetime;
+        private HostedServiceExecutor? _hostedServiceExecutor;
 
         private readonly IServiceProvider _hostingServiceProvider;
         private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
-        private readonly AggregateException _hostingStartupErrors;
+        private readonly AggregateException? _hostingStartupErrors;
 
-        private IServiceProvider _applicationServices;
-        private ExceptionDispatchInfo _applicationServicesException;
+        private IServiceProvider? _applicationServices;
+        private ExceptionDispatchInfo? _applicationServicesException;
         private ILogger _logger =  NullLogger.Instance;
 
         private bool _stopped;
@@ -51,14 +52,14 @@ namespace Microsoft.AspNetCore.Hosting
         // Used for testing only
         internal WebHostOptions Options => _options;
 
-        private IServer Server { get; set; }
+        private IServer? Server { get; set; }
 
         public WebHost(
             IServiceCollection appServices,
             IServiceProvider hostingServiceProvider,
             WebHostOptions options,
             IConfiguration config,
-            AggregateException hostingStartupErrors)
+            AggregateException? hostingStartupErrors)
         {
             if (appServices == null)
             {
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Hosting
             _hostingServiceProvider = hostingServiceProvider;
             _applicationServiceCollection.AddSingleton<ApplicationLifetime>();
             // There's no way to to register multiple service types per definition. See https://github.com/aspnet/DependencyInjection/issues/360
+#pragma warning disable CS8634 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.
             _applicationServiceCollection.AddSingleton(services
                 => services.GetService<ApplicationLifetime>() as IHostApplicationLifetime);
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Hosting
             _applicationServiceCollection.AddSingleton(services
                 => services.GetService<ApplicationLifetime>() as Extensions.Hosting.IApplicationLifetime);
 #pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS8634 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.
             _applicationServiceCollection.AddSingleton<HostedServiceExecutor>();
         }
 
@@ -97,6 +100,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             get
             {
+                Debug.Assert(_applicationServices != null, "Initialize must be called before accessing services.");
                 return _applicationServices;
             }
         }
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Hosting
             get
             {
                 EnsureServer();
-                return Server?.Features;
+                return Server.Features;
             }
         }
 
@@ -141,6 +145,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
+            Debug.Assert(_applicationServices != null, "Initialize must be called first.");
+
             HostingEventSource.Log.HostStart();
             _logger = _applicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             _logger.Starting();
@@ -192,6 +198,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
+        [MemberNotNull(nameof(_startup))]
         private void EnsureStartup()
         {
             if (_startup != null)
@@ -199,16 +206,21 @@ namespace Microsoft.AspNetCore.Hosting
                 return;
             }
 
-            _startup = _hostingServiceProvider.GetService<IStartup>();
+            var startup = _hostingServiceProvider.GetService<IStartup>();
 
-            if (_startup == null)
+            if (startup == null)
             {
                 throw new InvalidOperationException($"No application configured. Please specify startup via IWebHostBuilder.UseStartup, IWebHostBuilder.Configure, injecting {nameof(IStartup)} or specifying the startup assembly via {nameof(WebHostDefaults.StartupAssemblyKey)} in the web host configuration.");
             }
+
+            _startup = startup;
         }
 
+        [MemberNotNull(nameof(Server))]
         private RequestDelegate BuildApplication()
         {
+            Debug.Assert(_applicationServices != null, "Initialize must be called first.");
+
             try
             {
                 _applicationServicesException?.Throw();
@@ -219,10 +231,13 @@ namespace Microsoft.AspNetCore.Hosting
                 builder.ApplicationServices = _applicationServices;
 
                 var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
-                Action<IApplicationBuilder> configure = _startup.Configure;
-                foreach (var filter in startupFilters.Reverse())
+                Action<IApplicationBuilder> configure = _startup!.Configure;
+                if (startupFilters != null)
                 {
-                    configure = filter.Configure(configure);
+                    foreach (var filter in startupFilters.Reverse())
+                    {
+                        configure = filter.Configure(configure);
+                    }
                 }
 
                 configure(builder);
@@ -250,47 +265,15 @@ namespace Microsoft.AspNetCore.Hosting
                 var hostingEnv = _applicationServices.GetRequiredService<IHostEnvironment>();
                 var showDetailedErrors = hostingEnv.IsDevelopment() || _options.DetailedErrors;
 
-                var model = new ErrorPageModel
-                {
-                    RuntimeDisplayName = RuntimeInformation.FrameworkDescription
-                };
-                var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
-                var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
-                var clrVersion = assemblyVersion;
-                model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-                var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
-                model.CurrentAssemblyVesion = currentAssembly
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                    .InformationalVersion;
-                model.ClrVersion = clrVersion;
-                model.OperatingSystemDescription = RuntimeInformation.OSDescription;
-                model.ShowRuntimeDetails = showDetailedErrors;
-
-                if (showDetailedErrors)
-                {
-                    var exceptionDetailProvider = new ExceptionDetailsProvider(
-                        hostingEnv.ContentRootFileProvider,
-                        sourceCodeLineCount: 6);
-
-                    model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
-                }
-                else
-                {
-                    model.ErrorDetails = new ExceptionDetails[0];
-                }
-
-                var errorPage = new ErrorPage(model);
-                return context =>
-                {
-                    context.Response.StatusCode = 500;
-                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
-                    return errorPage.ExecuteAsync(context);
-                };
+                return ErrorPageBuilder.BuildErrorPageApplication(hostingEnv.ContentRootFileProvider, logger, showDetailedErrors, ex);
             }
         }
 
+        [MemberNotNull(nameof(Server))]
         private void EnsureServer()
         {
+            Debug.Assert(_applicationServices != null, "Initialize must be called first.");
+
             if (Server == null)
             {
                 Server = _applicationServices.GetRequiredService<IServer>();
@@ -302,9 +285,9 @@ namespace Microsoft.AspNetCore.Hosting
                     var urls = _config[WebHostDefaults.ServerUrlsKey] ?? _config[DeprecatedServerUrlsKey];
                     if (!string.IsNullOrEmpty(urls))
                     {
-                        serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(_config, WebHostDefaults.PreferHostingUrlsKey);
+                        serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(_config, WebHostDefaults.PreferHostingUrlsKey);
 
-                        foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                         {
                             addresses.Add(value);
                         }
@@ -323,7 +306,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             _logger.Shutdown();
 
-            var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+            using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
+            var timeoutToken = timeoutCTS.Token;
             if (!cancellationToken.CanBeCanceled)
             {
                 cancellationToken = timeoutToken;
@@ -355,7 +339,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()
@@ -376,12 +360,12 @@ namespace Microsoft.AspNetCore.Hosting
             await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
         }
 
-        private async ValueTask DisposeServiceProviderAsync(IServiceProvider serviceProvider)
+        private async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
         {
             switch (serviceProvider)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();

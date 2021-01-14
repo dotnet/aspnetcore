@@ -1,18 +1,27 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackFrameInfo
     {
-        public int LineNumber { get; set; }
+        public StackFrameInfo(int lineNumber, string? filePath, StackFrame? stackFrame, MethodDisplayInfo? methodDisplayInfo)
+        {
+            LineNumber = lineNumber;
+            FilePath = filePath;
+            StackFrame = stackFrame;
+            MethodDisplayInfo = methodDisplayInfo;
+        }
 
-        public string FilePath { get; set; }
+        public int LineNumber { get; }
 
-        public StackFrame StackFrame { get; set; }
+        public string? FilePath { get; }
 
-        public MethodDisplayInfo MethodDisplayInfo { get; set; }
+        public StackFrame? StackFrame { get; }
+
+        public MethodDisplayInfo? MethodDisplayInfo { get; }
     }
 }

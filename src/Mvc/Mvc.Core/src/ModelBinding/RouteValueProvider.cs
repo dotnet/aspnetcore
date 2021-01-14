@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Routing;
@@ -13,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class RouteValueProvider : BindingSourceValueProvider
     {
         private readonly RouteValueDictionary _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a new <see cref="RouteValueProvider"/>.
@@ -56,6 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Culture = culture;
         }
 
+        /// <summary>
+        /// The prefix container.
+        /// </summary>
         protected PrefixContainer PrefixContainer
         {
             get
@@ -69,6 +74,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// The culture to use.
+        /// </summary>
         protected CultureInfo Culture { get; }
 
         /// <inheritdoc />

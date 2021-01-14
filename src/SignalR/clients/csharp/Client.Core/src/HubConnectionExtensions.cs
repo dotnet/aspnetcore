@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// </summary>
     public static partial class HubConnectionExtensions
     {
-        private static IDisposable On(this HubConnection hubConnetion, string methodName, Type[] parameterTypes, Action<object[]> handler)
+        private static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Action<object[]> handler)
         {
-            return hubConnetion.On(methodName, parameterTypes, (parameters, state) =>
+            return hubConnection.On(methodName, parameterTypes, (parameters, state) =>
             {
                 var currentHandler = (Action<object[]>)state;
                 currentHandler(parameters);

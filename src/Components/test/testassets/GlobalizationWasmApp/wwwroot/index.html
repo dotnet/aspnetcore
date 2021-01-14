@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        #blazor-error-ui { display: none }
+    </style>
+</head>
+<body>
+    <div id="blazor-error-ui">Error</div>
+    <app>Loading...</app>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        (function(){
+            const search = new window.URLSearchParams(window.location.search);
+            const culture = search.get('culture');
+            Blazor.start({ applicationCulture: culture });
+        })();
+
+    </script>
+</body>
+
+</html>

@@ -1,63 +1,56 @@
 @echo off
-REM Disable "!Foo!" expansions because they break the filter syntax
-setlocal disableextensions
+SETLOCAL
 
-set target=%1
-set targetFrameworkIdentifier=%2
-set sdkVersion=%3
-set runtimeVersion=%4
-set helixQueue=%5
-set arch=%6
+REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
+set $target=%1
+set $sdkVersion=%2
+set $runtimeVersion=%3
+set $aspRuntimeVersion=%4
+set $queue=%5
+set $arch=%6
+set $quarantined=%7
+set $ef=%8
+set $helixTimeout=%9
+REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
+shift
+set $feedCred=%9
 
-set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
-set DOTNET_ROOT=%DOTNET_HOME%\%arch%
+set DOTNET_HOME=%CD%\sdk%random%
+set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
-set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
+set DOTNET_CLI_HOME=%CD%\home%random%
 
-set PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin
+set "PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin"
+echo Set path to: "%PATH%"
+echo.
 
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Version %sdkVersion% -InstallDir %DOTNET_ROOT%"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Runtime dotnet -Version %runtimeVersion% -InstallDir %DOTNET_ROOT%"
+IF [%$feedCred%] == [] (
+    echo "InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
+    echo.
 
-set HELIX=%helixQueue%
+    echo "InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true '' '' $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true '' '' $true"
+) else (
+    echo "InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true https://dotnetclimsrc.blob.core.windows.net/dotnet ... $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred% $true"
+    echo.
 
-if (%targetFrameworkIdentifier%==.NETFramework) (
-    xunit.console.exe %target% -xml testResults.xml
-    exit /b %ERRORLEVEL%
+    echo "InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet ... $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred% $true"
 )
-
-%DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
-find /c "Exception thrown" discovered.txt
-REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
-if not errorlevel 1 (
-    echo Exception thrown during test discovery. 1>&2
-    type discovered.txt 1>&2
-    exit /b 1
-)
+echo.
 
 set exit_code=0
 
-REM Run non-flaky tests first
-REM We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
-REM only puts the explicit filter traits the user provided in
-REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-set NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
-echo Running non-flaky tests.
-%DOTNET_ROOT%\dotnet vstest %target% --logger:trx --TestCaseFilter:%NONFLAKY_FILTER%
-if errorlevel 1 (
-    echo Failure in non-flaky test 1>&2
-    set exit_code=1
-    REM DO NOT EXIT
-)
+echo "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
+dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
-set FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
-echo Running known-flaky tests.
-%DOTNET_ROOT%\dotnet vstest %target% --TestCaseFilter:%FLAKY_FILTER%
-if errorlevel 1 (
-    echo Failure in flaky test 1>&2
-    REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
+echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
+dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
+if errorlevel neq 0 (
+    set exit_code=%errorlevel%
 )
-
+echo "Finished running tests: exit_code=%exit_code%"
 exit /b %exit_code%
-

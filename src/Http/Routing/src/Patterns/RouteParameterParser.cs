@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var parseResults = ParseConstraints(parameter, currentIndex, endIndex);
             currentIndex = parseResults.CurrentIndex;
 
-            string defaultValue = null;
+            string? defaultValue = null;
             if (currentIndex <= endIndex &&
                 parameter[currentIndex] == '=')
             {

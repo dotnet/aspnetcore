@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -244,23 +245,32 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackAppend()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao"
-                    });
-                    app.Run(context =>
-                    {
-                        context.Response.Cookies.Append("A", "A");
-                        context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
-                        context.Response.Cookies.Append("C", "C", new CookieOptions() { SameSite = Http.SameSiteMode.Strict });
-                        context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao"
+                            });
+                            app.Run(context =>
+                            {
+                                context.Response.Cookies.Append("A", "A");
+                                context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
+                                context.Response.Cookies.Append("C", "C", new CookieOptions() { SameSite = Http.SameSiteMode.Strict });
+                                context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
+                                return Task.FromResult(0);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -274,23 +284,32 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackDelete()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-            {
-                app.UseCookiePolicy(new CookiePolicyOptions
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    OnDeleteCookie = ctx => ctx.CookieName = "A"
-                });
-                app.Run(context =>
-                {
-                    context.Response.Cookies.Delete("A");
-                    context.Response.Cookies.Delete("B", new CookieOptions { Secure = false });
-                    context.Response.Cookies.Delete("C", new CookieOptions());
-                    context.Response.Cookies.Delete("D", new CookieOptions { Secure = true });
-                    return Task.FromResult(0);
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnDeleteCookie = ctx => ctx.CookieName = "A"
+                            });
+                            app.Run(context =>
+                            {
+                                context.Response.Cookies.Delete("A");
+                                context.Response.Cookies.Delete("B", new CookieOptions { Secure = false });
+                                context.Response.Cookies.Delete("C", new CookieOptions());
+                                context.Response.Cookies.Delete("D", new CookieOptions { Secure = true });
+                                return Task.FromResult(0);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -302,28 +321,37 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCallsCookieFeature()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-            {
-                app.Use(next => context =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    context.Features.Set<IResponseCookiesFeature>(new TestCookieFeature());
-                    return next(context);
-                });
-                app.UseCookiePolicy(new CookiePolicyOptions
-                {
-                    OnDeleteCookie = ctx => ctx.CookieName = "A"
-                });
-                app.Run(context =>
-                {
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A"));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A", new CookieOptions()));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A"));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A", new CookieOptions()));
-                    return context.Response.WriteAsync("Done");
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.Use(next => context =>
+                            {
+                                context.Features.Set<IResponseCookiesFeature>(new TestCookieFeature());
+                                return next(context);
+                            });
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnDeleteCookie = ctx => ctx.CookieName = "A"
+                            });
+                            app.Run(context =>
+                            {
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A"));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A", new CookieOptions()));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A"));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A", new CookieOptions()));
+                                return context.Response.WriteAsync("Done");
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal("Done", transaction.ResponseText);
@@ -332,7 +360,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuth()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                HttpOnly = HttpOnlyPolicy.Always,
+                                Secure = CookieSecurePolicy.Always,
+                            });
+                            app.UseAuthentication();
+                            app.Run(context =>
+                            {
+                                return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication().AddCookie(o =>
@@ -342,21 +389,11 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        HttpOnly = HttpOnlyPolicy.Always,
-                        Secure = CookieSecurePolicy.Always,
-                    });
-                    app.UseAuthentication();
-                    app.Run(context =>
-                    {
-                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -372,7 +409,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuthChunks()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                HttpOnly = HttpOnlyPolicy.Always,
+                                Secure = CookieSecurePolicy.Always,
+                            });
+                            app.UseAuthentication();
+                            app.Run(context =>
+                            {
+                                return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication().AddCookie(o =>
@@ -382,21 +438,11 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        HttpOnly = HttpOnlyPolicy.Always,
-                        Secure = CookieSecurePolicy.Always,
-                    });
-                    app.UseAuthentication();
-                    app.Run(context =>
-                    {
-                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -475,16 +521,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Map(path, map =>
-                    {
-                        map.UseCookiePolicy(cookiePolicy);
-                        map.Run(configureSetup);
-                    });
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.Map(path, map =>
+                            {
+                                map.UseCookiePolicy(cookiePolicy);
+                                map.Run(configureSetup);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
+
             foreach (var test in tests)
             {
                 await test.Execute(server);

@@ -24,6 +24,10 @@ a {
   border-color: #1861ac;
 }
 
+.btn-link.nav-link:focus {
+  outline: black auto 1px;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 html {

@@ -58,18 +58,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new HttpConnectionContext
-            {
-                ServiceContext = _serviceContext,
-                ConnectionContext = Mock.Of<ConnectionContext>(),
-                ConnectionFeatures = connectionFeatures,
-                MemoryPool = _pipelineFactory,
-                TimeoutControl = _timeoutControl.Object,
-                Transport = pair.Transport
-            };
+            _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: _serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: pair.Transport,
+                timeoutControl: _timeoutControl.Object,
+                memoryPool: _pipelineFactory,
+                connectionFeatures: connectionFeatures);
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
-            _http1Connection.Reset();
         }
 
         public void Dispose()
@@ -96,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.UTF8.GetBytes("\r\n\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
+            TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(headerValue, _http1Connection.RequestHeaders[headerName]);
@@ -115,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+            var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
         }
 
         [Fact]
@@ -128,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, exception.Message);
@@ -144,11 +141,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_TooManyHeaders, exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
+        }
+
+        [Fact]
+        public async Task TakeMessageHeadersDoesNotCountAlreadyConsumedBytesTowardsSizeLimit()
+        {
+            const string startLine = "GET / HTTP/1.1\r\n";
+
+            // This doesn't actually need to be larger than the start line to cause the regression,
+            // but doing so gives us a nice HeadersExceedMaxTotalSize error rather than an invalid slice
+            // when we do see the regression.
+            const string headerLine = "Header: makethislargerthanthestartline\r\n";
+
+            _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = headerLine.Length;
+            _http1Connection.Reset();
+
+            // Don't send header initially because the regression is only caught if TakeMessageHeaders
+            // is called multiple times. The first call overcounted the header bytes consumed, and the
+            // subsequent calls overslice the buffer due to the overcounting.
+            await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{startLine}"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            SequencePosition TakeStartLineAndMessageHeaders()
+            {
+                var reader = new SequenceReader<byte>(readableBuffer);
+                Assert.True(_http1Connection.TakeStartLine(ref reader));
+                Assert.False(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+                return reader.Position;
+            }
+
+            _transport.Input.AdvanceTo(TakeStartLineAndMessageHeaders());
+
+            Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+
+            await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
+            readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            SequencePosition TakeMessageHeaders()
+            {
+                var reader = new SequenceReader<byte>(readableBuffer);
+                Assert.True(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+                return reader.Position;
+            }
+
+            _transport.Input.AdvanceTo(TakeMessageHeaders());
+
+            Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+            Assert.Equal("makethislargerthanthestartline", _http1Connection.RequestHeaders["Header"]);
         }
 
         [Fact]
@@ -249,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine1}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
+            var takeMessageHeaders = TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -261,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine2}\r\n"));
             readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
+            takeMessageHeaders = TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -386,7 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var returnValue = _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            var returnValue = TakeStartLine(readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(returnValue);
@@ -409,7 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var returnValue = _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            var returnValue = TakeStartLine(readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(returnValue);
@@ -423,7 +467,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("G"));
 
-            _http1Connection.ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
+            ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
@@ -439,7 +483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_RequestLineTooLong, exception.Message);
@@ -453,8 +497,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+            TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target), exception.Message);
@@ -467,8 +511,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+            TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -483,11 +527,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+            TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
-            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
         }
 
         [Theory]
@@ -499,8 +543,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+             TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -515,8 +559,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+            TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -530,8 +574,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+#pragma warning restore CS0618 // Type or member is obsolete
+                TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(405, exception.StatusCode);
@@ -751,11 +797,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.Abort(new ConnectionAbortedException());
 
             // The following line will throw an ODE because the original CTS backing the token has been diposed.
-            // See https://github.com/aspnet/AspNetCore/pull/4447 for the history behind this test.
+            // See https://github.com/dotnet/aspnetcore/pull/4447 for the history behind this test.
             //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
             Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
 
             Assert.Equal(originalToken, originalRegistration.Token);
+        }
+
+        [Fact]
+        public async Task RequestAbortedTokenIsFiredAfterTransportReturnsCompletedFlushResult()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+
+            // Ensure the next call to _transport.Output.FlushAsync() returns a completed FlushResult.
+            _application.Input.Complete();
+
+            await _http1Connection.WritePipeAsync(ReadOnlyMemory<byte>.Empty, default).DefaultTimeout();
+
+            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
         }
 
         [Fact]
@@ -775,8 +835,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET /%00 HTTP/1.1\r\n"));
                 var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-                var exception = Assert.Throws<BadHttpRequestException>(() =>
-                    _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+                    TakeStartLine(readableBuffer, out _consumed, out _examined));
                 _transport.Input.AdvanceTo(_consumed, _examined);
 
                 Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(string.Empty), exception.Message);
@@ -935,7 +995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.HttpVersion = "HTTP/1.0";
             _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
-            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
+            var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
 
@@ -944,8 +1004,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.HttpVersion = "HTTP/1.1";
             _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
-            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
+            var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
+        }
+
+
+        private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        {
+            var reader = new SequenceReader<byte>(readableBuffer);
+            if (_http1Connection.TakeMessageHeaders(ref reader, trailers: trailers))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+            else
+            {
+                consumed = reader.Position;
+                examined = readableBuffer.End;
+                return false;
+            }
+        }
+
+        private bool TakeStartLine(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        {
+            var reader = new SequenceReader<byte>(readableBuffer);
+            if (_http1Connection.TakeStartLine(ref reader))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+            else
+            {
+                consumed = reader.Position;
+                examined = readableBuffer.End;
+                return false;
+            }
+        }
+
+        private bool ParseRequest(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        {
+            var reader = new SequenceReader<byte>(readableBuffer);
+            if (_http1Connection.ParseRequest(ref reader))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+            else
+            {
+                consumed = reader.Position;
+                examined = readableBuffer.End;
+                return false;
+            }
         }
 
         private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)

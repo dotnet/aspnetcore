@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         //
         [Theory]
         [InlineData("/middleware", 1)]
-        [InlineData("/middleware/test", 0)]
-        [InlineData("/middleware/test1/test2", -1)]
+        [InlineData("/middleware/test", 1)]
+        [InlineData("/middleware/test1/test2", 1)]
         [InlineData("/bill/boga", 0)]
         public async Task Match_Regression_1867_DefaultBehavior(string path, int endpointIndex)
         {

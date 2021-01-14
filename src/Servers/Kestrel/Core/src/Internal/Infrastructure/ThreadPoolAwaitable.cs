@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal class ThreadPoolAwaitable : ICriticalNotifyCompletion
     {
-        public static ThreadPoolAwaitable Instance = new ThreadPoolAwaitable();
+        public static readonly ThreadPoolAwaitable Instance = new ThreadPoolAwaitable();
 
         private ThreadPoolAwaitable()
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void OnCompleted(Action continuation)
         {
-            ThreadPool.UnsafeQueueUserWorkItem(state => ((Action)state)(), continuation);
+            ThreadPool.UnsafeQueueUserWorkItem(state => ((Action)state!)(), continuation);
         }
 
         public void UnsafeOnCompleted(Action continuation)

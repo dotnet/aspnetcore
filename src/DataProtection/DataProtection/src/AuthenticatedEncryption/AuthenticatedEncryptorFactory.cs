@@ -1,7 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -19,15 +22,19 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public AuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        /// <inheritdoc />
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
-            var descriptor = key.Descriptor as AuthenticatedEncryptorDescriptor;
-            if (descriptor == null)
+            if (key.Descriptor is not AuthenticatedEncryptorDescriptor descriptor)
             {
                 return null;
             }
@@ -35,9 +42,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal IAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("authenticatedConfiguration")]
+        internal IAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            AuthenticatedEncryptorConfiguration authenticatedConfiguration)
+            AuthenticatedEncryptorConfiguration? authenticatedConfiguration)
         {
             if (authenticatedConfiguration == null)
             {
@@ -52,6 +60,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                     throw new PlatformNotSupportedException(Resources.Platform_WindowsRequiredForGcm);
                 }
 
+                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
                 var configuration = new CngGcmAuthenticatedEncryptorConfiguration()
                 {
                     EncryptionAlgorithm = GetBCryptAlgorithmNameFromEncryptionAlgorithm(authenticatedConfiguration.EncryptionAlgorithm),
@@ -64,6 +74,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             {
                 if (OSVersionUtil.IsWindows())
                 {
+                    Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                     // CNG preferred over managed implementations if running on Windows
                     var configuration = new CngCbcAuthenticatedEncryptorConfiguration()
                     {

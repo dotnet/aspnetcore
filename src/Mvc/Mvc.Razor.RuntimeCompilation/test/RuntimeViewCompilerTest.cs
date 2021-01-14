@@ -765,7 +765,7 @@ this should fail";
             // Arrange
             var viewPath = "some-relative-path";
             var fileContent = "file content";
-            var content = "this should fail";
+            var content = "public class Bad { this should fail }";
 
             var compiler = GetViewCompiler(new TestFileProvider());
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(fileContent, viewPath));

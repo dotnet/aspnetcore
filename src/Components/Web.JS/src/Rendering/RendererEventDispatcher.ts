@@ -10,9 +10,9 @@ export function dispatchEvent(eventDescriptor: EventDescriptor, eventArgs: UIEve
     throw new Error('eventDispatcher not initialized. Call \'setEventDispatcher\' to configure it.');
   }
 
-  return eventDispatcherInstance(eventDescriptor, eventArgs);
+  eventDispatcherInstance(eventDescriptor, eventArgs);
 }
 
-export function setEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => Promise<void>): void {
+export function setEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => void): void {
   eventDispatcherInstance = newDispatcher;
 }

@@ -178,6 +178,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
         /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
+        [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
+            DiagnosticId = "ASP5001",
+            UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
         public static IMvcBuilder SetCompatibilityVersion(this IMvcBuilder builder, CompatibilityVersion version)
         {
             if (builder == null)

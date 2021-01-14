@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsTestAssetProject>true</IsTestAssetProject>
 
     <!-- Resx files are embedded data -->
     <GenerateResxSource>false</GenerateResxSource>

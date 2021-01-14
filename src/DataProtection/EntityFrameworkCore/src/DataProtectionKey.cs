@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
         /// <summary>
         /// The friendly name of the <see cref="DataProtectionKey"/>.
         /// </summary>
-        public string FriendlyName { get; set; }
+        public string? FriendlyName { get; set; }
 
         /// <summary>
         /// The XML representation of the <see cref="DataProtectionKey"/>.
         /// </summary>
-        public string Xml { get; set; }
+        public string? Xml { get; set; }
     }
 }

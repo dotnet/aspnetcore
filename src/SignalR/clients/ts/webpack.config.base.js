@@ -41,7 +41,6 @@ module.exports = function (modulePath, browserBaseName, options) {
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
-                "./NodeHttpClient": path.resolve(__dirname, "signalr/src/EmptyNodeHttpClient.ts"),
                 ...options.alias,
             }
         },

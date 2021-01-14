@@ -1,23 +1,41 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-watch.csproj" />
+    <Reference Include="Microsoft.AspNetCore" />
+  </ItemGroup>
+
+  <!-- Ensure shared framework and targeting packs are laid out under .dotnet/ before executing non-Helix tests. -->
+  <ItemGroup Condition=" '$(ASPNETCORE_TEST_LOG_DIR)' == '' AND '$(IsHelixJob)' != 'true' ">
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+        Condition=" $(IsTargetingPackBuilding) "
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Condition=" !$(IsTargetingPackBuilding) "
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsBinDir</_Parameter1>
+      <_Parameter2>$(ArtifactsBinDir)</_Parameter2>
+    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotnetPath</_Parameter1>
       <_Parameter2>$(DotNetTool)</_Parameter2>
@@ -29,17 +47,23 @@
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(OutputPath)\tool\middleware" />
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(PublishDir)\tool\middleware" />
   </Target>
 
 </Project>

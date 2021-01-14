@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         protected override void SetupIdentityServices(IServiceCollection services, object context)
         {
             services.AddHttpContextAccessor();
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
             services.AddIdentity<TUser, TRole>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -486,7 +488,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             var result = await userMgr.RemoveFromRoleAsync(user, roleName);
             IdentityResultAssert.IsFailure(result, _errorDescriber.UserNotInRole(roleName));
-            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is not in role {roleName}.");
+            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User is not in role {roleName}.");
         }
 
         /// <summary>
@@ -507,7 +509,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
             Assert.True(await userMgr.IsInRoleAsync(user, roleName));
             IdentityResultAssert.IsFailure(await userMgr.AddToRoleAsync(user, roleName), _errorDescriber.UserAlreadyInRole(roleName));
-            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is already in role {roleName}.");
+            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User is already in role {roleName}.");
         }
 
         /// <summary>

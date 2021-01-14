@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28993")]
         public async Task ServerShutsDownWhenMainExitsStress()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
@@ -65,12 +66,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
+            response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: true);
             Assert.True(result.HostProcess.ExitCode == 0);
         }
@@ -82,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
+            response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: false);
             Assert.True(result.HostProcess.ExitCode == 1);
         }

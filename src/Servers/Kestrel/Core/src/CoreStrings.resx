@@ -246,9 +246,6 @@
   <data name="BindingToDefaultAddress" xml:space="preserve">
     <value>No listening endpoints were configured. Binding to {address} by default.</value>
   </data>
-  <data name="ConfigureHttpsFromMethodCall" xml:space="preserve">
-    <value>HTTPS endpoints can only be configured using {methodName}.</value>
-  </data>
   <data name="ConfigurePathBaseFromMethodCall" xml:space="preserve">
     <value>A path base can only be configured using {methodName}.</value>
   </data>
@@ -257,9 +254,6 @@
   </data>
   <data name="EndpointAlreadyInUse" xml:space="preserve">
     <value>Failed to bind to address {endpoint}: address already in use.</value>
-  </data>
-  <data name="InvalidUrl" xml:space="preserve">
-    <value>Invalid URL: '{url}'.</value>
   </data>
   <data name="NetworkInterfaceBindingFailed" xml:space="preserve">
     <value>Unable to bind to {address} on the {interfaceName} interface: '{error}'.</value>
@@ -271,7 +265,7 @@
     <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
   </data>
   <data name="UnsupportedAddressScheme" xml:space="preserve">
-    <value>Unrecognized scheme in server address '{address}'. Only 'http://' is supported.</value>
+    <value>Unrecognized scheme in server address '{address}'. Only 'http://' and 'https://' are supported.</value>
   </data>
   <data name="HeadersAreReadOnly" xml:space="preserve">
     <value>Headers are read-only, response has already started.</value>
@@ -284,9 +278,6 @@
   </data>
   <data name="ParameterReadOnlyAfterResponseStarted" xml:space="preserve">
     <value>{name} cannot be set because the response has already started.</value>
-  </data>
-  <data name="RequestProcessingAborted" xml:space="preserve">
-    <value>Request processing didn't complete within the shutdown timeout.</value>
   </data>
   <data name="TooFewBytesWritten" xml:space="preserve">
     <value>Response Content-Length mismatch: too few bytes written ({written} of {expected}).</value>
@@ -327,9 +318,6 @@
   <data name="PositiveTimeSpanRequired" xml:space="preserve">
     <value>Value must be a positive TimeSpan.</value>
   </data>
-  <data name="NonNegativeTimeSpanRequired" xml:space="preserve">
-    <value>Value must be a non-negative TimeSpan.</value>
-  </data>
   <data name="MinimumGracePeriodRequired" xml:space="preserve">
     <value>The request body rate enforcement grace period must be greater than {heartbeatInterval} second.</value>
   </data>
@@ -353,30 +341,6 @@
   </data>
   <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
     <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
-  </data>
-  <data name="HPackErrorDynamicTableSizeUpdateTooLarge" xml:space="preserve">
-    <value>A dynamic table size of {size} octets is greater than the configured maximum size of {maxSize} octets.</value>
-  </data>
-  <data name="HPackErrorIndexOutOfRange" xml:space="preserve">
-    <value>Index {index} is outside the bounds of the header field table.</value>
-  </data>
-  <data name="HPackHuffmanErrorIncomplete" xml:space="preserve">
-    <value>Input data could not be fully decoded.</value>
-  </data>
-  <data name="HPackHuffmanErrorEOS" xml:space="preserve">
-    <value>Input data contains the EOS symbol.</value>
-  </data>
-  <data name="HPackHuffmanErrorDestinationTooSmall" xml:space="preserve">
-    <value>The destination buffer is not large enough to store the decoded data.</value>
-  </data>
-  <data name="HPackHuffmanError" xml:space="preserve">
-    <value>Huffman decoding error.</value>
-  </data>
-  <data name="HPackStringLengthTooLarge" xml:space="preserve">
-    <value>Decoded string length of {length} octets is greater than the configured maximum length of {maxStringLength} octets.</value>
-  </data>
-  <data name="HPackErrorIncompleteHeaderBlock" xml:space="preserve">
-    <value>The header block was incomplete and could not be fully decoded.</value>
   </data>
   <data name="Http2ErrorStreamIdEven" xml:space="preserve">
     <value>The client sent a {frameType} frame with even stream ID {streamId}.</value>
@@ -456,9 +420,6 @@
   <data name="Http2ErrorConnectionSpecificHeaderField" xml:space="preserve">
     <value>Request headers contain connection-specific header field.</value>
   </data>
-  <data name="UnableToConfigureHttpsBindings" xml:space="preserve">
-    <value>Unable to configure default https bindings because no IDefaultHttpsProvider service was provided.</value>
-  </data>
   <data name="AuthenticationFailed" xml:space="preserve">
     <value>Failed to authenticate HTTPS connection.</value>
   </data>
@@ -467,9 +428,6 @@
   </data>
   <data name="InvalidServerCertificateEku" xml:space="preserve">
     <value>Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).</value>
-  </data>
-  <data name="PositiveTimeSpanRequired1" xml:space="preserve">
-    <value>Value must be a positive TimeSpan.</value>
   </data>
   <data name="ServerCertificateRequired" xml:space="preserve">
     <value>The server certificate parameter is required.</value>
@@ -566,20 +524,29 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorMaxStreams" xml:space="preserve">
     <value>A new stream was refused because this connection has reached its stream limit.</value>
   </data>
+  <data name="Http3ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http3StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
+  <data name="Http3ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http3StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
+  <data name="Http3StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http3StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
   <data name="GreaterThanZeroRequired" xml:space="preserve">
     <value>A value greater than zero is required.</value>
   </data>
   <data name="ArgumentOutOfRange" xml:space="preserve">
     <value>A value between {min} and {max} is required.</value>
-  </data>
-  <data name="HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock" xml:space="preserve">
-    <value>Dynamic tables size update did not occur at the beginning of the first header block.</value>
-  </data>
-  <data name="HPackErrorNotEnoughBuffer" xml:space="preserve">
-    <value>The given buffer was too small to encode any headers.</value>
-  </data>
-  <data name="HPackErrorIntegerTooBig" xml:space="preserve">
-    <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
   </data>
   <data name="ConnectionAbortedByClient" xml:space="preserve">
     <value>The client closed the connection.</value>
@@ -587,26 +554,14 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorStreamAborted" xml:space="preserve">
     <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
   </data>
-  <data name="ProtocolSelectionFailed" xml:space="preserve">
-    <value>HTTP protocol selection failed.</value>
-  </data>
-  <data name="ServerShutdownDuringConnectionInitialization" xml:space="preserve">
-    <value>Server shutdown started during connection initialization.</value>
-  </data>
-  <data name="StartAsyncBeforeGetMemory" xml:space="preserve">
-    <value>Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().</value>
-  </data>
   <data name="Http2MinDataRateNotSupported" xml:space="preserve">
     <value>This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.</value>
   </data>
   <data name="RequestTrailersNotAvailable" xml:space="preserve">
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
   </data>
-  <data name="HTTP2NoTlsOsx" xml:space="preserve">
+  <data name="Http2NoTlsOsx" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
-  </data>
-  <data name="HTTP2NoTlsWin7" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.</value>
   </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
@@ -614,7 +569,88 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2TellClientToCalmDown" xml:space="preserve">
     <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
+  <data name="HttpParserTlsOverHttpError" xml:space="preserve">
+    <value>Detected a TLS handshake to an endpoint that does not have TLS enabled.</value>
+  </data>
   <data name="BadDeveloperCertificateState" xml:space="preserve">
     <value>The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.</value>
+  </data>
+  <data name="QPackErrorIndexOutOfRange" xml:space="preserve">
+    <value>Index {index} is outside the bounds of the header field table.</value>
+  </data>
+  <data name="QPackErrorIntegerTooBig" xml:space="preserve">
+    <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
+  </data>
+  <data name="QPackHuffmanError" xml:space="preserve">
+    <value>Huffman decoding error.</value>
+  </data>
+  <data name="QPackStringLengthTooLarge" xml:space="preserve">
+    <value>Decoded string length of {length} octets is greater than the configured maximum length of {maxStringLength} octets.</value>
+  </data>
+  <data name="QuicTransportNotFound" xml:space="preserve">
+    <value>Quic transport not found when using HTTP/3.</value>
+  </data>
+  <data name="TransportNotFound" xml:space="preserve">
+    <value>Unable to resolve service for type 'Microsoft.AspNetCore.Connections.IConnectionListenerFactory' while attempting to activate 'Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer'.</value>
+  </data>
+  <data name="GreaterThanOrEqualToZeroRequired" xml:space="preserve">
+    <value>A value greater than or equal to zero is required.</value>
+  </data>
+  <data name="HttpsConnectionEstablished" xml:space="preserve">
+    <value>Connection "{connectionId}" established using the following protocol: {protocol}</value>
+  </data>
+  <data name="Http2DefaultCiphersInsufficient" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.</value>
+  </data>
+  <data name="Http2NoTlsWin81" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows versions earlier than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support.</value>
+  </data>
+  <data name="Http2ErrorKeepAliveTimeout" xml:space="preserve">
+    <value>Timeout while waiting for incoming HTTP/2 frames after a keep alive ping.</value>
+  </data>
+  <data name="ArgumentTimeSpanGreaterOrEqual" xml:space="preserve">
+    <value>A TimeSpan value greater than or equal to {value} is required.</value>
+  </data>
+  <data name="InvalidPemKey" xml:space="preserve">
+    <value>The provided key file is missing or invalid.</value>
+  </data>
+  <data name="UnrecognizedCertificateKeyOid" xml:space="preserve">
+    <value>Unknown algorithm for certificate with public key type '{0}'.</value>
+  </data>
+  <data name="SniNotConfiguredForServerName" xml:space="preserve">
+    <value>Connection refused because no SNI configuration section was found for '{serverName}' in '{endpointName}'. To allow all connections, add a wildcard ('*') SNI section.</value>
+  </data>
+  <data name="SniNotConfiguredToAllowNoServerName" xml:space="preserve">
+    <value>Connection refused because the client did not specify a server name, and no wildcard ('*') SNI configuration section was found in '{endpointName}'.</value>
+  </data>
+  <data name="SniNameCannotBeEmpty" xml:space="preserve">
+    <value>The endpoint {endpointName} is invalid because an SNI configuration section has an empty string as its key. Use a wildcard ('*') SNI section to match all server names.</value>
+  </data>
+  <data name="EndpointHasUnusedHttpsConfig" xml:space="preserve">
+    <value>The non-HTTPS endpoint {endpointName} includes HTTPS-only configuration for {keyName}.</value>
+  </data>
+  <data name="FoundCertWithPrivateKey" xml:space="preserve">
+    <value>Found certificate with private key and thumbprint {Thumbprint} in certificate store {StoreName}.</value>
+  </data>
+  <data name="LocatingCertWithPrivateKey" xml:space="preserve">
+    <value>Searching for certificate with private key and thumbprint {Thumbprint} in the certificate store.</value>
+  </data>
+  <data name="FailedToLocateCertificateFromStore" xml:space="preserve">
+    <value>Failure to locate certificate from store.</value>
+  </data>
+  <data name="FailedToOpenCertStore" xml:space="preserve">
+    <value>Failed to open certificate store {StoreName}.</value>
+  </data>
+  <data name="Http3ConnectionFaulted" xml:space="preserve">
+    <value>The HTTP/3 connection faulted.</value>
+  </data>
+  <data name="Http3StreamAborted" xml:space="preserve">
+    <value>The HTTP/3 request stream was aborted.</value>
+  </data>
+  <data name="Http3StreamResetByApplication" xml:space="preserve">
+    <value>The HTTP/3 stream was reset by the application with error code {errorCode}.</value>
+  </data>
+  <data name="Http3StreamErrorAfterHeaders" xml:space="preserve">
+    <value>An error occurred after the response headers were sent, a reset is being sent.</value>
   </data>
 </root>

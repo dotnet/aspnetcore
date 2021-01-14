@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" />
+    <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" />
+    <ProjectReference Include="..\SimpleMvc31\SimpleMvc31.csproj" />
+    <ProjectReference Include="..\blazor31\blazor31.csproj" />
+    <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
+    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
+    <ProjectReference Include="..\AppWithPackageAndP2PReferenceAndRID\AppWithPackageAndP2PReferenceAndRID.csproj" />
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
+    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
+    <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
+    <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" />
+    <ProjectReference Include="..\ComponentApp\ComponentApp.csproj" />
+    <ProjectReference Include="..\LargeProject\LargeProject.csproj" />
+    <ProjectReference Include="..\MvcWithComponents\MvcWithComponents.csproj" />
+    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
+    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
+    <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
+    <ProjectReference Include="..\AppWithPackageAndP2PReference\AppWithPackageAndP2PReference.csproj" />
+
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj" />
+  </ItemGroup>
+
+</Project>

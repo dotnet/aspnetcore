@@ -49,7 +49,7 @@
         <RelatedBundle Action="Upgrade" Id="{A65A6022-E10B-3AEF-802C-B9AFE0B000E2}"/>
         <?endif?>
 
-        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x86. -->
         <?if $(var.Platform)=x86?>
         <!--'Microsoft ASP.NET Core 3.1.9 - Shared Framework'-->
         <RelatedBundle Action="Upgrade" Id="{BE2349EF-BC78-3E42-B29C-E61D12E02FE4}"/>
@@ -93,6 +93,8 @@
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
             <?elseif $(var.Platform)=x64?>
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
+            <?elseif $(var.Platform)=arm64?>
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
             <?endif?>
         </Chain>
     </Bundle>

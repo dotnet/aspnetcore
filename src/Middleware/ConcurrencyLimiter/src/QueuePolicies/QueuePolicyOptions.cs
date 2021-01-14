@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         public int MaxConcurrentRequests { get; set; }
 
         /// <summary>
-        /// Maximum number of queued requests before the server starts rejecting connections with '503 Service Unavailible'.
+        /// Maximum number of queued requests before the server starts rejecting connections with '503 Service Unavailable'.
         /// This option is highly application dependant, and must be configured by the application.
         /// </summary>
         public int RequestQueueLimit { get; set; }

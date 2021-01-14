@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 AttributeSyntax attributeSyntax;
                 bool addUsing;
 
-                if (statusCode >= 400 && returnType != null && returnType != errorResponseType)
+                if (statusCode >= 400 && returnType != null && !SymbolEqualityComparer.Default.Equals(returnType, errorResponseType))
                 {
                     // If a returnType was discovered and is different from the errorResponseType, use it in the result.
                     attributeSyntax = CreateProducesResponseTypeAttribute(context, statusCode, returnType, out addUsing);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 addUsingDirective |= addUsing;
             }
 
-            if (!declaredResponseMetadata.Any(m => m.IsDefault && m.AttributeSource == context.Method))
+            if (!declaredResponseMetadata.Any(m => m.IsDefault && SymbolEqualityComparer.Default.Equals(m.AttributeSource, context.Method)))
             {
                 // Add a ProducesDefaultResponseTypeAttribute if the method does not already have one.
                 documentEditor.AddAttribute(context.MethodSyntax, CreateProducesDefaultResponseTypeAttribute());
@@ -121,18 +121,40 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
             }
 
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
             return document.WithSyntaxRoot(root);
         }
 
         private async Task<CodeActionContext?> CreateCodeActionContext(CancellationToken cancellationToken)
         {
             var root = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var methodReturnStatement = (ReturnStatementSyntax)root.FindNode(_diagnostic.Location.SourceSpan);
             var methodSyntax = methodReturnStatement.FirstAncestorOrSelf<MethodDeclarationSyntax>();
             var method = semanticModel.GetDeclaredSymbol(methodSyntax, cancellationToken);
 
+            if (semanticModel == null)
+            {
+                throw new ArgumentNullException(nameof(semanticModel));
+            }
+
             var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
+
+            if (statusCodesType == null)
+            {
+                throw new ArgumentNullException(nameof(statusCodesType));
+            }
+
             var statusCodeConstants = GetStatusCodeConstants(statusCodesType);
 
             if (!ApiControllerSymbolCache.TryCreate(semanticModel.Compilation, out var symbolCache))
@@ -178,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             foreach (var metadata in actualResponseMetadata)
             {
                 if (DeclaredApiResponseMetadata.TryGetDeclaredMetadata(declaredResponseMetadata, metadata, result: out var declaredMetadata) &&
-                    declaredMetadata.AttributeSource == context.Method)
+                    SymbolEqualityComparer.Default.Equals(declaredMetadata.AttributeSource, context.Method))
                 {
                     // A ProducesResponseType attribute is declared on the method for the current status code.
                     continue;

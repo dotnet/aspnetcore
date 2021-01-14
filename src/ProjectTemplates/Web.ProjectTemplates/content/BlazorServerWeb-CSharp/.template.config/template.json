@@ -9,10 +9,10 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Server",
-  "precedence": "6000",
-  "identity": "Microsoft.Web.Blazor.Server.CSharp.3.1",
+  "precedence": "7000",
+  "identity": "Microsoft.Web.Blazor.Server.CSharp.5.0",
   "shortName": "blazorserver",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/3.1-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -127,6 +127,49 @@
             "Shared/LoginDisplay.IndividualB2CAuth.razor",
             "Shared/LoginDisplay.OrganizationalAuth.razor"
           ]
+        },
+        {
+          "condition": "(!GenerateApi)",
+            "exclude": [
+              "Pages/CallWebApi.razor"
+            ]
+        },
+        {
+          "condition": "(!GenerateGraph)",
+          "exclude": [
+            "Shared/NavMenu.CallsMicrosoftGraph.razor",
+            "Pages/ShowProfile.razor"
+            ]
+        },
+        {
+          "condition": "(!GenerateApiOrGraph)",
+          "rename": {
+            "Shared/NavMenu.NoGraphOrApi.razor": "Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Shared/NavMenu.CallsMicrosoftGraph.razor",
+            "Shared/NavMenu.CallsWebApi.razor"
+          ]
+        },
+        {
+          "condition": "(GenerateGraph)",
+          "rename": {
+            "Shared/NavMenu.CallsMicrosoftGraph.razor": "Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Shared/NavMenu.NoGraphOrApi.razor",
+            "Shared/NavMenu.CallsWebApi.razor"
+          ]
+        },
+        {
+          "condition": "(GenerateApi)",
+          "rename": {
+            "Shared/NavMenu.CallsWebApi.razor": "Shared/NavMenu.razor"
+          },
+          "exclude": [
+            "Shared/NavMenu.NoGraphOrApi.razor",
+            "Shared/NavMenu.CallsMicrosoftGraph.razor"
+          ]
         }
       ]
     }
@@ -174,21 +217,28 @@
     "SignUpSignInPolicyId": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "",
+      "defaultValue": "b2c_1_susi",
       "replaces": "MySignUpSignInPolicyId",
       "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
+    },
+    "SignedOutCallbackPath": {
+        "type": "parameter",
+        "datatype": "string",
+        "defaultValue": "/signout/B2C_1_susi",
+        "replaces": "/signout/MySignUpSignInPolicyId",
+        "description": "The global signout callback (use with IndividualB2C auth)."
     },
     "ResetPasswordPolicyId": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "",
+      "defaultValue": "b2c_1_reset",
       "replaces": "MyResetPasswordPolicyId",
       "description": "The reset password policy ID for this project (use with IndividualB2C auth)."
     },
     "EditProfilePolicyId": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "",
+      "defaultValue": "b2c_1_edit_profile",
       "replaces": "MyEditProfilePolicyId",
       "description": "The edit profile policy ID for this project (use with IndividualB2C auth)."
     },
@@ -337,12 +387,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.1",
-          "description": "Target netcoreapp3.1"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "netcoreapp3.1",
-      "defaultValue": "netcoreapp3.1"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -351,6 +401,37 @@
       "parameters": {
         "format": "yyyy"
       }
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue" : "https://graph.microsoft.com/beta",
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/beta\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || GenerateGraph)"
     },
     "skipRestore": {
       "type": "parameter",

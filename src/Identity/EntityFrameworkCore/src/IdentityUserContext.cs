@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             builder.Entity<TUser>(b =>
             {
                 b.HasKey(u => u.Id);
-                b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
-                b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
+                b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("UserNameIndex").IsUnique();
+                b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex");
                 b.ToTable("AspNetUsers");
                 b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 b.ToTable("AspNetUserLogins");
             });
 
-            builder.Entity<TUserToken>(b => 
+            builder.Entity<TUserToken>(b =>
             {
                 b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
 

@@ -5,6 +5,9 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
+// Remove once HttpSys has enabled nullable
+#nullable enable
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderEncoding
@@ -15,11 +18,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (useLatin1)
             {
-                return new Span<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
             }
             else
             {
-                return new Span<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
             }
         }
 

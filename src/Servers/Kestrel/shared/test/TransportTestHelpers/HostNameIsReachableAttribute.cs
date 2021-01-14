@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 
@@ -31,12 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task<bool> HostNameIsReachable()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Code below is unreliable on macOS and tests fail on that platform.
-                return false;
-            }
-
             try
             {
                 _hostname = Dns.GetHostName();

@@ -15,12 +15,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class AwaitableProcess : IDisposable
     {
-        private Process _process;
+        private readonly object _testOutputLock = new object();
+
+        private Process? _process;
         private readonly ProcessSpec _spec;
         private readonly List<string> _lines;
         private BufferBlock<string> _source;
         private ITestOutputHelper _logger;
         private TaskCompletionSource<int> _exited;
+        private bool _started;
+        private bool _disposed;
 
         public AwaitableProcess(ProcessSpec spec, ITestOutputHelper logger)
         {
@@ -28,14 +32,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _logger = logger;
             _source = new BufferBlock<string>();
             _lines = new List<string>();
-            _exited = new TaskCompletionSource<int>();
+            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public IEnumerable<string> Output => _lines;
 
         public Task Exited => _exited.Task;
 
-        public int Id => _process.Id;
+        public int Id => _process?.Id ?? throw new InvalidOperationException("Start() must be called.");
 
         public void Start()
         {
@@ -71,29 +75,33 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _process.ErrorDataReceived += OnData;
             _process.Exited += OnExit;
 
+            WriteTestOutput($"{DateTime.Now}: starting process: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
             _process.Start();
+            _started = true;
             _process.BeginErrorReadLine();
             _process.BeginOutputReadLine();
-            _logger.WriteLine($"{DateTime.Now}: process start: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
+            WriteTestOutput($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
 
         public async Task<string> GetOutputLineAsync(string message, TimeSpan timeout)
         {
-            _logger.WriteLine($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
+            WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token)
+                ?? throw new InvalidOperationException($"Did not find '{message} in output. {Environment.NewLine}{string.Join(Environment.NewLine, _lines)}");
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
         {
-            _logger.WriteLine($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
+            WriteTestOutput($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg.StartsWith('{message}')]", m => m != null && m.StartsWith(message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg.StartsWith('{message}')]", m => m != null && m.StartsWith(message, StringComparison.Ordinal), cts.Token)
+                ?? throw new InvalidOperationException($"Did not find '{message} in output. {Environment.NewLine}{string.Join(Environment.NewLine, _lines)}");
         }
 
-        private async Task<string> GetOutputLineAsync(string predicateName, Predicate<string> predicate, CancellationToken cancellationToken)
+        private async Task<string?> GetOutputLineAsync(string predicateName, Predicate<string> predicate, CancellationToken cancellationToken)
         {
             while (!_source.Completion.IsCompleted)
             {
@@ -102,7 +110,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var next = await _source.ReceiveAsync(cancellationToken);
                     _lines.Add(next);
                     var match = predicate(next);
-                    _logger.WriteLine($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
+                    WriteTestOutput($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
                     if (match)
                     {
                         return next;
@@ -121,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 while (await _source.OutputAvailableAsync(cancellationToken))
                 {
                     var next = await _source.ReceiveAsync(cancellationToken);
-                    _logger.WriteLine($"{DateTime.Now}: recv: '{next}'");
+                    WriteTestOutput($"{DateTime.Now}: recv: '{next}'");
                     lines.Add(next);
                 }
             }
@@ -131,29 +139,50 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private void OnData(object sender, DataReceivedEventArgs args)
         {
             var line = args.Data ?? string.Empty;
-            _logger.WriteLine($"{DateTime.Now}: post: '{line}'");
+
+            WriteTestOutput($"{DateTime.Now}: post: '{line}'");
             _source.Post(line);
         }
 
-        private void OnExit(object sender, EventArgs args)
+        private void WriteTestOutput(string text)
+        {
+            lock (_testOutputLock)
+            {
+                if (!_disposed)
+                {
+                    _logger.WriteLine(text);
+                }
+            }
+        }
+
+        private void OnExit(object? sender, EventArgs args)
         {
             // Wait to ensure the process has exited and all output consumed
+            Debug.Assert(_process != null);
             _process.WaitForExit();
             _source.Complete();
             _exited.TrySetResult(_process.ExitCode);
-            _logger.WriteLine($"Process {_process.Id} has exited");
+            WriteTestOutput($"Process {_process.Id} has exited");
         }
 
         public void Dispose()
         {
             _source.Complete();
 
+            lock (_testOutputLock)
+            {
+                _disposed = true;
+            }
+
             if (_process != null)
             {
-                if (!_process.HasExited)
+                if (_started && !_process.HasExited)
                 {
                     _process.KillTree();
                 }
+
+                _process.CancelErrorRead();
+                _process.CancelOutputRead();
 
                 _process.ErrorDataReceived -= OnData;
                 _process.OutputDataReceived -= OnData;

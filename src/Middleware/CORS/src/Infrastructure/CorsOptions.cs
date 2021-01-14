@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         internal IDictionary<string, (CorsPolicy policy, Task<CorsPolicy> policyTask)> PolicyMap { get; }
             = new Dictionary<string, (CorsPolicy, Task<CorsPolicy>)>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Gets or sets the default policy name.
+        /// </summary>
         public string DefaultPolicyName
         {
             get => _defaultPolicyName;
@@ -105,7 +108,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         /// <param name="name">The name of the policy to lookup.</param>
         /// <returns>The <see cref="CorsPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
-        public CorsPolicy GetPolicy(string name)
+        public CorsPolicy? GetPolicy(string name)
         {
             if (name == null)
             {

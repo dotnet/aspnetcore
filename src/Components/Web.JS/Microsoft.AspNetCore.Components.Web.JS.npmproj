@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <BuildOutputFiles Include="dist\release\blazor.server.js" />
+    <BuildOutputFiles Include="dist\release\blazor.webassembly.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
       ReferenceOutputAssemblies="false"

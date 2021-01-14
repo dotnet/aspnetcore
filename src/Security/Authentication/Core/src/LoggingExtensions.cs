@@ -7,20 +7,20 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _authenticationSchemeAuthenticated;
-        private static readonly Action<ILogger, string, Exception> _authenticationSchemeNotAuthenticated;
-        private static readonly Action<ILogger, string, string, Exception> _authenticationSchemeNotAuthenticatedWithFailure;
-        private static readonly Action<ILogger, string, Exception> _authenticationSchemeChallenged;
-        private static readonly Action<ILogger, string, Exception> _authenticationSchemeForbidden;
-        private static readonly Action<ILogger, string, Exception> _remoteAuthenticationError;
-        private static readonly Action<ILogger, Exception> _signInHandled;
-        private static readonly Action<ILogger, Exception> _signInSkipped;
-        private static readonly Action<ILogger, string, Exception> _correlationPropertyNotFound;
-        private static readonly Action<ILogger, string, Exception> _correlationCookieNotFound;
-        private static readonly Action<ILogger, string, string, Exception> _unexpectedCorrelationCookieValue;
-        private static readonly Action<ILogger, Exception> _accessDeniedError;
-        private static readonly Action<ILogger, Exception> _accessDeniedContextHandled;
-        private static readonly Action<ILogger, Exception> _accessDeniedContextSkipped;
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeAuthenticated;
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeNotAuthenticated;
+        private static readonly Action<ILogger, string, string, Exception?> _authenticationSchemeNotAuthenticatedWithFailure;
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeChallenged;
+        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeForbidden;
+        private static readonly Action<ILogger, string, Exception?> _remoteAuthenticationError;
+        private static readonly Action<ILogger, Exception?> _signInHandled;
+        private static readonly Action<ILogger, Exception?> _signInSkipped;
+        private static readonly Action<ILogger, string, Exception?> _correlationPropertyNotFound;
+        private static readonly Action<ILogger, string, Exception?> _correlationCookieNotFound;
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedCorrelationCookieValue;
+        private static readonly Action<ILogger, Exception?> _accessDeniedError;
+        private static readonly Action<ILogger, Exception?> _accessDeniedContextHandled;
+        private static readonly Action<ILogger, Exception?> _accessDeniedContextSkipped;
 
         static LoggingExtensions()
         {

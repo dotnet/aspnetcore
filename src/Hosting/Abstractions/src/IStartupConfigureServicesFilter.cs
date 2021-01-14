@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Hosting
     [Obsolete]
     public interface IStartupConfigureServicesFilter
     {
+        /// <summary>
+        /// Extends the provided <paramref name="next"/> and returns a modified <see cref="Action"/> action of the same type.
+        /// </summary>
+        /// <param name="next">The ConfigureServices method to extend.</param>
+        /// <returns>A modified <see cref="Action"/>.</returns>
         Action<IServiceCollection> ConfigureServices(Action<IServiceCollection> next);
     }
 }

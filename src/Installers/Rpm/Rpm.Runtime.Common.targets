@@ -4,8 +4,8 @@
   <PropertyGroup>
     <!-- installer versions -->
     <!-- CLI would take a dependency such as 'aspnetcore-runtime-M.N >= M.N.P'. Here M.N is the part of the id and M.N.P is the package version -->
-    <PackageId>$(RuntimeInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
-    <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
+    <PackageId>$(RuntimeInstallerBaseName)-$(AspNetCoreMajorMinorVersion)</PackageId>
+    <PackageVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
 
     <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
     <PackageRevision Condition=" '$(VersionSuffix)' == '' ">1</PackageRevision>
@@ -15,6 +15,8 @@
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
 
     <PackageContentRoot>$(SharedFrameworkLayoutRoot)</PackageContentRoot>
+
+    <MicrosoftNETCoreAppRuntimeMajorMinorVersion>$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[0]).$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[1])</MicrosoftNETCoreAppRuntimeMajorMinorVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +26,6 @@
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
-    <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
+    <RpmDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppRuntimeMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     public partial class StartupAnalyzer : DiagnosticAnalyzer
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
         internal static class Diagnostics
         {
             public static readonly ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics;

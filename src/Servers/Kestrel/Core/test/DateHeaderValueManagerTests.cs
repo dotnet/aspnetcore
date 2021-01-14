@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 heartbeat.OnHeartbeat();
 
                 Assert.Equal(future.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
-                Assert.Equal(2, systemClock.UtcNowCalled);
+                Assert.Equal(4, systemClock.UtcNowCalled);
             }
         }
 

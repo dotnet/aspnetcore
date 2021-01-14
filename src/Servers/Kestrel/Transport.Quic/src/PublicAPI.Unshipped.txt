@@ -1,0 +1,4 @@
+#nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory
+Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory.BindAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionListener!>
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportFactory.QuicTransportFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions!>! options) -> void

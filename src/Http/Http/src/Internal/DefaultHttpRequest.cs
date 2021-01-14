@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Http
         private const string Https = "https";
 
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
-        private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IQueryFeature?> _newQueryFeature = f => new QueryFeature(f);
         private readonly static Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
         private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
@@ -52,39 +52,39 @@ namespace Microsoft.AspNetCore.Http
         public override HttpContext HttpContext => _context;
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature);
+            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature)!;
 
         private IQueryFeature QueryFeature =>
-            _features.Fetch(ref _features.Cache.Query, _newQueryFeature);
+            _features.Fetch(ref _features.Cache.Query, _newQueryFeature)!;
 
         private IFormFeature FormFeature =>
-            _features.Fetch(ref _features.Cache.Form, this, _newFormFeature);
+            _features.Fetch(ref _features.Cache.Form, this, _newFormFeature)!;
 
         private IRequestCookiesFeature RequestCookiesFeature =>
-            _features.Fetch(ref _features.Cache.Cookies, _newRequestCookiesFeature);
+            _features.Fetch(ref _features.Cache.Cookies, _newRequestCookiesFeature)!;
 
         private IRouteValuesFeature RouteValuesFeature =>
-            _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature);
+            _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature)!;
 
         private IRequestBodyPipeFeature RequestBodyPipeFeature =>
-            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newRequestBodyPipeFeature);
+            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newRequestBodyPipeFeature)!;
 
         public override PathString PathBase
         {
             get { return new PathString(HttpRequestFeature.PathBase); }
-            set { HttpRequestFeature.PathBase = value.Value; }
+            set { HttpRequestFeature.PathBase = value.Value ?? string.Empty; }
         }
 
         public override PathString Path
         {
             get { return new PathString(HttpRequestFeature.Path); }
-            set { HttpRequestFeature.Path = value.Value; }
+            set { HttpRequestFeature.Path = value.Value ?? string.Empty; }
         }
 
         public override QueryString QueryString
         {
             get { return new QueryString(HttpRequestFeature.QueryString); }
-            set { HttpRequestFeature.QueryString = value.Value; }
+            set { HttpRequestFeature.QueryString = value.Value ?? string.Empty; }
         }
 
         public override long? ContentLength
@@ -181,12 +181,12 @@ namespace Microsoft.AspNetCore.Http
 
         struct FeatureInterfaces
         {
-            public IHttpRequestFeature Request;
-            public IQueryFeature Query;
-            public IFormFeature Form;
-            public IRequestCookiesFeature Cookies;
-            public IRouteValuesFeature RouteValues;
-            public IRequestBodyPipeFeature BodyPipe;
+            public IHttpRequestFeature? Request;
+            public IQueryFeature? Query;
+            public IFormFeature? Form;
+            public IRequestCookiesFeature? Cookies;
+            public IRouteValuesFeature? RouteValues;
+            public IRequestBodyPipeFeature? BodyPipe;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,14 +61,22 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         internal static SymbolApiConventionNameMatchBehavior GetNameMatchBehavior(ApiControllerSymbolCache symbolCache, ISymbol symbol)
         {
             var attribute = symbol.GetAttributes(symbolCache.ApiConventionNameMatchAttribute).FirstOrDefault();
-            if (attribute == null || 
+            if (attribute == null ||
                 attribute.ConstructorArguments.Length != 1 ||
                 attribute.ConstructorArguments[0].Kind != TypedConstantKind.Enum)
             {
                 return SymbolApiConventionNameMatchBehavior.Exact;
             }
 
-            var intValue = (int)attribute.ConstructorArguments[0].Value;
+            var argEnum = attribute.ConstructorArguments[0].Value;
+
+            if (argEnum == null)
+            {
+                throw new ArgumentNullException(nameof(argEnum));
+            }
+
+            var intValue = (int)argEnum;
+
             return (SymbolApiConventionNameMatchBehavior)intValue;
         }
 
@@ -82,7 +90,15 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return SymbolApiConventionTypeMatchBehavior.AssignableFrom;
             }
 
-            var intValue = (int)attribute.ConstructorArguments[0].Value;
+            var argEnum = attribute.ConstructorArguments[0].Value;
+
+            if (argEnum == null)
+            {
+                throw new ArgumentNullException(nameof(argEnum));
+            }
+
+            var intValue = (int)argEnum;
+
             return (SymbolApiConventionTypeMatchBehavior)intValue;
         }
 
@@ -153,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 index++;
-                if (name[index] != char.ToUpper(conventionName[0]))
+                if (name[index] != char.ToUpperInvariant(conventionName[0]))
                 {
                     // Verify the first letter from convention is upper case. In this case 'n' from "name"
                     return false;

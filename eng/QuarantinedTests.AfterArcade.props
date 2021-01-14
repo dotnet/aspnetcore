@@ -1,0 +1,7 @@
+<Project>
+  <!-- Override where xUnit logs and results go if we're doing the Quarantined run -->
+  <PropertyGroup Condition="'$(RunQuarantinedTests)' == 'true'">
+    <ArtifactsLogDir>$(ArtifactsDir)log\$(Configuration)\Quarantined\</ArtifactsLogDir>
+    <ArtifactsTestResultsDir>$(ArtifactsDir)TestResults\$(Configuration)\Quarantined\</ArtifactsTestResultsDir>
+  </PropertyGroup>
+</Project>

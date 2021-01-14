@@ -12,11 +12,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.CookiePolicy
 {
+    /// <summary>
+    /// Initializes a new instance of <see cref="CookiePolicyMiddleware"/>.
+    /// </summary>
     public class CookiePolicyMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookiePolicyMiddleware"/>.
+        /// </summary>
+        /// <param name="next">A reference to the next item in the application pipeline.</param>
+        /// <param name="options">Accessor to <see cref="CookiePolicyOptions"/>.</param>
+        /// <param name="factory">The <see cref="ILoggerFactory"/>.</param>
         public CookiePolicyMiddleware(RequestDelegate next, IOptions<CookiePolicyOptions> options, ILoggerFactory factory)
         {
             Options = options.Value;
@@ -24,6 +33,11 @@ namespace Microsoft.AspNetCore.CookiePolicy
             _logger = factory.CreateLogger<CookiePolicyMiddleware>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookiePolicyMiddleware"/>.
+        /// </summary>
+        /// <param name="next">A reference to the next item in the application pipeline.</param>
+        /// <param name="options">Accessor to <see cref="CookiePolicyOptions"/>.</param>
         public CookiePolicyMiddleware(RequestDelegate next, IOptions<CookiePolicyOptions> options)
         {
             Options = options.Value;
@@ -31,8 +45,15 @@ namespace Microsoft.AspNetCore.CookiePolicy
             _logger = NullLogger.Instance;
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="CookiePolicyOptions"/>.
+        /// </summary>
         public CookiePolicyOptions Options { get; set; }
 
+        /// <summary>
+        /// Invokes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext" />.</param>
         public Task Invoke(HttpContext context)
         {
             var feature = context.Features.Get<IResponseCookiesFeature>() ?? new ResponseCookiesFeature(context.Features);

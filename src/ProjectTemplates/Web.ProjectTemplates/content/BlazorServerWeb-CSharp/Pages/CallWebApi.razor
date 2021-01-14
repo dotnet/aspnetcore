@@ -1,0 +1,49 @@
+﻿@page "/callwebapi"
+
+@using BlazorServerWeb_CSharp
+@using Microsoft.Identity.Web
+
+@inject IDownstreamWebApi downstreamAPI
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+<h1>Call an API</h1>
+
+<p>This component demonstrates fetching data from a Web API.</p>
+
+@if (apiResult == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>API Result</h2>
+    @apiResult
+}
+
+@code {
+    private HttpResponseMessage response;
+    private string apiResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            response = await downstreamAPI.CallWebApiForUserAsync(
+                    "DownstreamApi",
+                    options => options.RelativePath = "");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                apiResult = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                apiResult = "Failed to call the web API";
+            }
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+    }
+}

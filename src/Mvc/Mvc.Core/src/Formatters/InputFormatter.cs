@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            if (modelType.GetTypeInfo().IsValueType)
+            if (modelType.IsValueType)
             {
                 return Activator.CreateInstance(modelType);
             }
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         if (mediaTypes == null)
                         {
-                            mediaTypes = new List<string>();
+                            mediaTypes = new List<string>(SupportedMediaTypes.Count);
                         }
 
                         mediaTypes.Add(mediaType);

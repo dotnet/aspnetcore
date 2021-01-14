@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             HttpContext context,
             AuthenticationScheme scheme,
             CookieAuthenticationOptions options, 
-            AuthenticationProperties properties, 
+            AuthenticationProperties? properties, 
             CookieOptions cookieOptions)
             : base(context, scheme, options, properties)
             => CookieOptions = cookieOptions;

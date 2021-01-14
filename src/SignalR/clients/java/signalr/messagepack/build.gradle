@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group 'com.microsoft.signalr.messagepack'
+
+dependencies {
+    implementation project(':core')
+    compile 'org.msgpack:msgpack-core:0.8.20'
+    compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+}
+
+archivesBaseName = 'signalr-messagepack'
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
+task generatePOM {
+    pom {
+        project {
+            artifactId 'signalr-messagepack'
+            inceptionYear '2020'
+            description 'MessagePack protocol implementation for ASP.NET Core SignalR Client for Java applications'
+            url 'https://github.com/dotnet/aspnetcore'
+            name groupId + ':' + artifactId
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                url 'http://github.com/dotnet/aspnetcore/tree/master'
+            }
+            developers {
+                developer {
+                    id 'microsoft'
+                    name 'Microsoft'
+                }
+            }
+        }
+    }.writeTo("${buildDir}/libs/signalr-messagepack-${project.version}.pom")
+}
+
+task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])

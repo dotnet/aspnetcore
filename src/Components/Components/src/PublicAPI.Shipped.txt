@@ -1,0 +1,431 @@
+#nullable enable
+Microsoft.AspNetCore.Components.BindConverter
+Microsoft.AspNetCore.Components.BindElementAttribute
+Microsoft.AspNetCore.Components.BindElementAttribute.BindElementAttribute(string! element, string? suffix, string! valueAttribute, string! changeAttribute) -> void
+Microsoft.AspNetCore.Components.BindElementAttribute.ChangeAttribute.get -> string!
+Microsoft.AspNetCore.Components.BindElementAttribute.Element.get -> string!
+Microsoft.AspNetCore.Components.BindElementAttribute.Suffix.get -> string?
+Microsoft.AspNetCore.Components.BindElementAttribute.ValueAttribute.get -> string!
+Microsoft.AspNetCore.Components.CascadingParameterAttribute
+Microsoft.AspNetCore.Components.CascadingParameterAttribute.CascadingParameterAttribute() -> void
+Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.CascadingValue() -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.IsFixed.get -> bool
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.IsFixed.set -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Name.get -> string?
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Name.set -> void
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Value.get -> TValue
+Microsoft.AspNetCore.Components.CascadingValue<TValue>.Value.set -> void
+Microsoft.AspNetCore.Components.ChangeEventArgs
+Microsoft.AspNetCore.Components.ChangeEventArgs.ChangeEventArgs() -> void
+Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get -> object?
+Microsoft.AspNetCore.Components.ChangeEventArgs.Value.set -> void
+Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers
+Microsoft.AspNetCore.Components.ComponentBase
+Microsoft.AspNetCore.Components.ComponentBase.ComponentBase() -> void
+Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Action! workItem) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.ComponentBase.StateHasChanged() -> void
+Microsoft.AspNetCore.Components.Dispatcher
+Microsoft.AspNetCore.Components.Dispatcher.AssertAccess() -> void
+Microsoft.AspNetCore.Components.Dispatcher.Dispatcher() -> void
+Microsoft.AspNetCore.Components.Dispatcher.OnUnhandledException(System.UnhandledExceptionEventArgs! e) -> void
+Microsoft.AspNetCore.Components.ElementReference
+Microsoft.AspNetCore.Components.ElementReference.Context.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
+Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id) -> void
+Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) -> void
+Microsoft.AspNetCore.Components.ElementReference.Id.get -> string!
+Microsoft.AspNetCore.Components.ElementReferenceContext
+Microsoft.AspNetCore.Components.ElementReferenceContext.ElementReferenceContext() -> void
+Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallback.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
+Microsoft.AspNetCore.Components.EventCallback.HasDelegate.get -> bool
+Microsoft.AspNetCore.Components.EventCallback.InvokeAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
+Microsoft.AspNetCore.Components.EventCallback<TValue>.HasDelegate.get -> bool
+Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallbackFactory
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, Microsoft.AspNetCore.Components.EventCallback callback) -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Action! callback) -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Action<object!>! callback) -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Func<object!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, Microsoft.AspNetCore.Components.EventCallback callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<TValue> callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, System.Action! callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, System.Action<TValue>! callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object! receiver, System.Func<TValue, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.CreateInferred<TValue>(object! receiver, System.Action<TValue>! callback, TValue value) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.CreateInferred<TValue>(object! receiver, System.Func<TValue, System.Threading.Tasks.Task!>! callback, TValue value) -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallbackFactory.EventCallbackFactory() -> void
+Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions
+Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions
+Microsoft.AspNetCore.Components.EventCallbackWorkItem
+Microsoft.AspNetCore.Components.EventCallbackWorkItem.EventCallbackWorkItem(System.MulticastDelegate? delegate) -> void
+Microsoft.AspNetCore.Components.EventCallbackWorkItem.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventHandlerAttribute
+Microsoft.AspNetCore.Components.EventHandlerAttribute.AttributeName.get -> string!
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EnablePreventDefault.get -> bool
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EnableStopPropagation.get -> bool
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EventArgsType.get -> System.Type!
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType) -> void
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType, bool enableStopPropagation, bool enablePreventDefault) -> void
+Microsoft.AspNetCore.Components.IComponent
+Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.IComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IComponentActivator
+Microsoft.AspNetCore.Components.IComponentActivator.CreateInstance(System.Type! componentType) -> Microsoft.AspNetCore.Components.IComponent!
+Microsoft.AspNetCore.Components.IHandleAfterRender
+Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IHandleEvent
+Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.InjectAttribute
+Microsoft.AspNetCore.Components.InjectAttribute.InjectAttribute() -> void
+Microsoft.AspNetCore.Components.LayoutAttribute
+Microsoft.AspNetCore.Components.LayoutAttribute.LayoutAttribute(System.Type! layoutType) -> void
+Microsoft.AspNetCore.Components.LayoutAttribute.LayoutType.get -> System.Type!
+Microsoft.AspNetCore.Components.LayoutComponentBase
+Microsoft.AspNetCore.Components.LayoutComponentBase.Body.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.LayoutComponentBase.Body.set -> void
+Microsoft.AspNetCore.Components.LayoutComponentBase.LayoutComponentBase() -> void
+Microsoft.AspNetCore.Components.LayoutView
+Microsoft.AspNetCore.Components.LayoutView.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.LayoutView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.LayoutView.ChildContent.set -> void
+Microsoft.AspNetCore.Components.LayoutView.Layout.get -> System.Type!
+Microsoft.AspNetCore.Components.LayoutView.Layout.set -> void
+Microsoft.AspNetCore.Components.LayoutView.LayoutView() -> void
+Microsoft.AspNetCore.Components.LayoutView.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.LocationChangeException
+Microsoft.AspNetCore.Components.LocationChangeException.LocationChangeException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Components.MarkupString
+Microsoft.AspNetCore.Components.MarkupString.MarkupString(string! value) -> void
+Microsoft.AspNetCore.Components.MarkupString.Value.get -> string!
+Microsoft.AspNetCore.Components.NavigationException
+Microsoft.AspNetCore.Components.NavigationException.Location.get -> string!
+Microsoft.AspNetCore.Components.NavigationException.NavigationException(string! uri) -> void
+Microsoft.AspNetCore.Components.NavigationManager
+Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get -> string!
+Microsoft.AspNetCore.Components.NavigationManager.BaseUri.set -> void
+Microsoft.AspNetCore.Components.NavigationManager.Initialize(string! baseUri, string! uri) -> void
+Microsoft.AspNetCore.Components.NavigationManager.LocationChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs!>!
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false) -> void
+Microsoft.AspNetCore.Components.NavigationManager.NavigationManager() -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanged(bool isInterceptedLink) -> void
+Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string! uri) -> string!
+Microsoft.AspNetCore.Components.NavigationManager.Uri.get -> string!
+Microsoft.AspNetCore.Components.NavigationManager.Uri.set -> void
+Microsoft.AspNetCore.Components.OwningComponentBase
+Microsoft.AspNetCore.Components.OwningComponentBase.IsDisposed.get -> bool
+Microsoft.AspNetCore.Components.OwningComponentBase.OwningComponentBase() -> void
+Microsoft.AspNetCore.Components.OwningComponentBase.ScopedServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Components.OwningComponentBase<TService>
+Microsoft.AspNetCore.Components.OwningComponentBase<TService>.OwningComponentBase() -> void
+Microsoft.AspNetCore.Components.OwningComponentBase<TService>.Service.get -> TService
+Microsoft.AspNetCore.Components.ParameterAttribute
+Microsoft.AspNetCore.Components.ParameterAttribute.CaptureUnmatchedValues.get -> bool
+Microsoft.AspNetCore.Components.ParameterAttribute.CaptureUnmatchedValues.set -> void
+Microsoft.AspNetCore.Components.ParameterAttribute.ParameterAttribute() -> void
+Microsoft.AspNetCore.Components.ParameterValue
+Microsoft.AspNetCore.Components.ParameterValue.Cascading.get -> bool
+Microsoft.AspNetCore.Components.ParameterValue.Name.get -> string!
+Microsoft.AspNetCore.Components.ParameterValue.Value.get -> object!
+Microsoft.AspNetCore.Components.ParameterView
+Microsoft.AspNetCore.Components.ParameterView.Enumerator
+Microsoft.AspNetCore.Components.ParameterView.Enumerator.Current.get -> Microsoft.AspNetCore.Components.ParameterValue
+Microsoft.AspNetCore.Components.ParameterView.Enumerator.MoveNext() -> bool
+Microsoft.AspNetCore.Components.ParameterView.GetEnumerator() -> Microsoft.AspNetCore.Components.ParameterView.Enumerator
+Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName) -> TValue?
+Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName, TValue defaultValue) -> TValue
+Microsoft.AspNetCore.Components.ParameterView.SetParameterProperties(object! target) -> void
+Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Components.ParameterView.TryGetValue<TValue>(string! parameterName, out TValue result) -> bool
+Microsoft.AspNetCore.Components.RenderFragment
+Microsoft.AspNetCore.Components.RenderFragment<TValue>
+Microsoft.AspNetCore.Components.RenderHandle
+Microsoft.AspNetCore.Components.RenderHandle.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
+Microsoft.AspNetCore.Components.RenderHandle.IsInitialized.get -> bool
+Microsoft.AspNetCore.Components.RenderHandle.Render(Microsoft.AspNetCore.Components.RenderFragment! renderFragment) -> void
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Array.get -> T[]!
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Count.get -> int
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Offset.get -> int
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.this[int index].get -> T
+Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>
+Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.ArrayRange(T[]! array, int count) -> void
+Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Clone() -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.ComponentId.get -> int
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.ComponentId.set -> void
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.EventFieldInfo() -> void
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.FieldValue.get -> object!
+Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.FieldValue.set -> void
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.DisposedComponentIDs.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<int>
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.DisposedEventHandlerIDs.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<ulong>
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.ReferenceFrames.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.UpdatedComponents.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff>
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.PermutationListEnd = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.PermutationListEntry = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.PrependFrame = 1 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.RemoveAttribute = 4 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.RemoveFrame = 2 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.SetAttribute = 3 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.StepIn = 6 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.StepOut = 7 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateMarkup = 8 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateText = 5 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventHandlerId.get -> ulong
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentId.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureParentFrameIndex.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentSubtreeLength.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementSubtreeLength.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.FrameType.get -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.RegionSubtreeLength.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.Sequence.get -> int
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Attribute = 3 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Component = 4 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentReferenceCapture = 7 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Element = 1 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ElementReferenceCapture = 6 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Markup = 8 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.None = 0 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Region = 5 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.Renderer
+Microsoft.AspNetCore.Components.RenderTree.Renderer.AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent! component) -> int
+Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose() -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
+Microsoft.AspNetCore.Components.RenderTree.Renderer.ElementReferenceContext.set -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(int componentId) -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>
+Microsoft.AspNetCore.Components.RenderTree.Renderer.InstantiateComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.IComponent!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.Renderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.Renderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Components.IComponentActivator! componentActivator) -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.UnhandledSynchronizationException -> System.UnhandledExceptionEventHandler!
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, Microsoft.AspNetCore.Components.EventCallback value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, System.MulticastDelegate? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, bool value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, object? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, string? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int sequence, string! name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int sequence, System.Action<object!>! componentReferenceCaptureAction) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment? fragment) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, object? textContent) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, string? textContent) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent<TValue>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<TValue>? fragment, TValue value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference>! elementReferenceCaptureAction) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMarkupContent(int sequence, string? markupContent) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object!>>? attributes) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Clear() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseComponent() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseElement() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseRegion() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.GetFrames() -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent(int sequence, System.Type! componentType) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int sequence) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenElement(int sequence, string! elementName) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenRegion(int sequence) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.RenderTreeBuilder() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string! updatesAttributeName) -> void
+Microsoft.AspNetCore.Components.RouteAttribute
+Microsoft.AspNetCore.Components.RouteAttribute.RouteAttribute(string! template) -> void
+Microsoft.AspNetCore.Components.RouteAttribute.Template.get -> string!
+Microsoft.AspNetCore.Components.RouteData
+Microsoft.AspNetCore.Components.RouteData.PageType.get -> System.Type!
+Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
+Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Components.RouteView
+Microsoft.AspNetCore.Components.RouteView.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.RouteView.DefaultLayout.get -> System.Type!
+Microsoft.AspNetCore.Components.RouteView.DefaultLayout.set -> void
+Microsoft.AspNetCore.Components.RouteView.RouteData.get -> Microsoft.AspNetCore.Components.RouteData!
+Microsoft.AspNetCore.Components.RouteView.RouteData.set -> void
+Microsoft.AspNetCore.Components.RouteView.RouteView() -> void
+Microsoft.AspNetCore.Components.RouteView.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri) -> void
+Microsoft.AspNetCore.Components.Routing.INavigationInterception
+Microsoft.AspNetCore.Components.Routing.INavigationInterception.EnableNavigationInterceptionAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs
+Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.IsNavigationIntercepted.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.Location.get -> string!
+Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.LocationChangedEventArgs(string! location, bool isNavigationIntercepted) -> void
+Microsoft.AspNetCore.Components.Routing.NavigationContext
+Microsoft.AspNetCore.Components.Routing.NavigationContext.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Components.Routing.NavigationContext.Path.get -> string!
+Microsoft.AspNetCore.Components.Routing.Router
+Microsoft.AspNetCore.Components.Routing.Router.AdditionalAssemblies.get -> System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!
+Microsoft.AspNetCore.Components.Routing.Router.AdditionalAssemblies.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.AppAssembly.get -> System.Reflection.Assembly!
+Microsoft.AspNetCore.Components.Routing.Router.AppAssembly.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.Routing.Router.Dispose() -> void
+Microsoft.AspNetCore.Components.Routing.Router.Found.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.RouteData!>!
+Microsoft.AspNetCore.Components.Routing.Router.Found.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.Navigating.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Routing.Router.Navigating.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.NotFound.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.Routing.Router.NotFound.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext!>
+Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.Router() -> void
+Microsoft.AspNetCore.Components.Routing.Router.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Components.Dispatcher.CheckAccess() -> bool
+abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Action! workItem) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>!>! workItem) -> System.Threading.Tasks.Task<TResult>!
+abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
+abstract Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void
+abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
+abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.HandleException(System.Exception! exception) -> void
+abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.MarkupString.ToString() -> string!
+readonly Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Array -> T[]!
+readonly Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Count -> int
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff.ComponentId -> int
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff.Edits -> Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit>
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.MoveToSiblingIndex -> int
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.ReferenceFrameIndex -> int
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string!
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.SiblingIndex -> int
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.Type -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTime value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTime value, string! format, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTime? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTime? value, string? format, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTimeOffset value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTimeOffset value, string! format, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTimeOffset? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateTimeOffset? value, string! format, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(bool value, System.Globalization.CultureInfo? culture = null) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(bool? value, System.Globalization.CultureInfo? culture = null) -> bool?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(decimal value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(decimal? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(double? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(float? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(int value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(int? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(long value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(long? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(short value, System.Globalization.CultureInfo? culture = null) -> string!
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(short? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue(string? value, System.Globalization.CultureInfo? culture = null) -> string?
+static Microsoft.AspNetCore.Components.BindConverter.FormatValue<T>(T value, System.Globalization.CultureInfo? culture = null) -> object?
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertTo<T>(object? obj, System.Globalization.CultureInfo? culture, out T value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToBool(object? obj, System.Globalization.CultureInfo? culture, out bool value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, string! format, out System.DateTime value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string! format, out System.DateTimeOffset value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToDouble(object? obj, System.Globalization.CultureInfo? culture, out double value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToFloat(object? obj, System.Globalization.CultureInfo? culture, out float value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToInt(object? obj, System.Globalization.CultureInfo? culture, out int value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToLong(object? obj, System.Globalization.CultureInfo? culture, out long value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableBool(object? obj, System.Globalization.CultureInfo? culture, out bool? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, string! format, out System.DateTime? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string! format, out System.DateTimeOffset? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableDouble(object? obj, System.Globalization.CultureInfo? culture, out double? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableFloat(object? obj, System.Globalization.CultureInfo? culture, out float? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableInt(object? obj, System.Globalization.CultureInfo? culture, out int? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableLong(object? obj, System.Globalization.CultureInfo? culture, out long? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToNullableShort(object? obj, System.Globalization.CultureInfo? culture, out short? value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToShort(object? obj, System.Globalization.CultureInfo? culture, out short value) -> bool
+static Microsoft.AspNetCore.Components.BindConverter.TryConvertToString(object? obj, System.Globalization.CultureInfo? culture, out string? value) -> bool
+static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, System.Action<T>! callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
+static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, System.Func<T, System.Threading.Tasks.Task!>! callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
+static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<T>(T value) -> T
+static Microsoft.AspNetCore.Components.Dispatcher.CreateDefault() -> Microsoft.AspNetCore.Components.Dispatcher!
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTime>! setter, System.DateTime existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTime>! setter, System.DateTime existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTime?>! setter, System.DateTime? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTime?>! setter, System.DateTime? existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTimeOffset>! setter, System.DateTimeOffset existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTimeOffset>! setter, System.DateTimeOffset existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTimeOffset?>! setter, System.DateTimeOffset? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.DateTimeOffset?>! setter, System.DateTimeOffset? existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<bool>! setter, bool existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<bool?>! setter, bool? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<decimal>! setter, decimal existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<decimal?>! setter, decimal? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<double>! setter, double existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<double?>! setter, double? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<float>! setter, float existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<float?>! setter, float? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<int>! setter, int existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<int?>! setter, int? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<long>! setter, long existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<long?>! setter, long? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<short>! setter, short existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<short?>! setter, short? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<string?>! setter, string! existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<T>! setter, T existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.ChangeEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.EventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.ChangeEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<System.EventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
+static Microsoft.AspNetCore.Components.MarkupString.explicit operator Microsoft.AspNetCore.Components.MarkupString(string! value) -> Microsoft.AspNetCore.Components.MarkupString
+static Microsoft.AspNetCore.Components.ParameterView.Empty.get -> Microsoft.AspNetCore.Components.ParameterView
+static readonly Microsoft.AspNetCore.Components.EventCallback.Empty -> Microsoft.AspNetCore.Components.EventCallback
+static readonly Microsoft.AspNetCore.Components.EventCallback.Factory -> Microsoft.AspNetCore.Components.EventCallbackFactory!
+static readonly Microsoft.AspNetCore.Components.EventCallback<TValue>.Empty -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+static readonly Microsoft.AspNetCore.Components.EventCallbackWorkItem.Empty -> Microsoft.AspNetCore.Components.EventCallbackWorkItem
+virtual Microsoft.AspNetCore.Components.ComponentBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnAfterRender(bool firstRender) -> void
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnInitialized() -> void
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnInitializedAsync() -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnParametersSet() -> void
+virtual Microsoft.AspNetCore.Components.ComponentBase.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.ComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.ComponentBase.ShouldRender() -> bool
+virtual Microsoft.AspNetCore.Components.NavigationManager.EnsureInitialized() -> void
+virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ProcessPendingRender() -> void
+virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventUpdatesAttributeName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeValue.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.Component.get -> Microsoft.AspNetCore.Components.IComponent
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentKey.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureAction.get -> System.Action<object>
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentType.get -> System.Type
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementKey.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureAction.get -> System.Action<Microsoft.AspNetCore.Components.ElementReference>
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ElementReferenceCaptureId.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.MarkupContent.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
+~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

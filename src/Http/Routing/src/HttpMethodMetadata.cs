@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using static Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            HttpMethods = httpMethods.ToArray();
+            HttpMethods = httpMethods.Select(GetCanonicalizedValue).ToArray();
             AcceptCorsPreflight = acceptCorsPreflight;
         }
 

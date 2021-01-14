@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = default(EventCallback);
 
             // Act & Assert (Does not throw)
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
         }
 
         [Fact]
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = default(EventCallback<EventArgs>);
 
             // Act & Assert (Does not throw)
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
         }
 
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(null, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback<EventArgs>(null, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback<EventArgs>(component, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback<EventArgs>(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback<EventArgs>(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback<EventArgs>(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(null);
+            await callback.InvokeAsync();
 
 
             // Assert

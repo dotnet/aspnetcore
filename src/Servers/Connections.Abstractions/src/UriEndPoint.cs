@@ -24,5 +24,7 @@ namespace Microsoft.AspNetCore.Connections
         /// The <see cref="System.Uri"/> defining the <see cref="EndPoint"/>.
         /// </summary>
         public Uri Uri { get; }
+
+        public override string ToString() => Uri.ToString();
     }
 }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly DiagnosticListener _diagnosticListener;
         private readonly RequestDelegate _next;
 
-        private Task<Matcher> _initializationTask;
+        private Task<Matcher>? _initializationTask;
 
         public EndpointRoutingMiddleware(
             MatcherFactory matcherFactory,
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            // There's already an endpoint, skip maching completely
+            // There's already an endpoint, skip matching completely
             var endpoint = httpContext.GetEndpoint();
             if (endpoint != null)
             {
@@ -165,6 +165,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+#nullable disable
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _matchSuccess = LoggerMessage.Define<string>(

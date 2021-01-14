@@ -1,0 +1,81 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group 'com.microsoft.signalr'
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.3'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+}
+
+archivesBaseName = 'signalr'
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
+task generatePOM {
+    pom {
+        project {
+            artifactId 'signalr'
+            inceptionYear '2018'
+            description 'ASP.NET Core SignalR Client for Java applications'
+            url 'https://github.com/dotnet/aspnetcore'
+            name groupId + ':' + artifactId
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                url 'http://github.com/dotnet/aspnetcore/tree/master'
+            }
+            developers {
+                developer {
+                    id 'microsoft'
+                    name 'Microsoft'
+                }
+            }
+        }
+    }.writeTo("${buildDir}/libs/signalr-${project.version}.pom")
+}
+
+task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
+
+task generateVersionClass {
+    inputs.property "version", project.version
+    outputs.dir "$buildDir/generated"
+    doFirst {
+        def versionFile = file("$buildDir/../src/main/java/com/microsoft/signalr/Version.java")
+        versionFile.parentFile.mkdirs()
+        versionFile.text =
+                """
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+package com.microsoft.signalr;
+
+class Version {
+    public static String getDetailedVersion() {
+        return "$project.version";
+    }
+}
+"""
+    }
+}
+
+compileJava.dependsOn generateVersionClass

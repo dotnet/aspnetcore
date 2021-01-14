@@ -75,6 +75,23 @@ describe('DefaultReconnectionHandler', () => {
     expect(testDisplay.failed).toHaveBeenCalled();
     expect(reconnect).toHaveBeenCalledTimes(2);
   });
+
+  it('invokes update on each attempt', async () => {
+    const testDisplay = createTestDisplay();
+    const reconnect = jest.fn().mockRejectedValue(null);
+    const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
+    const maxRetries = 6;
+
+    handler.onConnectionDown({
+      maxRetries: maxRetries,
+      retryIntervalMilliseconds: 5,
+      dialogId: 'ignored'
+    });
+
+    await delay(500);
+    expect(testDisplay.update).toHaveBeenCalledTimes(maxRetries);
+
+  })
 });
 
 function attachUserSpecifiedUI(options: ReconnectionOptions): Element {
@@ -92,6 +109,7 @@ function delay(durationMilliseconds: number) {
 function createTestDisplay(): ReconnectDisplay {
   return {
     show: jest.fn(),
+    update: jest.fn(),
     hide: jest.fn(),
     failed: jest.fn(),
     rejected: jest.fn()

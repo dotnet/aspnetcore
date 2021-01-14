@@ -1,0 +1,48 @@
+parameters:
+  # This template adds arcade-powered source-build to CI. A job is created for each platform, as
+  # well as an optional server job that completes when all platform jobs complete.
+
+  # The name of the "join" job for all source-build platforms. If set to empty string, the job is
+  # not included. Existing repo pipelines can use this job depend on all source-build jobs
+  # completing without maintaining a separate list of every single job ID: just depend on this one
+  # server job. By default, not included. Recommended name if used: 'Source_Build_Complete'.
+  allCompletedJobId: ''
+
+  # See /eng/common/templates/job/source-build.yml
+  jobNamePrefix: 'Source_Build'
+
+  # If changed to true, causes this template to include the default platform for a managed-only
+  # repo. The exact Docker image used for this build will be provided by Arcade. This has some risk,
+  # but since the repo is supposed to be managed-only, the risk should be very low.
+  includeDefaultManagedPlatform: false
+  defaultManagedPlatform:
+    name: 'Managed'
+    container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-3e800f1-20190501005343'
+
+  # Defines the platforms on which to run build jobs. One job is created for each platform, and the
+  # object in this array is sent to the job template as 'platform'.
+  platforms: []
+
+jobs:
+
+- ${{ if ne(parameters.allCompletedJobId, '') }}:
+  - job: ${{ parameters.allCompletedJobId }}
+    displayName: Source-Build Complete
+    pool: server
+    dependsOn:
+    - ${{ each platform in parameters.platforms }}:
+      - ${{ parameters.jobNamePrefix }}_${{ platform.name }}
+    - ${{ if eq(parameters.includeDefaultManagedPlatform, true) }}:
+      - ${{ parameters.jobNamePrefix }}_${{ parameters.defaultManagedPlatform.name }}
+
+- ${{ each platform in parameters.platforms }}:
+  - template: /eng/common/templates/job/source-build.yml
+    parameters:
+      jobNamePrefix: ${{ parameters.jobNamePrefix }}
+      platform: ${{ platform }}
+
+- ${{ if eq(parameters.includeDefaultManagedPlatform, true) }}:
+  - template: /eng/common/templates/job/source-build.yml
+    parameters:
+      jobNamePrefix: ${{ parameters.jobNamePrefix }}
+      platform: ${{ parameters.defaultManagedPlatform }}

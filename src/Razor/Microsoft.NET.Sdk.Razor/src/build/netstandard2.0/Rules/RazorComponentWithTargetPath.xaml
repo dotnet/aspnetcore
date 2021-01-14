@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Rule
+  Description="Razor Document Properties"
+  DisplayName="Razor Document Properties"
+  Name="RazorComponentWithTargetPath"
+  PageTemplate="generic"
+  xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.DataSource>
+    <DataSource
+      Persistence="ProjectFile"
+      ItemType="RazorComponentWithTargetPath"
+      MSBuildTarget="RazorGenerateComponentDesignTime"
+      HasConfigurationCondition="False"
+      SourceOfDefaultValue="AfterContext"
+      SourceType="TargetResults" />
+  </Rule.DataSource>
+
+  <Rule.Categories>
+    <Category
+      Name="General"
+      DisplayName="General" />
+  </Rule.Categories>
+  
+  <StringProperty
+    Category="General"
+    Name="TargetPath"
+    ReadOnly="True"
+    Visible="False" />
+
+</Rule>

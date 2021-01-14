@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public async Task RequestFormLimitCheckHappens_BeforeAntiforgeryTokenValidation()
+        public async Task RequestFormLimitCheckHappens_WithAntiforgeryValidation()
         {
             // Arrange
             var request = new HttpRequestMessage();
@@ -43,11 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 new FormUrlEncodedContent(kvps));
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Contains(
-                "InvalidDataException: Form value count limit 2 exceeded.",
-                result);
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -103,7 +98,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task RequestSizeLimitCheckHappens_BeforeRequestFormLimits()
         {
             // Arrange
-            var request = new HttpRequestMessage();
             var kvps = new List<KeyValuePair<string, string>>();
             // Request size has a limit of 100 bytes
             // Request form limits has a value count limit of 2
@@ -129,7 +123,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task RequestFormLimitsCheckHappens_AfterRequestSizeLimit()
         {
             // Arrange
-            var request = new HttpRequestMessage();
             var kvps = new List<KeyValuePair<string, string>>();
             // Request size has a limit of 100 bytes
             // Request form limits has a value count limit of 2
@@ -145,11 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 new FormUrlEncodedContent(kvps));
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Contains(
-                "InvalidDataException: Form value count limit 2 exceeded.",
-                result);
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
         }
 
         [Fact]

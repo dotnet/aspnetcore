@@ -658,6 +658,198 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
         }
 
+        private class DefaultConstructorType { }
+
+        [Fact]
+        public void GetBoundConstructor_DefaultConstructor_ReturnsNull()
+        {
+            // Arrange
+            var type = typeof(DefaultConstructorType);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private class ParameterlessConstructorType
+        {
+            public ParameterlessConstructorType() { }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ParameterlessConstructor_ReturnsNull()
+        {
+            // Arrange
+            var type = typeof(ParameterlessConstructorType);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private class NonPublicParameterlessConstructorType
+        {
+            protected NonPublicParameterlessConstructorType() { }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_DoesNotReturnsNonPublicParameterlessConstructor()
+        {
+            // Arrange
+            var type = typeof(NonPublicParameterlessConstructorType);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private class MultipleConstructorType
+        {
+            public MultipleConstructorType() { }
+            public MultipleConstructorType(string prop) { }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsParameterlessConstructor_ForTypeWithMultipleConstructors()
+        {
+            // Arrange
+            var type = typeof(NonPublicParameterlessConstructorType);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private record RecordTypeWithPrimaryConstructor(string name)
+        {
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsPrimaryConstructor_ForRecordType()
+        {
+            // Arrange
+            var type = typeof(RecordTypeWithPrimaryConstructor);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Collection(
+                result.GetParameters(),
+                p => Assert.Equal("name", p.Name));
+        }
+
+        private record RecordTypeWithDefaultConstructor
+        {
+            public string Name { get; init; }
+
+            public int Age { get; init; }
+        }
+
+        private record RecordTypeWithParameterlessConstructor
+        {
+            public RecordTypeWithParameterlessConstructor() { }
+
+            public string Name { get; init; }
+
+            public int Age { get; init; }
+        }
+
+        [Theory]
+        [InlineData(typeof(RecordTypeWithDefaultConstructor))]
+        [InlineData(typeof(RecordTypeWithParameterlessConstructor))]
+        public void GetBoundConstructor_ReturnsNull_ForRecordTypeWithParameterlessConstructor(Type type)
+        {
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private record RecordTypeWithMultipleConstructors(string Name)
+        {
+            public RecordTypeWithMultipleConstructors(string Name, int age) : this(Name) => Age = age;
+
+            public RecordTypeWithMultipleConstructors(int age) : this(string.Empty, age) { }
+
+            public int Age { get; set; }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsNull_ForRecordTypeWithMultipleConstructors()
+        {
+            // Arrange
+            var type = typeof(RecordTypeWithMultipleConstructors);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private record RecordTypeWithConformingSynthesizedConstructor
+        {
+            public RecordTypeWithConformingSynthesizedConstructor(string Name, int Age)
+            {
+            }
+
+            public string Name { get; set; }
+
+            public int Age { get; set; }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsConformingSynthesizedConstructor()
+        {
+            // Arrange
+            var type = typeof(RecordTypeWithConformingSynthesizedConstructor);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Collection(
+                result.GetParameters(),
+                p => Assert.Equal("Name", p.Name),
+                p => Assert.Equal("Age", p.Name));
+        }
+
+        private record RecordTypeWithNonConformingSynthesizedConstructor
+        {
+            public RecordTypeWithNonConformingSynthesizedConstructor(string name, string age)
+            {
+            }
+
+            public string Name { get; set; }
+
+            public int Age { get; set; }
+        }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsNull_IfSynthesizedConstructorIsNonConforming()
+        {
+            // Arrange
+            var type = typeof(RecordTypeWithNonConformingSynthesizedConstructor);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.Null(result);
+        }
+
         [BindNever]
         private class BindNeverOnClass
         {

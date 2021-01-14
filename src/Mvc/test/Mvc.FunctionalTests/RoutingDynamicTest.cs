@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task DynamicController_CanSelectControllerInArea()
         {
             // Arrange
-            var url = "http://localhost/dynamic/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
+            var url = "http://localhost/v1/dynamic/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -72,10 +72,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task DynamicController_CanFilterResultsBasedOnState()
+        {
+            // Arrange
+            var url = "http://localhost/v2/dynamic/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task DynamicController_CanSelectControllerInArea_WithActionConstraints()
         {
             // Arrange
-            var url = "http://localhost/dynamic/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
+            var url = "http://localhost/v1/dynamic/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
 
             // Act
@@ -91,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task DynamicPage_CanSelectPage()
         {
             // Arrange
-            var url = "http://localhost/dynamicpage/page%3D%2FDynamicPage";
+            var url = "http://localhost/v1/dynamicpage/page%3D%2FDynamicPage";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -104,9 +118,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task DynamicPage_CanFilterBasedOnState()
+        {
+            // Arrange
+            var url = "http://localhost/v2/dynamicpage/page%3D%2FDynamicPage";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task AppWithDynamicRouteAndMapRazorPages_CanRouteToRazorPage()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/13996
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13996
             // Arrange
             var client = Factory.WithWebHostBuilder(b => b.UseStartup<StartupForDynamicAndRazorPages>()).CreateDefaultClient();
             var url = "/PageWithLinks";
@@ -123,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task AppWithDynamicRouteAndMapRazorPages_CanRouteToDynamicController()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/13996
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13996
             // Arrange
             var client = Factory.WithWebHostBuilder(b => b.UseStartup<StartupForDynamicAndRazorPages>()).CreateDefaultClient();
             var url = "/de/area%3Dadmin,controller%3Ddynamic,action%3Dindex";

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -7,40 +7,46 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Options for <see cref="ForwardedHeadersMiddleware"/>
+    /// </summary>
     public class ForwardedHeadersOptions
     {
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedForHeaderName"/>
+        /// Gets or sets the header used to retrieve the originating client IP. Defaults to the value specified by 
+        /// <see cref="ForwardedHeadersDefaults.XForwardedForHeaderName"/>.
         /// </summary>
-        /// <seealso cref="Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults"/>
         public string ForwardedForHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedForHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedHostHeaderName"/>
+        /// Gets or sets the header used to retrieve the original value of the Host header field.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XForwardedHostHeaderName"/>
         /// </summary>
-        /// <seealso cref="ForwardedHeadersDefaults"/>
         public string ForwardedHostHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedHostHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedProtoHeaderName"/>
+        /// Gets or sets the header used to retrieve the value for the originating scheme (HTTP/HTTPS).
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XForwardedProtoHeaderName"/>
         /// </summary>
-        /// <seealso cref="ForwardedHeadersDefaults"/>
         public string ForwardedProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedProtoHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
+        /// Gets or sets the header used to store the original value of client IP before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalForHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalForHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalHostHeaderName"/>
+        /// Gets or sets the header used to store the original value of the Host header field before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalHostHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalHostHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalHostHeaderName;
 
         /// <summary>
-        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalProtoHeaderName"/>
+        /// Gets or sets the header used to store the original scheme (HTTP/HTTPS) before applying forwarded headers.
+        /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalProtoHeaderName"/>
         /// </summary>
         /// <seealso cref="ForwardedHeadersDefaults"/>
         public string OriginalProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalProtoHeaderName;

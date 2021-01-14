@@ -1,32 +1,41 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// The <see cref="MessagePackHubProtocol"/> options.
+    /// </summary>
     public class MessagePackHubProtocolOptions
     {
-        private IList<IFormatterResolver> _formatterResolvers;
+        private MessagePackSerializerOptions? _messagePackSerializerOptions;
 
-        public IList<IFormatterResolver> FormatterResolvers
+        /// <summary>
+        /// <para>Gets or sets the <see cref="MessagePackSerializerOptions"/> used internally by the <see cref="MessagePackSerializer" />.</para>
+        /// <para>If you override the default value, we strongly recommend that you set <see cref="MessagePackSecurity" /> to <see cref="MessagePackSecurity.UntrustedData"/> by calling:</para>
+        /// <code>customMessagePackSerializerOptions = customMessagePackSerializerOptions.WithSecurity(MessagePackSecurity.UntrustedData)</code>
+        /// If you modify the default options you must also assign the updated options back to the <see cref="SerializerOptions" /> property:
+        /// <code>options.SerializerOptions = options.SerializerOptions.WithResolver(new CustomResolver());</code>
+        /// </summary>
+        public MessagePackSerializerOptions SerializerOptions
         {
             get
             {
-                if (_formatterResolvers == null)
+                if (_messagePackSerializerOptions == null)
                 {
                     // The default set of resolvers trigger a static constructor that throws on AOT environments.
                     // This gives users the chance to use an AOT friendly formatter.
-                    _formatterResolvers = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
+                    _messagePackSerializerOptions = MessagePackHubProtocol.CreateDefaultMessagePackSerializerOptions();
                 }
 
-                return _formatterResolvers;
+                return _messagePackSerializerOptions;
             }
             set
             {
-                _formatterResolvers = value;
+                _messagePackSerializerOptions = value;
             }
         }
     }
