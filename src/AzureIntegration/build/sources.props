@@ -10,7 +10,7 @@
     </RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
-      https://api.nuget.org/v3/index.json;
+      https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
 </Project>
