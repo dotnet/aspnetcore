@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _aborted = true;
 
-            _log.StreamAbort(ConnectionId, abortReason);
+            _log.StreamAbort(ConnectionId, abortReason.Message);
 
             lock (_shutdownLock)
             {
