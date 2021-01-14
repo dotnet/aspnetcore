@@ -799,6 +799,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
         [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_BeforeRequestBody_Resets()
         {
@@ -845,6 +846,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
         [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_DurringRequestBody_Resets()
         {
