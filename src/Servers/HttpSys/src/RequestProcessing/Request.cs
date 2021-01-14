@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Request
     {
-        private NativeRequestContext _nativeRequestContext;
-
         private X509Certificate2 _clientCert;
         // TODO: https://github.com/aspnet/HttpSysServer/issues/231
         // private byte[] _providedTokenBindingId;
@@ -39,26 +37,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private bool _isDisposed = false;
 
-        internal Request(RequestContext requestContext, NativeRequestContext nativeRequestContext)
+        internal Request(RequestContext requestContext)
         {
             // TODO: Verbose log
             RequestContext = requestContext;
-            _nativeRequestContext = nativeRequestContext;
             _contentBoundaryType = BoundaryType.None;
 
-            RequestId = nativeRequestContext.RequestId;
-            UConnectionId = nativeRequestContext.ConnectionId;
-            SslStatus = nativeRequestContext.SslStatus;
+            RequestId = requestContext.RequestId;
+            UConnectionId = requestContext.ConnectionId;
+            SslStatus = requestContext.SslStatus;
 
-            KnownMethod = nativeRequestContext.VerbId;
-            Method = _nativeRequestContext.GetVerb();
+            KnownMethod = requestContext.VerbId;
+            Method = requestContext.GetVerb();
 
-            RawUrl = nativeRequestContext.GetRawUrl();
+            RawUrl = requestContext.GetRawUrl();
 
-            var cookedUrl = nativeRequestContext.GetCookedUrl();
+            var cookedUrl = requestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
+            var rawUrlInBytes = requestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
             PathBase = string.Empty;
@@ -72,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             else
             {
-                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
                 // Prefix may be null if the requested has been transfered to our queue
                 if (!(prefix is null))
                 {
@@ -97,11 +94,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
 
-            ProtocolVersion = _nativeRequestContext.GetVersion();
+            ProtocolVersion = RequestContext.GetVersion();
 
-            Headers = new RequestHeaders(_nativeRequestContext);
+            Headers = new RequestHeaders(RequestContext);
 
-            User = _nativeRequestContext.GetUser();
+            User = RequestContext.GetUser();
 
             if (IsHttps)
             {
@@ -111,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
             // Finished directly accessing the HTTP_REQUEST structure.
-            _nativeRequestContext.ReleasePins();
+            RequestContext.ReleasePins();
             // TODO: Verbose log parameters
         }
 
@@ -222,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = _nativeRequestContext.GetRemoteEndPoint();
+                    _remoteEndPoint = RequestContext.GetRemoteEndPoint();
                 }
 
                 return _remoteEndPoint;
@@ -235,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = _nativeRequestContext.GetLocalEndPoint();
+                    _localEndPoint = RequestContext.GetLocalEndPoint();
                 }
 
                 return _localEndPoint;
@@ -254,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Scheme => IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
 
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
-        internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
+        internal bool IsUpgradable => ProtocolVersion < HttpVersion.Version20 && !HasEntityBody && ComNetOS.IsWin8orLater;
 
         internal WindowsPrincipal User { get; }
 
@@ -278,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_requestInfo == null)
                 {
-                    _requestInfo = _nativeRequestContext.GetRequestInfo();
+                    _requestInfo = RequestContext.GetRequestInfo();
                 }
                 return _requestInfo;
             }
@@ -286,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private void GetTlsHandshakeResults()
         {
-            var handshake = _nativeRequestContext.GetTlsHandshake();
+            var handshake = RequestContext.GetTlsHandshake();
 
             Protocol = handshake.Protocol;
             // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
@@ -315,6 +312,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 Protocol |= SslProtocols.Tls12;
             }
+            if ((Protocol & SslProtocols.Tls13) != 0)
+            {
+                Protocol |= SslProtocols.Tls13;
+            }
 
             CipherAlgorithm = handshake.CipherType;
             CipherStrength = (int)handshake.CipherStrength;
@@ -332,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     try
                     {
-                        _clientCert = _nativeRequestContext.GetClientCertificate();
+                        _clientCert = RequestContext.GetClientCertificate();
                     }
                     catch (CryptographicException ce)
                     {
@@ -370,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var certLoader = new ClientCertLoader(RequestContext, cancellationToken);
             try
             {
-                await certLoader.LoadClientCertificateAsync().SupressContext();
+                await certLoader.LoadClientCertificateAsync();
                 // Populate the environment.
                 if (certLoader.ClientCert != null)
                 {
@@ -426,27 +427,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         */
         internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
         {
-            return _nativeRequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
+            return RequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
         }
 
         // should only be called from RequestContext
         internal void Dispose()
         {
-            // TODO: Verbose log
-            _isDisposed = true;
-            _nativeRequestContext.Dispose();
-            (User?.Identity as WindowsIdentity)?.Dispose();
-            if (_nativeStream != null)
+            if (!_isDisposed)
             {
-                _nativeStream.Dispose();
-            }
-        }
-
-        private void CheckDisposed()
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                // TODO: Verbose log
+                _isDisposed = true;
+                RequestContext.Dispose();
+                (User?.Identity as WindowsIdentity)?.Dispose();
+                _nativeStream?.Dispose();
             }
         }
 

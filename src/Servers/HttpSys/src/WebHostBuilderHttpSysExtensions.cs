@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.ConfigureServices(services => {
                 services.AddSingleton<IServer, MessagePump>();
+                services.AddTransient<AuthenticationHandler>();
                 services.AddSingleton<IServerIntegratedAuth>(services =>
                 {
                     var options = services.GetRequiredService<IOptions<HttpSysOptions>>().Value;

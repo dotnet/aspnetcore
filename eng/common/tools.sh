@@ -89,16 +89,16 @@ function ResolvePath {
 function ReadGlobalVersion {
   local key=$1
 
-  local line=$(awk "/$key/ {print; exit}" "$global_json_file")
-  local pattern="\"$key\" *: *\"(.*)\""
+  if command -v jq &> /dev/null; then
+    _ReadGlobalVersion="$(jq -r ".[] | select(has(\"$key\")) | .\"$key\"" "$global_json_file")"
+  elif [[ "$(cat "$global_json_file")" =~ \"$key\"[[:space:]\:]*\"([^\"]+) ]]; then
+    _ReadGlobalVersion=${BASH_REMATCH[1]}
+  fi
 
-  if [[ ! $line =~ $pattern ]]; then
+  if [[ -z "$_ReadGlobalVersion" ]]; then
     Write-PipelineTelemetryError -category 'Build' "Error: Cannot find \"$key\" in $global_json_file"
     ExitWithExitCode 1
   fi
-
-  # return value
-  _ReadGlobalVersion=${BASH_REMATCH[1]}
 }
 
 function InitializeDotNetCli {
@@ -249,7 +249,7 @@ function with_retries {
       return 0
     fi
 
-    timeout=$((2**$retries-1))
+    timeout=$((3**$retries-1))
     echo "Failed to execute '$@'. Waiting $timeout seconds before next attempt ($retries out of $maxRetries)." 1>&2
     sleep $timeout
   done
@@ -271,10 +271,19 @@ function GetDotNetInstallScript {
 
     # Use curl if available, otherwise use wget
     if command -v curl > /dev/null; then
-      with_retries curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
-        local exit_code=$?
-        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
-        ExitWithExitCode $exit_code
+      # first, try directly, if this fails we will retry with verbose logging
+      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+        if command -v openssl &> /dev/null
+        then
+          echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
+          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
+        fi
+        echo "Will now retry the same URL with verbose logging."
+        with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
+          local exit_code=$?
+          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+          ExitWithExitCode $exit_code
+        }
       }
     else
       with_retries wget -v -O "$install_script" "$install_script_url" || {
@@ -405,7 +414,10 @@ function MSBuild {
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
-    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll"
+    if [[ ! -f $logger_path ]]; then
+      logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    fi
     args=( "${args[@]}" "-logger:$logger_path" )
   fi
 
@@ -437,8 +449,17 @@ function MSBuild-Core {
 
     "$_InitializeBuildTool" "$@" || {
       local exit_code=$?
-      Write-PipelineTaskError "Build failed (exit code '$exit_code')."
-      ExitWithExitCode $exit_code
+      # We should not Write-PipelineTaskError here because that message shows up in the build summary
+      # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+      echo "Build failed with exit code $exit_code. Check errors above."
+      if [[ "$ci" == "true" ]]; then
+        Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
+        # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+        # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+        ExitWithExitCode 0
+      else
+        ExitWithExitCode $exit_code
+      fi
     }
   }
 
@@ -461,8 +482,11 @@ temp_dir="$artifacts_dir/tmp/$configuration"
 global_json_file="$repo_root/global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
-dotnetlocal_key=$(awk "/runtimes/ {print; exit}" "$global_json_file") || true
-if [[ -n "$dotnetlocal_key" ]]; then
+if command -v jq &> /dev/null; then
+  if jq -er '. | select(has("runtimes"))' "$global_json_file" &> /dev/null; then
+    global_json_has_runtimes=true
+  fi
+elif [[ "$(cat "$global_json_file")" =~ \"runtimes\"[[:space:]\:]*\{ ]]; then
   global_json_has_runtimes=true
 fi
 

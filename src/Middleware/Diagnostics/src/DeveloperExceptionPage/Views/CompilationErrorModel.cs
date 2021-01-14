@@ -12,10 +12,15 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
     /// </summary>
     internal class CompilationErrorPageModel
     {
+        public CompilationErrorPageModel(DeveloperExceptionPageOptions options)
+        {
+            Options = options;
+        }
+
         /// <summary>
         /// Options for what output to display.
         /// </summary>
-        public DeveloperExceptionPageOptions Options { get; set; }
+        public DeveloperExceptionPageOptions Options { get; }
 
         /// <summary>
         /// Detailed information about each parse or compilation error.
@@ -25,6 +30,6 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
         /// <summary>
         /// Gets the generated content that produced the corresponding <see cref="ErrorDetails"/>.
         /// </summary>
-        public IList<string> CompiledContent { get; } = new List<string>();
+        public IList<string?> CompiledContent { get; } = new List<string?>();
     }
 }

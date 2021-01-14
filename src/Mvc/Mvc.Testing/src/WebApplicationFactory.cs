@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
+using System.Runtime.Serialization.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         /// <summary>
         /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
-        /// by further customizing the <see cref="IWebHostBuilder"/> when calling 
+        /// by further customizing the <see cref="IWebHostBuilder"/> when calling
         /// <see cref="WebApplicationFactory{TEntryPoint}.WithWebHostBuilder(Action{IWebHostBuilder})"/>.
         /// </summary>
         public IReadOnlyList<WebApplicationFactory<TEntryPoint>> Factories => _derivedFactories.AsReadOnly();
@@ -171,6 +173,35 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 return;
             }
 
+            var fromFile = File.Exists("MvcTestingAppManifest.json");
+            var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : GetContentRootFromAssembly();
+
+            if (contentRoot != null)
+            {
+                builder.UseContentRoot(contentRoot);
+            }
+            else
+            {
+                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
+            }
+        }
+
+        private string GetContentRootFromFile(string file)
+        {
+            var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file));
+            var key = typeof(TEntryPoint).Assembly.GetName().FullName;
+            try
+            {
+                return data[key];
+            } catch
+            {
+                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+            }
+
+        }
+
+        private string GetContentRootFromAssembly()
+        {
             var metadataAttributes = GetContentRootMetadataAttributes(
                 typeof(TEntryPoint).Assembly.FullName,
                 typeof(TEntryPoint).Assembly.GetName().Name);
@@ -194,14 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
             }
 
-            if (contentRoot != null)
-            {
-                builder.UseContentRoot(contentRoot);
-            }
-            else
-            {
-                builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
-            }
+            return contentRoot;
         }
 
         private static bool SetContentRootFromSetting(IWebHostBuilder builder)

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new WatchableApp("AppWithLaunchSettings", logger);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/28479")]
         [OSSkipCondition(OperatingSystems.Linux)]
         public async Task LaunchesBrowserOnStart()
         {
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.Process.GetOutputLineStartsWithAsync(expected, TimeSpan.FromMinutes(2));
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/28479")]
         [OSSkipCondition(OperatingSystems.Linux)]
         public async Task RefreshesBrowserOnChange()
         {
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.Process.GetOutputLineStartsWithAsync(refreshBrowserMessage, TimeSpan.FromMinutes(2));
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/28479")]
         [OSSkipCondition(OperatingSystems.Linux)]
         public async Task UsesBrowserSpecifiedInEnvironment()
         {

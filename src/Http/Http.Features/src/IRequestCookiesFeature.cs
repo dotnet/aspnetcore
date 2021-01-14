@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides access to request cookie collection.
+    /// </summary>
     public interface IRequestCookiesFeature
     {
+        /// <summary>
+        /// Gets or sets the request cookies.
+        /// </summary>
         IRequestCookieCollection Cookies { get; set; }
     }
 }

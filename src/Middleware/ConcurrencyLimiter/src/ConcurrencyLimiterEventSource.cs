@@ -87,12 +87,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             if (command.Command == EventCommand.Enable)
             {
-                _rejectedRequestsCounter ??= new PollingCounter("requests-rejected", this, () => _rejectedRequests)
+                _rejectedRequestsCounter ??= new PollingCounter("requests-rejected", this, () => Volatile.Read(ref _rejectedRequests))
                 {
                     DisplayName = "Rejected Requests",
                 };
 
-                _queueLengthCounter ??= new PollingCounter("queue-length", this, () => _queueLength)
+                _queueLengthCounter ??= new PollingCounter("queue-length", this, () => Volatile.Read(ref _queueLength))
                 {
                     DisplayName = "Queue Length",
                 };

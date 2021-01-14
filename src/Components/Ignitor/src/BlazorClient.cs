@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -35,8 +36,10 @@ namespace Ignitor
             });
         }
 
-        public TimeSpan? DefaultConnectionTimeout { get; set; } = TimeSpan.FromSeconds(20);
-        public TimeSpan? DefaultOperationTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+        public TimeSpan? DefaultConnectionTimeout { get; set; } = Debugger.IsAttached ?
+            Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(20);
+        public TimeSpan? DefaultOperationTimeout { get; set; } = Debugger.IsAttached ?
+            Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(500);
 
         /// <summary>
         /// Gets or sets a value that determines whether the client will capture data such
@@ -475,7 +478,7 @@ namespace Ignitor
             else
             {
                 var builder = new UriBuilder(uri);
-                builder.Path += builder.Path.EndsWith("/") ? "_blazor" : "/_blazor";
+                builder.Path += builder.Path.EndsWith("/", StringComparison.Ordinal) ? "_blazor" : "/_blazor";
                 return builder.Uri;
             }
         }

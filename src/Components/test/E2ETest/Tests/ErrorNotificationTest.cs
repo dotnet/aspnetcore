@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         public void ShowsErrorNotification_OnError_Dismiss()
         {
             var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
@@ -52,7 +51,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
         public void ShowsErrorNotification_OnError_Reload()
         {
             var causeErrorButton = Browser.Exists(By.Id("throw-simple-exception"));

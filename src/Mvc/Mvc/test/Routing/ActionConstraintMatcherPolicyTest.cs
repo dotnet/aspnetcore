@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -337,6 +337,42 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public async Task DataTokens_RoundTrip()
+        {
+            // Arrange
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    ActionConstraints = new List<IActionConstraintMetadata>()
+                    {
+                        new ConstraintWithTokens(),
+                    },
+                    EndpointMetadata = new List<object>()
+                    {
+                        new DataTokensMetadata(new Dictionary<string, object>
+                        {
+                            ["DataTokens"] = true
+                        })
+                    }
+                },
+            };
+
+            var endpoints = actions.Select(CreateEndpoint).ToArray();
+
+            var selector = CreateSelector(actions);
+
+            var httpContext = CreateHttpContext("POST");
+
+            // Act
+            var candidateSet = CreateCandidateSet(actions);
+            await selector.ApplyAsync(httpContext, candidateSet);
+
+            // Assert
+            Assert.True(candidateSet.IsValidCandidate(0));
+        }
+
+        [Fact]
         public void AppliesToEndpoints_IgnoresIgnorableConstraints()
         {
             // Arrange
@@ -438,6 +474,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private static Endpoint CreateEndpoint(ActionDescriptor action)
         {
             var metadata = new List<object>() { action, };
+            if (action?.EndpointMetadata != null)
+            {
+                metadata.AddRange(action.EndpointMetadata);
+            }
+
             return new Endpoint(
                 (context) => Task.CompletedTask,
                 new EndpointMetadataCollection(metadata),
@@ -459,12 +500,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return candidateSet;
         }
 
-        private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
+        private class ConstraintWithTokens : IActionConstraint
         {
-            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
-                Enumerable.Empty<IActionDescriptorProvider>(),
-                Enumerable.Empty<IActionDescriptorChangeProvider>());
-            return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());
+            public int Order => 1;
+
+            public bool Accept(ActionConstraintContext context)
+            {
+                return context.RouteContext.RouteData.DataTokens.ContainsKey("DataTokens");
+            }
         }
 
         private class BooleanConstraint : IActionConstraint

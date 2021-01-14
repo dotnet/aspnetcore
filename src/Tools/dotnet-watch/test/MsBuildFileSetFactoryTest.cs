@@ -110,6 +110,120 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        public async Task IncludesContentFiles()
+        {
+            _tempDir
+                .SubDir("src")
+                    .SubDir("Project1")
+                        .WithCSharpProject("Project1", out var target, sdk: "Microsoft.NET.Sdk.Web")
+                        .WithProperty("BaseIntermediateOutputPath", "obj")
+                        .WithTargetFrameworks("net5.0")
+                        .Dir()
+                        .WithFile("Program.cs")
+                        .SubDir("wwwroot")
+                            .SubDir("css").WithFile("app.css").Up()
+                            .SubDir("js").WithFile("site.js").Up()
+                            .WithFile("favicon.ico")
+                        .Up()
+                        .SubDir("obj").WithFile("ignored.cs").Up()
+                    .Up()
+                .Up()
+                .Create();
+            var expected = new FileSet(
+                isNetCoreApp31OrNewer: true,
+                new[]
+                {
+                    new FileItem($"{_tempDir.Root}/src/Project1/Project1.csproj"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/Program.cs"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/wwwroot/css/app.css", FileKind.StaticFile, "css/app.css"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/wwwroot/js/site.js", FileKind.StaticFile, "js/site.js"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/wwwroot/favicon.ico", FileKind.StaticFile, "favicon.ico"),
+                });
+
+            var fileset = await GetFileSet(target);
+
+            AssertEx.EqualFileList(expected, fileset);
+        }
+
+        [Fact]
+        public async Task IncludesContentFilesFromRCLS()
+        {
+            _tempDir
+                .SubDir("src")
+                    .SubDir("RCL1")
+                        .WithCSharpProject("RCL1", out var rcl, sdk: "Microsoft.NET.Sdk.Razor")
+                        .WithTargetFrameworks("net5.0")
+                        .Dir()
+                        .WithFile("Index.razor")
+                        .SubDir("wwwroot")
+                            .SubDir("css").WithFile("app.css").Up()
+                            .SubDir("js").WithFile("site.js").Up()
+                            .WithFile("favicon.ico")
+                        .Up()
+                    .Up()
+                    .SubDir("Project1")
+                        .WithCSharpProject("Project1", out var target, sdk: "Microsoft.NET.Sdk.Web")
+                        .WithProjectReference(rcl)
+                        .WithTargetFrameworks("net5.0")
+                        .Dir()
+                        .WithFile("Program.cs")
+                        .SubDir("obj").WithFile("ignored.cs").Up()
+                    .Up()
+                .Up()
+                .Create();
+            var expected = new FileSet(
+                isNetCoreApp31OrNewer: true,
+                new[]
+                {
+                    new FileItem($"{_tempDir.Root}/src/Project1/Project1.csproj"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/Program.cs"),
+                    new FileItem($"{_tempDir.Root}/src/RCL1/RCL1.csproj"),
+                    new FileItem($"{_tempDir.Root}/src/RCL1/Index.razor"),
+                    new FileItem($"{_tempDir.Root}/src/RCL1/wwwroot/css/app.css", FileKind.StaticFile, "_content/RCL1/css/app.css"),
+                    new FileItem($"{_tempDir.Root}/src/RCL1/wwwroot/js/site.js", FileKind.StaticFile, "_content/RCL1/js/site.js"),
+                    new FileItem($"{_tempDir.Root}/src/RCL1/wwwroot/favicon.ico", FileKind.StaticFile, "_content/RCL1/favicon.ico"),
+                });
+
+            var fileset = await GetFileSet(target);
+
+            AssertEx.EqualFileList(expected, fileset);
+        }
+
+        [Fact]
+        public async Task IgnoreContentFilesWhenSuppressHandlingStaticContentFilesIsConfigured()
+        {
+            _tempDir
+                .SubDir("src")
+                    .SubDir("Project1")
+                        .WithCSharpProject("Project1", out var target, sdk: "Microsoft.NET.Sdk.Web")
+                        .WithProperty("BaseIntermediateOutputPath", "obj")
+                        .WithTargetFrameworks("net5.0")
+                        .Dir()
+                        .WithFile("Program.cs")
+                        .SubDir("wwwroot")
+                            .SubDir("css").WithFile("app.css").Up()
+                            .SubDir("js").WithFile("site.js").Up()
+                            .WithFile("favicon.ico")
+                        .Up()
+                        .SubDir("obj").WithFile("ignored.cs").Up()
+                    .Up()
+                .Up()
+                .Create();
+            var expected = new FileSet(
+                isNetCoreApp31OrNewer: true,
+                new[]
+                {
+                    new FileItem($"{_tempDir.Root}/src/Project1/Project1.csproj"),
+                    new FileItem($"{_tempDir.Root}/src/Project1/Program.cs"),
+                });
+
+            var watchOptions = DotNetWatchOptions.Default with { SuppressHandlingStaticContentFiles = true };
+            var fileset = await GetFileSet(new MsBuildFileSetFactory(_reporter, watchOptions, target.Path, waitOnError: false, trace: true));
+
+            AssertEx.EqualFileList(expected, fileset);
+        }
+
+        [Fact]
         public async Task MultiTfm()
         {
             _tempDir
@@ -243,10 +357,13 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
                 graph.GetOrCreate(m.Groups[1].Value).WithProjectReference(target);
             }
 
-            graph.Find("A").WithProjectReference(graph.Find("W"), watch: false);
+            var a = graph.Find("A");
+            Assert.NotNull(a);
+
+            a!.WithProjectReference(graph.Find("W"), watch: false);
 
             var output = new OutputSink();
-            var filesetFactory = new MsBuildFileSetFactory(_reporter, graph.GetOrCreate("A").Path, output, trace: true);
+            var filesetFactory = new MsBuildFileSetFactory(_reporter, DotNetWatchOptions.Default, graph.GetOrCreate("A").Path, output, trace: true);
 
             var fileset = await GetFileSet(filesetFactory);
 
@@ -276,10 +393,10 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             );
         }
 
-        private Task<IFileSet> GetFileSet(TemporaryCSharpProject target)
-            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path, waitOnError: false, trace: false));
+        private Task<FileSet> GetFileSet(TemporaryCSharpProject target)
+            => GetFileSet(new MsBuildFileSetFactory(_reporter, DotNetWatchOptions.Default, target.Path, waitOnError: false, trace: true));
 
-        private async Task<IFileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
+        private async Task<FileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
         {
             _tempDir.Create();
             return await filesetFactory

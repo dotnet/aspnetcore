@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly IFormCollection _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a value provider for <see cref="IFormCollection"/>.
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public FormValueProvider(
             BindingSource bindingSource,
             IFormCollection values,
-            CultureInfo culture)
+            CultureInfo? culture)
             : base(bindingSource)
         {
             if (bindingSource == null)
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// The culture to use.
         /// </summary>
-        public CultureInfo Culture { get; }
+        public CultureInfo? Culture { get; }
 
         /// <summary>
         /// The prefix container.

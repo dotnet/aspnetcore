@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         /// </summary>
         /// <param name="rule">The rule to tokenize.</param>
         /// <returns>A list of tokens.</returns>
-        public IList<string> Tokenize(string rule)
+        public IList<string>? Tokenize(string rule)
         {
             // TODO make list of strings a reference to the original rule? (run into problems with escaped spaces).
             // TODO handle "s and probably replace \ character with no slash.

@@ -623,15 +623,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             private static string GetName(string containerName, ApiParameterDescriptionContext metadata)
             {
-                if (!string.IsNullOrEmpty(metadata.BinderModelName))
-                {
-                    // Name was explicitly provided
-                    return metadata.BinderModelName;
-                }
-                else
-                {
-                    return ModelNames.CreatePropertyModelName(containerName, metadata.PropertyName);
-                }
+                var propertyName = !string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.BinderModelName : metadata.PropertyName;
+                return ModelNames.CreatePropertyModelName(containerName, propertyName);
             }
 
             private readonly struct PropertyKey

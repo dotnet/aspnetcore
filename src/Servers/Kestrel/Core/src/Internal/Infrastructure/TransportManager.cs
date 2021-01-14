@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             public EndPoint EndPoint => _connectionListener.EndPoint;
 
-            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+            public ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
                  => _connectionListener.AcceptAsync(cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             public EndPoint EndPoint => _multiplexedConnectionListener.EndPoint;
 
-            public ValueTask<MultiplexedConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+            public ValueTask<MultiplexedConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
                  => _multiplexedConnectionListener.AcceptAsync(features: null, cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)

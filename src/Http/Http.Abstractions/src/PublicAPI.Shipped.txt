@@ -64,9 +64,9 @@ Microsoft.AspNetCore.Http.CookieSecurePolicy.None = 2 -> Microsoft.AspNetCore.Ht
 Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest = 0 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
 Microsoft.AspNetCore.Http.Endpoint
 Microsoft.AspNetCore.Http.Endpoint.DisplayName.get -> string?
-Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
+Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
 Microsoft.AspNetCore.Http.Endpoint.Metadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
-Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
 Microsoft.AspNetCore.Http.EndpointHttpContextExtensions
 Microsoft.AspNetCore.Http.EndpointMetadataCollection
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Count.get -> int
@@ -170,7 +170,7 @@ Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key, out object? value) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(object? values) -> void
-Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object! value) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryGetValue(string! key, out object? value) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Values.get -> System.Collections.Generic.ICollection<object?>!
 Microsoft.AspNetCore.Routing.RouteValueDictionary.this[string! key].get -> object?
@@ -340,8 +340,6 @@ static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.
 static Microsoft.AspNetCore.Builder.MapWhenExtensions.MapWhen(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>! predicate, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.RunExtensions.Run(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.RequestDelegate! handler) -> void
 static Microsoft.AspNetCore.Builder.UseExtensions.Use(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Func<System.Threading.Tasks.Task!>!, System.Threading.Tasks.Task!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.UsePathBaseExtensions.UsePathBase(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathBase) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.UseWhenExtensions.UseWhen(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>! predicate, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Http.Endpoint?

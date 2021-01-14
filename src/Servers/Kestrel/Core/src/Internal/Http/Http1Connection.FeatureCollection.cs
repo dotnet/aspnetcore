@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal partial class Http1Connection : IHttpMinRequestBodyDataRateFeature,
                                              IHttpMinResponseDataRateFeature
     {
-        MinDataRate IHttpMinRequestBodyDataRateFeature.MinDataRate
+        MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
         {
             get => MinRequestBodyDataRate;
             set => MinRequestBodyDataRate = value;
         }
 
-        MinDataRate IHttpMinResponseDataRateFeature.MinDataRate
+        MinDataRate? IHttpMinResponseDataRateFeature.MinDataRate
         {
             get => MinResponseDataRate;
             set => MinResponseDataRate = value;

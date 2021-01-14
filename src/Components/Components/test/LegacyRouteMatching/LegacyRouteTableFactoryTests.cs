@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Xunit;
 
@@ -632,7 +633,7 @@ namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
             Assert.Equal(17, routeTable.Routes.Length);
             for (var i = 0; i < 17; i++)
             {
-                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                var templateText = "r" + i.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
                 Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
             }
         }

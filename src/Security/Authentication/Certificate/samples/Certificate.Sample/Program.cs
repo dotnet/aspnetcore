@@ -7,24 +7,23 @@ namespace Certificate.Sample
 {
     public class Program
     {
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseStartup<Startup>()
-                        .ConfigureKestrel(options =>
-                        {
-                            options.ConfigureHttpsDefaults(opt =>
-                            {
-                                opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                            });
-                        });
-                })
-                .Build();
-
-            return host.RunAsync();
+            CreateHostBuilder(args).Build().Run();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>()
+                        .ConfigureKestrel(options =>
+                         {
+                             options.ConfigureHttpsDefaults(opt =>
+                             {
+                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                             });
+                         });
+                });
     }
 }

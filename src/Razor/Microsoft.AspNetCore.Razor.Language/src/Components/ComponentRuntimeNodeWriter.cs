@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // text to display
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator();
 
             for (var i = 0; i < node.Children.Count; i++)
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddMarkupContent}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.Content)
                 .WriteEndMethodInvocation();
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.OpenElement}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.TagName)
                 .WriteEndMethodInvocation();
@@ -295,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{renderApi}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator()
                 .WriteStringLiteral(content)
                 .WriteEndMethodInvocation();
@@ -359,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write("<");
                 context.CodeWriter.Write(node.TypeName);
                 context.CodeWriter.Write(">(");
-                context.CodeWriter.Write((_sourceSequence++).ToString());
+                context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
 
@@ -427,12 +428,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write(_scopeStack.BuilderVarName);
                 context.CodeWriter.Write(", ");
 
-                context.CodeWriter.Write((_sourceSequence++).ToString());
+                context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                 context.CodeWriter.Write(", ");
 
                 for (var i = 0; i < attributes.Count; i++)
                 {
-                    context.CodeWriter.Write((_sourceSequence++).ToString());
+                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
                     // Don't type check generics, since we can't actually write the type name.
@@ -456,7 +457,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 for (var i = 0; i < childContents.Count; i++)
                 {
-                    context.CodeWriter.Write((_sourceSequence++).ToString());
+                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
                     WriteComponentChildContentInnards(context, childContents[i]);
@@ -470,7 +471,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 for (var i = 0; i < setKeys.Count; i++)
                 {
-                    context.CodeWriter.Write((_sourceSequence++).ToString());
+                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
                     WriteSetKeyInnards(context, setKeys[i]);
@@ -484,7 +485,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 for (var i = 0; i < captures.Count; i++)
                 {
-                    context.CodeWriter.Write((_sourceSequence++).ToString());
+                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
                     WriteReferenceCaptureInnards(context, captures[i], shouldTypeCheck: false);
@@ -520,7 +521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.Write(".");
             context.CodeWriter.Write(addAttributeMethod);
             context.CodeWriter.Write("(");
-            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
             context.CodeWriter.Write(", ");
             context.CodeWriter.WriteStringLiteral(node.AttributeName);
             context.CodeWriter.Write(", ");
@@ -768,7 +769,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             //
             // _builder.AddMultipleAttributes(2, ...);
             context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddMultipleAttributes}");
-            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
             context.CodeWriter.WriteParameterSeparator();
 
             WriteSplatInnards(context, node, canTypeCheck: true);
@@ -814,7 +815,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture;
             codeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{methodName}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator();
 
             WriteReferenceCaptureInnards(context, node, shouldTypeCheck: true);
@@ -884,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}")
-                .Write((_sourceSequence++).ToString())
+                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key);
         }
@@ -892,7 +893,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         protected override void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode nameExpression)
         {
             context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}");
-            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
             context.CodeWriter.WriteParameterSeparator();
 
             var tokens = GetCSharpTokens(nameExpression);

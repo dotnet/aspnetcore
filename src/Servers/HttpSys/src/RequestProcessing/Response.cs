@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Http.Sys automatically sends 100 Continue responses when you read from the request body.
                 if (value <= 100 || 999 < value)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(Resources.Exception_InvalidStatusCode, value));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(CultureInfo.CurrentCulture, Resources.Exception_InvalidStatusCode, value));
                 }
                 CheckResponseStarted();
                 _nativeResponse.Response_V1.StatusCode = (ushort)value;

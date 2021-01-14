@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class GenericWebHostServiceOptions
     {
-        public Action<IApplicationBuilder> ConfigureApplication { get; set; }
+        public Action<IApplicationBuilder>? ConfigureApplication { get; set; }
 
-        public WebHostOptions WebHostOptions { get; set; }
+        public WebHostOptions WebHostOptions { get; set; } = default!; // Always set when options resolved by DI
 
-        public AggregateException HostingStartupExceptions { get; set; }
+        public AggregateException? HostingStartupExceptions { get; set; }
     }
 }

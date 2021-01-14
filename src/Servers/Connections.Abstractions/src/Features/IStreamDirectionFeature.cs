@@ -3,9 +3,19 @@
 
 namespace Microsoft.AspNetCore.Connections.Features
 {
+    /// <summary>
+    /// The direction of a connection stream
+    /// </summary>
     public interface IStreamDirectionFeature
     {
+        /// <summary>
+        /// Gets whether or not the connection stream can be read.
+        /// </summary>
         bool CanRead { get; }
+
+        /// <summary>
+        /// Gets whether or not the connection stream can be written.
+        /// </summary>
         bool CanWrite { get; }
     }
 }

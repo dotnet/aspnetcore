@@ -12,7 +12,6 @@
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
@@ -43,7 +42,7 @@
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' ">
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
     <!-- This dependency was removed in 5.0. The suppression can be removed after 5.0 RTM is released. -->
     <SuppressBaselineReference Include="Newtonsoft.Json" />
   </ItemGroup>

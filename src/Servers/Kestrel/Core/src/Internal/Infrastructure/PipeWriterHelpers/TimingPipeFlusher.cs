@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     internal class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
-        private readonly ITimeoutControl _timeoutControl;
+        private readonly ITimeoutControl? _timeoutControl;
         private readonly IKestrelTrace _log;
 
         public TimingPipeFlusher(
             PipeWriter writer,
-            ITimeoutControl timeoutControl,
+            ITimeoutControl? timeoutControl,
             IKestrelTrace log)
         {
             _writer = writer;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             if (minRate is object)
             {
-                _timeoutControl.BytesWrittenToBuffer(minRate, count);
+                _timeoutControl!.BytesWrittenToBuffer(minRate, count);
             }
 
             if (pipeFlushTask.IsCompletedSuccessfully)
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             if (minRate is object)
             {
-                _timeoutControl.StartTimingWrite();
+                _timeoutControl!.StartTimingWrite();
             }
 
             try
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 if (minRate is object)
                 {
-                    _timeoutControl.StopTimingWrite();
+                    _timeoutControl!.StopTimingWrite();
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

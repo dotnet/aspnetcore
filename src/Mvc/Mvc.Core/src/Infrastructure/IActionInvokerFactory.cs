@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -23,6 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// The <see cref="ActionContext"/> associated with the current request.
         /// </param>
         /// <returns>An <see cref="IActionInvoker"/> or <c>null</c>.</returns>
-        IActionInvoker CreateInvoker(ActionContext actionContext);
+        IActionInvoker? CreateInvoker(ActionContext actionContext);
     }
 }

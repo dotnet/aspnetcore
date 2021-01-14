@@ -55,6 +55,7 @@ namespace Microsoft.Extensions.ObjectPool
             }
         }
 
+        /// <inheritdoc />
         public override T Get()
         {
             var item = _firstItem;
@@ -80,6 +81,7 @@ namespace Microsoft.Extensions.ObjectPool
         [MethodImpl(MethodImplOptions.NoInlining)]
         private T Create() => _fastPolicy?.Create() ?? _policy.Create();
 
+        /// <inheritdoc />
         public override void Return(T obj)
         {
             if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
         /// <param name="streamIds">The target methods stream IDs.</param>
-        public StreamInvocationMessage(string invocationId, string target, object[] arguments, string[] streamIds)
+        public StreamInvocationMessage(string invocationId, string target, object[] arguments, string[]? streamIds)
             : base(invocationId, target, arguments, streamIds)
         {
         }

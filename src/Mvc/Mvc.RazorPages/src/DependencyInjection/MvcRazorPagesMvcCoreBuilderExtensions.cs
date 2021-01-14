@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -131,6 +132,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IRequestDelegateFactory, PageRequestDelegateFactory>());
+            services.TryAddSingleton<PageActionInvokerCache>();
 
             // Page and Page model creation and activation
             services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();

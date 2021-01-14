@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _context = context;
         }
 
+        /// <inheritdoc/>
         public int Count
         {
             get
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        /// <inheritdoc/>
         public ICollection<string> Keys
         {
             get
@@ -60,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        /// <inheritdoc/>
         public ICollection<object> Values
         {
             get
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        /// <inheritdoc/>
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly
         {
             get
@@ -78,6 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        /// <inheritdoc/>
         public object this[string key]
         {
             get
@@ -168,6 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return value;
         }
 
+        /// <inheritdoc/>
         public void Add(string key, object value)
         {
             Load();
@@ -175,6 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _initialKeys.Add(key);
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             Load();
@@ -183,24 +190,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _initialKeys.Clear();
         }
 
+        /// <inheritdoc/>
         public bool ContainsKey(string key)
         {
             Load();
             return _data.ContainsKey(key);
         }
 
+        /// <inheritdoc/>
         public bool ContainsValue(object value)
         {
             Load();
             return _data.ContainsValue(value);
         }
 
+        /// <inheritdoc/>
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             Load();
             return new TempDataDictionaryEnumerator(this);
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             Load();
@@ -209,6 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return _data.Remove(key);
         }
 
+        /// <inheritdoc/>
         public bool TryGetValue(string key, out object value)
         {
             Load();

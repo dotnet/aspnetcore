@@ -4,6 +4,9 @@
 using System;
 using System.Runtime.InteropServices;
 
+// Remove once HttpSys has enabled nullable
+#nullable enable
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // Note this type should only be used while the request buffer remains pinned
@@ -16,7 +19,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _nativeCookedUrl = nativeCookedUrl;
         }
 
-        internal unsafe string GetFullUrl()
+        internal unsafe string? GetFullUrl()
         {
             if (_nativeCookedUrl.pFullUrl != null && _nativeCookedUrl.FullUrlLength > 0)
             {
@@ -25,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetHost()
+        internal unsafe string? GetHost()
         {
             if (_nativeCookedUrl.pHost != null && _nativeCookedUrl.HostLength > 0)
             {
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetAbsPath()
+        internal unsafe string? GetAbsPath()
         {
             if (_nativeCookedUrl.pAbsPath != null && _nativeCookedUrl.AbsPathLength > 0)
             {
@@ -43,7 +46,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetQueryString()
+        internal unsafe string? GetQueryString()
         {
             if (_nativeCookedUrl.pQueryString != null && _nativeCookedUrl.QueryStringLength > 0)
             {

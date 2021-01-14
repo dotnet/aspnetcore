@@ -13,10 +13,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
 
-  <ItemGroup>
-    <TrimmerRootDescriptor Include="Linker.xml" />
-  </ItemGroup>
-
   <!-- Link all assemblies -->
   <Target Name="EnsureAllAssembliesAreLinked" BeforeTargets="PrepareForILLink">
     <ItemGroup>

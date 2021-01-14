@@ -167,6 +167,15 @@ namespace System.Net.Http.QPack
             }
         }
 
+        /// <summary>
+        /// Reset the decoder state back to its initial value. Resetting state is required when reusing a decoder with multiple
+        /// header frames. For example, decoding a response's headers and trailers.
+        /// </summary>
+        public void Reset()
+        {
+            _state = State.RequiredInsertCount;
+        }
+
         public void Decode(in ReadOnlySequence<byte> headerBlock, IHttpHeadersHandler handler)
         {
             foreach (ReadOnlyMemory<byte> segment in headerBlock)

@@ -183,9 +183,13 @@ namespace Microsoft.AspNetCore.Hosting
                 var logger = host.Services.GetRequiredService<ILogger<WebHost>>();
 
                 // Warn about duplicate HostingStartupAssemblies
-                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+                var assemblyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies())
                 {
-                    logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+                    if (!assemblyNames.Add(assemblyName))
+                    {
+                        logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+                    }
                 }
 
                 return host;
@@ -220,7 +224,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             hostingStartupErrors = null;
 
-            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
+            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
 
             if (!_options.PreventHostingStartup)
             {
@@ -297,7 +301,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var startupType = StartupLoader.FindStartupType(_options.StartupAssembly, _hostingEnvironment.EnvironmentName);
 
-                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    if (typeof(IStartup).IsAssignableFrom(startupType))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);
                     }

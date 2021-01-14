@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     /// <remarks>
     /// Users should not need to instantiate this class.
     /// </remarks>
+    [Obsolete("The ThrowingWasUpgradedWriteOnlyStream is obsolete and will be removed in a future release.")]
     public class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
     {
         ///<inheritdoc/>

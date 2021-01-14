@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.ResponseCaching.IResponseCachingFeature.VaryByQueryKeys.get -> string![]?
+Microsoft.AspNetCore.ResponseCaching.IResponseCachingFeature.VaryByQueryKeys.set -> void

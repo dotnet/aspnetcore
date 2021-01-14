@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private readonly PipeScheduler _ioScheduler;
 
-        private Action _callback;
+        private Action? _callback;
 
         public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
             : base(unsafeSuppressExecutionContextFlow: true)
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             if (continuation != null)
             {
-                _ioScheduler.Schedule(state => ((Action)state)(), continuation);
+                _ioScheduler.Schedule(state => ((Action)state!)(), continuation);
             }
         }
     }
