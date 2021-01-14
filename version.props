@@ -5,7 +5,7 @@
     <AspNetCorePatchVersion>24</AspNetCorePatchVersion>
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
-    <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t000</BuildNumber>
+    <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t001</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <ExperimentalVersionPrefix>0.1.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
 
