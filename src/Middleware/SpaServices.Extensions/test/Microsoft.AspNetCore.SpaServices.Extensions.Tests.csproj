@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestDependsOnNode>true</TestDependsOnNode>
+    // npm setup issues on arm64
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
