@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </para>
     /// <para>
     /// When decorated on an assembly, all controllers in the assembly will be treated as controllers with API behavior.
-    /// For more information, see <see href="https://docs.microsoft.com/aspnet/core/web-api/#apicontroller-attribute">Cookie policy middleware</see>.
+    /// For more information, see <see href="https://docs.microsoft.com/aspnet/core/web-api/#apicontroller-attribute">ApiController attribute</see>.
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
