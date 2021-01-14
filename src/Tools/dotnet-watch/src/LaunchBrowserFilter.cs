@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                     catch (Exception ex)
                     {
-                        _reporter.Verbose($"Unable to launch browser: {ex}");
+                        _reporter.Verbose($"An exception occurred when attempting to launch a browser: {ex}");
                         _browserProcess = null;
                     }
 
