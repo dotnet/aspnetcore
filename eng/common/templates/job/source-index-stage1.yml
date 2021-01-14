@@ -3,6 +3,7 @@ parameters:
   sourceIndexPackageVersion: 1.0.0-beta5
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
+  preSteps: []
   binlogPath: artifacts/log/Debug/Build.binlog
   pool:
     vmImage: vs2017-win2016
@@ -21,11 +22,19 @@ jobs:
 
   pool: ${{ parameters.pool }}
   steps:
+  - ${{ each preStep in parameters.preSteps }}:
+    - ${{ preStep }}
+
   - task: UseDotNet@2
     displayName: Use .NET Core sdk 3.1
     inputs:
       packageType: sdk
       version: 3.1.x
+
+  - task: UseDotNet@2
+    displayName: Use .NET Core sdk
+    inputs:
+      useGlobalJson: true
 
   - script: |
       dotnet tool install BinLogToSln --version $(SourceIndexPackageVersion) --add-source $(SourceIndexPackageSource) --tool-path .source-index/tools
@@ -38,9 +47,12 @@ jobs:
 
   - script: BinLogToSln -i $(BinlogPath) -r $(Build.SourcesDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
     displayName: Process Binlog into indexable sln
+    env:
+      DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX: 2
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - script: UploadIndexStage1 -i .source-index/stage1output -n $(Build.Repository.Name)
       displayName: Upload stage1 artifacts to source index
       env:
         BLOB_CONTAINER_URL: $(source-dot-net-stage1-blob-container-url)
+        DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX: 2
