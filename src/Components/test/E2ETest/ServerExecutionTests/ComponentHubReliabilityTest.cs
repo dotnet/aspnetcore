@@ -119,7 +119,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29326")]
         public async Task CannotInvokeJSInteropBeforeInitialization()
         {
             // Arrange
