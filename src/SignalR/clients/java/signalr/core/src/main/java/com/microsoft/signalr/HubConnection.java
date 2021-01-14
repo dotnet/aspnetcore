@@ -517,7 +517,14 @@ public class HubConnection implements AutoCloseable {
         RuntimeException exception = null;
         this.state.lock();
         try {
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(false);
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
+
+            if (connectionState == null)
+            {
+                this.logger.error("'stopConnection' called with a null ConnectionState. This is not expected, please file a bug.");
+                return;
+            }
+
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
             if (connectionState.stopError != null) {
