@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         void StreamError(string streamId, Exception ex);
         void StreamPause(string streamId);
         void StreamResume(string streamId);
-        void StreamShutdownWrite(string streamId, Exception? ex);
+        void StreamShutdownWrite(string streamId, string reason);
         void StreamAbort(string streamId, Exception ex);
     }
 }
