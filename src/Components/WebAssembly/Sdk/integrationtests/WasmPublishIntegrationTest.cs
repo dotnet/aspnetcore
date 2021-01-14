@@ -970,6 +970,58 @@ $@"<PropertyGroup>
             Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat");
         }
 
+        [Fact]
+        public async Task Publish_HostingMultipleBlazorWebApps_Works()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/29264
+            // Arrange
+            using var project = ProjectDirectory.Create("BlazorMultipleApps.Server", "BlazorMultipleApps.FirstClient", "BlazorMultipleApps.SecondClient", "BlazorMultipleApps.Shared");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            var publishOutputDirectory = project.PublishOutputDirectory;
+
+            Assert.FileExists(result, Path.Combine(publishOutputDirectory, "BlazorMultipleApps.Server.dll"));
+            Assert.FileExists(result, Path.Combine(publishOutputDirectory, "BlazorMultipleApps.FirstClient.dll"));
+            Assert.FileExists(result, Path.Combine(publishOutputDirectory, "BlazorMultipleApps.SecondClient.dll"));
+
+            var firstAppPublishDirectory = Path.Combine(publishOutputDirectory, "wwwroot", "FirstApp");
+
+            var firstCss = Assert.FileExists(result, Path.Combine(firstAppPublishDirectory, "css", "app.css"));
+            Assert.FileContains(result, firstCss, "/* First app.css */");
+
+            var firstBootJsonPath = Path.Combine(firstAppPublishDirectory, "_framework", "blazor.boot.json");
+            var firstBootJson = ReadBootJsonData(result, firstBootJsonPath);
+
+            // Do a sanity check that the boot json has files.
+            Assert.Contains("System.Text.Json.dll", firstBootJson.resources.assembly.Keys);
+
+            VerifyBootManifestHashes(result, firstAppPublishDirectory);
+
+            // Verify compression works
+            Assert.FileExists(result, firstAppPublishDirectory, "_framework", "dotnet.wasm.br");
+            Assert.FileExists(result, firstAppPublishDirectory, "_framework", "BlazorMultipleApps.FirstClient.dll.br");
+            Assert.FileExists(result, firstAppPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            var secondAppPublishDirectory = Path.Combine(publishOutputDirectory, "wwwroot", "SecondApp");
+
+            var secondCss = Assert.FileExists(result, Path.Combine(secondAppPublishDirectory, "css", "app.css"));
+            Assert.FileContains(result, secondCss, "/* Second app.css */");
+
+            var secondBootJsonPath = Path.Combine(secondAppPublishDirectory, "_framework", "blazor.boot.json");
+            var secondBootJson = ReadBootJsonData(result, secondBootJsonPath);
+
+            // Do a sanity check that the boot json has files.
+            Assert.Contains("System.Private.CoreLib.dll", secondBootJson.resources.assembly.Keys);
+
+            VerifyBootManifestHashes(result, secondAppPublishDirectory);
+
+            // Verify compression works
+            Assert.FileExists(result, secondAppPublishDirectory, "_framework", "dotnet.wasm.br");
+            Assert.FileExists(result, secondAppPublishDirectory, "_framework", "BlazorMultipleApps.SecondClient.dll.br");
+            Assert.FileExists(result, secondAppPublishDirectory, "_framework", "System.Private.CoreLib.dll.br");
+            Assert.FileDoesNotExist(result, secondAppPublishDirectory, "_framework", "System.Text.Json.dll.br");
+        }
+
         private static void AddWasmProjectContent(ProjectDirectory project, string content)
         {
             var path = Path.Combine(project.SolutionPath, "blazorwasm", "blazorwasm.csproj");
@@ -1021,7 +1073,6 @@ $@"<PropertyGroup>
                 return webFormattedHash.Substring(7);
             }
         }
-
 
         private void VerifyTypeGranularTrimming(MSBuildResult result, string blazorPublishDirectory)
         {

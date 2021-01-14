@@ -509,7 +509,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorPublishBootResource
         Include="@(ResolvedFileToPublish)"
-        Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('wwwroot/_framework')) AND '%(Extension)' != '.a'" />
+        Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith($(_BlazorFrameworkPublishPath.Replace('\', '/')))) AND '%(Extension)' != '.a'" />
     </ItemGroup>
 
     <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
