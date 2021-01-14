@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Connections
 
         MemoryPool<byte> IMemoryPoolFeature.MemoryPool => MemoryPool;
 
-        IDictionary<object, object> IConnectionItemsFeature.Items
+        IDictionary<object, object?> IConnectionItemsFeature.Items
         {
             get => Items;
             set => Items = value;

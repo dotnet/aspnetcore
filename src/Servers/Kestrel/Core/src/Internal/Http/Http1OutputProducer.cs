@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _currentMemoryPrefixBytes;
 
         private readonly ConcurrentPipeWriter _pipeWriter;
-        private IMemoryOwner<byte> _fakeMemoryOwner;
+        private IMemoryOwner<byte>? _fakeMemoryOwner;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
         // We need to know the size of the data written to the chunk before calling Advance on the
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // Fields needed to store writes before calling either startAsync or Write/FlushAsync
         // These should be cleared by the end of the request
-        private List<CompletedBuffer> _completedSegments;
+        private List<CompletedBuffer>? _completedSegments;
         private Memory<byte> _currentSegment;
-        private IMemoryOwner<byte> _currentSegmentOwner;
+        private IMemoryOwner<byte>? _currentSegmentOwner;
         private int _position;
         private bool _startCalled;
 
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
+        public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
             lock (_contextLock)
             {
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
         {
             writer.Write(HttpVersion11Bytes);
             var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
@@ -481,7 +481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(ContinueBytes);
         }
 
-        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -741,14 +741,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// </summary>
         private readonly struct CompletedBuffer
         {
-            private readonly IMemoryOwner<byte> _memoryOwner;
+            private readonly IMemoryOwner<byte>? _memoryOwner;
 
             public Memory<byte> Buffer { get; }
             public int Length { get; }
 
             public ReadOnlySpan<byte> Span => Buffer.Span.Slice(0, Length);
 
-            public CompletedBuffer(IMemoryOwner<byte> owner, Memory<byte> buffer, int length)
+            public CompletedBuffer(IMemoryOwner<byte>? owner, Memory<byte> buffer, int length)
             {
                 _memoryOwner = owner;
 

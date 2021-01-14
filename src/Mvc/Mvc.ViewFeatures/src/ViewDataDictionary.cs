@@ -11,6 +11,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
+    /// </summary>
     public class ViewDataDictionary : IDictionary<string, object>
     {
         private readonly IDictionary<string, object> _data;

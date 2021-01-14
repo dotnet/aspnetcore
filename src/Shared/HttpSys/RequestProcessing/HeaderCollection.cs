@@ -4,9 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+
+// Remove once HttpSys has enabled nullable
+#nullable enable
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
@@ -275,7 +279,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     if (ch < 0x20)
                     {
-                        throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Invalid control character in header: 0x{0:X2}", (byte)ch));
                     }
                 }
             }

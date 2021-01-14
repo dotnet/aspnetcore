@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
@@ -1984,7 +1985,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             [MixedRoutingConvention]
             public string GetUser(int id)
             {
-                return string.Format("User {0} retrieved successfully", id);
+                return string.Format(CultureInfo.InvariantCulture, "User {0} retrieved successfully", id);
             }
         }
     }

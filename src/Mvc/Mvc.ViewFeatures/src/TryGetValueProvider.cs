@@ -10,6 +10,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Static class that provides caching for TryGetValue. This class cannot be inherited.
+    /// </summary>
     public static class TryGetValueProvider
     {
         private static readonly Dictionary<Type, TryGetValueDelegate> _tryGetValueDelegateCache =
@@ -20,6 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static readonly MethodInfo _strongTryGetValueImplInfo =
             typeof(TryGetValueProvider).GetTypeInfo().GetDeclaredMethod(nameof(StrongTryGetValueImpl));
 
+        /// <summary>
+        /// Returns a <see cref="TryGetValueDelegate"/> for the specified <see cref="IDictionary{TKey, TValue}"/> type.
+        /// </summary>
+        /// <param name="targetType">The target type that is expected to be a <see cref="IDictionary{TKey, TValue}"/>.</param>
+        /// <returns>The <see cref="TryGetValueDelegate"/>.</returns>
         public static TryGetValueDelegate CreateInstance(Type targetType)
         {
             if (targetType == null)

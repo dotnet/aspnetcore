@@ -53,7 +53,7 @@ We may not investigate issues which haven't received many votes/comments and cho
 For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means, is that they will not be looked at again up until the next major release planning.
 
 ## Release Planning
-Once we approach to the end of the release cylce (.NET Core 3, .NET 5) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
+Once we approach to the end of the release cycle (.NET Core 3, .NET 5) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
 
 We will try to prioritize issues with most community requests / upvotes assuming these are aligned with our goals.
 Issues, which we will think are candidates for the upcoming release, will be moved to the `Next Sprint Planning` milestone.

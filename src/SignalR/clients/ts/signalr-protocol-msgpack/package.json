@@ -47,7 +47,6 @@
     "msgpack5": "^4.0.2"
   },
   "devDependencies": {
-    "@types/msgpack5": "^3.4.1",
-    "buffer": "^5.0.8"
+    "@types/msgpack5": "^3.4.1"
   }
 }

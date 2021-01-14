@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     {
                         Assert.Equal(RenderTreeEditType.StepOut, edit.Type);
                     });
-                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString());
+                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString(CultureInfo.InvariantCulture));
             }
         }
 

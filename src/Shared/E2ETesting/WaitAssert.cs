@@ -121,16 +121,6 @@ namespace Microsoft.AspNetCore.E2ETesting
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.All).Select(c => c.ToString()).ToList();
-                if (errors.Count == 0)
-                {
-                    // Workaround for selenium bug https://github.com/SeleniumHQ/selenium/issues/8229. Getting log does
-                    // not work. However some of our test apps provide a mechnanism to read the logs. Try that.
-
-                    var logs = (IReadOnlyCollection<object>)((IJavaScriptExecutor)driver).ExecuteScript(
-                        "return window.getBrowserLogs && window.getBrowserLogs() || []");
-
-                    errors = logs.Select(l => l.ToString()).ToList();
-                }
 
                 TakeScreenShot(driver, screenShotPath);
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :

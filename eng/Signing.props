@@ -5,6 +5,7 @@
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
     <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
     <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
   </ItemGroup>
 

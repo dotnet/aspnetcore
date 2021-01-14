@@ -68,22 +68,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             _pair = pair;
 
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new MockTrace(),
-                HttpParser = new HttpParser<Http1ParsingHandler>()
-            };
+            var serviceContext = TestContextFactory.CreateServiceContext(
+                serverOptions: new KestrelServerOptions(),
+                httpParser: new HttpParser<Http1ParsingHandler>(),
+                dateHeaderValueManager: new DateHeaderValueManager(),
+                log: new MockTrace());
 
-            var http1Connection = new TestHttp1Connection(new HttpConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = _memoryPool,
-                TimeoutControl = new TimeoutControl(timeoutHandler: null),
-                Transport = pair.Transport
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: null,
+                transport: pair.Transport,
+                timeoutControl: new TimeoutControl(timeoutHandler: null),
+                memoryPool: _memoryPool,
+                connectionFeatures: new FeatureCollection());
+
+            var http1Connection = new TestHttp1Connection(connectionContext);
 
             http1Connection.Reset();
             http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);

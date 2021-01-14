@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -63,11 +63,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private static bool IsNullableType(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsValueType)
+            if (type.IsValueType)
             {
                 // value types are only nullable if they are Nullable<T>
-                return typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
             }
             else
             {

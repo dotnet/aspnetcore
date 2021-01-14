@@ -31,6 +31,9 @@ parameters:
   #           See /eng/common/templates/jobs/source-build.yml for options
   sourceBuildParameters: []
 
+  enableSourceIndex: false
+  sourceIndexParams: {}
+
 # Internal resources (telemetry, microbuild) can only be accessed from non-public projects,
 # and some (Microbuild) should only be applied to non-PR cases for internal builds.
 
@@ -57,7 +60,15 @@ jobs:
       ${{ each parameter in parameters.sourceBuildParameters }}:
         ${{ parameter.key }}: ${{ parameter.value }}
 
+- ${{ if eq(parameters.enableSourceIndex, 'true') }}:
+  - template: ../job/source-index-stage1.yml
+    parameters:
+      runAsPublic: ${{ parameters.runAsPublic }}
+      ${{ each parameter in parameters.sourceIndexParams }}:
+        ${{ parameter.key }}: ${{ parameter.value }}
+
 - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  
   - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
     - template: ../job/publish-build-assets.yml
       parameters:

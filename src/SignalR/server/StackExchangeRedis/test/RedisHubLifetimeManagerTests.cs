@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             public string TestProperty { get; set; }
         }
 
-        private RedisHubLifetimeManager<MyHub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, NewtonsoftJsonHubProtocolOptions jsonOptions = null)
+        private RedisHubLifetimeManager<Hub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, NewtonsoftJsonHubProtocolOptions jsonOptions = null)
         {
             var options = new RedisOptions() { ConnectionFactory = async (t) => await Task.FromResult(new TestConnectionMultiplexer(server)) };
             messagePackOptions = messagePackOptions ?? new MessagePackHubProtocolOptions();
             jsonOptions = jsonOptions ?? new NewtonsoftJsonHubProtocolOptions();
-            return new RedisHubLifetimeManager<MyHub>(
-                NullLogger<RedisHubLifetimeManager<MyHub>>.Instance,
+            return new RedisHubLifetimeManager<Hub>(
+                NullLogger<RedisHubLifetimeManager<Hub>>.Instance,
                 Options.Create(options),
                 new DefaultHubProtocolResolver(new IHubProtocol[]
                 {

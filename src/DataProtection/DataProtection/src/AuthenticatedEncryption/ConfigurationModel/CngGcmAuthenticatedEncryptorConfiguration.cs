@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// The default value is null.
         /// </remarks>
         [ApplyPolicy]
-        public string EncryptionAlgorithmProvider { get; set; } = null;
+        public string? EncryptionAlgorithmProvider { get; set; } = null;
 
         /// <summary>
         /// The length (in bits) of the key that will be used for symmetric encryption.
@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         [ApplyPolicy]
         public int EncryptionAlgorithmKeySize { get; set; } = 256;
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;

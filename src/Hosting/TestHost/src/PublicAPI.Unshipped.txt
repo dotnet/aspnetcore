@@ -1,1 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.TestHost.TestServerOptions
+Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.get -> bool
+Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.set -> void
+Microsoft.AspNetCore.TestHost.TestServerOptions.BaseAddress.get -> System.Uri!
+Microsoft.AspNetCore.TestHost.TestServerOptions.BaseAddress.set -> void
+Microsoft.AspNetCore.TestHost.TestServerOptions.PreserveExecutionContext.get -> bool
+Microsoft.AspNetCore.TestHost.TestServerOptions.PreserveExecutionContext.set -> void
+Microsoft.AspNetCore.TestHost.TestServerOptions.TestServerOptions() -> void
+static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseTestServer(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, System.Action<Microsoft.AspNetCore.TestHost.TestServerOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+~Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
+~Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void

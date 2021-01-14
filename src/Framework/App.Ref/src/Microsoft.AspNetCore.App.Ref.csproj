@@ -53,7 +53,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Package overrides and platform manifest metadata. -->
     <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
     <!-- PackageOverrides.txt is written in GeneratePackageOverrides target unless servicing. -->
-    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' != 'true'">$(TargetDir)$(PackageOverridesFileName)</ReferencePackageOverridesPath>
+    <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' != 'true'">$(ArtifactsObjDir)$(PackageOverridesFileName)</ReferencePackageOverridesPath>
     <ReferencePackageOverridesPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\$(PackageOverridesFileName)</ReferencePackageOverridesPath>
     <!-- PlatformManifest.txt is written in App.Runtime's GenerateSharedFxDepsFile target but not used here when servicing. -->
     <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>

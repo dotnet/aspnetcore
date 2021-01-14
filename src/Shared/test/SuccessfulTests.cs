@@ -15,7 +15,7 @@ namespace AlwaysTestTests
         /// Test that executes in quarantined runs and always succeeds.
         /// </summary>
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("No issue")]
         public void GuaranteedQuarantinedTest()
         {
         }

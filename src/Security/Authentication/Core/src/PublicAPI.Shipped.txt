@@ -51,7 +51,6 @@ Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardChallenge
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardChallenge.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefault.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefault.set -> void
-Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardForbid.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardForbid.set -> void

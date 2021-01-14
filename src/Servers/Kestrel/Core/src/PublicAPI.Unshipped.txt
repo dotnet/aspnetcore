@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.HeaderTableSize.get -> int
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits.HeaderTableSize.set -> void

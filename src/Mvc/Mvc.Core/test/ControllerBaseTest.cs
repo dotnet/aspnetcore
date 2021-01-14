@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -1667,7 +1668,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var fileContents = new byte[0];
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
@@ -1711,7 +1712,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var fileContents = new byte[0];
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
@@ -1755,7 +1756,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var path = Path.GetFullPath("somepath");
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
@@ -1799,7 +1800,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var path = Path.GetFullPath("somepath");
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
@@ -1853,7 +1854,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
             var fileStream = Stream.Null;
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
@@ -1905,7 +1906,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
             var fileStream = Stream.Null;
-            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString);
+            var lastModified = (lastModifiedString == null) ? (DateTimeOffset?)null : DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act

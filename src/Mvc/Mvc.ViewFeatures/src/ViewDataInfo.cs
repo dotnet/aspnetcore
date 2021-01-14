@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Represents info about a <see cref="ViewDataDictionary"/> lookup which is evaluated when <see cref="Value"/> is read.
+    /// </summary>
     public class ViewDataInfo
     {
         private static readonly Func<object> _propertyInfoResolver = () => null;
@@ -53,10 +56,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _valueAccessor = valueAccessor;
         }
 
+        /// <summary>
+        /// Gets the <see cref="object"/> that has the <see cref="Value"/>.
+        /// </summary>
         public object Container { get; }
 
+        /// <summary>
+        /// Gets the <see cref="PropertyInfo"/> that represents <see cref="Value"/>'s property.
+        /// </summary>
         public PropertyInfo PropertyInfo { get; }
 
+        /// <summary>
+        /// Gets the value of the property.
+        /// </summary>
         public object Value
         {
             get

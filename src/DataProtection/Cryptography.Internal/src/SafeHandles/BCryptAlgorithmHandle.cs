@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return digestLength;
         }
 
-        public static BCryptAlgorithmHandle OpenAlgorithmHandle(string algorithmId, string implementation = null, bool hmac = false)
+        public static BCryptAlgorithmHandle OpenAlgorithmHandle(string algorithmId, string? implementation = null, bool hmac = false)
         {
             // from bcrypt.h
             const uint BCRYPT_ALG_HANDLE_HMAC_FLAG = 0x00000008;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 
         public void SetChainingMode(string chainingMode)
         {
-            fixed (char* pszChainingMode = chainingMode ?? String.Empty)
+            fixed (char* pszChainingMode = chainingMode)
             {
                 SetProperty(Constants.BCRYPT_CHAINING_MODE, pszChainingMode, checked((uint)(chainingMode.Length + 1 /* null terminator */) * sizeof(char)));
             }

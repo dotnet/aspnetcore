@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -210,6 +210,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredNode.GetSpanContext().ChunkGenerator);
             var diagnostic = Assert.Single(chunkGenerator.Diagnostics);
             Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
+        public void MapDirectives_HandlesDuplicates()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create();
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+            var parser = new CSharpCodeParser(context);
+
+            // Act & Assert (Does not throw)
+            parser.MapDirectives((b, t) => { }, "test");
+            parser.MapDirectives((b, t) => { }, "test");
         }
     }
 }

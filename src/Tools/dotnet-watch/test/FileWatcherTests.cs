@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var filesChanged = new HashSet<string>();
 
-                    EventHandler<string> handler = null;
+                    EventHandler<string>? handler = null;
                     handler = (_, f) =>
                     {
                         watcher.EnableRaisingEvents = false;
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var filesChanged = new HashSet<string>();
 
-                    EventHandler<string> handler = null;
+                    EventHandler<string>? handler = null;
                     handler = (_, f) =>
                     {
                         filesChanged.Add(f);
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var filesChanged = new HashSet<string>();
 
-                    EventHandler<string> handler = null;
+                    EventHandler<string>? handler = null;
                     handler = (_, f) =>
                     {
                         filesChanged.Add(f);
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var filesChanged = new HashSet<string>();
 
-                    EventHandler<string> handler = null;
+                    EventHandler<string>? handler = null;
                     handler = (_, f) =>
                     {
                         watcher.EnableRaisingEvents = false;
@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
-            EventHandler<string> handler = (object _, string f) =>
+            EventHandler<string> handler = (object? _, string f) =>
             {
                 _output.WriteLine("File changed: " + f);
                 try
@@ -368,7 +368,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var filesChanged = new HashSet<string>();
 
-                    EventHandler<string> handler = null;
+                    EventHandler<string>? handler = null;
                     handler = (_, f) =>
                     {
                         filesChanged.Add(f);

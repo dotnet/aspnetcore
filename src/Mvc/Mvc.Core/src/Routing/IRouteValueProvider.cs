@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
@@ -79,6 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// The route value. If <c>null</c> or empty, requires the route value associated with <see cref="RouteKey"/>
         /// to be missing or <c>null</c>.
         /// </summary>
-        string RouteValue { get; }
+        string? RouteValue { get; }
     }
 }

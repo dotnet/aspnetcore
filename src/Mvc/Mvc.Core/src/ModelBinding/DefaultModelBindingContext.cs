@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -17,10 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
 
-        private IValueProvider _originalValueProvider;
-        private ActionContext _actionContext;
-        private ModelStateDictionary _modelState;
-        private ValidationStateDictionary _validationState;
+        private IValueProvider _originalValueProvider = default!;
+        private ActionContext _actionContext = default!;
+        private ModelStateDictionary _modelState = default!;
+        private ValidationStateDictionary _validationState = default!;
         private int? _maxModelBindingRecursionDepth;
 
         private State _state;
@@ -55,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override object Model
+        public override object? Model
         {
             get { return _state.Model; }
             set { _state.Model = value; }
@@ -104,14 +106,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override string BinderModelName
+        public override string? BinderModelName
         {
-            get { return _state.BinderModelName; }
-            set { _state.BinderModelName = value; }
+            get => _state.BinderModelName;
+            set => _state.BinderModelName = value;
         }
 
         /// <inheritdoc />
-        public override BindingSource BindingSource
+        public override BindingSource? BindingSource
         {
             get { return _state.BindingSource; }
             set { _state.BindingSource = value; }
@@ -155,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override Func<ModelMetadata, bool> PropertyFilter
+        public override Func<ModelMetadata, bool>? PropertyFilter
         {
             get { return _state.PropertyFilter; }
             set { _state.PropertyFilter = value; }
@@ -222,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ActionContext actionContext,
             IValueProvider valueProvider,
             ModelMetadata metadata,
-            BindingInfo bindingInfo,
+            BindingInfo? bindingInfo,
             string modelName)
         {
             if (actionContext == null)
@@ -285,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata modelMetadata,
             string fieldName,
             string modelName,
-            object model)
+            object? model)
         {
             if (modelMetadata == null)
             {
@@ -355,14 +357,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _state = _stack.Pop();
         }
 
-        private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource bindingSource)
+        private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource? bindingSource)
         {
             if (bindingSource == null || bindingSource.IsGreedy)
             {
                 return valueProvider;
             }
 
-            if (!(valueProvider is IBindingSourceValueProvider bindingSourceValueProvider))
+            if (valueProvider is not IBindingSourceValueProvider bindingSourceValueProvider)
             {
                 return valueProvider;
             }
@@ -373,15 +375,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private struct State
         {
             public string FieldName;
-            public object Model;
+            public object? Model;
             public ModelMetadata ModelMetadata;
             public string ModelName;
 
             public IValueProvider ValueProvider;
-            public Func<ModelMetadata, bool> PropertyFilter;
+            public Func<ModelMetadata, bool>? PropertyFilter;
 
-            public string BinderModelName;
-            public BindingSource BindingSource;
+            public string? BinderModelName;
+            public BindingSource? BindingSource;
             public bool IsTopLevelObject;
 
             public ModelBindingResult Result;

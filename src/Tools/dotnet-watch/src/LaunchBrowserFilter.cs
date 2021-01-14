@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -17,8 +18,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public sealed class LaunchBrowserFilter : IWatchFilter, IAsyncDisposable
     {
-        private readonly byte[] ReloadMessage = Encoding.UTF8.GetBytes("Reload");
-        private readonly byte[] WaitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
         private readonly bool _runningInTest;
         private readonly bool _suppressLaunchBrowser;
@@ -72,6 +71,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                         _refreshServer = new BrowserRefreshServer(context.Reporter);
                         var serverUrl = await _refreshServer.StartAsync(cancellationToken);
 
+                        context.BrowserRefreshServer = _refreshServer;
+
                         context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
                         context.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrl;
 
@@ -87,19 +88,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 if (context.Iteration > 0)
                 {
                     // We've detected a change. Notify the browser.
-                    await SendMessage(WaitMessage, cancellationToken);
+                    await (_refreshServer?.SendWaitMessageAsync(cancellationToken) ?? default);
                 }
             }
-        }
-
-        private Task SendMessage(byte[] message, CancellationToken cancellationToken)
-        {
-            if (_refreshServer is null)
-            {
-                return Task.CompletedTask;
-            }
-
-            return _refreshServer.SendMessage(message, cancellationToken);
         }
 
         private void OnOutput(object sender, DataReceivedEventArgs eventArgs)
@@ -134,7 +125,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 else
                 {
                     _reporter.Verbose("Reloading browser.");
-                    _ = SendMessage(ReloadMessage, _cancellationToken);
+                    _ = _refreshServer?.ReloadAsync(_cancellationToken);
                 }
             }
         }

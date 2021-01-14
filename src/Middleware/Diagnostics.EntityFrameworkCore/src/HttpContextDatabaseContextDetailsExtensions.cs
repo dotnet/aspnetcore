@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-#nullable enable
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     internal static class HttpContextDatabaseContextDetailsExtensions
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (context == null)
             {
-                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName);
+                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName!);
                 return null;
             }
 

@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class DelegationRule : IDisposable
     {
         private readonly ILogger _logger;
+        private readonly UrlGroup _urlGroup;
         private readonly UrlGroup _sourceQueueUrlGroup;
         private bool _disposed;
         /// <summary>
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             QueueName = queueName;
             UrlPrefix = urlPrefix;
             Queue = new RequestQueue(queueName, UrlPrefix, _logger, receiver: true);
+            _urlGroup = Queue.UrlGroup;
         }
 
         /// <inheritdoc />
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _sourceQueueUrlGroup.UnSetDelegationProperty(Queue, throwOnError: false);
             }
             catch (ObjectDisposedException) { /* Server may have been shutdown */ }
-            Queue.UrlGroup.Dispose();
+            _urlGroup.Dispose();
             Queue.Dispose();
         }
     }

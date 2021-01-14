@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
 
-                string subProtocol = null;
+                string? subProtocol = null;
                 if (acceptContext != null)
                 {
                     subProtocol = acceptContext.SubProtocol;

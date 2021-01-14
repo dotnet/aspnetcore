@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="user">The user to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the update operation.</returns>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the delete operation.</returns>
         Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>

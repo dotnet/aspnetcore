@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             public override short Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                return short.Parse(reader.GetString());
+                return short.Parse(reader.GetString(), CultureInfo.InvariantCulture);
             }
 
             public override void Write(Utf8JsonWriter writer, short value, JsonSerializerOptions options)
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                return DateTime.Parse(reader.GetString());
+                return DateTime.Parse(reader.GetString(), CultureInfo.InvariantCulture);
             }
 
             public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)

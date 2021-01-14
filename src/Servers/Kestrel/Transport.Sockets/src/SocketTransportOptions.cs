@@ -6,6 +6,9 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+    /// <summary>
+    /// Options for socket based transports.
+    /// </summary>
     public class SocketTransportOptions
     {
         /// <summary>
@@ -40,8 +43,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// </remarks>
         public int Backlog { get; set; } = 512;
 
+        /// <summary>
+        /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
+        /// </summary>
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
+        /// <summary>
+        /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
+        /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
         /// <summary>

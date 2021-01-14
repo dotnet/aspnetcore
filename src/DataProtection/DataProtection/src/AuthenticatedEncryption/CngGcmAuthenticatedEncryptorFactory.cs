@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
@@ -22,12 +23,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public CngGcmAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<CngGcmAuthenticatedEncryptorFactory>();
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        /// <inheritdoc />
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as CngGcmAuthenticatedEncryptorDescriptor;
             if (descriptor == null)
@@ -41,7 +47,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         }
 
         [SupportedOSPlatform("windows")]
-        internal GcmAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("configuration")]
+        internal GcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
             CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
@@ -69,7 +76,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
             }
 
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
             // Special-case cached providers

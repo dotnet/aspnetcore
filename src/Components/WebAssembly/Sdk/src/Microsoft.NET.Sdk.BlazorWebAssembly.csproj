@@ -9,11 +9,14 @@
     <SdkOutputPath>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</SdkOutputPath>
 
     <!-- Allow assemblies outside of lib in the package -->
-    <NoWarn>$(NoWarn.Replace('1591', ''));NU5100</NoWarn>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+
+    <!-- Temporarily target the previous runtime until https://github.com/dotnet/sdk/pull/14574 is merged. -->
+    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
 
     <IsShipping>false</IsShipping>
   </PropertyGroup>

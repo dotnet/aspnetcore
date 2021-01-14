@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             var provider2 = new Mock<IPageApplicationModelProvider>();
@@ -87,7 +88,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
-                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -142,7 +142,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
-                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
@@ -163,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var descriptor = new PageActionDescriptor();
             var compilerProvider = GetCompilerProvider();
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             provider1.SetupGet(p => p.Order).Returns(10);
@@ -206,7 +205,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
-                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
@@ -241,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -261,7 +259,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
-                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
@@ -277,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public async Task LoadAsync_UpdatesResults()
+        public async Task LoadAsync_IsUniquePerPageDescriptor()
         {
             // Arrange
             var descriptor = new PageActionDescriptor()
@@ -288,6 +285,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 },
             };
 
+            var descriptor2 = new PageActionDescriptor()
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+            };
+
+
             var transformer = new Mock<RoutePatternTransformer>();
             transformer
                 .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
@@ -296,17 +302,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
 
             var mvcOptions = Options.Create(new MvcOptions());
-            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+            var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
 
             var provider = new Mock<IPageApplicationModelProvider>();
-
-            var pageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
 
             provider.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
                 .Callback((PageApplicationModelProviderContext c) =>
                 {
                     Assert.Null(c.PageApplicationModel);
-                    c.PageApplicationModel = pageApplicationModel;
+                    c.PageApplicationModel = new PageApplicationModel(c.ActionDescriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
                 })
                 .Verifiable();
 
@@ -315,17 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 provider.Object,
             };
 
-            var descriptorCollection1 = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
-            var descriptorCollection2 = new ActionDescriptorCollection(new[] { descriptor }, version: 2);
-
-            var actionDescriptorCollectionProvider = new Mock<IActionDescriptorCollectionProvider>();
-            actionDescriptorCollectionProvider
-                .SetupSequence(p => p.ActionDescriptors)
-                .Returns(descriptorCollection1)
-                .Returns(descriptorCollection2);
-
             var loader = new DefaultPageLoader(
-                actionDescriptorCollectionProvider.Object,
                 providers,
                 compilerProvider,
                 endpointFactory,
@@ -334,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Act
             var result1 = await loader.LoadAsync(descriptor);
-            var result2 = await loader.LoadAsync(descriptor);
+            var result2 = await loader.LoadAsync(descriptor2);
 
             // Assert
             Assert.NotSame(result1, result2);

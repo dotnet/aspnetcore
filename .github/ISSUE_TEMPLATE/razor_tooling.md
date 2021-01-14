@@ -34,26 +34,13 @@ We will close this issue if:
 
 Please collect the data below before reporting your issue to aid us in diagnosing the root cause.
 
-#### Activity log
+#### Activity log (only needed if VS crashes)
 [Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one. Note that GitHub does not generally allow .xml files to be uploaded with issues.
 
-#### Razor Language Server Client log
-<!-- In Visual Studio's `Output` window, the drop-down contains a `Razor Language Server Client` item. Include that below. -->
-<details>
-<summary>Razor Language Server Client Log Output</summary>
-
-Paste log output here
-
-</details>
-
-#### HTML Language Server Client log
-<!-- In Visual Studio's `Output` window, the drop-down contains a `HtmlyLanguageClient` item. Include that below. -->
-<details>
-<summary>HTML Language Server Client Log Output</summary>
-
-Paste log output here
-
-</details>
+#### Language Server logs
+1. Run Visual Studio with the [/Log](https://docs.microsoft.com/en-us/visualstudio/ide/reference/log-devenv-exe?view=vs-2019) command line switch
+2. Reproduce the issue
+3. Provide the logs located at `%Temp%\VisualStudio\LSP`
 
 ### Further technical details
 - VS version (Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be two versions (server and client), please provide both.

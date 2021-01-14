@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             using (var currentIdentity = WindowsIdentity.GetCurrent())
             {
                 // use the SID to create an SDDL string
-                return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity.User.Value);
+                return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity?.User?.Value);
             }
         }
     }
