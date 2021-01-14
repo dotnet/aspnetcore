@@ -16,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
         public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
