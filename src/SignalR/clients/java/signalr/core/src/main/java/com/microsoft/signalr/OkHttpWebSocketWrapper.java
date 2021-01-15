@@ -125,6 +125,9 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
                 stateLock.unlock();
             }
             checkStartFailure(null);
+
+            // Send the close frame response if this was a server initiated close, otherwise noops
+            webSocket.close(1000, "");
         }
 
         @Override
