@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <returns>The response <see cref="OAuthTokenResponse"/>.</returns>
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(OAuthCodeExchangeContext context)
         {
-            var tokenRequestParameters = new Dictionary<string, string?>()
+            var tokenRequestParameters = new Dictionary<string, string>()
             {
                 { "client_id", Options.ClientId },
                 { "redirect_uri", context.RedirectUri },
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
             var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
 
-            var parameters = new Dictionary<string, string?>
+            var parameters = new Dictionary<string, string>
             {
                 { "client_id", Options.ClientId },
                 { "scope", scope },
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             parameters["state"] = Options.StateDataFormat.Protect(properties);
 
-            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
+            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters!);
         }
 
         /// <summary>
