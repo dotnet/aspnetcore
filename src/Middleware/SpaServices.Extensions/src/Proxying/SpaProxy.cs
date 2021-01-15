@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                 {
                     if (destination.State == WebSocketState.Open || destination.State == WebSocketState.CloseReceived)
                     {
-                        await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                        await destination.CloseOutputAsync(source.CloseStatus!.Value, source.CloseStatusDescription, cancellationToken);
                     }
 
                     return;

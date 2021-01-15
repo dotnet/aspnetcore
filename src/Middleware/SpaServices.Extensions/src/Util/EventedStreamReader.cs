@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.NodeServices.Util
         public delegate void OnReceivedLineHandler(string line);
         public delegate void OnStreamClosedHandler();
 
-        public event OnReceivedChunkHandler OnReceivedChunk;
-        public event OnReceivedLineHandler OnReceivedLine;
-        public event OnStreamClosedHandler OnStreamClosed;
+        public event OnReceivedChunkHandler? OnReceivedChunk;
+        public event OnReceivedLineHandler? OnReceivedLine;
+        public event OnStreamClosedHandler? OnStreamClosed;
 
         private readonly StreamReader _streamReader;
         private readonly StringBuilder _linesBuffer;
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.NodeServices.Util
             var tcs = new TaskCompletionSource<Match>();
             var completionLock = new object();
 
-            OnReceivedLineHandler onReceivedLineHandler = null;
-            OnStreamClosedHandler onStreamClosedHandler = null;
+            OnReceivedLineHandler? onReceivedLineHandler = null;
+            OnStreamClosedHandler? onStreamClosedHandler = null;
 
             void ResolveIfStillPending(Action applyResolution)
             {
