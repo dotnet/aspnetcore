@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Server.IIS
         /// <c>null</c> if the server does not support the <see cref="IServerVariablesFeature"/> feature.
         /// May return null or empty if the variable does not exist or is not set.
         /// </returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use " + nameof(HttpContextServerVariableExtensions.GetServerVariable) + " instead.")]
+        [Obsolete("This is obsolete and will be removed in a future version. Use " +
+            nameof(HttpContextServerVariableExtensions.GetServerVariable) + " instead.")] // Never remove.
         public static string? GetIISServerVariable(this HttpContext context, string variableName) =>
             context.GetServerVariable(variableName);
     }
