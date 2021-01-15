@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.23</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.24</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -275,7 +275,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureKeyVault-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
@@ -284,7 +284,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureStorage-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' ">
-    <BaselinePackageVersion>2.1.13</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
