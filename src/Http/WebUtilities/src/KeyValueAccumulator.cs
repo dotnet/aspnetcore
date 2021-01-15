@@ -7,11 +7,19 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public struct KeyValueAccumulator
     {
         private Dictionary<string, StringValues> _accumulator;
         private Dictionary<string, List<string>> _expandingAccumulator;
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public void Append(string key, string value)
         {
             if (_accumulator == null)
@@ -63,12 +71,28 @@ namespace Microsoft.AspNetCore.WebUtilities
             ValueCount++;
         }
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public bool HasValues => ValueCount > 0;
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public int KeyCount => _accumulator?.Count ?? 0;
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public int ValueCount { get; private set; }
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public Dictionary<string, StringValues> GetResults()
         {
             if (_expandingAccumulator != null)

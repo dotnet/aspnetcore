@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                 throw new ArgumentNullException(nameof(allowedRoles));
             }
 
-            if (allowedRoles.Count() == 0)
+            if (!allowedRoles.Any())
             {
                 throw new InvalidOperationException(Resources.Exception_RoleRequirementEmpty);
             }
@@ -64,5 +64,12 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var roles = $"User.IsInRole must be true for one of the following roles: ({string.Join("|", AllowedRoles)})";
+
+            return $"{nameof(RolesAuthorizationRequirement)}:{roles}";
+        }
     }
 }

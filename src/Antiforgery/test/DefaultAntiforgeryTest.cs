@@ -348,6 +348,104 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
+        private string GetAndStoreTokens_CacheHeadersArrangeAct(TestSink testSink, string headerName, string headerValue)
+        {
+            // Arrange
+            var loggerFactory = new Mock<ILoggerFactory>();
+            loggerFactory
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
+                .Returns(new TestLogger("test logger", testSink, enabled: true));
+            var services = new ServiceCollection();
+            services.AddSingleton(loggerFactory.Object);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(
+                new AntiforgeryOptions(),
+                useOldCookie: true,
+                isOldCookieValid: true,
+                antiforgeryFeature: antiforgeryFeature);
+            context.HttpContext.RequestServices = services.BuildServiceProvider();
+            var antiforgery = GetAntiforgery(context);
+            context.HttpContext.Response.Headers[headerName] = headerValue;
+
+            // Act
+            antiforgery.GetAndStoreTokens(context.HttpContext);
+            return context.HttpContext.Response.Headers[headerName].ToString();
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, no-store")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE")]
+        [InlineData("Cache-Control", "no-cache, no-store, private")]
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE, PRIVATE")]        
+        public void GetAndStoreTokens_DoesNotOverwriteCacheControlHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.Equal(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-cache, private")]
+        [InlineData("Cache-Control", "NO-CACHE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoStoreIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Cache-Control", "no-store, private")]
+        [InlineData("Cache-Control", "NO-STORE, PRIVATE")]
+        public void GetAndStoreTokens_OverwritesCacheControlHeader_IfNoCacheIsNotSet(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.NotEqual(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.True(hasWarningMessage);
+        }
+
+        [Theory]
+        [InlineData("Pragma", "no-cache")]
+        [InlineData("Pragma", "NO-CACHE")]
+        public void GetAndStoreTokens_DoesNotOverwritePragmaHeader(string headerName, string headerValue)
+        {
+            var testSink = new TestSink();
+            var actualHeaderValue = GetAndStoreTokens_CacheHeadersArrangeAct(testSink, headerName, headerValue);
+
+            // Assert
+            Assert.Equal(headerValue, actualHeaderValue);
+
+            var hasWarningMessage = testSink.Writes
+                .Where(wc => wc.LogLevel == LogLevel.Warning)
+                .Select(wc => wc.State?.ToString())
+                .Contains(ResponseCacheHeadersOverrideWarningMessage);
+            Assert.False(hasWarningMessage);
+        }
+
         [Fact]
         public void GetAndStoreTokens_NoExistingCookieToken_Saved()
         {
@@ -509,7 +607,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var antiforgeryFeature = new AntiforgeryFeature();
             var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -543,7 +641,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
             context.HttpContext.Request.Method = "POST";
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -583,7 +681,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
             context.HttpContext.Request.Method = "POST";
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -622,7 +720,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var context = CreateMockContext(new AntiforgeryOptions());
             context.HttpContext.Request.Method = httpMethod;
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -659,7 +757,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var context = CreateMockContext(new AntiforgeryOptions());
             context.HttpContext.Request.Method = httpMethod;
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -718,7 +816,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var antiforgeryFeature = new AntiforgeryFeature();
             var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -859,7 +957,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             };
             var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
-            string message;
+            string? message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
@@ -1122,7 +1220,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 antiforgeryFeature: antiforgeryFeature);
             var testTokenSet = new TestTokenSet
             {
-                OldCookieTokenString = null
+                OldCookieTokenString = null!
             };
 
             var nullTokenStore = GetTokenStore(context.HttpContext, testTokenSet, false);
@@ -1135,7 +1233,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             antiforgery.SetCookieTokenAndHeader(context.HttpContext);
 
             // Assert
-            context.TokenSerializer.Verify(s => s.Deserialize(null), Times.Never);
+            context.TokenSerializer.Verify(s => s.Deserialize(null!), Times.Never);
         }
 
         [Fact]
@@ -1159,7 +1257,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 antiforgeryFeature: antiforgeryFeature);
             var testTokenSet = new TestTokenSet
             {
-                OldCookieTokenString = null
+                OldCookieTokenString = null!
             };
 
             var nullTokenStore = GetTokenStore(context.HttpContext, testTokenSet, false);
@@ -1186,7 +1284,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1224,7 +1322,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1250,7 +1348,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData("Cache-Control", "no-cache")]
+        [InlineData("Cache-Control", "no-cache, no-store")]
         [InlineData("Pragma", "no-cache")]
         public void GetAndStoreTokens_DoesNotLogsWarning_ForNoCacheHeaders_AlreadyPresent(string headerName, string headerValue)
         {
@@ -1258,7 +1356,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var testSink = new TestSink();
             var loggerFactory = new Mock<ILoggerFactory>();
             loggerFactory
-                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName))
+                .Setup(lf => lf.CreateLogger(typeof(DefaultAntiforgery).FullName!))
                 .Returns(new TestLogger("test logger", testSink, enabled: true));
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory.Object);
@@ -1285,10 +1383,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private DefaultAntiforgery GetAntiforgery(
             HttpContext httpContext,
-            AntiforgeryOptions options = null,
-            IAntiforgeryTokenGenerator tokenGenerator = null,
-            IAntiforgeryTokenSerializer tokenSerializer = null,
-            IAntiforgeryTokenStore tokenStore = null)
+            AntiforgeryOptions? options = null,
+            IAntiforgeryTokenGenerator? tokenGenerator = null,
+            IAntiforgeryTokenSerializer? tokenSerializer = null,
+            IAntiforgeryTokenStore? tokenStore = null)
         {
             var optionsManager = new TestOptionsManager();
             if (options != null)
@@ -1299,9 +1397,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             return new DefaultAntiforgery(
                 antiforgeryOptionsAccessor: optionsManager,
-                tokenGenerator: tokenGenerator,
-                tokenSerializer: tokenSerializer,
-                tokenStore: tokenStore,
+                tokenGenerator: tokenGenerator!,
+                tokenSerializer: tokenSerializer!,
+                tokenStore: tokenStore!,
                 loggerFactory: loggerFactory);
         }
 
@@ -1313,7 +1411,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             return builder.BuildServiceProvider();
         }
 
-        private HttpContext GetHttpContext(IAntiforgeryFeature antiforgeryFeature = null)
+        private HttpContext GetHttpContext(IAntiforgeryFeature? antiforgeryFeature = null)
         {
             var httpContext = new DefaultHttpContext();
             antiforgeryFeature = antiforgeryFeature ?? new AntiforgeryFeature();
@@ -1388,7 +1486,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             AntiforgeryOptions options,
             bool useOldCookie = false,
             bool isOldCookieValid = true,
-            IAntiforgeryFeature antiforgeryFeature = null)
+            IAntiforgeryFeature? antiforgeryFeature = null)
         {
             // Arrange
             var httpContext = GetHttpContext(antiforgeryFeature);
@@ -1445,32 +1543,32 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private class TestTokenSet
         {
-            public AntiforgeryToken RequestToken { get; set; }
+            public AntiforgeryToken RequestToken { get; set; } = default!;
 
-            public string FormTokenString { get; set; }
+            public string FormTokenString { get; set; } = default!;
 
-            public AntiforgeryToken OldCookieToken { get; set; }
+            public AntiforgeryToken OldCookieToken { get; set; } = default!;
 
-            public string OldCookieTokenString { get; set; }
+            public string OldCookieTokenString { get; set; } = default!;
 
-            public AntiforgeryToken NewCookieToken { get; set; }
+            public AntiforgeryToken NewCookieToken { get; set; } = default!;
 
-            public string NewCookieTokenString { get; set; }
+            public string NewCookieTokenString { get; set; } = default!;
         }
 
         private class AntiforgeryMockContext
         {
-            public AntiforgeryOptions Options { get; set; }
+            public AntiforgeryOptions Options { get; set; } = default!;
 
-            public TestTokenSet TestTokenSet { get; set; }
+            public TestTokenSet TestTokenSet { get; set; } = default!;
 
-            public HttpContext HttpContext { get; set; }
+            public HttpContext HttpContext { get; set; } = default!;
 
-            public Mock<IAntiforgeryTokenGenerator> TokenGenerator { get; set; }
+            public Mock<IAntiforgeryTokenGenerator> TokenGenerator { get; set; } = default!;
 
-            public Mock<IAntiforgeryTokenStore> TokenStore { get; set; }
+            public Mock<IAntiforgeryTokenStore> TokenStore { get; set; } = default!;
 
-            public Mock<IAntiforgeryTokenSerializer> TokenSerializer { get; set; }
+            public Mock<IAntiforgeryTokenSerializer> TokenSerializer { get; set; } = default!;
         }
 
         private class TestOptionsManager : IOptions<AntiforgeryOptions>

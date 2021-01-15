@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.SignalR
     public abstract class Hub : IDisposable
     {
         private bool _disposed;
-        private IHubCallerClients _clients;
-        private HubCallerContext _context;
-        private IGroupManager _groups;
+        private IHubCallerClients _clients = default!;
+        private HubCallerContext _context = default!;
+        private IGroupManager _groups = default!;
 
         /// <summary>
         /// Gets or sets an object that can be used to invoke methods on the clients connected to this hub.
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// Called when a connection with the hub is terminated.
         /// </summary>
         /// <returns>A <see cref="Task"/> that represents the asynchronous disconnect.</returns>
-        public virtual Task OnDisconnectedAsync(Exception exception)
+        public virtual Task OnDisconnectedAsync(Exception? exception)
         {
             return Task.CompletedTask;
         }

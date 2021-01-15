@@ -80,6 +80,21 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task UseTestServerRegistersNoopHostLifetime()
+        {
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .Configure(app => { });
+                })
+                .StartAsync();
+
+            Assert.IsType<NoopHostLifetime>(host.Services.GetService<IHostLifetime>());
+        }
+
+        [Fact]
         public void CreateWithDelegate()
         {
             // Arrange
@@ -213,6 +228,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             var stream = new ThrowOnDisposeStream();
             stream.Write(Encoding.ASCII.GetBytes("Hello World"));
+            stream.Seek(0, SeekOrigin.Begin);
             var response = await server.CreateClient().PostAsync("/", new StreamContent(stream));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
@@ -330,6 +346,35 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Assert
             Assert.Equal(testService, testServer.Services.GetService<TestService>());
+        }
+
+        [Fact]
+        public async Task TestServerConstructorSetOptions()
+        {
+            // Arrange
+            var baseAddress = new Uri("http://localhost/test");
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer(options =>
+                        { 
+                            options.AllowSynchronousIO = true;
+                            options.PreserveExecutionContext = true;
+                            options.BaseAddress = baseAddress;
+                        })
+                        .Configure(_ => { });
+                })
+                .StartAsync();
+
+            // Act
+            // By calling GetTestServer(), a new TestServer instance will be instantiated
+            var testServer = host.GetTestServer();
+
+            // Assert
+            Assert.True(testServer.AllowSynchronousIO);
+            Assert.True(testServer.PreserveExecutionContext);
+            Assert.Equal(baseAddress, testServer.BaseAddress);
         }
 
         public class TestService { public string Message { get; set; } }

@@ -32,7 +32,7 @@ Remove-Item -Force -Recurse $tempDir -ErrorAction Ignore | out-null
 mkdir $tempDir -ea Ignore | out-null
 mkdir $installDir -ea Ignore | out-null
 Write-Host "Starting ProcDump download"
-Invoke-WebRequest -UseBasicParsing -Uri "https://download.sysinternals.com/files/Procdump.zip" -Out "$tempDir/ProcDump.zip"
+& $PSScriptRoot\Download.ps1 "https://download.sysinternals.com/files/Procdump.zip" "$tempDir/ProcDump.zip"
 Write-Host "Done downloading ProcDump"
 Expand-Archive "$tempDir/ProcDump.zip" -d "$tempDir/ProcDump/"
 Write-Host "Expanded ProcDump to $tempDir"

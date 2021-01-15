@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
 
         /// <summary>
-        /// Configures this handler to authorize outbound HTTP requests using an access token. The access token is only attached if only attached if at least one of
+        /// Configures this handler to authorize outbound HTTP requests using an access token. The access token is only attached if at least one of
         /// <paramref name="authorizedUrls" /> is a base of <see cref="HttpRequestMessage.RequestUri" />.
         /// </summary>
         /// <param name="authorizedUrls">The base addresses of endpoint URLs to which the token will be attached.</param>

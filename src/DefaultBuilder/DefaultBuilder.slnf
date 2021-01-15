@@ -1,0 +1,19 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\DefaultBuilder\\samples\\SampleApp\\DefaultBuilder.SampleApp.csproj",
+      "src\\DefaultBuilder\\test\\Microsoft.AspNetCore.Tests\\Microsoft.AspNetCore.Tests.csproj",
+      "src\\DefaultBuilder\\test\\Microsoft.AspNetCore.FunctionalTests\\Microsoft.AspNetCore.FunctionalTests.csproj",
+      "src\\DefaultBuilder\\testassets\\CreateDefaultBuilderApp\\CreateDefaultBuilderApp.csproj",
+      "src\\DefaultBuilder\\testassets\\CreateDefaultBuilderOfTApp\\CreateDefaultBuilderOfTApp.csproj",
+      "src\\DefaultBuilder\\testassets\\DependencyInjectionApp\\DependencyInjectionApp.csproj",
+      "src\\DefaultBuilder\\testassets\\StartRequestDelegateUrlApp\\StartRequestDelegateUrlApp.csproj",
+      "src\\DefaultBuilder\\testassets\\StartRouteBuilderUrlApp\\StartRouteBuilderUrlApp.csproj",
+      "src\\DefaultBuilder\\testassets\\StartWithIApplicationBuilderUrlApp\\StartWithIApplicationBuilderUrlApp.csproj",
+      "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
+      "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj"
+    ]
+  }
+}

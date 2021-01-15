@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Rule
+  Description="Configuration Properties"
+  DisplayName="Configuration Properties"
+  Name="RazorConfiguration"
+  PageTemplate="generic"
+  xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.DataSource>
+    <DataSource
+      Persistence="ProjectFile"
+      HasConfigurationCondition="True" 
+      ItemType="RazorConfiguration" />
+  </Rule.DataSource>
+
+  <Rule.Categories>
+    <Category
+      Name="General"
+      DisplayName="General" />
+  </Rule.Categories>
+
+  <StringProperty
+    Category="General"
+    Description="Razor Extensions"
+    DisplayName="Razor Extensions"
+    Name="Extensions"
+    ReadOnly="True"
+    Visible="True" />
+
+</Rule>

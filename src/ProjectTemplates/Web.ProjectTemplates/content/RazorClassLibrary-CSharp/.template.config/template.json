@@ -4,15 +4,14 @@
   "classifications": [
     "Web",
     "Razor",
-    "Library",
-    "Razor Class Library"
+    "Library"
   ],
   "name": "Razor Class Library",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a Razor class library that targets .NET Standard",
   "groupIdentity": "Microsoft.Web.Razor",
-  "precedence": "6000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.3.1",
+  "precedence": "7000",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.5.0",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",
@@ -34,6 +33,7 @@
           "exclude": [
             "_Imports.razor",
             "Component1.razor",
+            "Component1.razor.css",
             "ExampleJsInterop.cs",
             "wwwroot/**"
           ]
@@ -48,11 +48,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.1",
-          "description": "Target netcoreapp3.1"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "defaultValue": "netcoreapp3.1"
+      "defaultValue": "net6.0"
     },
     "HostIdentifier": {
       "type": "bind",

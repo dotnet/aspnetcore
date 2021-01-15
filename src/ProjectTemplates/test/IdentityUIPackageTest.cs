@@ -5,78 +5,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class IdentityUIPackageTest
+    public class IdentityUIPackageTest : LoggedTest
     {
-        public IdentityUIPackageTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public IdentityUIPackageTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = output;
         }
-
-        public Project Project { get; set; }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
 
-        public ITestOutputHelper Output { get; }
-
-        public static TheoryData<IDictionary<string, string>, string, string[]> MSBuildIdentityUIPackageOptions
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
         {
             get
             {
-                var data = new TheoryData<IDictionary<string, string>, string, string[]>();
-
-                data.Add(new Dictionary<string, string>
+                if (_output == null)
                 {
-                    ["IdentityUIFrameworkVersion"] = "Bootstrap3"
-                },
-                "Bootstrap v3.4.1",
-                Bootstrap3ContentFiles);
-
-                data.Add(new Dictionary<string, string>(), "Bootstrap v4.3.1", Bootstrap4ContentFiles);
-
-                return data;
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
             }
         }
-
-        public static string[] Bootstrap3ContentFiles { get; } = new string[]
-        {
-            "Identity/css/site.css",
-            "Identity/js/site.js",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.min.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap.min.css.map",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.eot",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.svg",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.woff",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.woff2",
-            "Identity/lib/bootstrap/dist/js/bootstrap.js",
-            "Identity/lib/bootstrap/dist/js/bootstrap.min.js",
-            "Identity/lib/bootstrap/dist/js/npm.js",
-            "Identity/lib/jquery/LICENSE.txt",
-            "Identity/lib/jquery/dist/jquery.js",
-            "Identity/lib/jquery/dist/jquery.min.js",
-            "Identity/lib/jquery/dist/jquery.min.map",
-            "Identity/lib/jquery-validation/LICENSE.md",
-            "Identity/lib/jquery-validation/dist/additional-methods.js",
-            "Identity/lib/jquery-validation/dist/additional-methods.min.js",
-            "Identity/lib/jquery-validation/dist/jquery.validate.js",
-            "Identity/lib/jquery-validation/dist/jquery.validate.min.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js",
-            "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
-        };
 
         public static string[] Bootstrap4ContentFiles { get; } = new string[]
         {
@@ -117,55 +73,57 @@ namespace Templates.Test
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
-        [Theory]
-        [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
-        public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
+        [ConditionalFact]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        public async Task IdentityUIPackage_WorksWithDifferentOptions()
         {
-            Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
+            var packageOptions = new Dictionary<string, string>();
+            var project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
             var useLocalDB = false;
 
-            var createResult = await Project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
+            var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
             Assert.Contains(".db", projectFileContents);
 
-            var publishResult = await Project.RunDotNetPublishAsync(packageOptions: packageOptions);
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            var publishResult = await project.RunDotNetPublishAsync(packageOptions: packageOptions);
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync(packageOptions: packageOptions);
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            var buildResult = await project.RunDotNetBuildAsync(packageOptions: packageOptions);
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync("razorpages");
-            Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
-            Project.AssertEmptyMigration("razorpages");
+            var migrationsResult = await project.RunDotNetEfCreateMigrationAsync("razorpages");
+            Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
+            project.AssertEmptyMigration("razorpages");
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            var versionValidator = "Bootstrap v4.3.1";
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
             }
         }
 

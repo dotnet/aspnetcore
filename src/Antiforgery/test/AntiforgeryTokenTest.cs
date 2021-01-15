@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("additional data", token.AdditionalData);
 
             // Act & assert - 3
-            token.AdditionalData = null;
+            token.AdditionalData = null!;
             Assert.Equal("", token.AdditionalData);
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Assert
             Assert.NotNull(securityToken);
-            Assert.Equal(AntiforgeryToken.SecurityTokenBitLength, securityToken.BitLength);
+            Assert.Equal(AntiforgeryToken.SecurityTokenBitLength, securityToken!.BitLength);
 
             // check that we're not making a new one each property call
             Assert.Equal(securityToken, token.SecurityToken);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Assert
             Assert.NotNull(securityToken);
-            Assert.Equal(AntiforgeryToken.SecurityTokenBitLength, securityToken.BitLength);
+            Assert.Equal(AntiforgeryToken.SecurityTokenBitLength, securityToken!.BitLength);
 
             // check that we're not making a new one each property call
             Assert.Equal(securityToken, token.SecurityToken);

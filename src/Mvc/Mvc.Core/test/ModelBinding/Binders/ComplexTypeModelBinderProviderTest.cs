@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class ComplexTypeModelBinderProviderTest
     {
         [Theory]
@@ -89,4 +90,5 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public int Age { get; set; }
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

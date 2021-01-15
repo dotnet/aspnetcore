@@ -18,8 +18,16 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds RazorViewEngine methods to <see cref="IMvcCoreBuilder"/>.
+    /// </summary>
     public static class MvcRazorMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Registers Razor view engine services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorViewEngine(this IMvcCoreBuilder builder)
         {
             if (builder == null)
@@ -33,6 +41,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Registers Razor view engine services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">A setup action that configures the <see cref="RazorViewEngineOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorViewEngine(
             this IMvcCoreBuilder builder,
             Action<RazorViewEngineOptions> setupAction)

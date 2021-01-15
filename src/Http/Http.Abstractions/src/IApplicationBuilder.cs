@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets a key/value collection that can be used to share data between middleware.
         /// </summary>
-        IDictionary<string, object> Properties { get; }
+        IDictionary<string, object?> Properties { get; }
 
         /// <summary>
         /// Adds a middleware delegate to the application's request pipeline.

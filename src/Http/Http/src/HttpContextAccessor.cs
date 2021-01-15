@@ -5,11 +5,15 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Provides an implementation of <see cref="IHttpContextAccessor" /> based on the current execution context. 
+    /// </summary>
     public class HttpContextAccessor : IHttpContextAccessor
     {
         private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
-        public HttpContext HttpContext
+        /// <inheritdoc/>
+        public HttpContext? HttpContext
         {
             get
             {
@@ -35,7 +39,7 @@ namespace Microsoft.AspNetCore.Http
 
         private class HttpContextHolder
         {
-            public HttpContext Context;
+            public HttpContext? Context;
         }
     }
 }

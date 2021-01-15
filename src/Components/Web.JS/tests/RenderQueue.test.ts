@@ -2,7 +2,7 @@
 
 import { RenderQueue } from '../src/Platform/Circuits/RenderQueue';
 import { NullLogger } from '../src/Platform/Logging/Loggers';
-import * as signalR from '@aspnet/signalr';
+import * as signalR from '@microsoft/signalr';
 
 jest.mock('../src/Rendering/Renderer', () => ({
   renderBatch: jest.fn()

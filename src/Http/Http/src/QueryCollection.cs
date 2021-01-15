@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class QueryCollection : IQueryCollection
     {
+        /// <summary>
+        /// Gets an empty <see cref="QueryCollection"/>.
+        /// </summary>
         public static readonly QueryCollection Empty = new QueryCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
@@ -21,29 +24,44 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="QueryCollection"/>.
+        /// </summary>
         public QueryCollection()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="QueryCollection"/>.
+        /// </summary>
+        /// <param name="store">The backing store.</param>
         public QueryCollection(Dictionary<string, StringValues> store)
         {
             Store = store;
         }
 
+        /// <summary>
+        /// Creates a shallow copy of the specified <paramref name="store"/>.
+        /// </summary>
+        /// <param name="store">The <see cref="QueryCollection"/> to clone.</param>
         public QueryCollection(QueryCollection store)
         {
             Store = store.Store;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="QueryCollection"/>.
+        /// </summary>
+        /// <param name="capacity">The initial number of query items that this instance can contain.</param>
         public QueryCollection(int capacity)
         {
             Store = new Dictionary<string, StringValues>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Get or sets the associated value from the collection as a single string.
+        /// Gets the associated set of values from the collection.
         /// </summary>
         /// <param name="key">The key name.</param>
         /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>
@@ -56,8 +74,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                StringValues value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -81,6 +98,9 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <summary>
+        /// Gets the collection of query names in this instance.
+        /// </summary>
         public ICollection<string> Keys
         {
             get
@@ -165,6 +185,9 @@ namespace Microsoft.AspNetCore.Http
             return Store.GetEnumerator();
         }
 
+        /// <summary>
+        /// Enumerates a <see cref="QueryCollection"/>.
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             // Do NOT make this readonly, or MoveNext will not work
@@ -177,6 +200,11 @@ namespace Microsoft.AspNetCore.Http
                 _notEmpty = true;
             }
 
+            /// <summary>
+            /// Advances the enumerator to the next element of the <see cref="HeaderDictionary"/>.
+            /// </summary>
+            /// <returns><see langword="true"/> if the enumerator was successfully advanced to the next element;
+            /// <see langword="false"/> if the enumerator has passed the end of the collection.</returns>
             public bool MoveNext()
             {
                 if (_notEmpty)
@@ -186,6 +214,9 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
             public KeyValuePair<string, StringValues> Current
             {
                 get
@@ -198,6 +229,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
+            /// <inheritdoc />
             public void Dispose()
             {
             }

@@ -129,12 +129,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private async Task ProcessEventStream(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             Log.StartReceive(_logger);
+            
+            static void CancelReader(object state) => ((PipeReader)state).CancelPendingRead();
 
             using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                var options = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
-                var reader = PipeReaderFactory.CreateFromStream(options, stream, cancellationToken);
+                var reader = PipeReader.Create(stream);
+
+                using var registration = cancellationToken.Register(CancelReader, reader);
 
                 try
                 {

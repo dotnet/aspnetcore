@@ -131,7 +131,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
         public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;
@@ -204,11 +203,33 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 Task<string> requestTask = SendRequestAsync(address);
-                await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                Assert.Equal(StatusCodes.Status500InternalServerError, (int)ex.StatusCode);
 
                 // Do it again to make sure the server didn't crash
                 requestTask = SendRequestAsync(address);
-                await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                Assert.Equal(StatusCodes.Status500InternalServerError, (int)ex.StatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_BadHttpRequestException_SetStatusCode()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                throw new BadHttpRequestException("Something happened", StatusCodes.Status418ImATeapot);
+            }))
+            {
+                Task<string> requestTask = SendRequestAsync(address);
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                Assert.Equal(StatusCodes.Status418ImATeapot, (int)ex.StatusCode);
+
+                // Do it again to make sure the server didn't crash
+                requestTask = SendRequestAsync(address);
+                ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
+                Assert.Equal(StatusCodes.Status418ImATeapot, (int)ex.StatusCode);
             }
         }
 
@@ -298,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 using (var client = await SendHungRequestAsync("GET", address))
                 {
                     await received.Task.TimeoutAfter(interval);
-                    Assert.Throws<IOException>(() => client.GetStream().Read(new byte[10], 0, 10));
+                    Assert.ThrowsAny<IOException>(() => client.GetStream().Read(new byte[10], 0, 10));
                 }
             }
         }

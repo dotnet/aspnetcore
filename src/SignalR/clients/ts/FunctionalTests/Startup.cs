@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -104,7 +105,7 @@ namespace FunctionalTests
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
@@ -120,6 +121,7 @@ namespace FunctionalTests
                 var originHeader = context.Request.Headers[HeaderNames.Origin];
                 if (!StringValues.IsNullOrEmpty(originHeader))
                 {
+                    logger.LogInformation("Setting CORS headers.");
                     context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
                     context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
 
@@ -136,9 +138,24 @@ namespace FunctionalTests
                     }
                 }
 
-                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                if (HttpMethods.IsOptions(context.Request.Method))
                 {
+                    logger.LogInformation("Setting '204' CORS response.");
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return Task.CompletedTask;
+                }
+
+                return next.Invoke();
+            });
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/echoredirect"))
+                {
+                    var url = context.Request.Path.ToString();
+                    url = url.Replace("echoredirect", "echo");
+                    url += context.Request.QueryString.ToString();
+                    context.Response.Redirect(url, false, true);
                     return Task.CompletedTask;
                 }
 
@@ -186,7 +203,7 @@ namespace FunctionalTests
             // This is for testing purposes only (karma hosts the client on its own server), never do this in production
             app.UseCors(policy =>
             {
-                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

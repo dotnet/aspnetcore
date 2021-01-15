@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ResponseCompressionSample
@@ -71,19 +72,22 @@ namespace ResponseCompressionSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureLogging(factory =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    factory.AddConsole()
-                        .SetMinimumLevel(LogLevel.Debug);
-                })
-                .UseStartup<Startup>()
-                .Build();
+                    webHostBuilder
+                    .UseKestrel()
+                    .ConfigureLogging(factory =>
+                    {
+                        factory.AddConsole()
+                            .SetMinimumLevel(LogLevel.Debug);
+                    })
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

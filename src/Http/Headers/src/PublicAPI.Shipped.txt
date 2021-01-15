@@ -1,0 +1,372 @@
+#nullable enable
+Microsoft.Net.Http.Headers.CacheControlHeaderValue
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.CacheControlHeaderValue() -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.Extensions.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxAge.get -> System.TimeSpan?
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxAge.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxStale.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxStale.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxStaleLimit.get -> System.TimeSpan?
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxStaleLimit.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MinFresh.get -> System.TimeSpan?
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MinFresh.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MustRevalidate.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.MustRevalidate.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoCache.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoCache.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoCacheHeaders.get -> System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>!
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoStore.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoStore.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoTransform.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoTransform.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.OnlyIfCached.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.OnlyIfCached.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.Private.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.Private.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.PrivateHeaders.get -> System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>!
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.ProxyRevalidate.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.ProxyRevalidate.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.Public.get -> bool
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.Public.set -> void
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.SharedMaxAge.get -> System.TimeSpan?
+Microsoft.Net.Http.Headers.CacheControlHeaderValue.SharedMaxAge.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ContentDispositionHeaderValue(Microsoft.Extensions.Primitives.StringSegment dispositionType) -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.CreationDate.get -> System.DateTimeOffset?
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.CreationDate.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.DispositionType.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.DispositionType.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.FileName.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.FileName.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.FileNameStar.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.FileNameStar.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ModificationDate.get -> System.DateTimeOffset?
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ModificationDate.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Name.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Name.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Parameters.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ReadDate.get -> System.DateTimeOffset?
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ReadDate.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.SetHttpFileName(Microsoft.Extensions.Primitives.StringSegment fileName) -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.SetMimeFileName(Microsoft.Extensions.Primitives.StringSegment fileName) -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Size.get -> long?
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Size.set -> void
+Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.ContentRangeHeaderValue(long from, long to) -> void
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.ContentRangeHeaderValue(long from, long to, long length) -> void
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.ContentRangeHeaderValue(long length) -> void
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.From.get -> long?
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.HasLength.get -> bool
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.HasRange.get -> bool
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Length.get -> long?
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.To.get -> long?
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Unit.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Unit.set -> void
+Microsoft.Net.Http.Headers.CookieHeaderValue
+Microsoft.Net.Http.Headers.CookieHeaderValue.CookieHeaderValue(Microsoft.Extensions.Primitives.StringSegment name) -> void
+Microsoft.Net.Http.Headers.CookieHeaderValue.CookieHeaderValue(Microsoft.Extensions.Primitives.StringSegment name, Microsoft.Extensions.Primitives.StringSegment value) -> void
+Microsoft.Net.Http.Headers.CookieHeaderValue.Name.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.CookieHeaderValue.Name.set -> void
+Microsoft.Net.Http.Headers.CookieHeaderValue.Value.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.CookieHeaderValue.Value.set -> void
+Microsoft.Net.Http.Headers.EntityTagHeaderValue
+Microsoft.Net.Http.Headers.EntityTagHeaderValue.Compare(Microsoft.Net.Http.Headers.EntityTagHeaderValue? other, bool useStrongComparison) -> bool
+Microsoft.Net.Http.Headers.EntityTagHeaderValue.EntityTagHeaderValue(Microsoft.Extensions.Primitives.StringSegment tag) -> void
+Microsoft.Net.Http.Headers.EntityTagHeaderValue.EntityTagHeaderValue(Microsoft.Extensions.Primitives.StringSegment tag, bool isWeak) -> void
+Microsoft.Net.Http.Headers.EntityTagHeaderValue.IsWeak.get -> bool
+Microsoft.Net.Http.Headers.EntityTagHeaderValue.Tag.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.HeaderNames
+Microsoft.Net.Http.Headers.HeaderQuality
+Microsoft.Net.Http.Headers.HeaderUtilities
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Boundary.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Boundary.set -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Charset.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Charset.set -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Copy() -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue!
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.CopyAsReadOnly() -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue!
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Encoding.get -> System.Text.Encoding?
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Encoding.set -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Facets.get -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>!
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.IsReadOnly.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.IsSubsetOf(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! otherMediaType) -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypes.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypesWithoutSuffix.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllTypes.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.set -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaTypeHeaderValue(Microsoft.Extensions.Primitives.StringSegment mediaType) -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaTypeHeaderValue(Microsoft.Extensions.Primitives.StringSegment mediaType, double quality) -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parameters.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Quality.get -> double?
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Quality.set -> void
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.SubType.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.SubTypeWithoutSuffix.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Suffix.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Type.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer
+Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer.Compare(Microsoft.Net.Http.Headers.MediaTypeHeaderValue? mediaType1, Microsoft.Net.Http.Headers.MediaTypeHeaderValue? mediaType2) -> int
+Microsoft.Net.Http.Headers.NameValueHeaderValue
+Microsoft.Net.Http.Headers.NameValueHeaderValue.Copy() -> Microsoft.Net.Http.Headers.NameValueHeaderValue!
+Microsoft.Net.Http.Headers.NameValueHeaderValue.CopyAsReadOnly() -> Microsoft.Net.Http.Headers.NameValueHeaderValue!
+Microsoft.Net.Http.Headers.NameValueHeaderValue.GetUnescapedValue() -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.NameValueHeaderValue.IsReadOnly.get -> bool
+Microsoft.Net.Http.Headers.NameValueHeaderValue.Name.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.NameValueHeaderValue.NameValueHeaderValue(Microsoft.Extensions.Primitives.StringSegment name) -> void
+Microsoft.Net.Http.Headers.NameValueHeaderValue.NameValueHeaderValue(Microsoft.Extensions.Primitives.StringSegment name, Microsoft.Extensions.Primitives.StringSegment value) -> void
+Microsoft.Net.Http.Headers.NameValueHeaderValue.SetAndEscapeValue(Microsoft.Extensions.Primitives.StringSegment value) -> void
+Microsoft.Net.Http.Headers.NameValueHeaderValue.Value.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.NameValueHeaderValue.Value.set -> void
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.LastModified.get -> System.DateTimeOffset?
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(System.DateTimeOffset lastModified) -> void
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(string? entityTag) -> void
+Microsoft.Net.Http.Headers.RangeHeaderValue
+Microsoft.Net.Http.Headers.RangeHeaderValue.RangeHeaderValue() -> void
+Microsoft.Net.Http.Headers.RangeHeaderValue.RangeHeaderValue(long? from, long? to) -> void
+Microsoft.Net.Http.Headers.RangeHeaderValue.Ranges.get -> System.Collections.Generic.ICollection<Microsoft.Net.Http.Headers.RangeItemHeaderValue!>!
+Microsoft.Net.Http.Headers.RangeHeaderValue.Unit.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.RangeHeaderValue.Unit.set -> void
+Microsoft.Net.Http.Headers.RangeItemHeaderValue
+Microsoft.Net.Http.Headers.RangeItemHeaderValue.From.get -> long?
+Microsoft.Net.Http.Headers.RangeItemHeaderValue.RangeItemHeaderValue(long? from, long? to) -> void
+Microsoft.Net.Http.Headers.RangeItemHeaderValue.To.get -> long?
+Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SameSiteMode.Lax = 1 -> Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SameSiteMode.None = 0 -> Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SameSiteMode.Strict = 2 -> Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SameSiteMode.Unspecified = -1 -> Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SetCookieHeaderValue
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.AppendToStringBuilder(System.Text.StringBuilder! builder) -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Domain.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Domain.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Expires.get -> System.DateTimeOffset?
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Expires.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Extensions.get -> System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>!
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.HttpOnly.get -> bool
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.HttpOnly.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.MaxAge.get -> System.TimeSpan?
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.MaxAge.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Name.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Name.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Path.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Path.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.SameSite.get -> Microsoft.Net.Http.Headers.SameSiteMode
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.SameSite.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Secure.get -> bool
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Secure.set -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.SetCookieHeaderValue(Microsoft.Extensions.Primitives.StringSegment name) -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.SetCookieHeaderValue(Microsoft.Extensions.Primitives.StringSegment name, Microsoft.Extensions.Primitives.StringSegment value) -> void
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Value.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Value.set -> void
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValue
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Quality.get -> double?
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.StringWithQualityHeaderValue(Microsoft.Extensions.Primitives.StringSegment value) -> void
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.StringWithQualityHeaderValue(Microsoft.Extensions.Primitives.StringSegment value, double quality) -> void
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Value.get -> Microsoft.Extensions.Primitives.StringSegment
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer
+Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer.Compare(Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? stringWithQuality1, Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? stringWithQuality2) -> int
+const Microsoft.Net.Http.Headers.HeaderQuality.Match = 1 -> double
+const Microsoft.Net.Http.Headers.HeaderQuality.NoMatch = 0 -> double
+override Microsoft.Net.Http.Headers.CacheControlHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.CacheControlHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.CacheControlHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.ContentRangeHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.ContentRangeHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.CookieHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.CookieHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.CookieHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.EntityTagHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.EntityTagHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.EntityTagHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.MediaTypeHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.MediaTypeHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.NameValueHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.NameValueHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.NameValueHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.RangeConditionHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.RangeConditionHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.RangeConditionHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.RangeHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.RangeHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.RangeHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.RangeItemHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.RangeItemHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.RangeItemHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.SetCookieHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.SetCookieHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.SetCookieHeaderValue.ToString() -> string!
+override Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Equals(object? obj) -> bool
+override Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.GetHashCode() -> int
+override Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.ToString() -> string!
+static Microsoft.Net.Http.Headers.CacheControlHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.CacheControlHeaderValue!
+static Microsoft.Net.Http.Headers.CacheControlHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.CacheControlHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue!
+static Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.ContentDispositionHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions.IsFileDisposition(this Microsoft.Net.Http.Headers.ContentDispositionHeaderValue! header) -> bool
+static Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions.IsFormDisposition(this Microsoft.Net.Http.Headers.ContentDispositionHeaderValue! header) -> bool
+static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue!
+static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.ContentRangeHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.CookieHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.CookieHeaderValue!
+static Microsoft.Net.Http.Headers.CookieHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!
+static Microsoft.Net.Http.Headers.CookieHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!
+static Microsoft.Net.Http.Headers.CookieHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.CookieHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.CookieHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.CookieHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.Any.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue!
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.EntityTagHeaderValue!
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.EntityTagHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.ContainsCacheDirective(Microsoft.Extensions.Primitives.StringValues cacheControlDirectives, string! targetDirectives) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.EscapeAsQuotedString(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Extensions.Primitives.StringSegment
+static Microsoft.Net.Http.Headers.HeaderUtilities.FormatDate(System.DateTimeOffset dateTime) -> string!
+static Microsoft.Net.Http.Headers.HeaderUtilities.FormatDate(System.DateTimeOffset dateTime, bool quoted) -> string!
+static Microsoft.Net.Http.Headers.HeaderUtilities.FormatNonNegativeInt64(long value) -> string!
+static Microsoft.Net.Http.Headers.HeaderUtilities.IsQuoted(Microsoft.Extensions.Primitives.StringSegment input) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Extensions.Primitives.StringSegment
+static Microsoft.Net.Http.Headers.HeaderUtilities.TryParseDate(Microsoft.Extensions.Primitives.StringSegment input, out System.DateTimeOffset result) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.TryParseNonNegativeInt32(Microsoft.Extensions.Primitives.StringSegment value, out int result) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.TryParseNonNegativeInt64(Microsoft.Extensions.Primitives.StringSegment value, out long result) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.TryParseSeconds(Microsoft.Extensions.Primitives.StringValues headerValues, string! targetValue, out System.TimeSpan? value) -> bool
+static Microsoft.Net.Http.Headers.HeaderUtilities.UnescapeAsQuotedString(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Extensions.Primitives.StringSegment
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue!
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.MediaTypeHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer.QualityComparer.get -> Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer!
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.Find(System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>? values, Microsoft.Extensions.Primitives.StringSegment name) -> Microsoft.Net.Http.Headers.NameValueHeaderValue?
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.NameValueHeaderValue!
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.ParseList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.NameValueHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.NameValueHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.RangeConditionHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.RangeConditionHeaderValue!
+static Microsoft.Net.Http.Headers.RangeConditionHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeConditionHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.RangeHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.RangeHeaderValue!
+static Microsoft.Net.Http.Headers.RangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.SetCookieHeaderValue!
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.SetCookieHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.SetCookieHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.ParseList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>? parsedValues) -> bool
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer.QualityComparer.get -> Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxAgeString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.MaxStaleString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.MinFreshString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.MustRevalidateString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoCacheString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoStoreString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.NoTransformString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.OnlyIfCachedString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.PrivateString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.ProxyRevalidateString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.PublicString -> string!
+static readonly Microsoft.Net.Http.Headers.CacheControlHeaderValue.SharedMaxAgeString -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Accept -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AcceptCharset -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AcceptEncoding -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AcceptLanguage -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AcceptRanges -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlAllowCredentials -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlAllowHeaders -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlAllowMethods -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlAllowOrigin -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlExposeHeaders -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlMaxAge -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlRequestHeaders -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AccessControlRequestMethod -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Age -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Allow -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.AltSvc -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Authority -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Authorization -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.CacheControl -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Connection -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentDisposition -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentEncoding -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentLanguage -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentLength -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentLocation -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentMD5 -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentRange -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentSecurityPolicy -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentSecurityPolicyReportOnly -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentType -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Cookie -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.CorrelationContext -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.DNT -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Date -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ETag -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Expect -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Expires -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.From -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.GrpcAcceptEncoding -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.GrpcEncoding -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.GrpcMessage -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.GrpcStatus -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.GrpcTimeout -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Host -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.IfMatch -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.IfModifiedSince -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.IfNoneMatch -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.IfRange -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.IfUnmodifiedSince -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.KeepAlive -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.LastModified -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Location -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.MaxForwards -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Method -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Origin -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Path -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Pragma -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyAuthenticate -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyAuthorization -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Range -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Referer -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.RequestId -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.RetryAfter -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Scheme -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketAccept -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketKey -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketProtocol -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketVersion -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Server -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SetCookie -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Status -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.StrictTransportSecurity -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.TE -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.TraceParent -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.TraceState -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Trailer -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.TransferEncoding -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Translate -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Upgrade -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.UpgradeInsecureRequests -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.UserAgent -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Vary -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Via -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.WWWAuthenticate -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Warning -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.WebSocketSubProtocols -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XFrameOptions -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XRequestedWith -> string!

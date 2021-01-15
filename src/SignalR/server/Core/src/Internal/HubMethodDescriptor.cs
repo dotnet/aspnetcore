@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,13 +134,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var genericMethodInfo = adapterMethodInfo.MakeGenericMethod(streamReturnType);
             var methodParameters = genericMethodInfo.GetParameters();
-            var methodArguements = new Expression[]
+            var methodArguments = new Expression[]
             {
                 Expression.Convert(parameters[0], methodParameters[0].ParameterType),
                 parameters[1],
             };
 
-            var methodCall = Expression.Call(null, genericMethodInfo, methodArguements);
+            var methodCall = Expression.Call(null, genericMethodInfo, methodArguments);
             var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerable<object>>>(methodCall, parameters);
             return lambda.Compile();
         }

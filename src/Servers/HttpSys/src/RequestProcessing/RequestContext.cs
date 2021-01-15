@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication.ExtendedProtection;
-using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,22 +14,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class RequestContext : IDisposable
+    internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkItem
     {
         private static readonly Action<object> AbortDelegate = Abort;
-
-        private NativeRequestContext _memoryBlob;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
         private bool _disposed;
+        private bool _initialized;
 
-        internal RequestContext(HttpSysListener server, NativeRequestContext memoryBlob)
+        public RequestContext(HttpSysListener server, uint? bufferSize, ulong requestId)
+            : base(server.MemoryPool, bufferSize, requestId)
         {
-            // TODO: Verbose log
             Server = server;
-            _memoryBlob = memoryBlob;
-            Request = new Request(this, _memoryBlob);
-            Response = new Response(this);
             AllowSynchronousIO = server.Options.AllowSynchronousIO;
         }
 
@@ -38,9 +33,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ILogger Logger => Server.Logger;
 
-        public Request Request { get; }
+        public Request Request { get; private set; }
 
-        public Response Response { get; }
+        public Response Response { get; private set; }
 
         public WindowsPrincipal User => Request.User;
 
@@ -119,42 +114,49 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (!Request.IsHttps)
             {
-                LogHelper.LogDebug(Logger, "TryGetChannelBinding", "Channel binding requires HTTPS.");
+                Logger.LogDebug(LoggerEventIds.ChannelBindingNeedsHttps, "TryGetChannelBinding; Channel binding requires HTTPS.");
                 return false;
             }
 
             value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-            LogHelper.LogInfo(Logger, "Channel binding retrieved.");
+            Logger.LogDebug(LoggerEventIds.ChannelBindingRetrived, "Channel binding retrieved.");
             return value != null;
         }
+
 
         /// <summary>
         /// Flushes and completes the response.
         /// </summary>
-        public void Dispose()
+        public override void Dispose()
         {
             if (_disposed)
             {
                 return;
             }
+
             _disposed = true;
 
-            // TODO: Verbose log
-            try
+            if (_initialized)
             {
-                _requestAbortSource?.Dispose();
-                Response.Dispose();
+                // TODO: Verbose log
+                try
+                {
+                    _requestAbortSource?.Dispose();
+                    Response.Dispose();
+                }
+                catch
+                {
+                    Abort();
+                }
+                finally
+                {
+                    Request.Dispose();
+                }
             }
-            catch
-            {
-                Abort();
-            }
-            finally
-            {
-                Request.Dispose();
-            }
+
+            base.Dispose();
         }
 
         /// <summary>
@@ -176,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogDebug(Logger, "Abort", ex);
+                    Logger.LogDebug(LoggerEventIds.AbortError, ex, "Abort");
                 }
                 _requestAbortSource.Dispose();
             }
@@ -217,6 +219,87 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 // RequestQueueHandle may have been closed
             }
+        }
+
+        // You must still call ForceCancelRequest after this.
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            if (!HttpApi.SupportsReset)
+            {
+                return;
+            }
+
+            try
+            {
+                var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
+                var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
+                    (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
+            }
+            catch (ObjectDisposedException)
+            {
+                // RequestQueueHandle may have been closed
+            }
+        }
+
+        protected virtual Task ExecuteAsync()
+        {
+            return Task.CompletedTask;
+        }
+        
+        public void Execute()
+        {
+            _ = ExecuteAsync();
+        }
+
+        protected void SetFatalResponse(int status)
+        {
+            Response.StatusCode = status;
+            Response.ContentLength = 0;
+            Dispose();
+        }
+
+        internal unsafe void Delegate(DelegationRule destination)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (Request.HasRequestBodyStarted)
+            {
+                throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");
+            }
+            if (Response.HasStarted)
+            {
+                throw new InvalidOperationException("This request cannot be delegated, the response has already started.");
+            }
+
+            var source = Server.RequestQueue;
+
+            uint statusCode;
+
+            fixed (char* uriPointer = destination.UrlPrefix)
+            {
+                var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+                {
+                    PropertyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                    PropertyInfo = (IntPtr)uriPointer,
+                    PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
+                };
+
+                statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+                                                               destination.Queue.Handle,
+                                                               Request.RequestId,
+                                                               destination.Queue.UrlGroup.Id,
+                                                               propertyInfoSetSize: 1,
+                                                               &property);
+            }
+
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            {
+                throw new HttpSysException((int)statusCode);
+            }
+
+            Response.MarkDelegated();
         }
     }
 }

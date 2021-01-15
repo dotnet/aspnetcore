@@ -93,6 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
             IConfiguration configuration)
         {
             builder.ConfigureReplacedServices();
+            builder.AddApiScopes();
             builder.AddInMemoryApiResources(Enumerable.Empty<ApiResource>());
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IConfigureOptions<ApiAuthorizationOptions>, ConfigureApiResources>(sp =>
@@ -110,6 +111,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
                 return options.Value.ApiResources;
             });
+
+            return builder;
+        }
+
+        /// Adds API scopes from the defined resources to the list of API scopes
+        internal static IIdentityServerBuilder AddApiScopes(this IIdentityServerBuilder builder)
+        {
+            // We take over the setup for the API resources as Identity Server registers the enumerable as a singleton
+            // and that prevents normal composition.
+            builder.Services.AddSingleton<IEnumerable<ApiScope>>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
+                return options.Value.ApiScopes;
+            });
+
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<ApiAuthorizationOptions>, ConfigureApiScopes>());
 
             return builder;
         }
@@ -229,14 +247,14 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<ISigningCredentialStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
-                return new DefaultSigningCredentialsStore(options.Value.SigningCredential);
+                return new InMemorySigningCredentialsStore(options.Value.SigningCredential);
             });
 
             // We take over the setup for the validation keys store as Identity Server registers a singleton
             builder.Services.AddSingleton<IValidationKeysStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
-                return new DefaultValidationKeysStore(new[]
+                return new InMemoryValidationKeysStore(new[]
                 {
                     new SecurityKeyInfo
                     {

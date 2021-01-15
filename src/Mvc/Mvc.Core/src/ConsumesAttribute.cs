@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Mvc
         IConsumesActionConstraint,
         IApiRequestMetadataProvider
     {
+        /// <summary>
+        /// The order for consumes attribute.
+        /// </summary>
+        /// <value>Defaults to 200</value>
         public static readonly int ConsumesActionConstraintOrder = 200;
 
         /// <summary>
@@ -199,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
         {
-            var completeArgs = new List<string>();
+            var completeArgs = new List<string>(args.Length + 1);
             completeArgs.Add(firstArg);
             completeArgs.AddRange(args);
             var contentTypes = new MediaTypeCollection();

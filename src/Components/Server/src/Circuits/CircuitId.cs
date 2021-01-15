@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public string Secret { get; }
 
-        public bool Equals([AllowNull] CircuitId other)
+        public bool Equals(CircuitId other)
         {
             // We want to use a fixed time equality comparison for a *real* comparisons.
             // The only use case for Secret being null is with a default struct value,

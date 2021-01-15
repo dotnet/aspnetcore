@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
 
@@ -15,16 +16,16 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// The list of <see cref="ActionSelectorCandidate"/>. This includes all actions that are valid for the current
         /// request, as well as their constraints.
         /// </summary>
-        public IReadOnlyList<ActionSelectorCandidate> Candidates { get; set; }
+        public IReadOnlyList<ActionSelectorCandidate> Candidates { get; set; } = Array.Empty<ActionSelectorCandidate>();
 
         /// <summary>
         /// The current <see cref="ActionSelectorCandidate"/>.
         /// </summary>
-        public ActionSelectorCandidate CurrentCandidate { get; set; }
+        public ActionSelectorCandidate CurrentCandidate { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="RouteContext"/>.
         /// </summary>
-        public RouteContext RouteContext { get; set; }
+        public RouteContext RouteContext { get; set; } = default!;
     }
 }

@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             var tagHelperContent = new DefaultTagHelperContent();
 
             // Act
-            tagHelperContent.AppendFormat("{0} {1} {2} {3}!", "First", "Second", "Third", "Fourth");
+            tagHelperContent.AppendFormat(CultureInfo.InvariantCulture, "{0} {1} {2} {3}!", "First", "Second", "Third", "Fourth");
 
             // Assert
             Assert.Equal(
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             var expected = "Content was HtmlEncode[[HelloWorld]]";
 
             // Act
-            tagHelperContent.AppendFormat("Content was {0}", helloWorldContent);
+            tagHelperContent.AppendFormat(CultureInfo.InvariantCulture, "Content was {0}", helloWorldContent);
 
             // Assert
             Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
@@ -705,7 +705,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             var expected = "HtmlEncode[[First ]]HtmlEncode[[Second]] Third";
 
             // Act
-            tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
+            tagHelperContent.SetContent("First ").AppendFormat(CultureInfo.InvariantCulture, "{0} Third", "Second");
 
             // Assert
             Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
@@ -721,7 +721,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             // Act
             tagHelperContent
                 .SetContent("First ")
-                .AppendFormat("{0} Third ", "Second")
+                .AppendFormat(CultureInfo.InvariantCulture, "{0} Third ", "Second")
                 .Append("Fourth");
 
             // Assert
@@ -831,7 +831,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 writer.Write('l');
                 writer.Write('o');
                 writer.Write('\u200a');
-                writer.Write('É');
+                writer.Write('Ã‰');
                 writer.Write('r');
                 writer.Write('i');
                 writer.Write('c');

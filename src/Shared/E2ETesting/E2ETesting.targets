@@ -20,7 +20,7 @@
       Importance="High"
       Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
 
-    <Yarn Command="install --mutex network" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'"/>
+    <Yarn Command="install --mutex network" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"/>
   </Target>
 
   <Target
@@ -38,7 +38,7 @@
     </PropertyGroup>
 
     <!-- JAVA -->
-    <!-- https://github.com/aspnet/AspNetCore-Internal/issues/2555 -->
+    <!-- https://github.com/dotnet/aspnetcore-internal/issues/2555 -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
     <Exec Command="java -version" />
     <Message Importance="High" Text="JAVA is available on the PATH" />
@@ -51,7 +51,7 @@
 
     <PropertyGroup>
       <_PackageJsonLinesContent>@(_PackageJsonLines)</_PackageJsonLinesContent>
-      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^6.15.4&quot;</_PackageJsonSeleniumPackage>
+      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^6.17.0&quot;</_PackageJsonSeleniumPackage>
     </PropertyGroup>
 
     <Error
@@ -66,18 +66,13 @@
       <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
     </PropertyGroup>
     <ItemGroup>
-      <_ContentRootProjectReferencesUnfiltered
-        Include="@(ReferencePath)"
-        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference'" />
-      <_ContentRootProjectReferencesFilter
-        Include="@(_ContentRootProjectReferencesUnfiltered->StartsWith('$(_DefaultProjectRoot)'))" />
       <_ContentRootProjectReferences
-        Include="@(_ContentRootProjectReferencesFilter)"
-        Condition="'%(Identity)' == 'True'" />
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile" DependsOnTargets="_ResolveTestProjectReferences">
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
     <ItemGroup>
       <_ContentRootMetadata
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
@@ -98,7 +93,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddSeleniumSupportedMetadataAttribute" BeforeTargets="BeforeCompile">
+  <Target Name="_AddSeleniumSupportedMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
     <PropertyGroup>
       <_SeleniumE2ETestsSupportedAttributeValue>false</_SeleniumE2ETestsSupportedAttributeValue>
       <_SeleniumE2ETestsSupportedAttributeValue Condition="'$(SeleniumE2ETestsSupported)' == 'true'">true</_SeleniumE2ETestsSupportedAttributeValue>
@@ -109,10 +104,16 @@
         <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.Supported</_Parameter1>
         <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
       </AssemblyAttribute>
+
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.SeleniumConfigPath</_Parameter1>
+        <_Parameter2>$(SeleniumConfigPath)</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddProcessTrackingMetadataAttribute" BeforeTargets="BeforeCompile">
+  <Target Name="_AddProcessTrackingMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
     <MakeDir Directories="$(SeleniumProcessTrackingFolder)" />
     <ItemGroup>
       <AssemblyAttribute

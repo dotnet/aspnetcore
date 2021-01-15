@@ -18,14 +18,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
+    /// <summary>
+    /// Authentication handler for Microsoft Account based authentication.
+    /// </summary>
     public class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
+        /// <summary>
+        /// Initializes a new instance of <see cref="MicrosoftAccountHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public MicrosoftAccountHandler(IOptionsMonitor<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
@@ -46,6 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             }
         }
 
+        /// <inheritdoc />
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             var queryStrings = new Dictionary<string, string>
@@ -56,7 +63,9 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             };
 
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.ScopeKey, FormatScope, Options.Scope);
+#pragma warning disable CS0618 // Type or member is obsolete
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.ResponseModeKey);
+#pragma warning restore CS0618 // Type or member is obsolete
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.DomainHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.LoginHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.PromptKey);
@@ -64,14 +73,13 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             if (Options.UsePkce)
             {
                 var bytes = new byte[32];
-                CryptoRandom.GetBytes(bytes);
+                RandomNumberGenerator.Fill(bytes);
                 var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 queryStrings[OAuthConstants.CodeChallengeKey] = codeChallenge;

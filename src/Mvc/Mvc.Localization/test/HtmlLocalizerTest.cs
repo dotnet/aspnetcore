@@ -207,14 +207,12 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void HtmlLocalizer_WithCulture_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var stringLocalizer = new TestStringLocalizer();
+            var stringLocalizer = new TestStringLocalizer(new CultureInfo("fr"));
 
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-#pragma warning disable CS0618 // Type or member is obsolete
-            var actualLocalizedHtmlString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
-#pragma warning restore CS0618 // Type or member is obsolete
+            var actualLocalizedHtmlString = htmlLocalizer["John"];
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedHtmlString.Value);

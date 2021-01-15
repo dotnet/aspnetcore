@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.ObjectPool;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -15,19 +16,19 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ResponseCookies : IResponseCookies
     {
+        internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
+        internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
+
+        private readonly IFeatureCollection _features;
+        private ILogger? _logger;
+
         /// <summary>
         /// Create a new wrapper.
         /// </summary>
-        /// <param name="headers">The <see cref="IHeaderDictionary"/> for the response.</param>
-        /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
-        public ResponseCookies(IHeaderDictionary headers, ObjectPool<StringBuilder> builderPool)
+        internal ResponseCookies(IFeatureCollection features)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            Headers = headers;
+            _features = features;
+            Headers = _features.Get<IHttpResponseFeature>()!.Headers;
         }
 
         private IHeaderDictionary Headers { get; set; }
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Path = "/"
@@ -54,8 +55,23 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(options));
             }
 
+            // SameSite=None cookies must be marked as Secure.
+            if (!options.Secure && options.SameSite == SameSiteMode.None)
+            {
+                if (_logger == null)
+                {
+                    var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                    _logger = services?.GetService<ILogger<ResponseCookies>>();
+                }
+
+                if (_logger != null)
+                {
+                    Log.SameSiteCookieNotSecure(_logger, key);
+                }
+            }
+
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Domain = options.Domain,
@@ -86,7 +102,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var encodedKeyPlusEquals = Uri.EscapeDataString(key) + "=";
+            var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
@@ -129,11 +145,24 @@ namespace Microsoft.AspNetCore.Http
             {
                 Path = options.Path,
                 Domain = options.Domain,
-                Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Expires = DateTimeOffset.UnixEpoch,
                 Secure = options.Secure,
                 HttpOnly = options.HttpOnly,
                 SameSite = options.SameSite
             });
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception?> _samesiteNotSecure = LoggerMessage.Define<string>(
+                LogLevel.Warning,
+                EventIds.SameSiteNotSecure,
+                "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.");
+
+            public static void SameSiteCookieNotSecure(ILogger logger, string name)
+            {
+                _samesiteNotSecure(logger, name, null);
+            }
         }
     }
 }

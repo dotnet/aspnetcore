@@ -2,46 +2,81 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class DotNetWatcher
+    public class DotNetWatcher : IAsyncDisposable
     {
         private readonly IReporter _reporter;
         private readonly ProcessRunner _processRunner;
+        private readonly DotNetWatchOptions _dotnetWatchOptions;
+        private readonly IWatchFilter[] _filters;
 
-        public DotNetWatcher(IReporter reporter)
+        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions)
         {
             Ensure.NotNull(reporter, nameof(reporter));
 
             _reporter = reporter;
             _processRunner = new ProcessRunner(reporter);
+            _dotnetWatchOptions = dotNetWatchOptions;
+
+            _filters = new IWatchFilter[]
+            {
+                new MSBuildEvaluationFilter(fileSetFactory),
+                new NoRestoreFilter(),
+                new LaunchBrowserFilter(),
+            };
         }
 
-        public async Task WatchAsync(ProcessSpec processSpec, IFileSetFactory fileSetFactory,
-            CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
-            var cancelledTaskSource = new TaskCompletionSource<object>();
-            cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
+            var cancelledTaskSource = new TaskCompletionSource();
+            cancellationToken.Register(state => ((TaskCompletionSource)state).TrySetResult(),
                 cancelledTaskSource);
 
-            var iteration = 1;
+            var initialArguments = processSpec.Arguments.ToArray();
+            var context = new DotNetWatchContext
+            {
+                Iteration = -1,
+                ProcessSpec = processSpec,
+                Reporter = _reporter,
+                SuppressMSBuildIncrementalism = _dotnetWatchOptions.SuppressMSBuildIncrementalism,
+            };
+
+            if (context.SuppressMSBuildIncrementalism)
+            {
+                _reporter.Verbose("MSBuild incremental optimizations suppressed.");
+            }
 
             while (true)
             {
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = iteration.ToString(CultureInfo.InvariantCulture);
-                iteration++;
+                context.Iteration++;
 
-                var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
+                // Reset arguments
+                processSpec.Arguments = initialArguments;
 
+                for (var i = 0; i < _filters.Length; i++)
+                {
+                    await _filters[i].ProcessAsync(context, cancellationToken);
+                }
+
+                // Reset for next run
+                context.RequiresMSBuildRevaluation = false;
+
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+
+                var fileSet = context.FileSet;
                 if (fileSet == null)
                 {
                     _reporter.Error("Failed to find a list of files to watch");
@@ -59,15 +94,34 @@ namespace Microsoft.DotNet.Watcher
                     currentRunCancellationSource.Token))
                 using (var fileSetWatcher = new FileSetWatcher(fileSet, _reporter))
                 {
-                    var fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
-
                     var args = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments);
                     _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
 
                     _reporter.Output("Started");
 
-                    var finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
+                    Task<FileItem?> fileSetTask;
+                    Task finishedTask;
+
+                    while (true)
+                    {
+                        fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
+                        finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
+
+                        if (context.BrowserRefreshServer is not null &&
+                            finishedTask == fileSetTask &&
+                            fileSetTask.Result is FileItem { FileKind: FileKind.StaticFile } file)
+                        {
+                            _reporter.Verbose($"Handling file change event for static content {file.FilePath}.");
+
+                            // If we can handle the file change without a browser refresh, do it.
+                            await StaticContentHandler.TryHandleFileAction(context.BrowserRefreshServer, file, combinedCancellationSource.Token);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
 
                     // Regardless of the which task finished first, make sure everything is cancelled
                     // and wait for dotnet to exit. We don't want orphan processes
@@ -93,15 +147,35 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == processTask)
                     {
+                        // Process exited. Redo evaludation
+                        context.RequiresMSBuildRevaluation = true;
                         // Now wait for a file to change before restarting process
-                        await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
+                        context.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
                     }
-
-                    if (!string.IsNullOrEmpty(fileSetTask.Result))
+                    else
                     {
-                        _reporter.Output($"File changed: {fileSetTask.Result}");
+                        Debug.Assert(finishedTask == fileSetTask);
+                        var changedFile = fileSetTask.Result;
+                        context.ChangedFile = changedFile;
+                        _reporter.Output($"File changed: {changedFile.Value.FilePath}");
                     }
                 }
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var filter in _filters)
+            {
+                if (filter is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync();
+                }
+                else if (filter is IDisposable diposable)
+                {
+                    diposable.Dispose();
+                }
+                
             }
         }
     }

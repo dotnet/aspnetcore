@@ -10,32 +10,32 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     {
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _createdNewConnection =
+            private static readonly Action<ILogger, string, Exception?> _createdNewConnection =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CreatedNewConnection"), "New connection {TransportConnectionId} created.");
 
-            private static readonly Action<ILogger, string, Exception> _removedConnection =
+            private static readonly Action<ILogger, string, Exception?> _removedConnection =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "RemovedConnection"), "Removing connection {TransportConnectionId} from the list of connections.");
 
-            private static readonly Action<ILogger, string, Exception> _failedDispose =
+            private static readonly Action<ILogger, string, Exception?> _failedDispose =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, "FailedDispose"), "Failed disposing connection {TransportConnectionId}.");
 
-            private static readonly Action<ILogger, string, Exception> _connectionReset =
+            private static readonly Action<ILogger, string, Exception?> _connectionReset =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "ConnectionReset"), "Connection {TransportConnectionId} was reset.");
 
-            private static readonly Action<ILogger, string, Exception> _connectionTimedOut =
+            private static readonly Action<ILogger, string, Exception?> _connectionTimedOut =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "ConnectionTimedOut"), "Connection {TransportConnectionId} timed out.");
 
             // 6, ScanningConnections - removed
 
-            private static readonly Action<ILogger, Exception> _scanningConnectionsFailed =
+            private static readonly Action<ILogger, Exception?> _scanningConnectionsFailed =
                 LoggerMessage.Define(LogLevel.Error, new EventId(7, "ScanningConnectionsFailed"), "Scanning connections failed.");
 
             // 8, ScannedConnections - removed
 
-            private static readonly Action<ILogger, Exception> _heartbeatStarted =
+            private static readonly Action<ILogger, Exception?> _heartbeatStarted =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(9, "HeartBeatStarted"), "Starting connection heartbeat.");
 
-            private static readonly Action<ILogger, Exception> _heartbeatEnded =
+            private static readonly Action<ILogger, Exception?> _heartbeatEnded =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HeartBeatEnded"), "Ending connection heartbeat.");
 
             public static void CreatedNewConnection(ILogger logger, string connectionId)

@@ -9,6 +9,7 @@ using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -79,6 +80,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"Test parameters: {testInt} {testLong} {testDouble} {testFloat} {testDec}";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanArriveAtPageWithOptionalParametersProvided()
+        {
+            var testAge = 101;
+
+            SetUrlViaPushState($"/WithOptionalParameters/{testAge}");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"Your age is {testAge}.";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanArriveAtPageWithOptionalParametersNotProvided()
+        {
+            SetUrlViaPushState($"/WithOptionalParameters");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"Your age is .";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanArriveAtPageWithCatchAllParameter()
+        {
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"The answer: life/the/universe/and/everything = 42.";
 
             Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
         }
@@ -293,7 +329,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Not a component")).Click();
-            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
+            Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanFollowLinkDefinedInOpenShadowRoot()
+        {
+            SetUrlViaPushState("/");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+
+            // It's difficult to access elements within a shadow root using Selenium's regular APIs
+            // Bypass this limitation by clicking the element via JavaScript
+            var shadowHost = app.FindElement(By.TagName("custom-link-with-shadow-root"));
+            ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].shadowRoot.querySelector('a').click()", shadowHost);
+
+            Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
 
         [Fact]
@@ -304,19 +356,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // First go to some URL on the router
             var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
             // Now follow a link out of the SPA entirely
             app.FindElement(By.LinkText("Not a component")).Click();
-            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
-            Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html"));
+            Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
+            Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html", StringComparison.Ordinal));
 
             // Now click back
             // Because of how the tests are structured with the router not appearing until the router
             // tests are selected, we can only observe the test selector being there, but this is enough
             // to show we did go back to the right place and the Blazor app started up
             Browser.Navigate().Back();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
             Browser.WaitUntilTestSelectorReady();
         }
 
@@ -329,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
 
@@ -346,7 +398,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation-forced")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
             // Because this was a full-page load, our element references should no longer be valid
             Assert.Throws<StaleElementReferenceException>(() =>
@@ -455,14 +507,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(0, () => BrowserScrollY);
         }
 
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
+            => PreventDefault_CanBlockNavigation("internal", "target");
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        public void PreventDefault_CanBlockNavigation_ForExternalNavigation_PreventDefaultAncestor()
+            => PreventDefault_CanBlockNavigation("external", "ancestor");
+
         [Theory]
-        [InlineData("external", "ancestor")]
         [InlineData("external", "target")]
         [InlineData("external", "descendant")]
         [InlineData("internal", "ancestor")]
-        [InlineData("internal", "target")]
         [InlineData("internal", "descendant")]
-        public void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
+        public virtual void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
         {
             SetUrlViaPushState("/PreventDefaultCases");
             var app = Browser.MountTestComponent<TestRouter>();
@@ -498,20 +558,110 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
+        [Fact]
+        public void OnNavigate_CanRenderLoadingFragment()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            SetUrlViaPushState("/LongPage1");
+
+            Browser.Exists(By.Id("loading-banner"));
+        }
+
+        [Fact]
+        public void OnNavigate_CanCancelCallback()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigating from one page to another should
+            // cancel the previous OnNavigate Task
+            SetUrlViaPushState("/LongPage2");
+            SetUrlViaPushState("/LongPage1");
+
+            AssertDidNotLog("I'm not happening...");
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            SetUrlViaPushState("/Other");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForSyncExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Should capture exception from synchronously thrown
+            SetUrlViaPushState("/WithLazyAssembly");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_DoesNotRenderWhileOnNavigateExecuting()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigate to a route
+            SetUrlViaPushState("/WithParameters/name/Abc");
+
+            // Click the button to trigger a re-render
+            var button = app.FindElement(By.Id("trigger-rerender"));
+            button.Click();
+
+            // Assert that the parameter route didn't render
+            Browser.DoesNotExist(By.Id("test-info"));
+
+            // Navigate to another page to cancel the previous `OnNavigateAsync`
+            // task and trigger a re-render on its completion
+            SetUrlViaPushState("/LongPage1");
+
+            // Confirm that the route was rendered
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Theory]
+        [InlineData("/WithParameters/Name/Ñoño ñi/LastName/O'Jkl")]
+        [InlineData("/WithParameters/Name/[Ñoño ñi]/LastName/O'Jkl")]
+        [InlineData("/other?abc=Ñoño ñi")]
+        [InlineData("/other?abc=[Ñoño ñi]")]
+        public void CanArriveAtPageWithSpecialURL(string relativeUrl)
+        {
+            SetUrlViaPushState(relativeUrl, true);
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
+            Browser.Equal("none", () => errorUi.GetCssValue("display"));
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
             set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
         }
 
-        private string SetUrlViaPushState(string relativeUri)
+        private string SetUrlViaPushState(string relativeUri, bool forceLoad = false)
         {
             var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
             var jsExecutor = (IJavaScriptExecutor)Browser;
             var absoluteUri = new Uri(_serverFixture.RootUri, $"{pathBaseWithoutHash}{relativeUri}");
-            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
+            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}', {(forceLoad ? "true" : "false")})");
 
             return absoluteUri.AbsoluteUri;
+        }
+
+        private void AssertDidNotLog(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry => entry.Message.Contains(message));
+            }
         }
 
         private void AssertHighlightedLinks(params string[] linkTexts)

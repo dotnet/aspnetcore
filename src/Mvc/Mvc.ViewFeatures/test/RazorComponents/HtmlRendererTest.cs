@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -620,7 +621,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
-                builder.AddContent(1, Value.ToString());
+                builder.AddContent(1, Value.ToString(CultureInfo.InvariantCulture));
                 builder.CloseElement();
                 if (!Nested)
                 {
@@ -650,7 +651,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
-                builder.AddContent(1, Value.ToString());
+                builder.AddContent(1, Value.ToString(CultureInfo.InvariantCulture));
                 builder.CloseElement();
             }
         }

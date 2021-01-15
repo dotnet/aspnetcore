@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </remarks>
     public interface IParameterModelConvention
     {
+        /// <summary>
+        /// Called to apply the convention to the <see cref="ParameterModel"/>.
+        /// </summary>
+        /// <param name="parameter">The  <see cref="ParameterModel"/>.</param>
         void Apply(ParameterModel parameter);
     }
 }

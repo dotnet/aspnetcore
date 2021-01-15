@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public IResponseCacheEntry Get(string key)
+        public IResponseCacheEntry? Get(string key)
         {
             var entry = _cache.Get(key);
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     Created = memoryCachedResponse.Created,
                     StatusCode = memoryCachedResponse.StatusCode,
                     Headers = memoryCachedResponse.Headers,
-                    Body = new SegmentReadStream(memoryCachedResponse.BodySegments, memoryCachedResponse.BodyLength)
+                    Body = memoryCachedResponse.Body
                 };
             }
             else
@@ -36,18 +37,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
-        {
-            return Task.FromResult(Get(key));
-        }
-
         public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             if (entry is CachedResponse cachedResponse)
             {
-                var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
-                cachedResponse.Body.CopyTo(segmentStream);
-
                 _cache.Set(
                     key,
                     new MemoryCachedResponse
@@ -55,8 +48,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         Created = cachedResponse.Created,
                         StatusCode = cachedResponse.StatusCode,
                         Headers = cachedResponse.Headers,
-                        BodySegments = segmentStream.GetSegments(),
-                        BodyLength = segmentStream.Length
+                        Body = cachedResponse.Body
                     },
                     new MemoryCacheEntryOptions
                     {
@@ -75,12 +67,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         Size = CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules)
                     });
             }
-        }
-
-        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
-        {
-            Set(key, entry, validFor);
-            return Task.CompletedTask;
         }
     }
 }

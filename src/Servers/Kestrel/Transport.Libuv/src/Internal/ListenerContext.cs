@@ -109,7 +109,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
 
                 var options = TransportContext.Options;
+#pragma warning disable CS0618
                 var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions, options.MaxReadBufferSize, options.MaxWriteBufferSize);
+#pragma warning restore CS0618
                 connection.Start();
 
                 bool accepted = _acceptQueue.Writer.TryWrite(connection);
@@ -128,7 +130,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+#pragma warning disable CS0618
                 socket.NoDelay(TransportContext.Options.NoDelay);
+#pragma warning restore CS0618
             }
             catch
             {

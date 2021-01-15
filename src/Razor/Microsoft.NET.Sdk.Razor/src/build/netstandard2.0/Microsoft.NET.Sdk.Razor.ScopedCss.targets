@@ -1,0 +1,390 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.ScopedCss.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+
+<!-- General description of the scoped CSS pipeline and its integration with static web assets:
+* Scoped css files get discovered and put into a ScopedCssInput itemgroup.
+* Any file with a *.razor.css extension gets processed as a scoped css file. That means two things:
+  * A uniquely identifying scope attribute is generated for that file.
+  * The file will be transformed to apply the unique scope to all selectors and a new file will be generated.
+  * This new file along with the scope will be added to the ScopedCss itemgroup.
+  * When resolving Razor inputs we will match RazorComponent items with their associated ScopedCss item by convention.
+    * The convention is that the scoped css file will have to have the same full path as the razor file with the addition of the .css extension.
+    * Users can define their own convention by adding their own ScopedCssInput item with the RazorComponent metadata on it.
+      * This metadata will point to the item spec for a given RazorComponent (typically the path from the root of the project)
+  * At this point, if a razor.css file doesn't have an associated RazorComponent it will be discarded and not included in the final bundle.
+    * This makes sure that the scoped css pipeline and the components pipeline are as orthogonal as possible.
+    * Computing the scopes will happen very early on the pipeline and it will generate all the input that the compiler needs to do its job
+      independently.
+* For web applications (Blazor webassembly and Blazor server) the main project is responsible for producing the final CSS bundle and making
+  it available during development and production behind $(PackageId).styles.css
+* For razor class libraries we will add the list of ScopedCss to the list of available static web assets imported by the project, the main project
+  will then discover these assets and add them to the ScopedCss files to process in the final bundle.
+* For packing in razor class libraries, the ScopedCss files will get processed and added as static web assets to the pack.
+
+Integration with static web assets:
+* The generated scoped css files will be added as regular static web assets to participate in the pipeline.
+  * Generated scoped css files will have a unique extension '.rz.scp.css' that will be used by the pipeline to identify them as such.
+* In razor class libraries these generated files will be packaged normally as part of the static web assets process and if bundling is
+  not enabled would be normally accessible at <<StaticWebAssetsBasePath>>/<<RelativePath>>.
+* When bundling is enabled (there's no actual way to disable it) all scoped css files from class libraries will be identified by looking
+  at the list of static web assets and identifying the ones that have a .rz.scp.css extension.
+  * Using the extension is useful as it allows for third party tooling to do alternative processing in an easy way, these files will be
+    removed off from the list of static web assets when the default bundling is enabled, so they won't show up in the final output.
+-->
+
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.DiscoverDefaultScopedCssItems"  AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ResolveAllScopedCssAssets"  AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ApplyCssScopes" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ComputeCssScope" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RewriteCss" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ConcatenateCssFiles" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+
+<PropertyGroup>
+
+  <PrepareForRunDependsOn>
+    _PrepareForScopedCss;
+    $(PrepareForRunDependsOn)
+  </PrepareForRunDependsOn>
+
+  <_PrepareForScopedCssDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    _PrepareForBundling;
+    ResolveStaticWebAssetsInputs;
+    _CollectAllScopedCssAssets;
+    BundleScopedCssFiles;
+    $(_PrepareForScopedCssDependsOn)
+  </_PrepareForScopedCssDependsOn>
+  <!-- Order between this definition and the above one is important to make sure we don't create a circular reference loop. -->
+  <_PrepareForScopedCssDependsOn>
+    _GenerateScopedCssFiles;
+    $(_PrepareForScopedCssDependsOn)
+  </_PrepareForScopedCssDependsOn>
+
+  <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+    $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);
+    _AddGeneratedScopedCssFiles;
+  </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+
+  <!-- We want to include the bundle as part of the list of static web assets when bundling is enabled and remove all the individual scoped
+       css files.
+  -->
+  <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    $(ResolveStaticWebAssetsInputsDependsOn);
+    _AddScopedCssBundles;
+  </ResolveStaticWebAssetsInputsDependsOn>
+
+  <!-- When used as a reference, the app will have been built before and as a result the list of static web assets will include the bundle
+  instead of the individual files. We need to correct that in GetCopyToOuputDirectoryItems -->
+
+  <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    $(GetCurrentProjectStaticWebAssetsDependsOn);
+    _AddScopedCssBundles;
+    _AddGeneratedScopedCssFilesForReference;
+  </GetCurrentProjectStaticWebAssetsDependsOn>
+
+  <GenerateStaticWebAssetsPackTargetsDependsOn>
+    $(GenerateStaticWebAssetsPackTargetsDependsOn);
+    _AddScopedCssBundles;
+    _AddGeneratedScopedCssFilesForReference;
+  </GenerateStaticWebAssetsPackTargetsDependsOn>
+
+  <!-- We are going to use .rz.scp.css as the extension to mark scoped css files that come from packages or that have been pre-procesed by
+       referenced class libraries. This way, we can use that information to adjust the build pipeline without having to rely on external
+       sources like an additional itemgroup or metadata.
+  -->
+  <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
+</PropertyGroup>
+
+<Target Name="_PrepareForScopedCss" DependsOnTargets="$(_PrepareForScopedCssDependsOn)" />
+
+<Target Name="ResolveScopedCssInputs">
+    <!--
+  Gathers input source files for Razor component generation. This is a separate target so that we can avoid
+  lots of work when there are no inputs for code generation.
+
+  NOTE: This target is called as part of an incremental build scenario in VS. Do not perform any work
+  outside of calculating RazorComponent items in this target.
+  -->
+  <DiscoverDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)' == 'true'" Content="@(None);@(Content)">
+    <Output TaskParameter="DiscoveredScopedCssInputs" ItemName="_DiscoveredScopedCssInputs" />
+  </DiscoverDefaultScopedCssItems>
+
+  <ItemGroup Condition="'$(EnableDefaultScopedCssItems)' == 'true'">
+    <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="@(ScopedCssInput)" />
+    <Content Include="@(ScopedCssInput)" Pack="false" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+</Target>
+
+<!-- This target just generates a Scope identifier for the items that we deemed were scoped css files -->
+<Target Name="_ComputeCssScope" DependsOnTargets="ResolveScopedCssInputs">
+  <ComputeCssScope ScopedCssInput="@(ScopedCssInput)" Targetname="$(TargetName)">
+    <Output TaskParameter="ScopedCss" ItemName="_ScopedCss" />
+  </ComputeCssScope>
+</Target>
+
+<!-- This target validates that there is at most one scoped css file per component, that there are no scoped css files without a
+     matching component, and then adds the associated scope to the razor components that have a matching scoped css file.
+-->
+<Target Name="_ResolveComponentCssScopes" BeforeTargets="AssignRazorComponentTargetPaths" DependsOnTargets="_ComputeCssScope;ResolveRazorComponentInputs">
+  <ApplyCssScopes RazorComponents="@(RazorComponent)" ScopedCss="@(_ScopedCss)">
+    <Output TaskParameter="RazorComponentsWithScopes" ItemName="_RazorComponentsWithScopes" />
+  </ApplyCssScopes>
+  <ItemGroup>
+    <RazorComponent Remove="@(_RazorComponentsWithScopes)" />
+    <RazorComponent Include="@(_RazorComponentsWithScopes)" />
+  </ItemGroup>
+</Target>
+
+<!-- Sets the output path for the processed scoped css files. They will all have a '.rz.scp.css' extension to flag them as processed
+     scoped css files. -->
+<Target Name="_ResolveScopedCssOutputs" DependsOnTargets="_ComputeCssScope">
+  <PropertyGroup>
+    <_ScopedCssIntermediatePath>$([System.IO.Path]::GetFullPath($(IntermediateOutputPath)scopedcss\))</_ScopedCssIntermediatePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_ScopedCss Condition="'%(_ScopedCss.Identity)' != ''">
+      <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
+    </_ScopedCss>
+    <_ScopedCssOutputs Include="%(_ScopedCss.OutputFile)" />
+  </ItemGroup>
+
+  <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="%(_ScopedCss.Identity)" />
+    <UpToDateCheckBuilt Include="%(_ScopedCss.OutputFile)" Original="%(_ScopedCss.Identity)" />
+  </ItemGroup>
+
+</Target>
+
+<Target
+    Name="_ResolveScopedCssOutputsDesignTime"
+    DependsOnTargets="_ResolveScopedCssOutputs"
+    BeforeTargets="CollectUpToDateCheckInputDesignTime;CollectUpToDateCheckBuiltDesignTime" />
+
+<!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
+<Target Name="_GenerateScopedCssFiles" Inputs="@(_ScopedCss)" Outputs="@(_ScopedCssOutputs)" DependsOnTargets="_ResolveScopedCssOutputs">
+
+  <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
+  <RewriteCss
+    FilesToTransform="@(_ScopedCss)"
+    ToolAssembly="$(_RazorSdkToolAssembly)"
+    ToolExe="$(_RazorSdkDotNetHostFileName)"
+    ToolPath="$(_RazorSdkDotNetHostDirectory)">
+  </RewriteCss>
+
+  <ItemGroup>
+    <FileWrites Include="%(_ScopedCss.OutputFile)" />
+  </ItemGroup>
+</Target>
+
+<!--
+  This target is added to ResolveStaticWebAssetInputs which only gets called by the main application.
+  This makes sure we only include the bundle file when we are processing an application for build/publish
+  and avoids including it on razor class libraries.
+  In the hosted blazor webassembly case, we want to include the bundle within the assets returned to the host, so we wire up this task
+  to `GetCurrentProjectStaticWebAssetsDependsOn` so that contents are replaced and shared with the host application.
+
+  Normally, _CollectAllScopedCssAssets will find all the scoped css files from referenced packages, class libraries and the current project. When _AddScopedCssBundles
+  runs, it will remove all those static web assets and add the bundle asset.
+  When _CollectAllScopedCssAssets runs as part of a hosted blazor webassembly app, only the current project and package assets are removed from the list of
+  static web assets. If the host also decides to generate a bundle, there will be a bundle for the razor client app and another bundle for the host and they will
+  contain some overlapping css.
+  * The bundle for the client app will contain the transitive closure of the processed css files for the client app.
+  * The bundle for the server app will contain the css for the referenced class libraries (transitively and the packages).
+    * Users in this position can choose to remove CssScopedInput entries to avoid including them in the host bundle.
+
+  For Blazor webassembly we want to trigger the bundling at the Blazor client level so that different applications can have self-contained bundles. For the most
+  common case, the bundle for a Blazor app and its host should be identical modulo path comments on the bundle.
+
+  If one single bundle is desired, bundling can be disabled in the Blazor application and the host will create a single big bundle file.
+
+-->
+
+<Target Name="_PrepareForBundling" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+  <PropertyGroup>
+    <!-- This bundle represents the bundle for the entire application dependency graph which includes the application scoped css files and all the scoped css files from
+         projects and packages that this app references -->
+    <_ScopedCssBundleContentRoot>$(_ScopedCssIntermediatePath)bundle\</_ScopedCssBundleContentRoot>
+    <_ScopedCssOutputPath>$(_ScopedCssIntermediatePath)bundle\$(PackageId).styles.css</_ScopedCssOutputPath>
+    <_ScopedCssOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)bundle\$(PackageId).styles.css'))</_ScopedCssOutputFullPath>
+
+    <!-- This bundle represents the bundle for the scoped css files in this project, without references to other projects or package scoped css files. This bundle is used by projects
+         referencing this project that import it through an import rule into their app bundle -->
+    <_ScopedCssProjectBundleContentRoot>$(_ScopedCssIntermediatePath)projectbundle\</_ScopedCssProjectBundleContentRoot>
+    <_ScopedCssProjectOutputPath>$(_ScopedCssIntermediatePath)projectbundle\$(PackageId).bundle.scp.css</_ScopedCssProjectOutputPath>
+    <_ScopedCssProjectOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)projectbundle\$(PackageId).bundle.scp.css'))</_ScopedCssProjectOutputFullPath>
+    <!-- We want the scoped css bundle path to always point to the root path of the app, overriding the default base path unless it is not explicitly overriden
+    by the user. This is so that when you are developing a server-side application or in the future potentially an ASP.NET application using css isolation,
+    you don't have to make the urls in your files relative to "_content/$(PackageId).styles.css".
+    If the user chooses to override the base path explicitly, we place the bundle at the root of the defined base path, this allows Blazor WebAssembly applications to be hosted
+    on different paths other than the root path and for the bundle to behave as expected
+    -->
+    <_ScopedCssBundleBasePath>/</_ScopedCssBundleBasePath>
+    <_ScopedCssBundleBasePath Condition="'$(StaticWebAssetBasePath)' != '_content/$(PackageId)'">$(StaticWebAssetBasePath)</_ScopedCssBundleBasePath>
+  </PropertyGroup>
+</Target>
+
+<Target Name="_ComputeCssBundles" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets">
+  <ItemGroup>
+    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <_AppBundleStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
+      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
+      <RelativePath>$(PackageId).styles.css</RelativePath>
+    </_AppBundleStaticWebAsset>
+
+    <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions.
+        The application bundle is the only one that gets a special treatment and is allowed to be on the "/" by default when the SWA default path hasn't
+        changed.
+    -->
+    <_ProjectBundleStaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_ScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssProjectBundleContentRoot)</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
+    </_ProjectBundleStaticWebAsset>
+
+  </ItemGroup>
+</Target>
+
+<Target Name="_AddScopedCssBundles" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_ComputeCssBundles">
+  <ItemGroup>
+  <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
+       they are not copied to the output folder. -->
+    <StaticWebAsset Remove="@(_DiscoveredScopedCssFiles)" />
+    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
+    <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions.
+        The application bundle is the only one that gets a special treatment and is allowed to be on the "/" by default when the SWA default path hasn't
+        changed.
+    -->
+    <StaticWebAsset Include="@(_ProjectBundleStaticWebAsset)" />
+
+    <_ExternalStaticWebAsset Include="@(_AppBundleStaticWebAsset)">
+      <SourceType>generated</SourceType>
+    </_ExternalStaticWebAsset>
+
+  </ItemGroup>
+
+</Target>
+
+<!-- This target runs as part of ResolveStaticWebAssetInputs and collects all the generated scoped css files. When bundling is enabled
+     these files are removed from the list of static web assets by '_AddScopedCssBundles' -->
+
+<Target Name="_CollectAllScopedCssAssets">
+  <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset)">
+    <Output TaskParameter="ScopedCssAssets" ItemName="_DiscoveredScopedCssFiles" />
+    <Output TaskParameter="ScopedCssProjectBundles" ItemName="_ScopedCssProjectBundles" />
+  </ResolveAllScopedCssAssets>
+  <ItemGroup>
+    <_AllScopedCss Include="@(_ScopedCssProjectBundles);@(_DiscoveredScopedCssFiles)" />
+  </ItemGroup>
+
+  <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(_AllScopedCss)" />
+    <UpToDateCheckBuilt Include="$(_ScopedCssOutputFullPath)" />
+    <UpToDateCheckBuilt Include="$(_ScopedCssProjectOutputFullPath)" />
+  </ItemGroup>
+
+</Target>
+
+<!-- This target is only called as part of GetCurrentProjectStaticWebAssets which is only invoked on referenced projects to get the list
+     of their assets. We return the list of css outputs we will produce and let the main app do the final bundling. -->
+
+<Target Name="_AddGeneratedScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs;ResolveStaticWebAssetsConfiguration">
+  <!-- We do this in two steps because we will be modifying the list of static web assets if we bundle the files and these assets need to be
+  available when called from GetCurrentProjectStaticWebAssets -->
+  <ItemGroup>
+    <_ScopedCssStaticWebAsset Include="%(_ScopedCss.OutputFile)" Condition="@(_ScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(IntermediateOutputPath)scopedcss\</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>$([MSBuild]::MakeRelative('$(_ScopedCssIntermediatePath)','%(_ScopedCss.OutputFile)'))</RelativePath>
+    </_ScopedCssStaticWebAsset>
+    <StaticWebAsset Include="@(_ScopedCssStaticWebAsset)" />
+  </ItemGroup>
+</Target>
+
+<Target Name="_AddGeneratedScopedCssFilesForReference" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_AddGeneratedScopedCssFiles">
+  <ItemGroup>
+    <StaticWebAsset Remove="@(_ScopedCssStaticWebAsset)" />
+    <Staticwebasset Remove="$(_ScopedCssOutputPath)" />
+  </ItemGroup>
+</Target>
+
+<Target Name="BundleScopedCssFiles" Condition="'$(DisableScopedCssBundling)' != 'true'">
+  <!-- Incrementalism is built into the task itself. -->
+  <ItemGroup>
+    <_CurrentProjectDiscoveredScopedCssFiles Include="@(_DiscoveredScopedCssFiles)" Condition="'%(SourceType)' == ''" />
+  </ItemGroup>
+  <!-- This is the bundle for the app, we will always generate it when there are scoped css files for the current project or
+       we detected existing bundles available. If some other project/package didn't bundle their assets, we will not be including
+       them in this bundle. -->
+  <ConcatenateCssFiles
+    Condition="'@(_ScopedCssProjectBundles)' != '' or '@(_ScopedCss)' != ''"
+    ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
+    ProjectBundles="@(_ScopedCssProjectBundles)"
+    ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
+    OutputFile="$(_ScopedCssOutputPath)" />
+  <!-- This is the project bundle, we will only generate it when there are scoped files defined in the project. This bundle will be used
+       when the project is referenced from another project or packed as a package (Razor Class Library). If some other project/package
+       didn't bundle their assets, we will not be including them in this bundle. -->
+  <ConcatenateCssFiles
+    Condition="'@(_ScopedCss)' != ''"
+    ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
+    ProjectBundles="@()"
+    ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
+    OutputFile="$(_ScopedCssProjectOutputPath)" />
+
+  <ItemGroup>
+    <FileWrites Include="$(_ScopedCssOutputPath)" />
+    <FileWrites Condition="'@(_ScopedCss)' != ''" Include="$(_ScopedCssProjectOutputPath)" />
+  </ItemGroup>
+</Target>
+
+<Target Name="_AddAppBundleToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' != 'true' and '@(_AllScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
+  <ItemGroup>
+    <!-- Manually add the file to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <_ExternalPublishStaticWebAsset Include="$(_ScopedCssOutputFullPath)" ExcludeFromSingleFile="true">
+      <SourceType>generated</SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
+      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)',$([MSBuild]::NormalizePath('wwwroot/$(_ScopedCssBundleBasePath)/$(PackageId).styles.css'))))</RelativePath>
+    </_ExternalPublishStaticWebAsset>
+  </ItemGroup>
+</Target>
+
+<Target Name="_AddScopedCssFilesToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' == 'true' and '@(_ScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
+  <ItemGroup>
+    <!-- Manually add the scoped css files to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <_ExternalPublishStaticWebAsset Include="@(_ScopedCssStaticWebAsset)" ExcludeFromSingleFile="true">
+      <SourceType>generated</SourceType>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot\%(BasePath)\%(RelativePath)'))'))</RelativePath>
+    </_ExternalPublishStaticWebAsset>
+  </ItemGroup>
+</Target>
+
+</Project>

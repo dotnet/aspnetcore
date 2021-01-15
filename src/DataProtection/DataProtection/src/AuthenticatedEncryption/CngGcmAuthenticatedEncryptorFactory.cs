@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -19,12 +23,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public CngGcmAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<CngGcmAuthenticatedEncryptorFactory>();
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        /// <inheritdoc />
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
             var descriptor = key.Descriptor as CngGcmAuthenticatedEncryptorDescriptor;
             if (descriptor == null)
@@ -32,10 +41,14 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 return null;
             }
 
+            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal GcmAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [SupportedOSPlatform("windows")]
+        [return: NotNullIfNotNull("configuration")]
+        internal GcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
             CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
@@ -50,6 +63,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));
         }
 
+        [SupportedOSPlatform("windows")]
         private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
             // basic argument checking
@@ -62,7 +76,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
             }
 
-            BCryptAlgorithmHandle algorithmHandle = null;
+            BCryptAlgorithmHandle? algorithmHandle = null;
 
             _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
             // Special-case cached providers

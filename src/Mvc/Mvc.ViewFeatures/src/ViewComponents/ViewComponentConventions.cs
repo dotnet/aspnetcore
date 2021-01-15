@@ -6,10 +6,21 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
+    /// <summary>
+    /// Static class that adds standard view component convention methods. This class cannot be inherited.
+    /// </summary>
     public static class ViewComponentConventions
     {
+        /// <summary>
+        /// The suffix for a view component name.
+        /// </summary>
         public static readonly string ViewComponentSuffix = "ViewComponent";
 
+        /// <summary>
+        /// Gets the name of a component.
+        /// </summary>
+        /// <param name="componentType"></param>
+        /// <returns></returns>
         public static string GetComponentName(TypeInfo componentType)
         {
             if (componentType == null)
@@ -34,6 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             return GetShortNameByConvention(componentType);
         }
 
+        /// <summary>
+        /// Get the component's full name from a type from the <see cref="ViewComponentAttribute.Name"/> first.
+        /// If not defined, the full name is the Namespace with the <see cref="GetShortNameByConvention(TypeInfo)"/>.
+        /// </summary>
+        /// <param name="componentType">The component type.</param>
+        /// <returns>The full name of the component.</returns>
         public static string GetComponentFullName(TypeInfo componentType)
         {
             if (componentType == null)
@@ -72,6 +89,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the type is a public, non abstract, non generic class which
+        /// defines <see cref="ViewComponentAttribute"/>, but not the <see cref="NonViewComponentAttribute"/>
+        /// and has a name that ends in ViewComponent.
+        /// </summary>
+        /// <param name="typeInfo">The <see cref="TypeInfo"/> to inspect.</param>
+        /// <returns>If the type is a component.</returns>
         public static bool IsComponent(TypeInfo typeInfo)
         {
             if (typeInfo == null)

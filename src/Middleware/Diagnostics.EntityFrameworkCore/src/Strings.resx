@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -148,31 +148,28 @@
     <value>In Visual Studio, use the Package Manager Console to scaffold a new migration and apply it to the database:</value>
   </data>
   <data name="DatabaseErrorPage_NoDbOrMigrationsTitle" xml:space="preserve">
-    <value>Use migrations to create the database for {0}</value>
+    <value>Use migrations to create the database</value>
   </data>
   <data name="DatabaseErrorPage_PendingChangesInfoPMC" xml:space="preserve">
     <value>In Visual Studio, use the Package Manager Console to scaffold a new migration for these changes and apply them to the database:</value>
   </data>
   <data name="DatabaseErrorPage_PendingChangesTitle" xml:space="preserve">
-    <value>There are pending model changes for {0}</value>
+    <value>There are pending model changes</value>
   </data>
   <data name="DatabaseErrorPage_PendingMigrationsInfo" xml:space="preserve">
-    <value>There are migrations for {0} that have not been applied to the database</value>
+    <value>There are migrations that have not been applied to the following database(s):</value>
   </data>
   <data name="DatabaseErrorPage_PendingMigrationsTitle" xml:space="preserve">
-    <value>Applying existing migrations for {0} may resolve this issue</value>
+    <value>Applying existing migrations may resolve this issue</value>
   </data>
   <data name="DatabaseErrorPage_ApplyMigrationsCommandCLI" xml:space="preserve">
     <value>&gt; dotnet ef database update</value>
   </data>
   <data name="MigrationsEndPointMiddleware_ContextNotRegistered" xml:space="preserve">
-    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.</value>
+    <value>The context type '{0}' was not found in services. This usually means either the context is invalid or it was not registered in services during startup. You probably want to call AddDBContext&lt;&gt;() inside the ConfigureServices(...) call in your application startup code.</value>
   </data>
   <data name="MigrationsEndPointMiddleware_Exception" xml:space="preserve">
     <value>An error occurred while applying the migrations for '{0}'. See InnerException for details.</value>
-  </data>
-  <data name="MigrationsEndPointMiddleware_InvalidContextType" xml:space="preserve">
-    <value>The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.</value>
   </data>
   <data name="MigrationsEndPointMiddleware_NoContextType" xml:space="preserve">
     <value>No context type was specified. Ensure the form data from the request includes a 'context' value, specifying the context type name to apply migrations for.</value>
@@ -197,5 +194,11 @@
   </data>
   <data name="DatabaseErrorPage_HowToApplyFromCLI" xml:space="preserve">
     <value>Alternatively, you can apply pending migrations from a command prompt at your project directory:</value>
+  </data>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsInfo" xml:space="preserve">
+    <value>A database needs to be created for the following:</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingChangesInfo" xml:space="preserve">
+    <value>Pending model changes are detected in the following:</value>
   </data>
 </root>

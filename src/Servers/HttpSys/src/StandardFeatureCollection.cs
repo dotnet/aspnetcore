@@ -7,15 +7,17 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class StandardFeatureCollection : IFeatureCollection
     {
-        private static readonly Func<FeatureContext, object> _identityFunc = ReturnIdentity;
-        private static readonly Dictionary<Type, Func<FeatureContext, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext, object>>()
+        private static readonly Func<RequestContext, object> _identityFunc = ReturnIdentity;
+        private static readonly Dictionary<Type, Func<RequestContext, object>> _featureFuncLookup = new()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
+            { typeof(IHttpRequestBodyDetectionFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpResponseBodyFeature), _identityFunc },
@@ -23,13 +25,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
-            { typeof(RequestContext), ctx => ctx.RequestContext },
+            { typeof(RequestContext), ctx => ctx },
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
             { typeof(IHttpSysRequestInfoFeature), _identityFunc },
+            { typeof(IHttpResponseTrailersFeature), ctx => ctx.GetResponseTrailersFeature() },
+            { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         };
 
-        private readonly FeatureContext _featureContext;
+        private readonly RequestContext _featureContext;
 
         static StandardFeatureCollection()
         {
@@ -42,9 +46,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Win8+
                 _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
             }
+
+            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            {
+                _featureFuncLookup[typeof(IHttpSysRequestDelegationFeature)] = _identityFunc;
+            }
         }
 
-        public StandardFeatureCollection(FeatureContext featureContext)
+        public StandardFeatureCollection(RequestContext featureContext)
         {
             _featureContext = featureContext;
         }
@@ -63,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                Func<FeatureContext, object> lookupFunc;
+                Func<RequestContext, object> lookupFunc;
                 _featureFuncLookup.TryGetValue(key, out lookupFunc);
                 return lookupFunc?.Invoke(_featureContext);
             }
@@ -73,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private static object ReturnIdentity(FeatureContext featureContext)
+        private static object ReturnIdentity(RequestContext featureContext)
         {
             return featureContext;
         }

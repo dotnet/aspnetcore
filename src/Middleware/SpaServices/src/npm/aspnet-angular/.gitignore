@@ -1,5 +1,0 @@
-/node_modules/
-**/*.js
-**/*.d.ts
-**/*.metadata.json
-/compiled

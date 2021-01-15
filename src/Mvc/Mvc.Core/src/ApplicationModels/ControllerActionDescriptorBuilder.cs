@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static void AddParameterDescriptors(ActionDescriptor actionDescriptor, ActionModel action)
         {
-            var parameterDescriptors = new List<ParameterDescriptor>();
+            var parameterDescriptors = new List<ParameterDescriptor>(action.Parameters.Count);
             foreach (var parameter in action.Parameters)
             {
                 var parameterDescriptor = CreateParameterDescriptor(parameter);

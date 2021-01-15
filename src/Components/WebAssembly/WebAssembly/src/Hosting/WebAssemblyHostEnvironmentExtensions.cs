@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
+    /// <summary>
+    /// Static class that adds extension methods to <see cref="IWebAssemblyHostEnvironment"/>.
+    /// </summary>
     public static class WebAssemblyHostEnvironmentExtensions
     {
         /// <summary>

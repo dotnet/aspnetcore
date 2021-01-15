@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -221,7 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("g");
                 input.Add("g");
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 await body.StopAsync();
             }
@@ -244,10 +247,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Max is 10 bytes
                 for (int i = 0; i < 11; i++)
                 {
-                    input.Add(i.ToString());
+                    input.Add(i.ToString(CultureInfo.InvariantCulture));
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 await body.StopAsync();
             }
@@ -286,7 +291,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("\r");
                 input.Add("n");
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 await body.StopAsync();
             }
@@ -388,7 +395,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("012345678\r");
 
                 var buffer = new byte[1024];
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
                     await stream.ReadAsync(buffer, 0, buffer.Length));
 
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
@@ -536,7 +545,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
                     Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
@@ -553,7 +564,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
                     Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
@@ -570,7 +583,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
                     Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
@@ -733,7 +748,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync());
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
 
                 await body.StopAsync();
@@ -743,14 +760,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
         {
-            using (var input = new TestInput())
+            var mockTimeoutControl = new Mock<ITimeoutControl>();
+            var mockLogger = new Mock<IKestrelTrace>();
+
+            using (var input = new TestInput(log: mockLogger.Object, timeoutControl: mockTimeoutControl.Object))
             {
-                var mockTimeoutControl = new Mock<ITimeoutControl>();
-                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
-
-                var mockLogger = new Mock<IKestrelTrace>();
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
-
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
@@ -768,7 +782,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 mockLogger.Verify(logger => logger.ConnectionBadRequest(
                     It.IsAny<string>(),
+#pragma warning disable CS0618 // Type or member is obsolete
                     It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 await body.StopAsync();
             }
@@ -796,7 +812,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 using (var ms = new MemoryStream())
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => stream.CopyToAsync(ms));
+#pragma warning restore CS0618 // Type or member is obsolete
                     Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
                 }
 
@@ -807,10 +825,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task LogsWhenStartsReadingRequestBody()
         {
-            using (var input = new TestInput())
+            var mockLogger = new Mock<IKestrelTrace>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                .Returns(true);
+
+            using (var input = new TestInput(log: mockLogger.Object))
             {
-                var mockLogger = new Mock<IKestrelTrace>();
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
@@ -834,14 +855,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task LogsWhenStopsReadingRequestBody()
         {
-            using (var input = new TestInput())
+            var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockLogger = new Mock<IKestrelTrace>();
+            mockLogger
+                .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
+                .Callback(() => logEvent.SetResult());
+            mockLogger
+                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                .Returns(true);
+
+            using (var input = new TestInput(log: mockLogger.Object))
             {
-                var logEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var mockLogger = new Mock<IKestrelTrace>();
-                mockLogger
-                    .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
-                    .Callback(() => logEvent.SetResult(null));
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
@@ -1200,10 +1224,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Application.Output.Complete();
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
                 var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
                 var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
                 var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex2.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex3.Reason);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task UnexpectedEndOfRequestContentIsRepeatedlyThrownForContentLengthBodyAfterExaminingButNotConsumingBytes()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                await input.Application.Output.WriteAsync(new byte[] { 0 });
+
+                var readResult = await reader.ReadAsync();
+
+                reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+                input.Application.Output.Complete();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
                 Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);
@@ -1225,10 +1284,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Application.Output.Complete();
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
                 var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
                 var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
                 var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
                 Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);

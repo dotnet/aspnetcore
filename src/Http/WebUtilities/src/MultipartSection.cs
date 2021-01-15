@@ -8,14 +8,19 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// A multipart section read by <see cref="MultipartReader"/>.
+    /// </summary>
     public class MultipartSection
     {
-        public string ContentType
+        /// <summary>
+        /// Gets the value of the <c>Content-Type</c> header.
+        /// </summary>
+        public string? ContentType
         {
             get
             {
-                StringValues values;
-                if (Headers.TryGetValue(HeaderNames.ContentType, out values))
+                if (Headers != null && Headers.TryGetValue(HeaderNames.ContentType, out var values))
                 {
                     return values;
                 }
@@ -23,12 +28,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public string ContentDisposition
+        /// <summary>
+        /// Gets the value of the <c>Content-Disposition</c> header.
+        /// </summary>
+        public string? ContentDisposition
         {
             get
             {
-                StringValues values;
-                if (Headers.TryGetValue(HeaderNames.ContentDisposition, out values))
+                if (Headers != null && Headers.TryGetValue(HeaderNames.ContentDisposition, out var values))
                 {
                     return values;
                 }
@@ -36,9 +43,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public Dictionary<string, StringValues> Headers { get; set; }
+        /// <summary>
+        /// Gets or sets the multipart header collection.
+        /// </summary>
+        public Dictionary<string, StringValues>? Headers { get; set; }
 
-        public Stream Body { get; set; }
+        /// <summary>
+        /// Gets or sets the body.
+        /// </summary>
+        public Stream Body { get; set; } = default!;
 
         /// <summary>
         /// The position where the body starts in the total multipart body.

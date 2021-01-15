@@ -6,7 +6,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
@@ -36,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
@@ -44,8 +42,12 @@
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
+    <!-- This dependency was removed in 5.0. The suppression can be removed after 5.0 RTM is released. -->
+    <SuppressBaselineReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
   <ItemGroup>
-    <UIFrameworkVersionMoniker Include="V3" />
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
@@ -138,7 +140,6 @@
   <!-- Source build doesn't build this package -->
   <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <ItemGroup>
-      <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
       <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
     </ItemGroup>
 
@@ -150,16 +151,7 @@
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
 
-      <_V3Content Include="wwwroot\V3\**" />
       <_V4Content Include="wwwroot\V4\**" />
-
-      <StaticWebAsset Include="@(_V3Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3'">
-        <SourceType></SourceType>
-        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V3'))</ContentRoot>
-        <BasePath>/Identity</BasePath>
-        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-      </StaticWebAsset>
 
       <StaticWebAsset Include="@(_V4Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
         <SourceType></SourceType>

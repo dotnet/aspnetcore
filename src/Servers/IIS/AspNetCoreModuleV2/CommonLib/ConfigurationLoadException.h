@@ -9,7 +9,7 @@ class ConfigurationLoadException: public std::runtime_error
 {
     public:
         ConfigurationLoadException(std::wstring msg)
-            : runtime_error("Configuration load exception has occured"), message(std::move(msg))
+            : runtime_error("Configuration load exception has occurred"), message(std::move(msg))
         {
         }
 

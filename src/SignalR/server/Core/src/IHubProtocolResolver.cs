@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="protocolName">The protocol name.</param>
         /// <param name="supportedProtocols">A collection of supported protocols.</param>
         /// <returns>A matching <see cref="IHubProtocol"/> or <c>null</c> if no matching protocol was found.</returns>
-        IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols);
+        IHubProtocol? GetProtocol(string protocolName, IReadOnlyList<string>? supportedProtocols);
     }
 }

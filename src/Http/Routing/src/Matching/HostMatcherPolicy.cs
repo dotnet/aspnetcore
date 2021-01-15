@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,8 +20,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private const string WildcardPrefix = "*.";
 
         // Run after HTTP methods, but before 'default'.
+        /// <inheritdoc />
         public override int Order { get; } = -100;
 
+        /// <inheritdoc />
         public IComparer<Endpoint> Comparer { get; } = new HostMetadataEndpointComparer();
 
         bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
@@ -70,6 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             });
         }
 
+        /// <inheritdoc />
         public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
@@ -118,7 +122,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     else if (
                         host.StartsWith(WildcardPrefix) &&
 
-                        // Note that we only slice of the `*`. We want to match the leading `.` also.
+                        // Note that we only slice off the `*`. We want to match the leading `.` also.
                         MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase))
                     {
                         // Matches a suffix wildcard.
@@ -189,6 +193,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             throw new InvalidOperationException($"Could not parse host: {host}");
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
@@ -273,6 +278,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .ToArray();
         }
 
+        /// <inheritdoc />
         public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
         {
             if (edges == null)
@@ -342,7 +348,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
         {
-            protected override int CompareMetadata(IHostMetadata x, IHostMetadata y)
+            protected override int CompareMetadata(IHostMetadata? x, IHostMetadata? y)
             {
                 // Ignore the metadata if it has an empty list of hosts.
                 return base.CompareMetadata(
@@ -391,9 +397,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public readonly int? Port;
             public readonly string Host;
 
-            private readonly string _wildcardEndsWith;
+            private readonly string? _wildcardEndsWith;
 
-            public EdgeKey(string host, int? port)
+            public EdgeKey(string? host, int? port)
             {
                 Host = host ?? WildcardHost;
                 Port = port;
@@ -421,9 +427,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Comparer<int?>.Default.Compare(Port, other.Port);
             }
 
-            public int CompareTo(object obj)
+            public int CompareTo(object? obj)
             {
-                return CompareTo((EdgeKey)obj);
+                return CompareTo((EdgeKey)obj!);
             }
 
             public bool Equals(EdgeKey other)
@@ -437,7 +443,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     if (HasHostWildcard)
                     {
-                        return host.EndsWith(_wildcardEndsWith, StringComparison.OrdinalIgnoreCase);
+                        return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
@@ -454,7 +460,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 if (obj is EdgeKey key)
                 {
@@ -466,7 +472,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public override string ToString()
             {
-                return $"{Host}:{Port?.ToString() ?? WildcardHost}";
+                return $"{Host}:{Port?.ToString(CultureInfo.InvariantCulture) ?? WildcardHost}";
             }
         }
     }

@@ -14,6 +14,9 @@ namespace Microsoft.Extensions.DependencyInjection
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount
     {
+        /// <summary>
+        /// The <see cref="IServiceCollection"/>.
+        /// </summary>
         IServiceCollection Services { get; }
     }
 }

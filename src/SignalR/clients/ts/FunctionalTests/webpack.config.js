@@ -37,6 +37,5 @@ module.exports = {
     externals: {
         "@microsoft/signalr": "signalR",
         "@microsoft/signalr-protocol-msgpack": "signalR.protocols.msgpack",
-        "request": "request",
     },
 };

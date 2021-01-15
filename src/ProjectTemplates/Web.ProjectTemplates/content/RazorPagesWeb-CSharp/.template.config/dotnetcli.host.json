@@ -71,6 +71,18 @@
     "RazorRuntimeCompilation": {
       "longName": "razor-runtime-compilation",
       "shortName": "rrc"
+    },
+    "CalledApiUrl": {
+        "longName": "called-api-url",
+        "shortName": ""
+    },
+    "CalledApiScopes": {
+        "longName": "called-api-scopes",
+        "shortName": ""
+    },
+    "CallsMicrosoftGraph": {
+        "longName": "calls-graph",
+        "shortName": ""
     }
   },
   "usageExamples": [

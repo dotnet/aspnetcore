@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -58,6 +60,36 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     throw new InvalidOperationException("The Negotiate Authentication handler cannot be used on a server that directly supports Windows Authentication."
                         + " Enable Windows Authentication for the server and the Negotiate Authentication handler will defer to it.");
                 }
+            }
+
+            var ldapSettings = options.LdapSettings;
+
+            if (ldapSettings.EnableLdapClaimResolution)
+            {
+                ldapSettings.Validate();
+
+                if (ldapSettings.LdapConnection == null)
+                {
+                    var di = new LdapDirectoryIdentifier(server: ldapSettings.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
+
+                    if (string.IsNullOrEmpty(ldapSettings.MachineAccountName))
+                    {
+                        // Use default credentials
+                        ldapSettings.LdapConnection = new LdapConnection(di);
+                    }
+                    else
+                    {
+                        // Use specific specific machine account
+                        var machineAccount = ldapSettings.MachineAccountName + "@" + ldapSettings.Domain;
+                        var credentials = new NetworkCredential(machineAccount, ldapSettings.MachineAccountPassword);
+                        ldapSettings.LdapConnection = new LdapConnection(di, credentials);
+                    }
+
+                    ldapSettings.LdapConnection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
+                    ldapSettings.LdapConnection.Timeout = TimeSpan.FromMinutes(1);
+                }
+
+                ldapSettings.LdapConnection.Bind(); // This line actually makes the connection.
             }
         }
     }

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
-
+using System;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
@@ -9,13 +9,14 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
     /// <summary>
     /// Constants for different Azure Active Directory B2C authentication components.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public static class AzureADB2CDefaults
     {
         /// <summary>
         /// The key for the policy used in <see cref="AuthenticationProperties"/>.
         /// </summary>
         public static readonly string PolicyKey = "Policy";
-        
+
         /// <summary>
         /// The scheme name for Open ID Connect when using
         /// <see cref="AzureADB2CAuthenticationBuilderExtensions.AddAzureADB2C(AuthenticationBuilder, System.Action{AzureADB2COptions})"/>.

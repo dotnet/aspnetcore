@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Components.Analyzers;
 using Microsoft.CodeAnalysis;
@@ -15,6 +16,8 @@ namespace Microsoft.Extensions.Internal
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ComponentInternalUsageDiagnosticAnalyzer : DiagnosticAnalyzer
     {
+        private static readonly string[] NamespaceParts = new[] { "RenderTree", "Components", "AspNetCore", "Microsoft", };
+
         private readonly InternalUsageAnalyzer _inner;
 
         public ComponentInternalUsageDiagnosticAnalyzer()
@@ -27,17 +30,26 @@ namespace Microsoft.Extensions.Internal
 
         public override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
             _inner.Register(context);
         }
 
         private static bool IsInInternalNamespace(ISymbol symbol)
         {
-            if (symbol?.ContainingNamespace?.ToDisplayString() is string ns)
+            var @namespace = symbol?.ContainingNamespace;
+            for (var i = 0; i < NamespaceParts.Length; i++)
             {
-                return string.Equals(ns, "Microsoft.AspNetCore.Components.RenderTree");
+                if (@namespace == null || !string.Equals(NamespaceParts[i], @namespace.Name, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                @namespace = @namespace.ContainingNamespace;
             }
 
-            return false;
+            return @namespace.IsGlobalNamespace;
         }
     }
 }

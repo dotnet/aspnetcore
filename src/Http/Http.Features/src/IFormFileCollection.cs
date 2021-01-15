@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>
         ///	The requested file, or null if it is not present.
         /// </returns>
-        IFormFile this[string name] { get; }
+        IFormFile? this[string name] { get; }
 
         /// <summary>
         /// Gets the first file with the specified name.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>
         ///	The requested file, or null if it is not present.
         /// </returns>
-        IFormFile GetFile(string name);
+        IFormFile? GetFile(string name);
 
         /// <summary>
         ///     Gets an <see cref="IReadOnlyList{T}" /> containing the files of the

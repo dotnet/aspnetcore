@@ -1,6 +1,4 @@
-import * as Msal from 'msal';
-import { StringDict } from 'msal/lib-commonjs/MsalTypes';
-import { ClientAuthErrorMessage } from 'msal/lib-commonjs/error/ClientAuthError';
+import * as Msal from '@azure/msal-browser';
 
 interface AccessTokenRequestOptions {
     scopes: string[];
@@ -14,7 +12,7 @@ interface AccessTokenResult {
 
 interface AccessToken {
     value: string;
-    expires: Date;
+    expires: Date | null;
     grantedScopes: string[];
 }
 
@@ -37,7 +35,7 @@ interface AuthenticationResult {
 }
 
 interface AuthorizeService {
-    getUser(): Promise<StringDict | undefined>;
+    getUser(): Promise<object | undefined>;
     getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult>;
     signIn(state: any): Promise<AuthenticationResult>;
     completeSignIn(state: any): Promise<AuthenticationResult>;
@@ -47,38 +45,76 @@ interface AuthorizeService {
 
 interface AuthorizeServiceConfiguration extends Msal.Configuration {
     defaultAccessTokenScopes: string[];
-    additionalScopesToConsent: string[]
+    additionalScopesToConsent: string[];
+    loginMode: string;
 }
 
 class MsalAuthorizeService implements AuthorizeService {
-    readonly _msalApplication: Msal.UserAgentApplication;
-    readonly _callbackPromise: Promise<AuthenticationResult>;
+    private readonly _msalApplication: Msal.PublicClientApplication;
+    private _account: Msal.AccountInfo | undefined | null;
+    private _redirectCallback: Promise<AuthenticationResult | null> | undefined;
+    private _requestedScopes: string[] | undefined;
 
     constructor(private readonly _settings: AuthorizeServiceConfiguration) {
+        if (this._settings.auth?.knownAuthorities?.length == 0) {
+            this._settings.auth.knownAuthorities = [new URL(this._settings.auth.authority!).hostname]
+        }
+        this._msalApplication = new Msal.PublicClientApplication(this._settings);
+    }
 
-        // It is important that we capture the callback-url here as msal will remove the auth parameters
-        // from the url as soon as it gets initialized.
-        const callbackUrl = location.href;
-        this._msalApplication = new Msal.UserAgentApplication(this._settings);
+    getAccount() {
+        if (this._account) {
+            return this._account;
+        }
 
-        // This promise will only resolve in callback-paths, which is where we check it.
-        this._callbackPromise = this.createCallbackResult(callbackUrl);
+        const accounts = this._msalApplication.getAllAccounts();
+        if (accounts && accounts.length) {
+            return accounts[0];
+        }
+
+        return null;
     }
 
     async getUser() {
-        const account = this._msalApplication.getAccount();
-        return account?.idTokenClaims;
+        const account = this.getAccount();
+        if (!account) {
+            return;
+        }
+
+        const scopes: string[] = [];
+        if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
+            scopes.push(...this._settings.defaultAccessTokenScopes)
+        }
+
+        if (this._settings.additionalScopesToConsent && this._settings.additionalScopesToConsent.length > 0) {
+            scopes.push(...this._settings.additionalScopesToConsent);
+        }
+
+        if (this._requestedScopes && this._requestedScopes.length > 0) {
+            scopes.push(...this._requestedScopes);
+        }
+
+        const silentRequest = {
+            redirectUri: this._settings.auth?.redirectUri,
+            account: account,
+            scopes: scopes
+        };
+
+        try {
+            const response = await this._msalApplication.acquireTokenSilent(silentRequest);
+            return response.idTokenClaims;
+        } catch (e) {
+            await this.signInCore(silentRequest);
+        }
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
         try {
             const newToken = await this.getTokenCore(request?.scopes);
-
             return {
                 status: AccessTokenResultStatus.Success,
                 token: newToken
             };
-
         } catch (e) {
             return {
                 status: AccessTokenResultStatus.RequiresRedirect
@@ -87,12 +123,19 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async getTokenCore(scopes?: string[]): Promise<AccessToken | undefined> {
-        const tokenScopes = {
-            redirectUri: this._settings.auth.redirectUri as string,
+        const account = this.getAccount();
+        if (!account) {
+            return;
+        }
+
+        this._requestedScopes = scopes;
+        const silentRequest = {
+            redirectUri: this._settings.auth?.redirectUri,
+            account: account,
             scopes: scopes || this._settings.defaultAccessTokenScopes
         };
 
-        const response = await this._msalApplication.acquireTokenSilent(tokenScopes);
+        const response = await this._msalApplication.acquireTokenSilent(silentRequest);
         return {
             value: response.accessToken,
             grantedScopes: response.scopes,
@@ -105,9 +148,10 @@ class MsalAuthorizeService implements AuthorizeService {
             // Before we start any sign-in flow, clear out any previous state so that it doesn't pile up.
             this.purgeState();
 
-            const request: Msal.AuthenticationParameters = {
-                redirectUri: this._settings.auth.redirectUri as string,
-                state: await this.saveState(state)
+            const request: Msal.AuthorizationUrlRequest = {
+                redirectUri: this._settings.auth?.redirectUri,
+                state: await this.saveState(state),
+                scopes: []
             };
 
             if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
@@ -129,7 +173,16 @@ class MsalAuthorizeService implements AuthorizeService {
                 if (this._settings.defaultAccessTokenScopes?.length > 0) {
                     // This provisions the token as part of the sign-in flow eagerly so that is already in the cache
                     // when the app asks for it.
-                    await this._msalApplication.acquireTokenSilent(request);
+                    const account = this.getAccount();
+                    if (!account) {
+                        return this.error("No account to get tokens for.");
+                    }
+                    const silentRequest : Msal.SilentRequest = {
+                        redirectUri: request.redirectUri,
+                        account: account,
+                        scopes: request?.scopes?.concat(request.extraScopesToConsent || []) || []
+                    };
+                    await this._msalApplication.acquireTokenSilent(silentRequest);
                 }
             } catch (e) {
                 return this.error(e.errorMessage);
@@ -141,25 +194,44 @@ class MsalAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | Msal.AuthError | undefined> {
+    async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
+        const loginMode = this._settings.loginMode.toLowerCase();
+        if (loginMode === 'redirect') {
+            return this.signInWithRedirect(<Msal.RedirectRequest> request);
+        } else {
+            return this.signInWithPopup(<Msal.PopupRequest> request);
+        }
+    }
+
+    private async signInWithRedirect(request: Msal.RedirectRequest) {
+        try {
+            return await this._msalApplication.loginRedirect(request);
+        } catch (e) {
+            return e;
+        }
+    }
+
+    private async signInWithPopup(request: Msal.PopupRequest) {
         try {
             return await this._msalApplication.loginPopup(request);
         } catch (e) {
             // If the user explicitly cancelled the pop-up, avoid performing a redirect.
-            if (this.isMsalError(e) && e.errorCode !== ClientAuthErrorMessage.userCancelledError.code) {
-                try {
-                    this._msalApplication.loginRedirect(request);
-                } catch (e) {
-                    return e;
-                }
+            if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorMessage.userCancelledError.code) {
+                this.signInWithRedirect(request);
             } else {
                 return e;
             }
         }
     }
 
-    completeSignIn() {
-        return this._callbackPromise;
+    async completeSignIn() {
+        // Make sure that the redirect handler has completed execution before
+        // completing sign in.
+        var authenticationResult = await this._redirectCallback;
+        if (authenticationResult) {
+            return authenticationResult;
+        }
+        return this.operationCompleted();
     }
 
     async signOut(state: any) {
@@ -183,7 +255,7 @@ class MsalAuthorizeService implements AuthorizeService {
         const logoutStateId = sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
         const updatedUrl = new URL(url);
         updatedUrl.search = `?state=${logoutStateId}`;
-        const logoutState = await this.retrieveState(updatedUrl.href, /*isLogout*/ true);
+        const logoutState = await this.retrieveState(updatedUrl.href, null, /*isLogout*/ true);
 
         sessionStorage.removeItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
 
@@ -215,25 +287,22 @@ class MsalAuthorizeService implements AuthorizeService {
         return base64UrlIdentifier;
     }
 
-    async retrieveState<T>(url: string, isLogout: boolean = false): Promise<T | undefined> {
-        const parsedUrl = new URL(url);
-        const fromHash = parsedUrl.hash && parsedUrl.hash.length > 0 && new URLSearchParams(parsedUrl.hash.substring(1));
-        let state = fromHash && fromHash.getAll('state');
-        if (state && state.length > 1) {
-            return undefined;
-        } else if (!state || state.length == 0) {
-            state = parsedUrl.searchParams && parsedUrl.searchParams.getAll('state');
-            if (!state || state.length !== 1) {
-                return undefined;
-            }
+    retrieveState<T>(url: string | null, providedState: string | null = null, isLogout: boolean = false): T | undefined {
+        let stateFromUrl;
+        // Parse the state key from the `search` query parameter in the URL if provided
+        if (url) {
+            const parsedUrl = new URL(url);
+            stateFromUrl = parsedUrl.searchParams && parsedUrl.searchParams.getAll('state');
         }
 
-        // We need to calculate the state key in two different ways. The reason for it is that
-        // msal.js doesn't support the state parameter on logout flows, which forces us to shim our own logout state.
-        // The format then is different, as msal follows the pattern state=<<guid>>|<<user_state>> and our format
-        // simple uses <<base64urlIdentifier>>.
-        const appState = !isLogout ? this._msalApplication.getAccountState(state[0]) : state[0];
-        const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${appState}`;
+        // Chose  the provided state from MSAL. Otherwise, choose the state computed from the URL
+        const state = providedState || stateFromUrl;
+
+        if (!state) {
+            return undefined;
+        }
+
+        const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${state}`;
         const stateString = sessionStorage.getItem(stateKey);
         if (stateString) {
             sessionStorage.removeItem(stateKey);
@@ -253,37 +322,35 @@ class MsalAuthorizeService implements AuthorizeService {
         }
     }
 
-    private async createCallbackResult(callbackUrl: string): Promise<AuthenticationResult> {
-        // msal.js requires a callback to be registered during app initialization to handle redirect flows.
-        // To map that behavior to our API we register a callback early and store the result of that callback
-        // as a promise on an instance field to be able to serve the state back to the main app.
-        const promiseFactory = (resolve: (result: Msal.AuthResponse) => void, reject: (error: Msal.AuthError) => void): void => {
-            this._msalApplication.handleRedirectCallback(
-                authenticationResponse => {
-                    resolve(authenticationResponse);
-                },
-                authenticationError => {
-                    reject(authenticationError);
-                });
-        }
+    async initializeMsalHandler() {
+        this._redirectCallback = this._msalApplication.handleRedirectPromise().then(
+            (result: Msal.AuthenticationResult | null) => this.handleResult(result)
+        ).catch((error: any) => {
+            if (this.isMsalError(error)) {
+                return this.error(error.errorMessage);
+            } else {
+                return this.error(error);
+            }
+        })
+    }
 
-        try {
-            // Evaluate the promise to capture any authentication errors
-            await new Promise<Msal.AuthResponse>(promiseFactory);
-            // See https://github.com/AzureAD/microsoft-authentication-library-for-js/wiki/FAQs#q6-how-to-avoid-page-reloads-when-acquiring-and-renewing-tokens-silently
-            if (window !== window.parent && !window.opener) {
-                return this.operationCompleted();
-            } else {
-                const state = await this.retrieveState(callbackUrl);
-                return this.success(state);
-            }
-        } catch (e) {
-            if (this.isMsalError(e)) {
-                return this.error(e.errorMessage);
-            } else {
-                return this.error(e);
+    private handleResult(result: Msal.AuthenticationResult | null) {
+        if (result) {
+            this._account = result.account;
+            return this.success(this.retrieveState(null, result.state));
+        } else {
+            return this.operationCompleted();
+        }
+    }
+
+    private getAccountState(state: string) {
+        if (state) {
+            const splitIndex = state.indexOf("|");
+            if (splitIndex > -1 && splitIndex + 1 < state.length) {
+                return state.substring(splitIndex + 1);
             }
         }
+        return state;
     }
 
     private isMsalError(resultOrError: any): resultOrError is Msal.AuthError {
@@ -310,14 +377,15 @@ class MsalAuthorizeService implements AuthorizeService {
 export class AuthenticationService {
 
     static _infrastructureKey = 'Microsoft.Authentication.WebAssembly.Msal';
-    static _initialized = false;
+    static _initialized: Promise<void>;
     static instance: MsalAuthorizeService;
 
     public static async init(settings: AuthorizeServiceConfiguration) {
         if (!AuthenticationService._initialized) {
-            AuthenticationService._initialized = true;
             AuthenticationService.instance = new MsalAuthorizeService(settings);
+            AuthenticationService._initialized = AuthenticationService.instance.initializeMsalHandler();
         }
+        return AuthenticationService._initialized;
     }
 
     public static getUser() {

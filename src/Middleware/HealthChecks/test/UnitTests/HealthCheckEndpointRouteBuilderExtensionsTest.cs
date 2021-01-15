@@ -13,6 +13,7 @@ using Moq;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
@@ -21,21 +22,26 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public void ThrowFriendlyErrorWhenServicesNotRegistered()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        endpoints.MapHealthChecks("/healthz");
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapHealthChecks("/healthz");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
                     });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddRouting();
-                });
+                }).Build();
 
-            var ex = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+            var ex = Assert.Throws<InvalidOperationException>(() => host.Start());
 
             Assert.Equal(
                 "Unable to find the required services. Please add all the required services by calling " +
@@ -48,21 +54,29 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         public async Task MapHealthChecks_ReturnsOk()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        endpoints.MapHealthChecks("/healthz");
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapHealthChecks("/healthz");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddHealthChecks();
                     });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddRouting();
-                    services.AddHealthChecks();
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             // Act
@@ -78,28 +92,36 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         public async Task MapHealthChecks_WithOptions_ReturnsOk()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
                         {
-                            ResponseWriter = async (context, report) =>
+                            endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
                             {
-                                context.Response.ContentType = "text/plain";
-                                await context.Response.WriteAsync("Custom!");
-                            }
+                                ResponseWriter = async (context, report) =>
+                                {
+                                    context.Response.ContentType = "text/plain";
+                                    await context.Response.WriteAsync("Custom!");
+                                }
+                            });
                         });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddHealthChecks();
                     });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddRouting();
-                    services.AddHealthChecks();
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             // Act

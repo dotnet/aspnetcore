@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,21 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
         private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
-
-        /// <summary>
-        /// Creates a new <see cref="ObjectResultExecutor"/>.
-        /// </summary>
-        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public ObjectResultExecutor(
-            OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
@@ -134,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
-        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
         {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
@@ -155,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.CompletedTask;
             }
 
-            Logger.ObjectResultExecuting(value);
+            Logger.ObjectResultExecuting(result, value);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
@@ -185,18 +172,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable;
 
             static Log()
             {
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                    LogLevel.Debug,
                    new EventId(1, "BufferingAsyncEnumerable"),
                    "Buffering IAsyncEnumerable instance of type '{Type}'.");
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

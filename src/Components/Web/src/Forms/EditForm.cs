@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -15,7 +16,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
 
-        private EditContext _fixedEditContext;
+        private EditContext? _editContext;
+        private bool _hasSetEditContextExplicitly;
 
         /// <summary>
         /// Constructs an instance of <see cref="EditForm"/>.
@@ -28,26 +30,35 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created <c>form</c> element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Supplies the edit context explicitly. If using this parameter, do not
         /// also supply <see cref="Model"/>, since the model value will be taken
         /// from the <see cref="EditContext.Model"/> property.
         /// </summary>
-        [Parameter] public EditContext EditContext { get; set; }
+        [Parameter]
+        public EditContext? EditContext
+        {
+            get => _editContext;
+            set
+            {
+                _editContext = value;
+                _hasSetEditContextExplicitly = value != null;
+            }
+        }
 
         /// <summary>
         /// Specifies the top-level model object for the form. An edit context will
         /// be constructed for this model. If using this parameter, do not also supply
         /// a value for <see cref="EditContext"/>.
         /// </summary>
-        [Parameter] public object Model { get; set; }
+        [Parameter] public object? Model { get; set; }
 
         /// <summary>
         /// Specifies the content to be rendered inside this <see cref="EditForm"/>.
         /// </summary>
-        [Parameter] public RenderFragment<EditContext> ChildContent { get; set; }
+        [Parameter] public RenderFragment<EditContext>? ChildContent { get; set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted.
@@ -72,10 +83,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if ((EditContext == null) == (Model == null))
+            if (_hasSetEditContextExplicitly && Model != null)
             {
                 throw new InvalidOperationException($"{nameof(EditForm)} requires a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, but not both.");
+            }
+            else if (!_hasSetEditContextExplicitly && Model == null)
+            {
+                throw new InvalidOperationException($"{nameof(EditForm)} requires either a {nameof(Model)} " +
+                    $"parameter, or an {nameof(EditContext)} parameter, please provide one of these.");
             }
 
             // If you're using OnSubmit, it becomes your responsibility to trigger validation manually
@@ -88,29 +104,31 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"{nameof(EditForm)}, do not also supply {nameof(OnValidSubmit)} or {nameof(OnInvalidSubmit)}.");
             }
 
-            // Update _fixedEditContext if we don't have one yet, or if they are supplying a
+            // Update _editContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_fixedEditContext == null || EditContext != null || Model != _fixedEditContext.Model)
+            if (Model != null && Model != _editContext?.Model)
             {
-                _fixedEditContext = EditContext ?? new EditContext(Model);
+                _editContext = new EditContext(Model!);
             }
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            // If _fixedEditContext changes, tear down and recreate all descendants.
+            Debug.Assert(_editContext != null);
+
+            // If _editContext changes, tear down and recreate all descendants.
             // This is so we can safely use the IsFixed optimization on CascadingValue,
-            // optimizing for the common case where _fixedEditContext never changes.
-            builder.OpenRegion(_fixedEditContext.GetHashCode());
+            // optimizing for the common case where _editContext never changes.
+            builder.OpenRegion(_editContext.GetHashCode());
 
             builder.OpenElement(0, "form");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
             builder.OpenComponent<CascadingValue<EditContext>>(3);
             builder.AddAttribute(4, "IsFixed", true);
-            builder.AddAttribute(5, "Value", _fixedEditContext);
-            builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_fixedEditContext));
+            builder.AddAttribute(5, "Value", _editContext);
+            builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_editContext));
             builder.CloseComponent();
             builder.CloseElement();
 
@@ -119,24 +137,26 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private async Task HandleSubmitAsync()
         {
+            Debug.Assert(_editContext != null);
+
             if (OnSubmit.HasDelegate)
             {
                 // When using OnSubmit, the developer takes control of the validation lifecycle
-                await OnSubmit.InvokeAsync(_fixedEditContext);
+                await OnSubmit.InvokeAsync(_editContext);
             }
             else
             {
                 // Otherwise, the system implicitly runs validation on form submission
-                var isValid = _fixedEditContext.Validate(); // This will likely become ValidateAsync later
+                var isValid = _editContext.Validate(); // This will likely become ValidateAsync later
 
                 if (isValid && OnValidSubmit.HasDelegate)
                 {
-                    await OnValidSubmit.InvokeAsync(_fixedEditContext);
+                    await OnValidSubmit.InvokeAsync(_editContext);
                 }
 
                 if (!isValid && OnInvalidSubmit.HasDelegate)
                 {
-                    await OnInvalidSubmit.InvokeAsync(_fixedEditContext);
+                    await OnInvalidSubmit.InvokeAsync(_editContext);
                 }
             }
         }

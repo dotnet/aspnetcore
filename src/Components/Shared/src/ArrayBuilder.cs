@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.
-    /// 
+    ///
     /// This differs from a <see cref="System.Collections.Generic.List{T}"/> in that
     /// it not only grows as required but also shrinks if cleared with significant
     /// excess capacity. This makes it useful for component rendering, because
@@ -26,8 +28,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     internal class ArrayBuilder<T> : IDisposable
     {
         // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
-        private T[] _items;
-        private int _itemsInUse;
+        protected T[] _items;
+        protected int _itemsInUse;
 
         private static readonly T[] Empty = Array.Empty<T>();
         private readonly ArrayPool<T> _arrayPool;
@@ -137,7 +139,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 ThrowIndexOutOfBoundsException();
             }
 
-            // Same expansion logic as elsewhere
             if (_itemsInUse == _items.Length)
             {
                 GrowBuffer(_items.Length * 2);
@@ -160,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _itemsInUse = 0;
         }
 
-        private void GrowBuffer(int desiredCapacity)
+        protected void GrowBuffer(int desiredCapacity)
         {
             // When we dispose, we set the count back to zero and return the array.
             //

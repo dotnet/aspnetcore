@@ -12,7 +12,8 @@ YELLOW="\033[0;33m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 target_os_name=''
 ci=false
-use_default_binary_log=false
+binary_log=false
+exclude_ci_binary_log=false
 verbosity='minimal'
 run_restore=''
 run_build=true
@@ -29,8 +30,8 @@ build_installers=''
 build_projects=''
 target_arch='x64'
 configuration=''
-dotnet_runtime_source_feed=''
-dotnet_runtime_source_feed_key=''
+runtime_source_feed=''
+runtime_source_feed_key=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -65,7 +66,7 @@ Options:
     --no-build-repo-tasks             Suppress building RepoTasks.
 
     --all                             Build all project types.
-    --[no-]build-native               Build native projects (C, C++).
+    --[no-]build-native               Build native projects (C, C++). Ignored in most cases i.e. with `dotnet msbuild`.
     --[no-]build-managed              Build managed projects (C#, F#, VB).
     --[no-]build-nodejs               Build NodeJS projects (TypeScript, JS).
     --[no-]build-java                 Build Java projects.
@@ -73,10 +74,11 @@ Options:
 
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
+    --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    
-    --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
-    --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
+
+    --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
+    --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -202,17 +204,20 @@ while [[ $# -gt 0 ]]; do
             ci=true
             ;;
         -binarylog|-bl)
-            use_default_binary_log=true
+            binary_log=true
             ;;
-        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
-            shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
-            dotnet_runtime_source_feed="${1:-}"
+        -excludeCIBinarylog|-nobl)
+            exclude_ci_binary_log=true
             ;;
-        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey)
+        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime-source-feed|-runtimesourcefeed)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed-key" && __usage
-            dotnet_runtime_source_feed_key="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
+            runtime_source_feed="${1:-}"
+            ;;
+        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey|-runtime-source-feed-key|-runtimesourcefeedkey)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
+            runtime_source_feed_key="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
@@ -223,9 +228,11 @@ done
 
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
-elif [ ! -z "$build_projects" ]; then
+fi
+
+if [ ! -z "$build_projects" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:ProjectToBuild=$build_projects"
-elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ] && [ -z "$build_installers" ]; then
+elif [ "$build_all" != true ] && [ -z "$build_managed$build_nodejs$build_java$build_native$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' and its dependent subset of projects. Run ``build.sh --help`` for more details."
@@ -281,15 +288,11 @@ if [ -z "$configuration" ]; then
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
-# Set verbosity
-echo "Setting msbuild verbosity to $verbosity"
-msbuild_args[${#msbuild_args[*]}]="-verbosity:$verbosity"
-
 # Set up additional runtime args
 toolset_build_args=()
-if [ ! -z "$dotnet_runtime_source_feed" ] || [ ! -z "$dotnet_runtime_source_feed_key" ]; then
-    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
-    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
+if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
+    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$runtime_source_feed"
+    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
@@ -303,14 +306,10 @@ restore=$run_restore
 nodeReuse=false
 export MSBUILDDISABLENODEREUSE=1
 
-# Our build often has warnings that we can't fix
-# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
-warn_as_error=false
-
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-if [ "$ci" = true ]; then
-  binary_log=true
+# Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
+# to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
+if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
 fi
 
 # increase file descriptor limit on macOS
@@ -321,18 +320,27 @@ fi
 # Import Arcade
 . "$DIR/eng/common/tools.sh"
 
-if [ "$use_default_binary_log" = true ]; then
-    msbuild_args[${#msbuild_args[*]}]="-bl:\"$log_dir/Build.binlog\""
+# Add default .binlog location if not already on the command line. tools.sh does not handle this; it just checks
+# $binary_log, $ci and $exclude_ci_binary_log values for an error case.
+if [[ "$binary_log" == true ]]; then
+    found=false
+    for arg in "${msbuild_args[@]}"; do
+        opt="$(echo "${arg/#--/-}" | awk '{print tolower($0)}')"
+        if [[ "$opt" == [-/]bl:* || "$opt" == [-/]binarylogger:* ]]; then
+            found=true
+            break
+        fi
+    done
+    if [[ "$found" == false ]]; then
+        msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
+    fi
+elif [[ "$ci" == true ]]; then
+    # Ensure the artifacts/log directory isn't empty to avoid warnings.
+    touch "$log_dir/empty.log"
 fi
 
 # Capture MSBuild crash logs
 export MSBUILDDEBUGPATH="$log_dir"
-
-# Import custom tools configuration, if present in the repo.
-configure_toolset_script="$eng_root/configure-toolset.sh"
-if [[ -a "$configure_toolset_script" ]]; then
-  . "$configure_toolset_script"
-fi
 
 # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
 # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing

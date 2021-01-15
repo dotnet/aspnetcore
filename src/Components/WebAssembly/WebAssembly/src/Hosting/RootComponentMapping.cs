@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// and <paramref name="selector"/>.
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
-        /// <param name="selector">The DOM element selector.</param>
+        /// <param name="selector">The DOM element selector or component registration id for the component.</param>
         public RootComponentMapping(Type componentType, string selector)
         {
             if (componentType is null)
@@ -38,6 +39,19 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             ComponentType = componentType;
             Selector = selector;
+            Parameters = ParameterView.Empty;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
+        /// and <paramref name="selector"/>.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The DOM element selector or registration id for the component.</param>
+        /// <param name="parameters">The parameters to pass to the component.</param>
+        public RootComponentMapping(Type componentType, string selector, ParameterView parameters) : this(componentType, selector)
+        {
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -49,5 +63,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the DOM element selector.
         /// </summary>
         public string Selector { get; }
+
+        /// <summary>
+        /// Gets the parameters to pass to the root component.
+        /// </summary>
+        public ParameterView Parameters { get; }
     }
 }

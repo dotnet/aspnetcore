@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         /// <param name="cookieToken">A valid cookie token.</param>
         /// <returns><c>true</c> if the cookie token is valid, otherwise <c>false</c>.</returns>
-        bool IsCookieTokenValid(AntiforgeryToken cookieToken);
+        bool IsCookieTokenValid(AntiforgeryToken? cookieToken);
 
         /// <summary>
         /// Attempts to validate a cookie and request token set for the given <paramref name="httpContext"/>.
@@ -45,6 +46,6 @@ namespace Microsoft.AspNetCore.Antiforgery
             HttpContext httpContext,
             AntiforgeryToken cookieToken,
             AntiforgeryToken requestToken,
-            out string message);
+            [NotNullWhen(false)] out string? message);
     }
 }

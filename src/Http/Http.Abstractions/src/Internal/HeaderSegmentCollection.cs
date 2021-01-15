@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
             return StringValues.Equals(_headers, other._headers);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -254,6 +254,11 @@ namespace Microsoft.AspNetCore.Http
                                 switch (attr)
                                 {
                                     case Attr.Delimiter:
+                                        if (ch == (char)0)
+                                        {
+                                            _valueEnd = _offset;
+                                            _trailingStart = _offset;
+                                        }
                                         _mode = Mode.Produce;
                                         break;
                                     case Attr.Quote:

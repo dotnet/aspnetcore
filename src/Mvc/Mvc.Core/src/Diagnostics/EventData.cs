@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,11 +7,22 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
+    /// <summary>
+    /// A base class that for an event.
+    /// </summary>
     public abstract class EventData : IReadOnlyList<KeyValuePair<string, object>>
     {
+        /// <summary>
+        /// The namespace of the event.
+        /// </summary>
         protected const string EventNamespace = "Microsoft.AspNetCore.Mvc.";
 
+        /// <summary>
+        /// The event count.
+        /// </summary>
         protected abstract int Count { get; }
+
+        /// <inheritdoc/>
         protected abstract KeyValuePair<string, object> this[int index] { get; }
 
         int IReadOnlyCollection<KeyValuePair<string, object>>.Count => Count;
@@ -25,6 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
+        /// <summary>
+        /// A struct that represents an Enumerator
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
         {
             private readonly EventData _eventData;
@@ -32,6 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
 
             private int _index;
 
+            /// <summary>
+            /// Current keyvalue pair.
+            /// </summary>
             public KeyValuePair<string, object> Current { get; private set; }
 
             internal Enumerator(EventData eventData)
@@ -42,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
                 Current = default;
             }
 
+            /// <inheritdoc/>
             public bool MoveNext()
             {
                 var index = _index + 1;
@@ -56,6 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
                 return true;
             }
 
+            /// <inheritdoc/>
             public void Dispose() { }
             object IEnumerator.Current => Current;
             void IEnumerator.Reset() => throw new NotSupportedException();

@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
         private readonly RequestDelegate _next;
-        private readonly CorsPolicy _policy;
-        private readonly string _corsPolicyName;
+        private readonly CorsPolicy? _policy;
+        private readonly string? _corsPolicyName;
 
         /// <summary>
         /// Instantiates a new <see cref="CorsMiddleware"/>.
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             RequestDelegate next,
             ICorsService corsService,
             ILoggerFactory loggerFactory,
-            string policyName)
+            string? policyName)
         {
             if (next == null)
             {
@@ -143,10 +143,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (corsMetadata is IDisableCorsAttribute)
             {
-                var isOptionsRequest = string.Equals(
-                    context.Request.Method,
-                    CorsConstants.PreflightHttpMethod,
-                    StringComparison.OrdinalIgnoreCase);
+                var isOptionsRequest = HttpMethods.IsOptions(context.Request.Method);
 
                 var isCorsPreflightRequest = isOptionsRequest && context.Request.Headers.ContainsKey(CorsConstants.AccessControlRequestMethod);
 
@@ -184,19 +181,19 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     return InvokeCoreAwaited(context, policyTask);
                 }
 
-                corsPolicy = policyTask.GetAwaiter().GetResult();
+                corsPolicy = policyTask.Result;
             }
 
             return EvaluateAndApplyPolicy(context, corsPolicy);
 
-            async Task InvokeCoreAwaited(HttpContext context, Task<CorsPolicy> policyTask)
+            async Task InvokeCoreAwaited(HttpContext context, Task<CorsPolicy?> policyTask)
             {
                 var corsPolicy = await policyTask;
                 await EvaluateAndApplyPolicy(context, corsPolicy);
             }
         }
 
-        private Task EvaluateAndApplyPolicy(HttpContext context, CorsPolicy corsPolicy)
+        private Task EvaluateAndApplyPolicy(HttpContext context, CorsPolicy? corsPolicy)
         {
             if (corsPolicy == null)
             {

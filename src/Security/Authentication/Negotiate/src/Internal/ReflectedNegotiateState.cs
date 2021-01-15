@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Principal;
 
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _statusCode = securityStatusType.GetField("ErrorCode");
             _statusException = securityStatusType.GetField("Exception");
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 var interopType = secAssembly.GetType("Interop", throwOnError: true);
                 var netNativeType = interopType.GetNestedType("NetSecurityNative", BindingFlags.NonPublic | BindingFlags.Static);
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 // TODO: Remove after corefx changes
                 // The linux implementation always uses InternalError;
                 if (errorCode == SecurityStatusPalErrorCode.InternalError
-                    && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && !OperatingSystem.IsWindows()
                     && _gssExceptionType.IsInstanceOfType(error))
                 {
                     var majorStatus = (uint)error.HResult;
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         errorCode = SecurityStatusPalErrorCode.UnknownCredentials;
                     }
 
-                    error = new Exception($"An authentication exception occured (0x{majorStatus:X}/0x{minorStatus:X}).", error);
+                    error = new Exception($"An authentication exception occurred (0x{majorStatus:X}/0x{minorStatus:X}).", error);
                 }
 
                 if (errorCode == SecurityStatusPalErrorCode.OK

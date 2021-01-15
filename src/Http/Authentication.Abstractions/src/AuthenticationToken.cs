@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Value.
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = default!;
     }
 }

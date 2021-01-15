@@ -8,7 +8,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ServerAddressesFeature : IServerAddressesFeature
     {
-        public ICollection<string> Addresses { get; } = new List<string>();
+        public ServerAddressesCollection InternalCollection { get; } = new ServerAddressesCollection();
+
+        ICollection<string> IServerAddressesFeature.Addresses => InternalCollection.PublicCollection;
         public bool PreferHostingUrls { get; set; }
     }
 }

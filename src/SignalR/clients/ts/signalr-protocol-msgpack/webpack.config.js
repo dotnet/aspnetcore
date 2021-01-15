@@ -8,8 +8,5 @@ module.exports = baseConfig(__dirname, "signalr-protocol-msgpack", {
     externals: {
         msgpack5: "msgpack5",
         "@microsoft/signalr": "signalR"
-    },
-    alias: {
-        buffer: path.resolve(__dirname, "node_modules", "buffer", "index.js"),
-    },
+    }
 });

@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public static class AuthenticationTokenExtensions
     {
-        private static string TokenNamesKey = ".TokenNames";
-        private static string TokenKeyPrefix = ".Token.";
+        private const string TokenNamesKey = ".TokenNames";
+        private const string TokenKeyPrefix = ".Token.";
 
         /// <summary>
         /// Stores a set of authentication tokens, after removing any old tokens.
@@ -43,9 +43,14 @@ namespace Microsoft.AspNetCore.Authentication
             var tokenNames = new List<string>();
             foreach (var token in tokens)
             {
+                if (token.Name is null)
+                {
+                    throw new ArgumentNullException(nameof(tokens), "Token name cannot be null.");
+                }
+
                 // REVIEW: should probably check that there are no ; in the token name and throw or encode
                 tokenNames.Add(token.Name);
-                properties.Items[TokenKeyPrefix+token.Name] = token.Value;
+                properties.Items[TokenKeyPrefix + token.Name] = token.Value;
             }
             if (tokenNames.Count > 0)
             {
@@ -59,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <param name="tokenName">The token name.</param>
         /// <returns>The token value.</returns>
-        public static string GetTokenValue(this AuthenticationProperties properties, string tokenName)
+        public static string? GetTokenValue(this AuthenticationProperties properties, string tokenName)
         {
             if (properties == null)
             {
@@ -71,11 +76,17 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var tokenKey = TokenKeyPrefix + tokenName;
-            return properties.Items.ContainsKey(tokenKey)
-                ? properties.Items[tokenKey]
-                : null;
+
+            return properties.Items.TryGetValue(tokenKey, out var value) ? value : null;
         }
 
+        /// <summary>
+        /// Updates the value of a token if already present.
+        /// </summary>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> to update.</param>
+        /// <param name="tokenName">The token name.</param>
+        /// <param name="tokenValue">The token value.</param>
+        /// <returns><see langword="true"/> if the token was updated, otherwise <see langword="false"/>.</returns>
         public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string tokenValue)
         {
             if (properties == null)
@@ -97,7 +108,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Returns all of the AuthenticationTokens contained in the properties.
+        /// Returns all of the <see cref="AuthenticationToken"/> instances contained in the properties.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The authentication tokens.</returns>
@@ -109,9 +120,9 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var tokens = new List<AuthenticationToken>();
-            if (properties.Items.ContainsKey(TokenNamesKey))
+            if (properties.Items.TryGetValue(TokenNamesKey, out var value) && !string.IsNullOrEmpty(value))
             {
-                var tokenNames = properties.Items[TokenNamesKey].Split(';');
+                var tokenNames = value.Split(';');
                 foreach (var name in tokenNames)
                 {
                     var token = properties.GetTokenValue(name);
@@ -126,24 +137,24 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the specified authentication scheme and returns the value for the token.
         /// </summary>
         /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
-        public static Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
+        /// <returns>The value of the token if present.</returns>
+        public static Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
             => auth.GetTokenAsync(context, scheme: null, tokenName: tokenName);
 
         /// <summary>
-        /// Extension method for getting the value of an authentication token.
+        /// Authenticates the request using the specified authentication scheme and returns the value for the token.
         /// </summary>
         /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns>The value of the token.</returns>
-        public static async Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string scheme, string tokenName)
+        /// <returns>The value of the token if present.</returns>
+        public static async Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string? scheme, string tokenName)
         {
             if (auth == null)
             {

@@ -1,0 +1,10 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\HealthChecks\\Abstractions\\src\\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj",
+      "src\\HealthChecks\\HealthChecks\\src\\Microsoft.Extensions.Diagnostics.HealthChecks.csproj",
+      "src\\HealthChecks\\HealthChecks\\test\\Microsoft.Extensions.Diagnostics.HealthChecks.Tests.csproj"
+    ]
+  }
+}

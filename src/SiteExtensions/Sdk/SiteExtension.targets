@@ -9,11 +9,11 @@
 
     <PropertyGroup>
       <_TemplatesDirectory>$(MSBuildThisFileDirectory)..\content\</_TemplatesDirectory>
-      <_DepsOutputDirectory>$(IntermediateOutputPath)\se\</_DepsOutputDirectory>
-      <_WorkingDirectory>$(_DepsOutputDirectory)\depswork</_WorkingDirectory>
+      <_DepsOutputDirectory>$(IntermediateOutputPath)se\</_DepsOutputDirectory>
+      <_WorkingDirectory>$(_DepsOutputDirectory)depswork</_WorkingDirectory>
       <_BasePackagePath>content\additionaldeps\</_BasePackagePath>
-      <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
-      <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
+      <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)rs.csproj</_RuntimeStoreManifestFile>
+      <_RuntimeStoreOutput>$(_DepsOutputDirectory)rs\</_RuntimeStoreOutput>
       <_RsRestoreSources>
         $(RestoreAdditionalProjectSources);
         $(ArtifactsShippingPackagesDir);
@@ -55,7 +55,7 @@
         Project="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\HostingStartup.csproj"
         DepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\p\HostingStartup.deps.json"
         TrimmedDepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\%(HostingStartupPackageReference.Identity).deps.json"
-        PackagePath="$(_BasePackagePath)\shared\Microsoft.AspNetCore.App\$(AspNetCoreMajorMinorVersion).0\"
+        PackagePath="$(_BasePackagePath)shared\Microsoft.AspNetCore.App\$(AspNetCoreMajorMinorVersion).0\"
          />
     </ItemGroup>
     <MakeDir Directories="$(_DepsOutputDirectory)" />
@@ -83,9 +83,9 @@
              Properties="
               __DummyTarget=Restore;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
@@ -95,9 +95,9 @@
              Properties="
               PublishDir=%(_HostingStartupPackageReference.WorkingDirectory)\p;
               HostingStartupPackageName=%(_HostingStartupPackageReference.Identity);
-              HostingStartupPackageVersion=%(_HostingStartupPackageReference.Version);
+              HostingStartupVersion=%(_HostingStartupPackageReference.Version);
               RuntimeFrameworkVersion=$(HostingStartupRuntimeFrameworkVersion);
-              MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+              MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
               UseAppHost=false;
               NoBuild=false;
               IncludeMainProjectInDepsFile=false" />

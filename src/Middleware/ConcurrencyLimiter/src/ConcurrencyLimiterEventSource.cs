@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         public static readonly ConcurrencyLimiterEventSource Log = new ConcurrencyLimiterEventSource();
         private static readonly QueueFrame CachedNonTimerResult = new QueueFrame(timer: null, parent: Log);
 
-        private PollingCounter _rejectedRequestsCounter;
-        private PollingCounter _queueLengthCounter;
-        private EventCounter _queueDuration;
+        private PollingCounter? _rejectedRequestsCounter;
+        private PollingCounter? _queueLengthCounter;
+        private EventCounter? _queueDuration;
 
         private long _rejectedRequests;
         private int _queueLength;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             if (IsEnabled())
             {
-                _queueDuration.WriteMetric(0);
+                _queueDuration!.WriteMetric(0);
             }
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 if (_parent.IsEnabled() && _timer != null)
                 {
                     var duration = _timer.Value.GetElapsedTime().TotalMilliseconds;
-                    _parent._queueDuration.WriteMetric(duration);
+                    _parent._queueDuration!.WriteMetric(duration);
                 }
             }
         }
@@ -87,12 +87,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             if (command.Command == EventCommand.Enable)
             {
-                _rejectedRequestsCounter ??= new PollingCounter("requests-rejected", this, () => _rejectedRequests)
+                _rejectedRequestsCounter ??= new PollingCounter("requests-rejected", this, () => Volatile.Read(ref _rejectedRequests))
                 {
                     DisplayName = "Rejected Requests",
                 };
 
-                _queueLengthCounter ??= new PollingCounter("queue-length", this, () => _queueLength)
+                _queueLengthCounter ??= new PollingCounter("queue-length", this, () => Volatile.Read(ref _queueLength))
                 {
                     DisplayName = "Queue Length",
                 };

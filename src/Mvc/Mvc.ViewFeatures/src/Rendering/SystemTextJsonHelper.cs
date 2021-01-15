@@ -33,7 +33,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 return serializerOptions;
             }
 
-            return serializerOptions.Copy(JavaScriptEncoder.Default);
+            return new JsonSerializerOptions(serializerOptions)
+            {
+                Encoder = JavaScriptEncoder.Default,
+            };
         }
     }
 }

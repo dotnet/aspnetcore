@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public enum RenderTreeFrameType: short
     {
         /// <summary>
-        /// Used only for unintialized frames.
+        /// Used only for uninitialized frames.
         /// </summary>
         None = 0,
 

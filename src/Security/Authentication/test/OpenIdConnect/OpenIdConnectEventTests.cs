@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -1266,45 +1267,49 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddAuthentication(auth =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        auth.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        auth.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                    })
-                        .AddCookie()
-                        .AddOpenIdConnect(o =>
-                    {
-                        o.Events = events;
-                        o.ClientId = "ClientId";
-                        o.GetClaimsFromUserInfoEndpoint = true;
-                        o.Configuration = new OpenIdConnectConfiguration()
+                        services.AddAuthentication(auth =>
                         {
-                            TokenEndpoint = "http://testhost/tokens",
-                            UserInfoEndpoint = "http://testhost/user",
-                            EndSessionEndpoint = "http://testhost/end"
-                        };
-                        o.StateDataFormat = new TestStateDataFormat();
-                        o.SecurityTokenValidator = new TestTokenValidator();
-                        o.ProtocolValidator = new TestProtocolValidator();
-                        o.BackchannelHttpHandler = new TestBackchannel();
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Run(appCode);
-                });
+                            auth.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                            auth.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                        })
+                            .AddCookie()
+                            .AddOpenIdConnect(o =>
+                        {
+                            o.Events = events;
+                            o.ClientId = "ClientId";
+                            o.GetClaimsFromUserInfoEndpoint = true;
+                            o.Configuration = new OpenIdConnectConfiguration()
+                            {
+                                TokenEndpoint = "http://testhost/tokens",
+                                UserInfoEndpoint = "http://testhost/user",
+                                EndSessionEndpoint = "http://testhost/end"
+                            };
+                            o.StateDataFormat = new TestStateDataFormat();
+                            o.SecurityTokenValidator = new TestTokenValidator();
+                            o.ProtocolValidator = new TestProtocolValidator();
+                            o.BackchannelHttpHandler = new TestBackchannel();
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseAuthentication();
+                        app.Run(appCode);
+                    }))
+                .Build();
 
-            return new TestServer(builder);
+            host.Start();
+            return host.GetTestServer();
         }
 
         private Task<HttpResponseMessage> PostAsync(TestServer server, string path, string form)
         {
             var client = server.CreateClient();
-            var cookie = ".AspNetCore.Correlation." + OpenIdConnectDefaults.AuthenticationScheme + ".correlationId=N";
+            var cookie = ".AspNetCore.Correlation.correlationId=N";
             client.DefaultRequestHeaders.Add("Cookie", cookie);
             return client.PostAsync("signin-oidc",
                 new StringContent(form, Encoding.ASCII, "application/x-www-form-urlencoded"));

@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         if (CandidateSet.IsValidCandidate(ref state))
                         {
                             httpContext.SetEndpoint(state.Endpoint);
-                            httpContext.Request.RouteValues = state.Values;
+                            httpContext.Request.RouteValues = state.Values!;
                         }
 
                         break;
@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             HttpContext httpContext,
             CandidateState[] candidateState)
         {
-            Endpoint endpoint = null;
-            RouteValueDictionary values = null;
+            Endpoint? endpoint = null;
+            RouteValueDictionary? values = null;
             int? foundScore = null;
             for (var i = 0; i < candidateState.Length; i++)
             {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (endpoint != null)
             {
                 httpContext.SetEndpoint(endpoint);
-                httpContext.Request.RouteValues = values;
+                httpContext.Request.RouteValues = values!;
             }
         }
 

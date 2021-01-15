@@ -1,13 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
@@ -577,25 +581,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
-                var type = argument?.GetType();
-                if (type == typeof(DateTime))
+                if (argument == null)
                 {
-                    writer.WriteStringValue((DateTime)argument);
-                }
-                else if (type == typeof(DateTimeOffset))
-                {
-                    writer.WriteStringValue((DateTimeOffset)argument);
+                    writer.WriteNullValue();
                 }
                 else
                 {
-                    if (argument == null)
-                    {
-                        writer.WriteNullValue();
-                    }
-                    else
-                    {
-                        JsonSerializer.Serialize(writer, argument, type, _payloadSerializerOptions);
-                    }
+                    JsonSerializer.Serialize(writer, argument, argument.GetType(), _payloadSerializerOptions);
                 }
             }
             writer.WriteEndArray();
@@ -778,19 +770,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         internal static JsonSerializerOptions CreateDefaultSerializerSettings()
         {
-            var options = new JsonSerializerOptions();
-            options.WriteIndented = false;
-            options.ReadCommentHandling = JsonCommentHandling.Disallow;
-            options.AllowTrailingCommas = false;
-            options.IgnoreNullValues = false;
-            options.IgnoreReadOnlyProperties = false;
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            options.PropertyNameCaseInsensitive = true;
-            options.MaxDepth = 64;
-            options.DictionaryKeyPolicy = null;
-            options.DefaultBufferSize = 16 * 1024;
-
-            return options;
+            return new JsonSerializerOptions()
+            {
+                WriteIndented = false,
+                ReadCommentHandling = JsonCommentHandling.Disallow,
+                AllowTrailingCommas = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+                IgnoreReadOnlyProperties = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+                MaxDepth = 64,
+                DictionaryKeyPolicy = null,
+                DefaultBufferSize = 16 * 1024,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            };
         }
     }
 }

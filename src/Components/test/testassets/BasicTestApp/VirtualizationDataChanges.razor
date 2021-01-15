@@ -1,0 +1,84 @@
+﻿<h3 id="virtualization-data-changes">Virtualization data changes</h3>
+
+<p>This scenario shows how the data behind a Virtualize component can change.</p>
+
+<button id="add-person-to-fixed-list" @onclick="AddPersonToFixedList">Add person</button>
+
+<h4>Using Items parameter</h4>
+
+<div id="using-items" style="overflow-y: auto; height: 200px; border: 1px dashed gray;">
+    <Virtualize Items="@fixedPeople" Context="person">
+        @*
+        Note that for best performance, you really should use @key on the top-level elements within the <Virtualize>.
+        This test case doesn't do so only as a way of verifying it's not strictly required (though it is recommended).
+        *@
+        <div class="person" style="border-bottom: 1px dashed red; display: flex; justify-content: space-between; padding: 4px;">
+            <span>@person.Name</span>
+            <button @onclick="@person.Mutate">Mutate</button>
+        </div>
+    </Virtualize>
+</div>
+
+<h4>Using ItemsProvider parameter</h4>
+<p>
+    <button id="add-person-to-itemsprovider" @onclick="AddPersonToItemsProvider">Add person</button>
+    <button id="refresh-itemsprovider" @onclick="() => asyncVirtualize.RefreshDataAsync()">Refresh</button>
+</p>
+
+<div id="using-itemsprovider" style="overflow-y: auto; height: 200px; border: 1px dashed gray;">
+    <Virtualize @ref="asyncVirtualize" ItemsProvider="GetPeopleAsync" Context="person">
+        @*
+        Note that for best performance, you really should use @key on the top-level elements within the <Virtualize>.
+        This test case doesn't do so only as a way of verifying it's not strictly required (though it is recommended).
+        *@
+        <div class="person" style="border-bottom: 1px dashed red; display: flex; justify-content: space-between; padding: 4px;">
+            <span>@person.Name</span>
+            <button @onclick="@person.Mutate">Mutate</button>
+        </div>
+    </Virtualize>
+</div>
+
+@code {
+    Virtualize<Person> asyncVirtualize;
+    List<Person> fixedPeople = Enumerable.Range(1, 3).Select(GeneratePerson).ToList();
+    int numPeopleInItemsProvider = 3;
+
+    void AddPersonToFixedList()
+    {
+        // When using Items (not ItemsProvider), the Virtualize component re-queries
+        // the data on every refresh cycle without requiring you to call RefreshDataAsync.
+        // This is because there's no cost involved in doing so. Thus, the following
+        // line is enough to make the UI change on its own.
+        fixedPeople.Add(GeneratePerson(fixedPeople.Count + 1));
+    }
+
+    void AddPersonToItemsProvider()
+    {
+        // On its own, this isn't going to make the UI change, because it doesn't know
+        // to re-query the underlying items provider until you call RefreshDataAsync.
+        numPeopleInItemsProvider++;
+    }
+
+    async ValueTask<ItemsProviderResult<Person>> GetPeopleAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(500);
+
+        var lastIndexExcl = Math.Min(request.StartIndex + request.Count, numPeopleInItemsProvider);
+        return new ItemsProviderResult<Person>(
+            Enumerable.Range(1 + request.StartIndex, lastIndexExcl - request.StartIndex).Select(GeneratePerson).ToList(),
+            numPeopleInItemsProvider);
+    }
+
+    class Person
+    {
+        public string Name { get; set; }
+
+        public void Mutate()
+        {
+            Name += " MUTATED";
+        }
+    }
+
+    static Person GeneratePerson(int index)
+        => new Person { Name = $"Person {index}" };
+}

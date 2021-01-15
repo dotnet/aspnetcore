@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDispatch()
         {
-            var server = CreateServer(services =>
+            using var server = await CreateServer(services =>
             {
                 services.AddLogging().AddAuthentication(o =>
                 {
@@ -333,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDynamicTargetBasedOnQueryString()
         {
-            var server = CreateServer(services =>
+            using var server = await CreateServer(services =>
             {
                 services.AddAuthentication(o =>
                 {
@@ -455,33 +456,44 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private static TestServer CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
+        private static async Task<TestServer> CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseAuthentication();
-                    app.Use(async (context, next) =>
-                    {
-                        var req = context.Request;
-                        var res = context.Response;
-                        if (req.Path.StartsWithSegments(new PathString("/auth"), out var remainder))
+                    webHostBuilder
+                        .Configure(app =>
                         {
-                            var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                            var result = await context.AuthenticateAsync(name);
-                            await res.DescribeAsync(result?.Ticket?.Principal);
-                        }
-                        else
-                        {
-                            await next();
-                        }
-                    });
+                            app.UseAuthentication();
+                            app.Use(async (context, next) =>
+                            {
+                                var req = context.Request;
+                                var res = context.Response;
+                                if (req.Path.StartsWithSegments(new PathString("/auth"), out var remainder))
+                                {
+                                    var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
+                                    var result = await context.AuthenticateAsync(name);
+                                    await res.DescribeAsync(result?.Ticket?.Principal);
+                                }
+                                else
+                                {
+                                    await next();
+                                }
+                            });
+                        })
+                        .UseTestServer();
                 })
                 .ConfigureServices(services =>
                 {
                     configure?.Invoke(services);
-                });
-            return new TestServer(builder);
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
+
+            return server;
         }
     }
 }

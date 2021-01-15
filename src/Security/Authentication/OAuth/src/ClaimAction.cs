@@ -23,15 +23,17 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         /// <summary>
-        /// The value to use for Claim.Type when creating a Claim.
+        /// Gets the value to use for <see cref="Claim.Value"/>when creating a Claim.
         /// </summary>
         public string ClaimType { get; }
 
-        // The value to use for Claim.ValueType when creating a Claim.
+        /// <summary>
+        /// Gets the value to use for <see cref="Claim.ValueType"/> when creating a Claim. 
+        /// </summary>
         public string ValueType { get; }
 
         /// <summary>
-        /// Examine the given userData json, determine if the requisite data is present, and optionally add it
+        /// Examine the given userData JSON, determine if the requisite data is present, and optionally add it
         /// as a new Claim on the ClaimsIdentity.
         /// </summary>
         /// <param name="userData">The source data to examine. This value may be null.</param>

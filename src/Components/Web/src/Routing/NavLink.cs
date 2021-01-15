@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Globalization;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -17,33 +18,33 @@ namespace Microsoft.AspNetCore.Components.Routing
         private const string DefaultActiveClass = "active";
 
         private bool _isActive;
-        private string _hrefAbsolute;
-        private string _class;
+        private string? _hrefAbsolute;
+        private string? _class;
 
         /// <summary>
         /// Gets or sets the CSS class name applied to the NavLink when the
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
-        public string ActiveClass { get; set; }
+        public string? ActiveClass { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be added to the generated
         /// <c>a</c> element.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the computed CSS class based on whether or not the link is active.
         /// </summary>
-        protected string CssClass { get; set; }
+        protected string? CssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the child content of the component.
         /// </summary>
         [Parameter]
-        public RenderFragment ChildContent { get; set; }
+        public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
@@ -51,32 +52,32 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter]
         public NavLinkMatch Match { get; set; }
 
-        [Inject] private NavigationManager NavigationManger { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         /// <inheritdoc />
         protected override void OnInitialized()
         {
             // We'll consider re-rendering on each location change
-            NavigationManger.LocationChanged += OnLocationChanged;
+            NavigationManager.LocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
             // Update computed state
-            var href = (string)null;
+            var href = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
             {
-                href = Convert.ToString(obj);
+                href = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
-            _hrefAbsolute = href == null ? null : NavigationManger.ToAbsoluteUri(href).AbsoluteUri;
-            _isActive = ShouldMatch(NavigationManger.Uri);
+            _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
+            _isActive = ShouldMatch(NavigationManager.Uri);
 
-            _class = (string)null;
+            _class = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
-                _class = Convert.ToString(obj);
+                _class = Convert.ToString(obj, CultureInfo.InvariantCulture);
             }
 
             UpdateCssClass();
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
-            NavigationManger.LocationChanged -= OnLocationChanged;
+            NavigationManager.LocationChanged -= OnLocationChanged;
         }
 
         private void UpdateCssClass()
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
         }
 
-        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
         {
             // We could just re-render always, but for this component we know the
             // only relevant state change is to the _isActive property.
@@ -130,6 +131,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
         {
+            Debug.Assert(_hrefAbsolute != null);
+
             if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -155,6 +158,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             return false;
         }
 
+        /// <inheritdoc/>
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "a");
@@ -166,9 +170,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             builder.CloseElement();
         }
 
-        private string CombineWithSpace(string str1, string str2)
-            => str1 == null ? str2
-            : (str2 == null ? str1 : $"{str1} {str2}");
+        private string? CombineWithSpace(string? str1, string str2)
+            => str1 == null ? str2 : $"{str1} {str2}";
 
         private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)
         {

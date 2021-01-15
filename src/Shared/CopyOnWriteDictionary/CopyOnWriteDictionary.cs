@@ -1,17 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Internal
 {
-    internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
     {
         private readonly IDictionary<TKey, TValue> _sourceDictionary;
         private readonly IEqualityComparer<TKey> _comparer;
-        private IDictionary<TKey, TValue> _innerDictionary;
+        private IDictionary<TKey, TValue>? _innerDictionary;
 
         public CopyOnWriteDictionary(
             IDictionary<TKey, TValue> sourceDictionary,
@@ -112,7 +114,7 @@ namespace Microsoft.Extensions.Internal
             return WriteDictionary.Remove(key);
         }
 
-        public virtual bool TryGetValue(TKey key, out TValue value)
+        public virtual bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             return ReadDictionary.TryGetValue(key, out value);
         }

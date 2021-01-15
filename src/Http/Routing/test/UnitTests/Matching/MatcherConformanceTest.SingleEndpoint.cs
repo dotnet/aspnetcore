@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
-        // Matchers should operate on the decoded representation - a matcher that calls 
+        // Matchers should operate on the decoded representation - a matcher that calls
         // `httpContext.Request.Path.ToString()` will break this test.
         [Theory]
         [InlineData("/S%mple", "/S%mple")]
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public virtual async Task Match_SingleParameter_WierdNames()
+        public virtual async Task Match_SingleParameter_WeirdNames()
         {
             // Arrange
             var (matcher, endpoint) = CreateMatcher("/foo/{ }/{.!$%}/{dynamic.data}");

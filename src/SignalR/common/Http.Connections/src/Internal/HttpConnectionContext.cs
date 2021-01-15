@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -29,7 +32,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          ITransferFormatFeature,
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
-                                         IConnectionInherentKeepAliveFeature
+                                         IConnectionInherentKeepAliveFeature,
+                                         IConnectionLifetimeFeature
     {
         private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
 
@@ -41,6 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+        private CancellationTokenSource _connectionClosedTokenSource;
 
         private CancellationTokenSource _sendCts;
         private bool _activeSend;
@@ -50,7 +55,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
-        private readonly TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
@@ -82,13 +87,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
-        }
+            Features.Set<IConnectionLifetimeFeature>(this);
 
-        internal HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
-            : this(id, null, logger)
-        {
-            Transport = transport;
-            Application = application;
+            _connectionClosedTokenSource = new CancellationTokenSource();
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -99,6 +101,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // Used for testing only
         internal Task DisposeAndRemoveTask { get; set; }
+
+        // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
+        internal IServiceScope ServiceScope { get; set; }
 
         public Task TransportTask { get; set; }
 
@@ -177,6 +182,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public HttpContext HttpContext { get; set; }
 
+        public override CancellationToken ConnectionClosed { get; set; }
+
+        public override void Abort()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+
+            HttpContext?.Abort();
+        }
+
         public void OnHeartbeat(Action<object> action, object state)
         {
             lock (_heartbeatLock)
@@ -243,6 +257,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         (identity as IDisposable)?.Dispose();
                     }
                 }
+
+                ServiceScope?.Dispose();
             }
 
             await disposeTask;
@@ -312,6 +328,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Now complete the application
                         Application?.Output.Complete();
                         Application?.Input.Complete();
+
+                        // Trigger ConnectionClosed
+                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
                     }
                 }
                 else
@@ -319,6 +338,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // If the transport is complete, complete the application pipes
                     Application?.Output.Complete(transportTask.Exception?.InnerException);
                     Application?.Input.Complete();
+
+                    // Trigger ConnectionClosed
+                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
 
                     try
                     {
@@ -337,7 +359,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Notify all waiters that we're done disposing
-                _disposeTcs.TrySetResult(null);
+                _disposeTcs.TrySetResult();
             }
             catch (OperationCanceledException)
             {

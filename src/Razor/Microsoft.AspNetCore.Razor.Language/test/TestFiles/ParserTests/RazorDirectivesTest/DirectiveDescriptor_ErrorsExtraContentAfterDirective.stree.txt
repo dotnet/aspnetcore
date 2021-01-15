@@ -1,0 +1,22 @@
+RazorDocument - [0..23)::23 - [@custom "hello" "world"]
+    MarkupBlock - [0..23)::23
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..16)::16
+            RazorDirective - [0..16)::16 - Directive:{custom;SingleLine;Unrestricted} [RZ1017(16:0,16 [7] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..16)::15
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..16)::9
+                        MarkupEphemeralTextLiteral - [7..8)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [8..15)::7 - ["hello"] - Gen<DirectiveToken {;String;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            StringLiteral;["hello"];
+                        UnclassifiedTextLiteral - [15..16)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+        MarkupTextLiteral - [16..23)::7 - ["world"] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            DoubleQuote;["];
+            Text;[world];
+            DoubleQuote;["];

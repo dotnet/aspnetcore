@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // This is fairly complicated so that we maintain referential equality between items in
             // ActionModel.Attributes and ActionModel.Attributes[*].Attribute.
-            var applicableAttributes = new List<object>();
+            var applicableAttributes = new List<object>(routeAttributes.Length);
             foreach (var attribute in attributes)
             {
                 if (attribute is IRouteTemplateProvider)
@@ -682,11 +682,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Find where the method was originally declared
             var baseMethodInfo = methodInfo.GetBaseDefinition();
-            var declaringTypeInfo = baseMethodInfo.DeclaringType.GetTypeInfo();
+            var declaringType = baseMethodInfo.DeclaringType;
 
             return
-                (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(declaringTypeInfo) &&
-                 declaringTypeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == baseMethodInfo);
+                (typeof(IDisposable).IsAssignableFrom(declaringType) &&
+                 declaringType.GetInterfaceMap(typeof(IDisposable)).TargetMethods[0] == baseMethodInfo);
         }
 
         private bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)

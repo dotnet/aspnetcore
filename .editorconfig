@@ -26,6 +26,10 @@ dotnet_sort_system_directives_first = true
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2
 
+# Xml config files
+[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+indent_size = 2
+
 [*.json]
 indent_size = 2
 
@@ -35,3 +39,11 @@ indent_size = 4
 [*.sh]
 indent_size = 4
 end_of_line = lf
+
+[*.{razor,cshtml}]
+charset = utf-8-bom
+
+[*.cs]
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1310.severity = error

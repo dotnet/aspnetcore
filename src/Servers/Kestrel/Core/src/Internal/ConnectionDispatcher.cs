@@ -10,29 +10,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConnectionDispatcher
+    internal class ConnectionDispatcher<T> where T : BaseConnectionContext
     {
         private static long _lastConnectionId = long.MinValue;
 
         private readonly ServiceContext _serviceContext;
-        private readonly ConnectionDelegate _connectionDelegate;
-        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly Func<T, Task> _connectionDelegate;
+        private readonly TransportConnectionManager _transportConnectionManager;
+        private readonly TaskCompletionSource _acceptLoopTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
+        public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager)
         {
             _serviceContext = serviceContext;
             _connectionDelegate = connectionDelegate;
+            _transportConnectionManager = transportConnectionManager;
         }
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public Task StartAcceptingConnections(IConnectionListener listener)
+        public Task StartAcceptingConnections(IConnectionListener<T> listener)
         {
             ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
             return _acceptLoopTcs.Task;
         }
 
-        private void StartAcceptingConnectionsCore(IConnectionListener listener)
+        private void StartAcceptingConnectionsCore(IConnectionListener<T> listener)
         {
             // REVIEW: Multiple accept loops in parallel?
             _ = AcceptConnectionsAsync();
@@ -53,11 +55,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                         // Add the connection to the connection manager before we queue it for execution
                         var id = Interlocked.Increment(ref _lastConnectionId);
-                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+                        var kestrelConnection = new KestrelConnection<T>(
+                            id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log);
 
-                        _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
+                        _transportConnectionManager.AddConnection(id, kestrelConnection);
 
                         Log.ConnectionAccepted(connection.ConnectionId);
+                        KestrelEventSource.Log.ConnectionQueuedStart(connection);
 
                         ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                     }
@@ -69,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
                 finally
                 {
-                    _acceptLoopTcs.TrySetResult(null);
+                    _acceptLoopTcs.TrySetResult();
                 }
             }
         }

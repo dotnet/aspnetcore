@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -25,9 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    internal class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IStartup
     {
-        private IWebHost _host;
+        private IHost _host;
         private ListenOptions _listenOptions;
         private readonly RequestDelegate _app;
 
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, options => options.ListenOptions.Add(listenOptions), _ => { })
+            : this(app, context, options => options.CodeBackedListenOptions.Add(listenOptions), _ => { })
         {
         }
 
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     KestrelServerOptions = options
                 };
                 configureListenOptions(listenOptions);
-                options.ListenOptions.Add(listenOptions);
+                options.CodeBackedListenOptions.Add(listenOptions);
             }, _ => { })
         {
         }
@@ -69,32 +71,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _app = app;
             Context = context;
 
-            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
-                .UseKestrel(options =>
+            _host = TransportSelector.GetHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configureKestrel(options);
-                    _listenOptions = options.ListenOptions.First();
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            configureKestrel(options);
+                            _listenOptions = options.ListenOptions.First();
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddSingleton<IStartup>(this);
+                            services.AddSingleton(context.LoggerFactory);
+                            services.AddSingleton<IServer>(sp =>
+                            {
+                                // Manually configure options on the TestServiceContext.
+                                // We're doing this so we can use the same instance that was passed in
+                                var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
+                                foreach (var c in configureOptions)
+                                {
+                                    c.Configure(context.ServerOptions);
+                                }
+
+                                return new KestrelServerImpl(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                            });
+                            configureServices(services);
+                        })
+                        .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).Assembly.FullName)
+                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
+                        .Configure(app => { app.Run(_app); });
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IStartup>(this);
-                    services.AddSingleton(context.LoggerFactory);
-                    services.AddSingleton<IServer>(sp =>
+                    services.Configure<HostOptions>(option =>
                     {
-                        // Manually configure options on the TestServiceContext.
-                        // We're doing this so we can use the same instance that was passed in
-                        var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
-                        foreach (var c in configureOptions)
-                        {
-                            c.Configure(context.ServerOptions);
-                        }
-
-                        return new KestrelServer(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                        option.ShutdownTimeout = TestConstants.DefaultTimeout;
                     });
-                    configureServices(services);
                 })
-                .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
-                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                 .Build();
 
             _host.Start();
@@ -129,9 +143,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return _host.StopAsync(token);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _host.Dispose();
+            await _host.StopAsync().ConfigureAwait(false);
+            // The concrete Host implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).DisposeAsync().ConfigureAwait(false);
         }
     }
 }

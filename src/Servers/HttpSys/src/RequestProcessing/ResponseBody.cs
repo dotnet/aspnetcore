@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -105,6 +104,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             FlushInternal(endOfRequest: false);
         }
 
+        public void MarkDelegated()
+        {
+            _skipWrites = true;
+        }
+
         // We never expect endOfRequest and data at the same time
         private unsafe void FlushInternal(bool endOfRequest, ArraySegment<byte> data = new ArraySegment<byte>())
         {
@@ -126,9 +130,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var flags = ComputeLeftToWrite(data.Count, endOfRequest);
             if (endOfRequest && _leftToWrite > 0)
             {
+                if (!RequestContext.DisconnectToken.IsCancellationRequested)
+                {
+                    // This is logged rather than thrown because it is too late for an exception to be visible in user code.
+                    Log.FewerBytesThanExpected(Logger);
+                }
                 _requestContext.Abort();
-                // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                LogHelper.LogError(Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
                 return;
             }
 
@@ -171,14 +178,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (ThrowWriteExceptions)
                 {
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    LogHelper.LogException(Logger, "Flush", exception);
+                    Log.WriteError(Logger, exception);
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    LogHelper.LogDebug(Logger, "Flush", $"Ignored write exception: {statusCode}");
+                    Log.WriteErrorIgnored(Logger, statusCode);
                     Abort(dispose: false);
                 }
             }
@@ -187,26 +194,34 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private List<GCHandle> PinDataBuffers(bool endOfRequest, ArraySegment<byte> data, out HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks)
         {
             var pins = new List<GCHandle>();
+            var hasData = data.Count > 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+            var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
+            Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
             var currentChunk = 0;
             // Figure out how many data chunks
-            if (chunked && data.Count == 0 && endOfRequest)
+            if (chunked && !hasData && endOfRequest)
             {
                 dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[1];
                 SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
                 return pins;
             }
-            else if (data.Count == 0)
+            else if (!hasData && !addTrailers)
             {
                 // No data
                 dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[0];
                 return pins;
             }
 
-            var chunkCount = 1;
-            if (chunked)
+            var chunkCount = hasData ? 1 : 0;
+            if (addTrailers)
             {
+                chunkCount++;
+            }
+            else if (chunked) // HTTP/1.1 chunking, not currently supported with trailers
+            {
+                Debug.Assert(hasData);
                 // Chunk framing
                 chunkCount += 2;
 
@@ -216,6 +231,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     chunkCount += 1;
                 }
             }
+
             dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
 
             if (chunked)
@@ -224,7 +240,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 SetDataChunk(dataChunks, ref currentChunk, pins, chunkHeaderBuffer);
             }
 
-            SetDataChunk(dataChunks, ref currentChunk, pins, data);
+            if (hasData)
+            {
+                SetDataChunk(dataChunks, ref currentChunk, pins, data);
+            }
 
             if (chunked)
             {
@@ -234,6 +253,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
                 }
+            }
+
+            if (addTrailers)
+            {
+                _requestContext.Response.SerializeTrailers(dataChunks, currentChunk, pins);
+            }
+            else if (endOfRequest)
+            {
+                _requestContext.Response.MakeTrailersReadOnly();
             }
 
             return pins;
@@ -320,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                LogHelper.LogException(Logger, "FlushAsync", e);
+                Log.ErrorWhenFlushAsync(Logger, e);
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -330,21 +358,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    LogHelper.LogDebug(Logger, "FlushAsync", $"Write cancelled with error code: {statusCode}");
+                    Log.WriteFlushCancelled(Logger, statusCode);
                     asyncResult.Cancel(ThrowWriteExceptions);
                 }
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    LogHelper.LogException(Logger, "FlushAsync", exception);
+                    Log.ErrorWhenFlushAsync(Logger, exception);
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    LogHelper.LogDebug(Logger, "FlushAsync", $"Ignored write exception: {statusCode}");
+                    Log.WriteErrorIgnored(Logger, statusCode);
                     asyncResult.FailSilently();
                 }
             }
@@ -433,7 +461,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
-            else if (!endOfRequest && _leftToWrite != writeCount)
+            else if (!endOfRequest
+                && (_leftToWrite != writeCount || _requestContext.Response.TrailersExpected))
             {
                 flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             }
@@ -444,9 +473,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // keep track of the data transferred
                 _leftToWrite -= writeCount;
             }
-            if (_leftToWrite == 0)
+            if (_leftToWrite == 0 && !_requestContext.Response.TrailersExpected)
             {
                 // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
+                _requestContext.Response.MakeTrailersReadOnly();
                 _disposed = true;
             }
             // else -1 unlimited
@@ -456,6 +486,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            ValidateBufferArguments(buffer, offset, count);
+
             if (!RequestContext.AllowSynchronousIO)
             {
                 throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
@@ -490,7 +522,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            return WriteAsync(buffer, offset, count).ToIAsyncResult(callback, state);
+            return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
@@ -499,11 +531,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new ArgumentNullException(nameof(asyncResult));
             }
-            ((Task)asyncResult).GetAwaiter().GetResult();
+
+            TaskToApm.End(asyncResult);
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            ValidateBufferArguments(buffer, offset, count);
+
             // Validates for null and bounds. Allows count == 0.
             // TODO: Verbose log parameters
             var data = new ArraySegment<byte>(buffer, offset, count);
@@ -612,7 +647,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                LogHelper.LogException(Logger, "SendFileAsync", e);
+                Log.FileSendAsyncError(Logger, e);
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -622,21 +657,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    LogHelper.LogDebug(Logger, "SendFileAsync", $"Write cancelled with error code: {statusCode}");
+                    Log.FileSendAsyncCancelled(Logger, statusCode);
                     asyncResult.Cancel(ThrowWriteExceptions);
                 }
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    LogHelper.LogException(Logger, "SendFileAsync", exception);
+                    Log.FileSendAsyncError(Logger, exception);
                     Abort();
                     throw exception;
                 }
                 else
                 {
-                    // Abort the request but do not close the stream, let future writes complete silently
-                    LogHelper.LogDebug(Logger, "SendFileAsync", $"Ignored write exception: {statusCode}");
+                    // Abort the request but do not close the stream, let future writes complete 
+                    Log.FileSendAsyncErrorIgnored(Logger, statusCode);
                     asyncResult.FailSilently();
                 }
             }
@@ -666,8 +701,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    _disposed = true;
                     FlushInternal(endOfRequest: true);
+                    _disposed = true;
                 }
             }
             finally
@@ -683,8 +718,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         // The final Content-Length async write can only be Canceled by CancelIoEx.
         // Sync can only be Canceled by CancelSynchronousIo, but we don't attempt this right now.
-        [SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Justification =
-            "It is safe to ignore the return value on a cancel operation because the connection is being closed")]
         internal unsafe void CancelLastWrite()
         {
             ResponseStreamAsyncResult asyncState = _lastWrite;
@@ -699,6 +732,73 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception> _fewerBytesThanExpected =
+                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
+
+            private static readonly Action<ILogger, Exception> _writeError =
+                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.WriteError, "Flush");
+
+            private static readonly Action<ILogger, uint, Exception> _writeErrorIgnored =
+                LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteErrorIgnored, "Flush; Ignored write exception: {StatusCode}");
+
+            private static readonly Action<ILogger, Exception> _errorWhenFlushAsync =
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenFlushAsync, "FlushAsync");
+
+            private static readonly Action<ILogger, uint, Exception> _writeFlushCancelled =
+                LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteFlushCancelled, "FlushAsync; Write cancelled with error code: {StatusCode}");
+
+            private static readonly Action<ILogger, Exception> _fileSendAsyncError =
+                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FileSendAsyncError, "SendFileAsync");
+
+            private static readonly Action<ILogger, uint, Exception> _fileSendAsyncCancelled =
+                LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncCancelled, "SendFileAsync; Write cancelled with error code: {StatusCode}");
+
+            private static readonly Action<ILogger, uint, Exception> _fileSendAsyncErrorIgnored =
+                LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncErrorIgnored, "SendFileAsync; Ignored write exception: {StatusCode}");
+
+            public static void FewerBytesThanExpected(ILogger logger)
+            {
+                _fewerBytesThanExpected(logger, null);
+            }
+
+            public static void WriteError(ILogger logger, IOException exception)
+            {
+                _writeError(logger, exception);
+            }
+
+            public static void WriteErrorIgnored(ILogger logger, uint statusCode)
+            {
+                _writeErrorIgnored(logger, statusCode, null);
+            }
+
+            public static void ErrorWhenFlushAsync(ILogger logger, Exception exception)
+            {
+                _errorWhenFlushAsync(logger, exception);
+            }
+
+            public static void WriteFlushCancelled(ILogger logger, uint statusCode)
+            {
+                _writeFlushCancelled(logger, statusCode, null);
+            }
+
+            public static void FileSendAsyncError(ILogger logger, Exception exception)
+            {
+                _fileSendAsyncError(logger, exception);
+            }
+
+            public static void FileSendAsyncCancelled(ILogger logger, uint statusCode)
+            {
+                _fileSendAsyncCancelled(logger, statusCode, null);
+            }
+
+            public static void FileSendAsyncErrorIgnored(ILogger logger, uint statusCode)
+            {
+                _fileSendAsyncErrorIgnored(logger, statusCode, null);
             }
         }
     }

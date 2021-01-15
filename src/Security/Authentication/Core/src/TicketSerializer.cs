@@ -9,13 +9,20 @@ using System.Security.Claims;
 namespace Microsoft.AspNetCore.Authentication
 {
     // This MUST be kept in sync with Microsoft.Owin.Security.Interop.AspNetTicketSerializer
+    /// <summary>
+    /// Serializes and deserializes <see cref="AuthenticationTicket"/> instances.
+    /// </summary>
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         private const string DefaultStringPlaceholder = "\0";
         private const int FormatVersion = 5;
 
+        /// <summary>
+        /// Gets the default implementation for <see cref="TicketSerializer"/>.
+        /// </summary>
         public static TicketSerializer Default { get; } = new TicketSerializer();
 
+        /// <inheritdoc/>
         public virtual byte[] Serialize(AuthenticationTicket ticket)
         {
             using (var memory = new MemoryStream())
@@ -28,7 +35,8 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationTicket Deserialize(byte[] data)
+        /// <inheritdoc/>
+        public virtual AuthenticationTicket? Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
@@ -39,6 +47,11 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <summary>
+        /// Writes the <paramref name="ticket"/> using the specified <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
+        /// <param name="ticket">The <see cref="AuthenticationTicket"/>.</param>
         public virtual void Write(BinaryWriter writer, AuthenticationTicket ticket)
         {
             if (writer == null)
@@ -66,6 +79,11 @@ namespace Microsoft.AspNetCore.Authentication
             PropertiesSerializer.Default.Write(writer, ticket.Properties);
         }
 
+        /// <summary>
+        /// Writes the specified <paramref name="identity" />.
+        /// </summary>
+        /// <param name="writer">The <see cref="BinaryWriter" />.</param>
+        /// <param name="identity">The <see cref="ClaimsIdentity" />.</param>
         protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
         {
             if (writer == null)
@@ -114,6 +132,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
         {
             if (writer == null)
@@ -142,7 +161,12 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationTicket Read(BinaryReader reader)
+        /// <summary>
+        /// Reads an <see cref="AuthenticationTicket"/>.
+        /// </summary>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+        /// <returns>The <see cref="AuthenticationTicket"/> if the format is supported, otherwise <see langword="null"/>.</returns>
+        public virtual AuthenticationTicket? Read(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -175,6 +199,11 @@ namespace Microsoft.AspNetCore.Authentication
             return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
         }
 
+        /// <summary>
+        /// Reads a <see cref="ClaimsIdentity"/> from a <see cref="BinaryReader"/>.
+        /// </summary>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+        /// <returns>The read <see cref="ClaimsIdentity"/>.</returns>
         protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
         {
             if (reader == null)
@@ -216,6 +245,12 @@ namespace Microsoft.AspNetCore.Authentication
             return identity;
         }
 
+        /// <summary>
+        /// Reads a <see cref="Claim"/> and adds it to the specified <paramref name="identity"/>.
+        /// </summary>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/> to add the claim to.</param>
+        /// <returns>The read <see cref="Claim"/>.</returns>
         protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
         {
             if (reader == null)

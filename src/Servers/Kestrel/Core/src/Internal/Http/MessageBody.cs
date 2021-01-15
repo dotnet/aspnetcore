@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly HttpProtocol _context;
 
         private bool _send100Continue = true;
-        private long _consumedBytes;
+        private long _observedBytes;
         private bool _stopped;
 
         protected bool _timingEnabled;
@@ -42,17 +43,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public abstract void AdvanceTo(SequencePosition consumed);
-
-        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public abstract bool TryRead(out ReadResult readResult);
 
-        public abstract void Complete(Exception exception);
+        public void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceTo(consumed, consumed);
+        }
+
+        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
         public abstract void CancelPendingRead();
 
-        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
+        public abstract void Complete(Exception? exception);
+
+        public virtual ValueTask CompleteAsync(Exception? exception)
+        {
+            Complete(exception);
+            return default;
+        }
 
         public virtual Task ConsumeAsync()
         {
@@ -61,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return OnConsumeAsync();
         }
 
-        public virtual Task StopAsync()
+        public virtual ValueTask StopAsync()
         {
             TryStop();
 
@@ -70,7 +80,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
-        protected virtual Task OnStopAsync() => Task.CompletedTask;
+        protected virtual ValueTask OnStopAsync() => default;
+
+        public virtual void Reset()
+        {
+            _send100Continue = true;
+            _observedBytes = 0;
+            _stopped = false;
+            _timingEnabled = false;
+            _backpressure = false;
+            _alreadyTimedBytes = 0;
+            _examinedUnconsumedBytes = 0;
+        }
 
         protected void TryProduceContinue()
         {
@@ -93,7 +114,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID.
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
                 if (_context.MinRequestBodyDataRate != null)
                 {
@@ -116,7 +142,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
                 if (_timingEnabled)
                 {
@@ -138,17 +169,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual void OnDataRead(long bytesRead)
+        protected void AddAndCheckObservedBytes(long observedBytes)
         {
-        }
+            _observedBytes += observedBytes;
 
-        protected void AddAndCheckConsumedBytes(long consumedBytes)
-        {
-            _consumedBytes += consumedBytes;
-
-            if (_consumedBytes > _context.MaxRequestBodySize)
+            if (_observedBytes > _context.MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 
@@ -187,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected long OnAdvance(ReadResult readResult, SequencePosition consumed, SequencePosition examined)
+        protected long TrackConsumedAndExaminedBytes(ReadResult readResult, SequencePosition consumed, SequencePosition examined)
         {
             // This code path is fairly hard to understand so let's break it down with an example
             // ReadAsync returns a ReadResult of length 50.
@@ -230,18 +257,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 totalLength = readResult.Buffer.Length;
             }
 
-            var newlyExamined = examinedLength - _examinedUnconsumedBytes;
-
-            if (newlyExamined > 0)
-            {
-                OnDataRead(newlyExamined);
-                _examinedUnconsumedBytes += newlyExamined;
-            }
-
-            _examinedUnconsumedBytes -= consumedLength;
+            var newlyExaminedBytes = examinedLength - _examinedUnconsumedBytes;
+            _examinedUnconsumedBytes += newlyExaminedBytes - consumedLength;
             _alreadyTimedBytes = totalLength - consumedLength;
 
-            return newlyExamined;
+            return newlyExaminedBytes;
         }
     }
 }

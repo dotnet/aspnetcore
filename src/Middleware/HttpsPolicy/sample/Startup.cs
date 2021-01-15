@@ -49,30 +49,34 @@ namespace HttpsSample
         }
 
         // Entry point for the application.
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel(
-                options =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 5001), listenOptions =>
+                    webHostBuilder
+                    .UseKestrel(
+                    options =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
-                    });
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), listenOptions =>
+                        options.Listen(new IPEndPoint(IPAddress.Loopback, 5001), listenOptions =>
+                        {
+                            listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        });
+                        options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), listenOptions =>
+                        {
+                        });
+                    })
+                    .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
+                    .ConfigureLogging(factory =>
                     {
-                    });
+                        factory.SetMinimumLevel(LogLevel.Debug);
+                        factory.AddConsole();
+                    })
+                    .UseStartup<Startup>();
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
-                .ConfigureLogging(factory =>
-                {
-                    factory.SetMinimumLevel(LogLevel.Debug);
-                    factory.AddConsole();
-                })
-                .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

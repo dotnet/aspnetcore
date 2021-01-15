@@ -10,7 +10,7 @@ const Home = () => (
       <li><a href='https://facebook.github.io/react/'>React</a> and <a href='https://redux.js.org/'>Redux</a> for client-side code</li>
       <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
     </ul>
-    <p>To help you get started, we've also set up:</p>
+    <p>To help you get started, we have also set up:</p>
     <ul>
       <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
       <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>

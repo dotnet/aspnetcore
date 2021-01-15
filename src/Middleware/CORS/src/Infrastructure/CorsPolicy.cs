@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     /// </summary>
     public class CorsPolicy
     {
+        private Func<string, bool> _isOriginAllowed;
         private TimeSpan? _preflightMaxAge;
 
         /// <summary>
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         public CorsPolicy()
         {
-            IsOriginAllowed = DefaultIsOriginAllowed;
+            _isOriginAllowed = DefaultIsOriginAllowed;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Headers == null || Headers.Count != 1 || Headers.Count == 1 && Headers[0] != "*")
+                if (Headers == null || Headers.Count != 1 || Headers[0] != "*")
                 {
                     return false;
                 }
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Methods == null || Methods.Count != 1 || Methods.Count == 1 && Methods[0] != "*")
+                if (Methods == null || Methods.Count != 1 || Methods[0] != "*")
                 {
                     return false;
                 }
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Origins == null || Origins.Count != 1 || Origins.Count == 1 && Origins[0] != "*")
+                if (Origins == null || Origins.Count != 1 || Origins[0] != "*")
                 {
                     return false;
                 }
@@ -72,9 +74,25 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         /// <summary>
+        /// Gets a value indicating if <see cref="IsOriginAllowed"/> is the default function that is set in the CorsPolicy constructor.
+        /// </summary>
+        internal bool IsDefaultIsOriginAllowed { get; private set; } = true;
+
+        /// <summary>
         /// Gets or sets a function which evaluates whether an origin is allowed.
         /// </summary>
-        public Func<string, bool> IsOriginAllowed { get; set; }
+        public Func<string, bool> IsOriginAllowed
+        {
+            get
+            {
+                return _isOriginAllowed;
+            }
+            set
+            {
+                _isOriginAllowed = value;
+                IsDefaultIsOriginAllowed = false;
+            }
+        }
 
         /// <summary>
         /// Gets the headers that the resource might use and can be exposed.
@@ -138,20 +156,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(AllowAnyOrigin);
             builder.Append(", PreflightMaxAge: ");
             builder.Append(PreflightMaxAge.HasValue ?
-                PreflightMaxAge.Value.TotalSeconds.ToString() : "null");
+                PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture) : "null");
             builder.Append(", SupportsCredentials: ");
             builder.Append(SupportsCredentials);
             builder.Append(", Origins: {");
-            builder.Append(string.Join(",", Origins));
+            builder.AppendJoin(",", Origins);
             builder.Append("}");
             builder.Append(", Methods: {");
-            builder.Append(string.Join(",", Methods));
+            builder.AppendJoin(",", Methods);
             builder.Append("}");
             builder.Append(", Headers: {");
-            builder.Append(string.Join(",", Headers));
+            builder.AppendJoin(",", Headers);
             builder.Append("}");
             builder.Append(", ExposedHeaders: {");
-            builder.Append(string.Join(",", ExposedHeaders));
+            builder.AppendJoin(",", ExposedHeaders);
             builder.Append("}");
             return builder.ToString();
         }

@@ -1,10 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -29,10 +32,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         private readonly MethodInfo Converter = typeof(AsyncEnumerableReader).GetMethod(
             nameof(ReadInternal),
-            BindingFlags.NonPublic | BindingFlags.Instance);
+            BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        private readonly ConcurrentDictionary<Type, Func<object, Task<ICollection>>> _asyncEnumerableConverters =
-            new ConcurrentDictionary<Type, Func<object, Task<ICollection>>>();
+        private readonly ConcurrentDictionary<Type, Func<object, Task<ICollection>>?> _asyncEnumerableConverters = new();
         private readonly MvcOptions _mvcOptions;
 
         /// <summary>
@@ -45,12 +47,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <summary>
-        /// Attempts to produces a delagate that reads a <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
+        /// Attempts to produces a delegate that reads an <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
         /// </summary>
         /// <param name="type">The type to read.</param>
         /// <param name="reader">A delegate that when awaited reads the <see cref="IAsyncEnumerable{T}"/>.</param>
         /// <returns><see langword="true" /> when <paramref name="type"/> is an instance of <see cref="IAsyncEnumerable{T}"/>, othwerise <see langword="false"/>.</returns>
-        public bool TryGetReader(Type type, out Func<object, Task<ICollection>> reader)
+        public bool TryGetReader(Type type, [NotNullWhen(true)] out Func<object, Task<ICollection>>? reader)
         {
             if (!_asyncEnumerableConverters.TryGetValue(type, out reader))
             {

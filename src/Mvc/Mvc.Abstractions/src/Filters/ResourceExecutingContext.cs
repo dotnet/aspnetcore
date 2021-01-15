@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Setting <see cref="Result"/> to a non-<c>null</c> value inside a resource filter will
         /// short-circuit execution of additional resource filters and the action itself.
         /// </remarks>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
 
         /// <summary>
         /// Gets the list of <see cref="IValueProviderFactory"/> instances used by model binding.

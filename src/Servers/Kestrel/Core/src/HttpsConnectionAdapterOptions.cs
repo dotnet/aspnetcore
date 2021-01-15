@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
     /// </summary>
     public class HttpsConnectionAdapterOptions
     {
+        internal static TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
+
         private TimeSpan _handshakeTimeout;
 
         /// <summary>
@@ -24,8 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
-            HandshakeTimeout = TimeSpan.FromSeconds(10);
+            HandshakeTimeout = DefaultHandshakeTimeout;
         }
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
         /// </para>
         /// </summary>
-        public X509Certificate2 ServerCertificate { get; set; }
+        public X509Certificate2? ServerCertificate { get; set; }
 
         /// <summary>
         /// <para>
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
         /// </para>
         /// </summary>
-        public Func<ConnectionContext, string, X509Certificate2> ServerCertificateSelector { get; set; }
+        public Func<ConnectionContext, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
 
         /// <summary>
         /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
@@ -58,10 +59,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// Specifies a callback for additional client certificate validation that will be invoked during authentication. This will be ignored
         /// if <see cref="AllowAnyClientCertificate"/> is called after this callback is set.
         /// </summary>
-        public Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> ClientCertificateValidation { get; set; }
+        public Func<X509Certificate2, X509Chain?, SslPolicyErrors, bool>? ClientCertificateValidation { get; set; }
 
         /// <summary>
-        /// Specifies allowable SSL protocols. Defaults to <see cref="SslProtocols.Tls12" /> and <see cref="SslProtocols.Tls11"/>.
+        /// Specifies allowable SSL protocols. Defaults to <see cref="SslProtocols.None" /> which allows the operating system to choose the best protocol to use,
+        /// and to block protocols that are not secure. Unless your app has a specific reason not to, you should use this default.
         /// </summary>
         public SslProtocols SslProtocols { get; set; }
 
@@ -88,10 +90,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// Provides direct configuration of the <see cref="SslServerAuthenticationOptions"/> on a per-connection basis.
         /// This is called after all of the other settings have already been applied.
         /// </summary>
-        public Action<ConnectionContext, SslServerAuthenticationOptions> OnAuthenticate { get; set; }
+        public Action<ConnectionContext, SslServerAuthenticationOptions>? OnAuthenticate { get; set; }
 
         /// <summary>
-        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.
+        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite. Defaults to 10 seconds.
         /// </summary>
         public TimeSpan HandshakeTimeout
         {

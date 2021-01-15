@@ -9,35 +9,33 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class HttpConnectionMiddleware<TContext>
+    internal class HttpConnectionMiddleware<TContext> where TContext : notnull
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
-        private readonly HttpProtocols _protocols;
+        private readonly HttpProtocols _endpointDefaultProtocols;
 
         public HttpConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
         {
             _serviceContext = serviceContext;
             _application = application;
-            _protocols = protocols;
+            _endpointDefaultProtocols = protocols;
         }
 
         public Task OnConnectionAsync(ConnectionContext connectionContext)
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
-            var httpConnectionContext = new HttpConnectionContext
-            {
-                ConnectionId = connectionContext.ConnectionId,
-                ConnectionContext = connectionContext,
-                Protocols = _protocols,
-                ServiceContext = _serviceContext,
-                ConnectionFeatures = connectionContext.Features,
-                MemoryPool = memoryPoolFeature.MemoryPool,
-                Transport = connectionContext.Transport,
-                LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
-                RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
-            };
+            var httpConnectionContext = new HttpConnectionContext(
+                connectionContext.ConnectionId,
+                connectionContext.Features.Get<HttpProtocolsFeature>()?.HttpProtocols ?? _endpointDefaultProtocols,
+                connectionContext,
+                _serviceContext,
+                connectionContext.Features,
+                memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
+                connectionContext.LocalEndPoint as IPEndPoint,
+                connectionContext.RemoteEndPoint as IPEndPoint,
+                connectionContext.Transport);
 
             var connection = new HttpConnection(httpConnectionContext);
 

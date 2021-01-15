@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -35,87 +35,149 @@ namespace Microsoft.Extensions.Internal
         public void Register(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(AnalyzeNode,
-                SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxKind.ObjectCreationExpression,
-                SyntaxKind.ClassDeclaration,
-                SyntaxKind.Parameter);
+
+            // Analyze usage of our internal types in method bodies.
+            context.RegisterOperationAction(
+                AnalyzeOperation,
+                OperationKind.ObjectCreation,
+                OperationKind.Invocation,
+                OperationKind.FieldReference,
+                OperationKind.MethodReference,
+                OperationKind.PropertyReference,
+                OperationKind.EventReference);
+
+            // Analyze declarations that use our internal types in API surface.
+            context.RegisterSymbolAction(
+                AnalyzeSymbol,
+                SymbolKind.NamedType,
+                SymbolKind.Field,
+                SymbolKind.Method,
+                SymbolKind.Property,
+                SymbolKind.Event);
         }
 
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        private void AnalyzeOperation(OperationAnalysisContext context)
         {
-            switch (context.Node)
+            var symbol = context.Operation switch
             {
-                case MemberAccessExpressionSyntax memberAccessSyntax:
+                IObjectCreationOperation creation => creation.Constructor,
+                IInvocationOperation invocation => invocation.TargetMethod,
+                IFieldReferenceOperation field => field.Member,
+                IMethodReferenceOperation method => method.Member,
+                IPropertyReferenceOperation property => property.Member,
+                IEventReferenceOperation @event => @event.Member,
+                _ => throw new InvalidOperationException("Unexpected operation kind: " + context.Operation.Kind),
+            };
+
+            VisitOperationSymbol(context, symbol);
+        }
+
+        private void AnalyzeSymbol(SymbolAnalysisContext context)
+        {
+            // Note: we don't currently try to detect second-order usage of these types
+            // like public Task<InternalFoo> GetFooAsync() { }.
+            //
+            // This probably accomplishes our goals OK for now, which are focused on use of these
+            // types in method bodies.
+            switch (context.Symbol)
+            {
+                case INamedTypeSymbol type:
+                    VisitDeclarationSymbol(context, type.BaseType, type);
+                    foreach (var @interface in type.Interfaces)
                     {
-                        if (context.SemanticModel.GetSymbolInfo(context.Node, context.CancellationToken).Symbol is ISymbol symbol &&
-                            symbol.ContainingAssembly != context.Compilation.Assembly)
-                        {
-                            var containingType = symbol.ContainingType;
+                        VisitDeclarationSymbol(context, @interface, type);
+                    }
+                    break;
 
-                            if (HasInternalAttribute(symbol))
-                            {
-                                context.ReportDiagnostic(Diagnostic.Create(_descriptor, memberAccessSyntax.Name.GetLocation(), $"{containingType}.{symbol.Name}"));
-                                return;
-                            }
+                case IFieldSymbol field:
+                    VisitDeclarationSymbol(context, field.Type, field);
+                    break;
 
-                            if (IsInInternalNamespace(containingType) || HasInternalAttribute(containingType))
-                            {
-                                context.ReportDiagnostic(Diagnostic.Create(_descriptor, memberAccessSyntax.Name.GetLocation(), containingType));
-                                return;
-                            }
-                        }
-                        return;
+                case IMethodSymbol method:
+
+                    // Ignore return types on property-getters. Those will be reported through
+                    // the property analysis.
+                    if (method.MethodKind != MethodKind.PropertyGet)
+                    {
+                        VisitDeclarationSymbol(context, method.ReturnType, method);
                     }
 
-                case ObjectCreationExpressionSyntax creationSyntax:
+                    // Ignore parameters on property-setters. Those will be reported through
+                    // the property analysis.
+                    if (method.MethodKind != MethodKind.PropertySet)
                     {
-                        if (context.SemanticModel.GetSymbolInfo(context.Node, context.CancellationToken).Symbol is ISymbol symbol &&
-                            symbol.ContainingAssembly != context.Compilation.Assembly)
+                        foreach (var parameter in method.Parameters)
                         {
-                            var containingType = symbol.ContainingType;
-
-                            if (HasInternalAttribute(symbol))
-                            {
-                                context.ReportDiagnostic(Diagnostic.Create(_descriptor, creationSyntax.GetLocation(), containingType));
-                                return;
-                            }
-
-                            if (IsInInternalNamespace(containingType) || HasInternalAttribute(containingType))
-                            {
-                                context.ReportDiagnostic(Diagnostic.Create(_descriptor, creationSyntax.Type.GetLocation(), containingType));
-                                return;
-                            }
+                            VisitDeclarationSymbol(context, parameter.Type, method);
                         }
-
-                        return;
                     }
+                    break;
 
-                case ClassDeclarationSyntax declarationSyntax:
-                    {
-                        if (context.SemanticModel.GetDeclaredSymbol(declarationSyntax)?.BaseType is ISymbol symbol &&
-                            symbol.ContainingAssembly != context.Compilation.Assembly &&
-                            (IsInInternalNamespace(symbol) || HasInternalAttribute(symbol)) &&
-                            declarationSyntax.BaseList?.Types.Count > 0)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(_descriptor, declarationSyntax.BaseList.Types[0].GetLocation(), symbol));
-                        }
+                case IPropertySymbol property:
+                    VisitDeclarationSymbol(context, property.Type, property);
+                    break;
 
-                        return;
-                    }
+                case IEventSymbol @event:
+                    VisitDeclarationSymbol(context, @event.Type, @event);
+                    break;
+            }
+        }
 
-                case ParameterSyntax parameterSyntax:
-                    {
-                        if (context.SemanticModel.GetDeclaredSymbol(parameterSyntax)?.Type is ISymbol symbol &&
-                            symbol.ContainingAssembly != context.Compilation.Assembly &&
-                            (IsInInternalNamespace(symbol) || HasInternalAttribute(symbol)))
-                        {
+        // Similar logic here to VisitDeclarationSymbol, keep these in sync.
+        private void VisitOperationSymbol(OperationAnalysisContext context, ISymbol symbol)
+        {
+            if (symbol == null || SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.Compilation.Assembly))
+            {
+                // The type is being referenced within the same assembly. This is valid use of an "internal" type
+                return;
+            }
 
-                            context.ReportDiagnostic(Diagnostic.Create(_descriptor, parameterSyntax.GetLocation(), symbol));
-                        }
+            if (HasInternalAttribute(symbol))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    _descriptor,
+                    context.Operation.Syntax.GetLocation(),
+                    symbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+                return;
+            }
 
-                        return;
-                    }
+            var containingType = symbol.ContainingType;
+            if (IsInInternalNamespace(containingType) || HasInternalAttribute(containingType))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    _descriptor,
+                    context.Operation.Syntax.GetLocation(),
+                    containingType.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+                return;
+            }
+        }
+
+        // Similar logic here to VisitOperationSymbol, keep these in sync.
+        private void VisitDeclarationSymbol(SymbolAnalysisContext context, ISymbol symbol, ISymbol symbolForDiagnostic)
+        {
+            if (symbol == null || SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.Compilation.Assembly))
+            {
+                // This is part of the compilation, avoid this analyzer when building from source.
+                return;
+            }
+
+            if (HasInternalAttribute(symbol))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    _descriptor,
+                    symbolForDiagnostic.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax().GetLocation() ?? Location.None,
+                    symbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+                return;
+            }
+
+            var containingType = symbol as INamedTypeSymbol ?? symbol.ContainingType;
+            if (IsInInternalNamespace(containingType) || HasInternalAttribute(containingType))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    _descriptor,
+                    symbolForDiagnostic.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax().GetLocation() ?? Location.None,
+                    containingType.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+                return;
             }
         }
 

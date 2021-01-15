@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -18,11 +19,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    internal class TestConnection : ConnectionContext
+    internal class TestConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
     {
         private readonly bool _autoHandshake;
-        private readonly TaskCompletionSource<object> _started = new TaskCompletionSource<object>();
-        private readonly TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource _started = new TaskCompletionSource();
+        private readonly TaskCompletionSource _disposed = new TaskCompletionSource();
 
         private int _disposeCount = 0;
         public Task Started => _started.Task;
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         private readonly Func<Task> _onStart;
         private readonly Func<Task> _onDispose;
+        private readonly bool _hasInherentKeepAlive;
 
         public override string ConnectionId { get; set; }
 
@@ -41,24 +43,29 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
 
-        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true)
+        bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
+
+        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true, bool hasInherentKeepAlive = false)
         {
             _autoHandshake = autoHandshake;
             _onStart = onStart ?? (() => Task.CompletedTask);
             _onDispose = onDispose ?? (() => Task.CompletedTask);
+            _hasInherentKeepAlive = hasInherentKeepAlive;
 
             var options = new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Application = pair.Application;
             Transport = pair.Transport;
+
+            Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
         public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
         public async ValueTask<ConnectionContext> StartAsync()
         {
-            _started.TrySetResult(null);
+            _started.TrySetResult();
 
             await _onStart();
 
@@ -119,6 +126,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             while (true)
             {
                 var result = await ReadSentTextMessageAsyncInner();
+                if (result == null)
+                {
+                    return null;
+                }
 
                 var receivedMessageType = (int?)JObject.Parse(result)["type"];
 
@@ -193,7 +204,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private async ValueTask DisposeCoreAsync(Exception ex = null)
         {
             Interlocked.Increment(ref _disposeCount);
-            _disposed.TrySetResult(null);
+            _disposed.TrySetResult();
             await _onDispose();
 
             // Simulate HttpConnection's behavior by Completing the Transport pipe.

@@ -16,6 +16,6 @@ namespace Microsoft.AspNetCore.Hosting.Server
         /// <summary>
         /// The name of the authentication scheme for the server authentication handler.
         /// </summary>
-        public string AuthenticationScheme { get; set; }
+        public string AuthenticationScheme { get; set; } = default!;
     }
 }

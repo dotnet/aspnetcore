@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -232,18 +233,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (asyncResult._cancellationToken.IsCancellationRequested)
                     {
-                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Write cancelled with error code: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteCancelled,$"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
                         asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
                         var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
-                        LogHelper.LogException(logger, "FlushAsync.IOCompleted", exception);
+                        logger.LogError(LoggerEventIds.WriteError, exception, "FlushAsync.IOCompleted");
                         asyncResult.Fail(exception);
                     }
                     else
                     {
-                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Ignored write exception: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
                         asyncResult.FailSilently();
                     }
                 }
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         // TODO: Verbose log
                         // for (int i = 0; i < asyncResult._dataChunks.Length; i++)
                         // {
-                            // Logging.Dump(Logging.HttpListener, asyncResult, "Callback", (IntPtr)asyncResult._dataChunks[0].fromMemory.pBuffer, (int)asyncResult._dataChunks[0].fromMemory.BufferLength);
+                        // Logging.Dump(Logging.HttpListener, asyncResult, "Callback", (IntPtr)asyncResult._dataChunks[0].fromMemory.pBuffer, (int)asyncResult._dataChunks[0].fromMemory.BufferLength);
                         // }
                     }
                     asyncResult.Complete();
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                LogHelper.LogException(logger, "FlushAsync.IOCompleted", e);
+                logger.LogError(LoggerEventIds.WriteError, e, "FlushAsync.IOCompleted");
                 asyncResult.Fail(e);
             }
         }

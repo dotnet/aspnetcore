@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -35,13 +34,39 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public void Configure(ApiAuthorizationOptions options)
         {
             var key = LoadKey();
-            options.SigningCredential = key;
+            if (key != null)
+            {
+                options.SigningCredential = key;
+            }
         }
 
         public SigningCredentials LoadKey()
         {
-            var key = new KeyDefinition();
-            _configuration.Bind(key);
+            // We can't know for sure if there was a configuration section explicitly defined.
+            // Check if the current configuration has any children and avoid failing if that's the case.
+            // This will avoid failing when no configuration has been specified but will still fail if partial data
+            // was defined.
+            if (!_configuration.GetChildren().Any())
+            {
+                return null;
+            }
+
+            var key = new KeyDefinition()
+            {
+                Type = _configuration[nameof(KeyDefinition.Type)],
+                FilePath = _configuration[nameof(KeyDefinition.FilePath)],
+                Password = _configuration[nameof(KeyDefinition.Password)],
+                Name = _configuration[nameof(KeyDefinition.Name)],
+                StoreLocation = _configuration[nameof(KeyDefinition.StoreLocation)],
+                StoreName = _configuration[nameof(KeyDefinition.StoreName)],
+                StorageFlags = _configuration[nameof(KeyDefinition.StorageFlags)]
+            };
+
+            if (bool.TryParse(_configuration[nameof(KeyDefinition.Persisted)], out var value))
+            {
+                key.Persisted = value;
+            }
+
             switch (key.Type)
             {
                 case KeySources.Development:
@@ -66,8 +91,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                     }
                     _logger.LogInformation($"Loading certificate with subject '{key.Name}' in '{key.StoreLocation}\\{key.StoreName}'.");
                     return new SigningCredentials(new X509SecurityKey(SigningKeysLoader.LoadFromStoreCert(key.Name, key.StoreName, storeLocation, GetCurrentTime())), "RS256");
-                case null:
-                    throw new InvalidOperationException($"Key type not specified.");
                 default:
                     throw new InvalidOperationException($"Invalid key type '{key.Type ?? "(null)"}'.");
             }
@@ -78,8 +101,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
         private X509KeyStorageFlags GetStorageFlags(KeyDefinition key)
         {
-            var defaultFlags = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-                UnsafeEphemeralKeySet : (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? X509KeyStorageFlags.PersistKeySet :
+            var defaultFlags = OperatingSystem.IsLinux() ?
+                UnsafeEphemeralKeySet : (OperatingSystem.IsMacOS() ? X509KeyStorageFlags.PersistKeySet :
                 X509KeyStorageFlags.DefaultKeySet);
 
             if (key.StorageFlags == null)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         private readonly Func<ControllerContext, object> _controllerActivatorCreate;
         private readonly Action<ControllerContext, object> _controllerActivatorRelease;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ControllerActivatorProvider"/>.
+        /// </summary>
+        /// <param name="controllerActivator">A <see cref="IControllerActivator"/> which is delegated to when not the default implementation.</param>
         public ControllerActivatorProvider(IControllerActivator controllerActivator)
         {
             if (controllerActivator == null)
@@ -32,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
         }
 
+        /// <inheritdoc/>
         public Func<ControllerContext, object> CreateActivator(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
@@ -57,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             return controllerContext => typeActivator(controllerContext.HttpContext.RequestServices, arguments: null);
         }
 
+        /// <inheritdoc/>
         public Action<ControllerContext, object> CreateReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)

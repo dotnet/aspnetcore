@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -188,7 +188,17 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            var entities = dirInfo.EnumerateFileSystemInfos("*.*");
+            IEnumerable<FileSystemInfo> entities;
+            try
+            {
+                entities = dirInfo.EnumerateFileSystemInfos("*.*");
+            }
+            // If the directory is deleted after the exists check this will throw and could crash the process
+            catch (DirectoryNotFoundException)
+            {
+                return;
+            }
+
             foreach (var entity in entities)
             {
                 fileAction(entity);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,14 +13,17 @@ namespace Microsoft.AspNetCore.Diagnostics
             LoggerMessage.Define(LogLevel.Error, new EventId(1, "UnhandledException"), "An unhandled exception has occurred while executing the request.");
 
         // ExceptionHandlerMiddleware
-        private static readonly Action<ILogger, Exception> _responseStartedErrorHandler =
+        private static readonly Action<ILogger, Exception?> _responseStartedErrorHandler =
             LoggerMessage.Define(LogLevel.Warning, new EventId(2, "ResponseStarted"), "The response has already started, the error handler will not be executed.");
 
         private static readonly Action<ILogger, Exception> _errorHandlerException =
             LoggerMessage.Define(LogLevel.Error, new EventId(3, "Exception"), "An exception was thrown attempting to execute the error handler.");
 
+        private static readonly Action<ILogger, Exception?> _errorHandlerNotFound =
+            LoggerMessage.Define(LogLevel.Warning, new EventId(4, "HandlerNotFound"), "No exception handler was found, rethrowing original exception.");
+
         // DeveloperExceptionPageMiddleware
-        private static readonly Action<ILogger, Exception> _responseStartedErrorPageMiddleware =
+        private static readonly Action<ILogger, Exception?> _responseStartedErrorPageMiddleware =
             LoggerMessage.Define(LogLevel.Warning, new EventId(2, "ResponseStarted"), "The response has already started, the error page middleware will not be executed.");
 
         private static readonly Action<ILogger, Exception> _displayErrorPageException =
@@ -39,6 +42,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         public static void ErrorHandlerException(this ILogger logger, Exception exception)
         {
             _errorHandlerException(logger, exception);
+        }
+
+        public static void ErrorHandlerNotFound(this ILogger logger)
+        {
+            _errorHandlerNotFound(logger, null);
         }
 
         public static void ResponseStartedErrorPageMiddleware(this ILogger logger)

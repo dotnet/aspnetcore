@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deleteCts.Token);
 
                 // Just block until canceled
-                var tcs = new TaskCompletionSource<object>();
-                using (cts.Token.Register(() => tcs.TrySetResult(null)))
+                var tcs = new TaskCompletionSource();
+                using (cts.Token.Register(() => tcs.TrySetResult()))
                 {
                     await tcs.Task;
                 }

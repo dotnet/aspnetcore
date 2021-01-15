@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Contains the options used by HttpSys.
+    /// </summary>
     public class HttpSysOptions
     {
         private const uint MaximumRequestQueueNameLength = 260;
@@ -26,6 +29,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
         private string _requestQueueName;
 
+        /// <summary>
+        /// Initializes a new <see cref="HttpSysOptions"/>.
+        /// </summary>
         public HttpSysOptions()
         {
         }
@@ -55,15 +61,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public RequestQueueMode RequestQueueMode { get; set; }
 
         /// <summary>
-        /// Indicates how client certificates should be populated. The default is to allow renegotation.
+        /// Indicates how client certificates should be populated. The default is to allow a certificate without renegotiation.
         /// This does not change the netsh 'clientcertnegotiation' binding option which will need to be enabled for
         /// ClientCertificateMethod.AllowCertificate to resolve a certificate.
         /// </summary>
-        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowRenegotation;
+        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
         /// <summary>
-        /// The maximum number of concurrent accepts.
+        /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
         /// </summary>
+        /// <remarks>
+        /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
+        /// </remarks>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
         /// <summary>

@@ -21,25 +21,29 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             return new BloggingContextWithMigrations(options);
         }
 
+        private static void BuildSnapshotModel(ModelBuilder builder)
+        {
+            builder.Entity("Blogging.Models.Blog", b =>
+            {
+                b.Property<int>("BlogId").ValueGeneratedOnAdd();
+                b.Property<string>("Name");
+                b.HasKey("BlogId");
+            });
+        }
+
         [DbContext(typeof(BloggingContextWithMigrations))]
         public class BloggingContextWithMigrationsModelSnapshot : ModelSnapshot
         {
-            protected override void BuildModel(ModelBuilder builder)
-            {
-                builder.Entity("Blogging.Models.Blog", b =>
-                {
-                    b.Property<int>("BlogId").ValueGeneratedOnAdd();
-                    b.Property<string>("Name");
-                    b.HasKey("BlogId");
-                });
-            }
+            protected override void BuildModel(ModelBuilder modelBuilder)
+                => BuildSnapshotModel(modelBuilder);
         }
 
         [DbContext(typeof(BloggingContextWithMigrations))]
         [Migration("111111111111111_MigrationOne")]
         public class MigrationOne : Migration
         {
-            public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
+            protected override void BuildTargetModel(ModelBuilder modelBuilder)
+                => BuildSnapshotModel(modelBuilder);
 
             protected override void Up(MigrationBuilder migrationBuilder)
             {
@@ -62,7 +66,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Migration("222222222222222_MigrationTwo")]
         public class MigrationTwo : Migration
         {
-            public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
+            protected override void BuildTargetModel(ModelBuilder modelBuilder)
+                => BuildSnapshotModel(modelBuilder);
 
             protected override void Up(MigrationBuilder migrationBuilder)
             { }

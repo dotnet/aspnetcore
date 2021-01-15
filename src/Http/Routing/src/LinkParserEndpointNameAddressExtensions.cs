@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing
         /// of the route patterns match the provided URI path.
         /// </para>
         /// </remarks>
-        public static RouteValueDictionary ParsePathByEndpointName(
+        public static RouteValueDictionary? ParsePathByEndpointName(
             this LinkParser parser,
             string endpointName,
             PathString path)

@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
@@ -14,10 +15,17 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task BasicStartup()
         {
-            var builder = new WebHostBuilder()
-                .UseStartup<HealthChecksSample.BasicStartup>();
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup<HealthChecksSample.BasicStartup>();
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health");
@@ -29,10 +37,17 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CustomWriterStartup()
         {
-            var builder = new WebHostBuilder()
-                .UseStartup<HealthChecksSample.CustomWriterStartup>();
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup<HealthChecksSample.CustomWriterStartup>();
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health");
@@ -45,10 +60,17 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task LivenessProbeStartup_Liveness()
         {
-            var builder = new WebHostBuilder()
-                .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health/live");
@@ -60,10 +82,17 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task LivenessProbeStartup_Readiness()
         {
-            var builder = new WebHostBuilder()
-                .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup<HealthChecksSample.LivenessProbeStartup>();
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var response = await client.GetAsync("/health/ready");

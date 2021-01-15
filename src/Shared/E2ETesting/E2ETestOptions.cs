@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             // to the list of settings. We use GetExecutingAssembly, this works because E2ETestOptions is shared source.
             var metadataAttributes = Assembly.GetExecutingAssembly()
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(ama => ama.Key.StartsWith(TestingOptionsPrefix))
+                .Where(ama => ama.Key.StartsWith(TestingOptionsPrefix, StringComparison.Ordinal))
                 .ToDictionary(kvp => kvp.Key.Substring(TestingOptionsPrefix.Length + 1), kvp => kvp.Value);
 
             try
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     builder.AddJsonFile("e2eTestSettings.ci.json", optional: true);
                 }
 
-                Configuration = builder 
+                Configuration = builder
                     .AddEnvironmentVariables("E2ETESTS_")
                     .Build();
 
@@ -51,11 +52,11 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public int DefaultWaitTimeoutInSeconds { get; set; } = 3;
+        public int DefaultWaitTimeoutInSeconds { get; set; } = 15;
 
         public string ScreenShotsPath { get; set; }
 
-        public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+        public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 10;
 
         public bool SauceTest { get; set; }
 

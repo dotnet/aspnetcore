@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             foreach (var property in context.Model.GetEntityTypes().Single(e => e.GetTableName() == table).GetProperties())
             {
-                if (!columns.Contains(property.GetColumnName()))
+                if (!columns.Contains(property.GetColumnName(StoreObjectIdentifier.Table(table, property.DeclaringEntityType.GetSchema()))))
                 {
                     continue;
                 }

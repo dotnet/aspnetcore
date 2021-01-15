@@ -97,7 +97,7 @@ namespace Microsoft.CodeAnalysis
             source = source ?? throw new ArgumentNullException(nameof(source));
             target = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (source == target)
+            if (SymbolEqualityComparer.Default.Equals(source, target))
             {
                 return true;
             }
@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis
             {
                 foreach (var @interface in target.AllInterfaces)
                 {
-                    if (source == @interface)
+                    if (SymbolEqualityComparer.Default.Equals(source, @interface))
                     {
                         return true;
                     }
@@ -117,7 +117,7 @@ namespace Microsoft.CodeAnalysis
 
             foreach (var type in target.GetTypeHierarchy())
             {
-                if (source == type)
+                if (SymbolEqualityComparer.Default.Equals(source, type))
                 {
                     return true;
                 }
@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis
             return false;
         }
 
-        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)
+        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
         {
             while (typeSymbol != null)
             {

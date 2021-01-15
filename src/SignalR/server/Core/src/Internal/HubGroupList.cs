@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static readonly GroupConnectionList EmptyGroupConnectionList = new GroupConnectionList();
 
-        public ConcurrentDictionary<string, HubConnectionContext> this[string groupName]
+        public ConcurrentDictionary<string, HubConnectionContext>? this[string groupName]
         {
             get
             {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
     internal class GroupConnectionList : ConcurrentDictionary<string, HubConnectionContext>
     {
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is ConcurrentDictionary<string, HubConnectionContext> list)
             {

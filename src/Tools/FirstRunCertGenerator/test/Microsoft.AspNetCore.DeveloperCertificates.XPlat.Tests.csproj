@@ -6,7 +6,6 @@
 
   <ItemGroup>
   	<Reference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
 </Project>

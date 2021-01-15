@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -14,9 +15,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Session
 {
+    /// <summary>
+    /// An <see cref="ISession"/> backed by an <see cref="IDistributedCache"/>.
+    /// </summary>
     public class DistributedSession : ISession
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         private const int IdByteCount = 16;
 
         private const byte SerializationRevision = 2;
@@ -28,14 +31,31 @@ namespace Microsoft.AspNetCore.Session
         private readonly TimeSpan _ioTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly ILogger _logger;
-        private IDictionary<EncodedKey, byte[]> _store;
+        private IDistributedSessionStore _store;
         private bool _isModified;
         private bool _loaded;
         private bool _isAvailable;
         private bool _isNewSessionKey;
-        private string _sessionId;
-        private byte[] _sessionIdBytes;
+        private string? _sessionId;
+        private byte[]? _sessionIdBytes;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DistributedSession"/>.
+        /// </summary>
+        /// <param name="cache">The <see cref="IDistributedCache"/> used to store the session data.</param>
+        /// <param name="sessionKey">A unique key used to lookup the session.</param>
+        /// <param name="idleTimeout">How long the session can be inactive (e.g. not accessed) before it will expire.</param>
+        /// <param name="ioTimeout">
+        /// The maximum amount of time <see cref="LoadAsync(CancellationToken)"/> and <see cref="CommitAsync(CancellationToken)"/> are allowed take.
+        /// </param>
+        /// <param name="tryEstablishSession">
+        /// A callback invoked during <see cref="Set(string, byte[])"/> to verify that modifying the session is currently valid.
+        /// If the callback returns <see langword="false"/>, <see cref="Set(string, byte[])"/> throws an <see cref="InvalidOperationException"/>.
+        /// <see cref="SessionMiddleware"/> provides a callback that returns <see langword="false"/> if the session was not established
+        /// prior to sending the response.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="isNewSessionKey"><see langword="true"/> if establishing a new session; <see langword="false"/> if resuming a session.</param>
         public DistributedSession(
             IDistributedCache cache,
             string sessionKey,
@@ -70,11 +90,14 @@ namespace Microsoft.AspNetCore.Session
             _idleTimeout = idleTimeout;
             _ioTimeout = ioTimeout;
             _tryEstablishSession = tryEstablishSession;
-            _store = new Dictionary<EncodedKey, byte[]>();
+            // When using a NoOpSessionStore, using a dictionary as a backing store results in problematic API choices particularly with nullability.
+            // We instead use a more limited contract - `IDistributedSessionStore` as the backing store that plays better.
+            _store = new DefaultDistributedSessionStore();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
         }
 
+        /// <inheritdoc />
         public bool IsAvailable
         {
             get
@@ -84,6 +107,7 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public string Id
         {
             get
@@ -101,15 +125,17 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                if (IsAvailable && _sessionIdBytes == null)
+                Load();
+                if (_sessionIdBytes == null)
                 {
                     _sessionIdBytes = new byte[IdByteCount];
-                    CryptoRandom.GetBytes(_sessionIdBytes);
+                    RandomNumberGenerator.Fill(_sessionIdBytes);
                 }
                 return _sessionIdBytes;
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<string> Keys
         {
             get
@@ -119,12 +145,14 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        public bool TryGetValue(string key, out byte[] value)
+        /// <inheritdoc />
+        public bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value)
         {
             Load();
             return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
+        /// <inheritdoc />
         public void Set(string key, byte[] value)
         {
             if (value == null)
@@ -148,16 +176,18 @@ namespace Microsoft.AspNetCore.Session
                 _isModified = true;
                 byte[] copy = new byte[value.Length];
                 Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
-                _store[encodedKey] = copy;
+                _store.SetValue(encodedKey, copy);
             }
         }
 
+        /// <inheritdoc />
         public void Remove(string key)
         {
             Load();
             _isModified |= _store.Remove(new EncodedKey(key));
         }
 
+        /// <inheritdoc />
         public void Clear()
         {
             Load();
@@ -197,9 +227,10 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
+        /// <inheritdoc />
         public async Task LoadAsync(CancellationToken cancellationToken = default)
         {
+            // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
             if (!_loaded)
             {
                 using (var timeout = new CancellationTokenSource(_ioTimeout))
@@ -233,8 +264,15 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        /// <inheritdoc />
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
+            if (!IsAvailable)
+            {
+                _logger.SessionNotAvailable();
+                return;
+            }
+
             using (var timeout = new CancellationTokenSource(_ioTimeout))
             {
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -347,7 +385,7 @@ namespace Microsoft.AspNetCore.Session
                 int keyLength = DeserializeNumFrom2Bytes(content);
                 var key = new EncodedKey(ReadBytes(content, keyLength));
                 int dataLength = DeserializeNumFrom4Bytes(content);
-                _store[key] = ReadBytes(content, dataLength);
+                _store.SetValue(key, ReadBytes(content, dataLength));
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -420,6 +458,5 @@ namespace Microsoft.AspNetCore.Session
             }
             return output;
         }
-
     }
 }

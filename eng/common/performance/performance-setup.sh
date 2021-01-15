@@ -4,7 +4,7 @@ source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 baseline_core_root_directory=
 architecture=x64
-framework=netcoreapp5.0
+framework=net5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH
@@ -12,16 +12,24 @@ commit_sha=$BUILD_SOURCEVERSION
 build_number=$BUILD_BUILDNUMBER
 internal=false
 compare=false
+mono_dotnet=
 kind="micro"
-run_categories="coreclr corefx"
+llvm=false
+monointerpreter=false
+monoaot=false
+run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
-configurations=
+configurations="CompliationMode=$compilation_mode RunKind=$kind"
 run_from_perf_repo=false
 use_core_run=true
 use_baseline_core_run=true
+using_mono=false
+wasm_runtime_loc=
+using_wasm=false
+use_latest_dotnet=false
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2
@@ -65,6 +73,7 @@ while (($# > 0)); do
       ;;
     --kind)
       kind=$2
+      configurations="CompilationMode=$compilation_mode RunKind=$kind"
       shift 2
       ;;
     --runcategories)
@@ -79,6 +88,26 @@ while (($# > 0)); do
       internal=true
       shift 1
       ;;
+    --llvm)
+      llvm=true
+      shift 1
+      ;;
+    --monointerpreter)
+      monointerpreter=true
+      shift 1
+      ;;
+    --monoaot)
+      monoaot=true
+      shift 1
+      ;;
+    --monodotnet)
+      mono_dotnet=$2
+      shift 2
+      ;;
+    --wasm)
+      wasm_runtime_loc=$2
+      shift 2
+      ;;
     --compare)
       compare=true
       shift 1
@@ -87,7 +116,11 @@ while (($# > 0)); do
       configurations=$2
       shift 2
       ;;
-    --help)
+    --latestdotnet)
+      use_latest_dotnet=true
+      shift 1
+      ;;
+    *)
       echo "Common settings:"
       echo "  --corerootdirectory <value>    Directory where Core_Root exists, if running perf testing with --corerun"
       echo "  --architecture <value>         Architecture of the testing being run"
@@ -107,6 +140,9 @@ while (($# > 0)); do
       echo "  --kind <value>                 Related to csproj. The kind of benchmarks that should be run. Defaults to micro"
       echo "  --runcategories <value>        Related to csproj. Categories of benchmarks to run. Defaults to \"coreclr corefx\""
       echo "  --internal                     If the benchmarks are running as an official job."
+      echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
+      echo "  --wasm                         Path to the unpacked wasm runtime pack."
+      echo "  --latestdotnet                 --dotnet-versions will not be specified. --dotnet-versions defaults to LKG version in global.json "
       echo ""
       exit 0
       ;;
@@ -118,7 +154,7 @@ if [ "$repository" == "dotnet/performance" ] || [ "$repository" == "dotnet-perfo
 fi
 
 if [ -z "$configurations" ]; then
-    configurations="CompliationMode=$compilation_mode"
+    configurations="CompilationMode=$compilation_mode"
 fi
 
 if [ -z "$core_root_directory" ]; then
@@ -162,10 +198,41 @@ if [[ "$internal" == true ]]; then
     else
         queue=Ubuntu.1804.Amd64.Tiger.Perf
     fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
+    fi
 fi
 
-common_setup_arguments="--frameworks $framework --queue $queue --build-number $build_number --build-configs $configurations"
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
+fi
+
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    configurations="CompilationMode=wasm RunKind=$kind"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoWASM NoMono"
+fi
+
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "true" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoMono"
+fi
+
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
+
+
+if [[ "$use_latest_dotnet" = false ]]; then
+    # Get the tools section from the global.json.
+    # This grabs the LKG version number of dotnet and passes it to our scripts
+    dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
+    # TODO: Change this back to parsing when we have a good story for dealing with TFM changes or when the LKG in runtime gets updated to include net6.0
+    # setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+    setup_arguments="--dotnet-versions 6.0.100-alpha.1.20553.6 $setup_arguments"
+fi
 
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=
@@ -177,6 +244,19 @@ else
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
+fi
+
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    using_wasm=true
+    wasm_dotnet_path=$payload_directory/dotnet-wasm
+    mv $wasm_runtime_loc $wasm_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --wasmMainJS \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm/runtime-test.js --wasmEngine /home/helixbot/.jsvu/v8 --customRuntimePack \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm"
+fi
+
+if [[ "$mono_dotnet" != "" ]]; then
+    using_mono=true
+    mono_dotnet_path=$payload_directory/dotnet-mono
+    mv $mono_dotnet $mono_dotnet_path
 fi
 
 if [[ "$use_core_run" = true ]]; then
@@ -203,7 +283,7 @@ Write-PipelineSetVariable -name "PerformanceDirectory" -value "$performance_dire
 Write-PipelineSetVariable -name "WorkItemDirectory" -value "$workitem_directory" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Queue" -value "$queue" -is_multi_job_variable false
 Write-PipelineSetVariable -name "SetupArguments" -value "$setup_arguments" -is_multi_job_variable false
-Write-PipelineSetVariable -name "Python" -value "$python3" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Python" -value "python3" -is_multi_job_variable false
 Write-PipelineSetVariable -name "PerfLabArguments" -value "$perflab_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "ExtraBenchmarkDotNetArguments" -value "$extra_benchmark_dotnet_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "BDNCategories" -value "$run_categories" -is_multi_job_variable false
@@ -214,3 +294,5 @@ Write-PipelineSetVariable -name "HelixSourcePrefix" -value "$helix_source_prefix
 Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable false
 Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Compare" -value "$compare" -is_multi_job_variable false
+Write-PipelineSetVariable -name "MonoDotnet" -value "$using_mono" -is_multi_job_variable false
+Write-PipelineSetVariable -name "WasmDotnet" -value "$using_wasm" -is_multi_job_variable false

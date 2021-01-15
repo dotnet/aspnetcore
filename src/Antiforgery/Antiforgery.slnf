@@ -1,0 +1,9 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
+      "src\\Antiforgery\\test\\Microsoft.AspNetCore.Antiforgery.Test.csproj"
+    ]
+  }
+}

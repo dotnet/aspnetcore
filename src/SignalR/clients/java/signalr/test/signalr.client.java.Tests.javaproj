@@ -1,0 +1,57 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Installing Java on ARM will take some work -->
+    <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixAlpine>true</SkipHelixAlpine>
+    <PublishDir>$(OutputPath)</PublishDir>
+    <TestDependsOnJava>true</TestDependsOnJava>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../core/signalr.client.java.core.javaproj" />
+    <ProjectReference Include="../messagepack/signalr.client.java.messagepack.javaproj" />
+  </ItemGroup>
+
+  <Target Name="Restore" />
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
+  <Target Name="Pack" />
+
+  <Target Name="Test" Condition="'$(SkipTests)' != 'true'" DependsOnTargets="Build">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
+    <Message Text="Running Java client tests" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
+    <Exec Command="../gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="Publish">
+    <ItemGroup>
+      <Files Include="../**/*.java" />
+      <Files Include="../**/gradle-wrapper.jar" />
+      <Files Include="../**/gradle-wrapper.properties" />
+      <Files Include="../gradlew" />
+      <Files Include="../**/build.gradle" />
+      <Files Include="../gradlew.bat" />
+      <Files Include="../settings.gradle" />
+      <Files Include="@(Content)" />
+    </ItemGroup>
+    <Copy DestinationFiles="@(Files->'$(PublishDir)\%(RecursiveDir)%(FileName)%(Extension)')" SourceFiles="@(Files)" />
+  </Target>
+
+  <PropertyGroup>
+    <HelixCommand>chmod +x ./gradlew &amp;&amp; ./gradlew $(GradleOptions) test</HelixCommand>
+    <HelixCommand Condition="'$(IsWindowsHelixQueue)' == 'true'">call gradlew $(GradleOptions) test</HelixCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
+  </ItemGroup>
+
+</Project>

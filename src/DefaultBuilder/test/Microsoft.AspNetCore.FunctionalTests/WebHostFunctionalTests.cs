@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "netcoreapp3.1",
+                TargetFramework = "net6.0",
                 HostingModel =  HostingModel.InProcess
             };
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "netcoreapp3.1",
+                TargetFramework = "net6.0",
             };
 
             if (setTestEnvVars)
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Tests
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.slnf"));
                 if (solutionFileInfo.Exists)
                 {
                     return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets"));

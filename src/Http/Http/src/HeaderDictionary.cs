@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -21,22 +22,34 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HeaderDictionary"/>.
+        /// </summary>
         public HeaderDictionary()
         {
         }
 
-        public HeaderDictionary(Dictionary<string, StringValues> store)
+        /// <summary>
+        /// Initializes a new instance of <see cref="HeaderDictionary"/>.
+        /// </summary>
+        /// <param name="store">The value to use as the backing store.</param>
+        public HeaderDictionary(Dictionary<string, StringValues>? store)
         {
             Store = store;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HeaderDictionary"/>.
+        /// </summary>
+        /// <param name="capacity">The initial number of headers that this instance can contain.</param>
         public HeaderDictionary(int capacity)
         {
             EnsureStore(capacity);
         }
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
+        [MemberNotNull(nameof(Store))]
         private void EnsureStore(int capacity)
         {
             if (Store == null)
@@ -59,8 +72,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                StringValues value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out StringValues value))
                 {
                     return value;
                 }
@@ -86,14 +98,9 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        /// <summary>
-        /// Throws KeyNotFoundException if the key is not present.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns></returns>
         StringValues IDictionary<string, StringValues>.this[string key]
         {
-            get { return Store[key]; }
+            get { return this[key]; }
             set
             {
                 ThrowIfReadOnly();
@@ -101,6 +108,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <inheritdoc />
         public long? ContentLength
         {
             get
@@ -142,6 +150,9 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>true if the <see cref="HeaderDictionary" /> is in read-only mode; otherwise, false.</returns>
         public bool IsReadOnly { get; set; }
 
+        /// <summary>
+        /// Gets the collection of HTTP header names in this instance.
+        /// </summary>
         public ICollection<string> Keys
         {
             get
@@ -154,6 +165,9 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <summary>
+        /// Gets the collection of HTTP header values in this instance.
+        /// </summary>
         public ICollection<StringValues> Values
         {
             get
@@ -167,7 +181,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds a new list of items to the collection.
+        /// Adds a new header item to the collection.
         /// </summary>
         /// <param name="item">The item to add.</param>
         public void Add(KeyValuePair<string, StringValues> item)
@@ -213,9 +227,8 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>true if the specified object occurs within this collection; otherwise, false.</returns>
         public bool Contains(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             if (Store == null ||
-                !Store.TryGetValue(item.Key, out value) ||
+                !Store.TryGetValue(item.Key, out StringValues value) ||
                 !StringValues.Equals(value, item.Value))
             {
                 return false;
@@ -269,9 +282,7 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
-            StringValues value;
-
-            if (Store.TryGetValue(item.Key, out value) && StringValues.Equals(item.Value, value))
+            if (Store.TryGetValue(item.Key, out var value) && StringValues.Equals(item.Value, value))
             {
                 return Store.Remove(item.Key);
             }
@@ -359,6 +370,9 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <summary>
+        /// Enumerates a <see cref="HeaderDictionary"/>.
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             // Do NOT make this readonly, or MoveNext will not work
@@ -371,6 +385,11 @@ namespace Microsoft.AspNetCore.Http
                 _notEmpty = true;
             }
 
+            /// <summary>
+            /// Advances the enumerator to the next element of the <see cref="HeaderDictionary"/>.
+            /// </summary>
+            /// <returns><see langword="true"/> if the enumerator was successfully advanced to the next element;
+            /// <see langword="false"/> if the enumerator has passed the end of the collection.</returns>
             public bool MoveNext()
             {
                 if (_notEmpty)
@@ -380,6 +399,9 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
             public KeyValuePair<string, StringValues> Current
             {
                 get
@@ -392,6 +414,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
+            /// <inheritdoc />
             public void Dispose()
             {
             }

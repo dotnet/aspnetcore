@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
@@ -13,19 +17,24 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
     public class RouterBenchmarkTest : IDisposable
     {
         private readonly HttpClient _client;
+        private readonly IHost _host;
         private readonly TestServer _testServer;
 
         public RouterBenchmarkTest()
         {
             // This switch and value are set by benchmark server when running the app for profiling.
             var args = new[] { "--scenarios", "PlaintextRouting" };
-            var webHostBuilder = Benchmarks.Program.GetWebHostBuilder(args);
+            var hostBuilder = Benchmarks.Program.GetHostBuilder(args);
+
+            _host = hostBuilder.Build();
 
             // Make sure we are using the right startup
-            var startupName = webHostBuilder.GetSetting("Startup");
+            var configuration = _host.Services.GetService<IConfiguration>();
+            var startupName = configuration["Startup"];
             Assert.Equal(nameof(Benchmarks.StartupUsingRouter), startupName);
 
-            _testServer = new TestServer(webHostBuilder);
+            _testServer = _host.GetTestServer();
+            _host.Start();
             _client = _testServer.CreateClient();
             _client.BaseAddress = new Uri("http://localhost");
         }
@@ -53,6 +62,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         {
             _testServer.Dispose();
             _client.Dispose();
+            _host.Dispose();
         }
     }
 }

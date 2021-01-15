@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                         valueProvider,
                         parameter,
                         modelMetadata,
-                        value: null);
+                        value: null,
+                        container: null); // Parameters do not have containers.
 
                     if (result.IsModelSet)
                     {
@@ -110,7 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                        valueProvider,
                        property,
                        modelMetadata,
-                       value: null);
+                       value: null,
+                       container: controller);
 
                     if (result.IsModelSet)
                     {

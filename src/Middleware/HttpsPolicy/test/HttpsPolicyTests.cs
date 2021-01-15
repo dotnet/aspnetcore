@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -30,36 +31,41 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(302, 5050, 2592000, true, true, "max-age=2592000; includeSubDomains; preload", "https://localhost:5050/")]
         public async Task SetsBothHstsAndHttpsRedirection_RedirectOnFirstRequest_HstsOnSecondRequest(int statusCode, int? tlsPort, int maxAge, bool includeSubDomains, bool preload, string expectedHstsHeader, string expectedUrl)
         {
-
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.Configure<HttpsRedirectionOptions>(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.RedirectStatusCode = statusCode;
-                        options.HttpsPort = tlsPort;
-                    });
-                    services.Configure<HstsOptions>(options =>
+                        services.Configure<HttpsRedirectionOptions>(options =>
+                        {
+                            options.RedirectStatusCode = statusCode;
+                            options.HttpsPort = tlsPort;
+                        });
+                        services.Configure<HstsOptions>(options =>
+                        {
+                            options.IncludeSubDomains = includeSubDomains;
+                            options.MaxAge = TimeSpan.FromSeconds(maxAge);
+                            options.Preload = preload;
+                            options.ExcludedHosts.Clear(); // allowing localhost for testing
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        options.IncludeSubDomains = includeSubDomains;
-                        options.MaxAge = TimeSpan.FromSeconds(maxAge);
-                        options.Preload = preload;
-                        options.ExcludedHosts.Clear(); // allowing localhost for testing
+                        app.UseHttpsRedirection();
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.UseHsts();
-                    app.Run(context =>
-                    {
-                        return context.Response.WriteAsync("Hello world");
-                    });
-                });
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");

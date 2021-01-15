@@ -24,17 +24,16 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23394")] // Failure on OSX https://dev.azure.com/dnceng/public/_build/results?buildId=706059&view=ms.vss-test-web.build-test-results-tab
         public async Task ConsoleCancelKey()
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp3.1")
+                .WithTargetFrameworks("net6.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();
 
-            var output = new StringBuilder();
-            _console.Error = _console.Out = new StringWriter(output);
             using (var app = new Program(_console, _tempDir.Root))
             {
                 var run = app.RunAsync(new[] { "run" });
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
                 var exitCode = await run.TimeoutAfter(TimeSpan.FromSeconds(30));
 
-                Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", output.ToString());
+                Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", _console.GetOutput());
                 Assert.Equal(0, exitCode);
             }
         }

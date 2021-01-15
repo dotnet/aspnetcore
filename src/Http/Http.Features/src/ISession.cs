@@ -2,11 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Stores user data while the user browses a web application. Session state uses a store maintained by the application
+    /// to persist data across requests from a client. The session data is backed by a cache and considered ephemeral data.
+    /// </summary>
     public interface ISession
     {
         /// <summary>
@@ -42,8 +47,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
-        bool TryGetValue(string key, out byte[] value);
+        /// <returns>The retrieved value.</returns>
+        bool TryGetValue(string key, [NotNullWhen(true)] out byte[]? value);
 
         /// <summary>
         /// Set the given key and value in the current session. This will throw if the session

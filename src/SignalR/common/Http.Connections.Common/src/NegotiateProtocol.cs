@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// The protocol for reading and writing negotiate requests and responses.
+    /// </summary>
     public static class NegotiateProtocol
     {
         private const string ConnectionIdPropertyName = "connectionId";
@@ -36,6 +39,11 @@ namespace Microsoft.AspNetCore.Http.Connections
         // Used to detect ASP.NET SignalR Server connection attempt
         private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
 
+        /// <summary>
+        /// Writes the <paramref name="response"/> to the <paramref name="output"/>.
+        /// </summary>
+        /// <param name="response">The negotiation response generated in response to a negotiation request.</param>
+        /// <param name="output">Where the <paramref name="response"/> is written to as Json.</param>
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
             var reusableWriter = ReusableUtf8JsonWriter.Get(output);
@@ -124,6 +132,11 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
+        /// <summary>
+        /// Parses a <see cref="NegotiationResponse"/> from the <paramref name="content"/> as Json.
+        /// </summary>
+        /// <param name="content">The bytes of a Json payload that represents a <see cref="NegotiationResponse"/>.</param>
+        /// <returns>The parsed <see cref="NegotiationResponse"/>.</returns>
         public static NegotiationResponse ParseResponse(ReadOnlySpan<byte> content)
         {
             try
@@ -245,16 +258,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        /// <summary>
-        /// <para>
-        ///     This method is obsolete and will be removed in a future version.
-        ///     The recommended alternative is <see cref="ParseResponse(ReadOnlySpan{byte})" />.
-        /// </para>
-        /// </summary>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).")]
-        public static NegotiationResponse ParseResponse(Stream content) =>
-            throw new NotSupportedException("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).");
-
         private static AvailableTransport ParseAvailableTransport(ref Utf8JsonReader reader)
         {
             var availableTransport = new AvailableTransport();
@@ -264,13 +267,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var memberName = reader.ValueSpan;
-
-                        if (memberName.SequenceEqual(TransportPropertyNameBytes.EncodedUtf8Bytes))
+                        if (reader.ValueTextEquals(TransportPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             availableTransport.Transport = reader.ReadAsString(TransportPropertyName);
                         }
-                        else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes.EncodedUtf8Bytes))
+                        else if (reader.ValueTextEquals(TransferFormatsPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             reader.CheckRead();
                             reader.EnsureArrayStart();

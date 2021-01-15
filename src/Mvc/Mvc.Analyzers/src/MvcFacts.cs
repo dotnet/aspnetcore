@@ -103,6 +103,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             while (method.IsOverride)
             {
+                if (method.OverriddenMethod == null)
+                {
+                    throw new ArgumentNullException(nameof(method.OverriddenMethod));
+                }
+
                 method = method.OverriddenMethod;
             }
 
@@ -136,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             var implementedMethod = method.ContainingType.FindImplementationForInterfaceMember(disposableDispose);
-            return implementedMethod == method;
+            return SymbolEqualityComparer.Default.Equals(implementedMethod, method);
         }
     }
 }

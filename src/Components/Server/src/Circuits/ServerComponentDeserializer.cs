@@ -59,13 +59,13 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         private readonly IDataProtector _dataProtector;
         private readonly ILogger<ServerComponentDeserializer> _logger;
-        private readonly ServerComponentTypeCache _rootComponentTypeCache;
+        private readonly RootComponentTypeCache _rootComponentTypeCache;
         private readonly ComponentParameterDeserializer _parametersDeserializer;
 
         public ServerComponentDeserializer(
             IDataProtectionProvider dataProtectionProvider,
             ILogger<ServerComponentDeserializer> logger,
-            ServerComponentTypeCache rootComponentTypeCache,
+            RootComponentTypeCache rootComponentTypeCache,
             ComponentParameterDeserializer parametersDeserializer)
         {
             // When we protect the data we use a time-limited data protector with the

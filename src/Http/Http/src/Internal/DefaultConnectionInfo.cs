@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Http
         }
 
         private IHttpConnectionFeature HttpConnectionFeature =>
-            _features.Fetch(ref _features.Cache.Connection, _newHttpConnectionFeature);
+            _features.Fetch(ref _features.Cache.Connection, _newHttpConnectionFeature)!;
 
         private ITlsConnectionFeature TlsConnectionFeature=>
-            _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature);
+            _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature)!;
 
         /// <inheritdoc />
         public override string Id
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Http
             set { HttpConnectionFeature.ConnectionId = value; }
         }
 
-        public override IPAddress RemoteIpAddress
+        public override IPAddress? RemoteIpAddress
         {
             get { return HttpConnectionFeature.RemoteIpAddress; }
             set { HttpConnectionFeature.RemoteIpAddress = value; }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Http
             set { HttpConnectionFeature.RemotePort = value; }
         }
 
-        public override IPAddress LocalIpAddress
+        public override IPAddress? LocalIpAddress
         {
             get { return HttpConnectionFeature.LocalIpAddress; }
             set { HttpConnectionFeature.LocalIpAddress = value; }
@@ -75,21 +75,21 @@ namespace Microsoft.AspNetCore.Http
             set { HttpConnectionFeature.LocalPort = value; }
         }
 
-        public override X509Certificate2 ClientCertificate
+        public override X509Certificate2? ClientCertificate
         {
             get { return TlsConnectionFeature.ClientCertificate; }
             set { TlsConnectionFeature.ClientCertificate = value; }
         }
 
-        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default)
+        public override Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = default)
         {
             return TlsConnectionFeature.GetClientCertificateAsync(cancellationToken);
         }
 
         struct FeatureInterfaces
         {
-            public IHttpConnectionFeature Connection;
-            public ITlsConnectionFeature TlsConnection;
+            public IHttpConnectionFeature? Connection;
+            public ITlsConnectionFeature? TlsConnection;
         }
     }
 }

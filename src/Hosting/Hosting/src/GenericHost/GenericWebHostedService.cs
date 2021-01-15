@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -64,27 +65,27 @@ namespace Microsoft.AspNetCore.Hosting
         {
             HostingEventSource.Log.HostStart();
 
-            var serverAddressesFeature = Server.Features?.Get<IServerAddressesFeature>();
+            var serverAddressesFeature = Server.Features.Get<IServerAddressesFeature>();
             var addresses = serverAddressesFeature?.Addresses;
             if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
             {
                 var urls = Configuration[WebHostDefaults.ServerUrlsKey];
                 if (!string.IsNullOrEmpty(urls))
                 {
-                    serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
+                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
 
-                    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                     {
                         addresses.Add(value);
                     }
                 }
             }
 
-            RequestDelegate application = null;
+            RequestDelegate? application = null;
 
             try
             {
-                Action<IApplicationBuilder> configure = Options.ConfigureApplication;
+                var configure = Options.ConfigureApplication;
 
                 if (configure == null)
                 {
@@ -112,7 +113,9 @@ namespace Microsoft.AspNetCore.Hosting
                     throw;
                 }
 
-                application = BuildErrorPageApplication(ex);
+                var showDetailedErrors = HostingEnvironment.IsDevelopment() || Options.WebHostOptions.DetailedErrors;
+
+                application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
             var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory);
@@ -142,54 +145,6 @@ namespace Microsoft.AspNetCore.Hosting
                     Logger.HostingStartupAssemblyError(exception);
                 }
             }
-        }
-
-        private RequestDelegate BuildErrorPageApplication(Exception exception)
-        {
-            if (exception is TargetInvocationException tae)
-            {
-                exception = tae.InnerException;
-            }
-
-            var showDetailedErrors = HostingEnvironment.IsDevelopment() || Options.WebHostOptions.DetailedErrors;
-
-            var model = new ErrorPageModel
-            {
-                RuntimeDisplayName = RuntimeInformation.FrameworkDescription
-            };
-            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
-            var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
-            var clrVersion = assemblyVersion;
-            model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
-            model.CurrentAssemblyVesion = currentAssembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
-            model.ClrVersion = clrVersion;
-            model.OperatingSystemDescription = RuntimeInformation.OSDescription;
-            model.ShowRuntimeDetails = showDetailedErrors;
-
-            if (showDetailedErrors)
-            {
-                var exceptionDetailProvider = new ExceptionDetailsProvider(
-                    HostingEnvironment.ContentRootFileProvider,
-                    sourceCodeLineCount: 6);
-
-                model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
-            }
-            else
-            {
-                model.ErrorDetails = new ExceptionDetails[0];
-            }
-
-            var errorPage = new ErrorPage(model);
-            return context =>
-            {
-                context.Response.StatusCode = 500;
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
-                context.Response.ContentType = "text/html; charset=utf-8";
-                return errorPage.ExecuteAsync(context);
-            };
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +13,9 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, Activity activity)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
-            return logger.BeginScope(new HostingLogScope(httpContext, activity));
+            return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -42,7 +41,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
                 {
-                    message = message + Environment.NewLine + ex.Message;
+                    if (ex != null)
+                    {
+                        message = message + Environment.NewLine + ex.Message;
+                    }
                 }
             }
 
@@ -97,15 +99,14 @@ namespace Microsoft.AspNetCore.Hosting
         {
             private readonly string _path;
             private readonly string _traceIdentifier;
-            private readonly Activity _activity;
 
-            private string _cachedToString;
+            private string? _cachedToString;
 
             public int Count
             {
                 get
                 {
-                    return 5;
+                    return 2;
                 }
             }
 
@@ -121,31 +122,17 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         return new KeyValuePair<string, object>("RequestPath", _path);
                     }
-                    else if (index == 2)
-                    {
-                        return new KeyValuePair<string, object>("SpanId", _activity.GetSpanId());
-                    }
-                    else if (index == 3)
-                    {
-                        return new KeyValuePair<string, object>("TraceId", _activity.GetTraceId());
-                    }
-                    else if (index == 4)
-                    {
-                        return new KeyValuePair<string, object>("ParentId", _activity.GetParentId());
-                    }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext, Activity activity)
+            public HostingLogScope(HttpContext httpContext)
             {
                 _traceIdentifier = httpContext.TraceIdentifier;
                 _path = (httpContext.Request.PathBase.HasValue 
                          ? httpContext.Request.PathBase + httpContext.Request.Path 
                          : httpContext.Request.Path).ToString();
-
-                _activity = activity;
             }
 
             public override string ToString()
@@ -154,12 +141,9 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
-                        "RequestPath:{0} RequestId:{1}, SpanId:{2}, TraceId:{3}, ParentId:{4}",
+                        "RequestPath:{0} RequestId:{1}",
                         _path,
-                        _traceIdentifier,
-                        _activity.GetSpanId(),
-                        _activity.GetTraceId(),
-                        _activity.GetParentId());
+                        _traceIdentifier);
                 }
 
                 return _cachedToString;

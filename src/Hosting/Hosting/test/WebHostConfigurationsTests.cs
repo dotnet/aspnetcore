@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 { WebHostDefaults.SuppressStatusMessagesKey, "true" }
             };
 
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
             Assert.Equal("wwwroot", config.WebRoot);
             Assert.Equal("MyProjectReference", config.ApplicationName);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void ReadsOldEnvKey()
         {
             var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", Environments.Development } };
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
             Assert.Equal(Environments.Development, config.Environment);
         }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void AllowsNumberForDetailedErrors(string value, bool expected)
         {
             var parameters = new Dictionary<string, string>() { { "detailedErrors", value } };
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
             Assert.Equal(expected, config.DetailedErrors);
         }

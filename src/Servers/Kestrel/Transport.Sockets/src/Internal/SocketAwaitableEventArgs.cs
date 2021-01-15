@@ -11,15 +11,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
+    internal sealed class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
     {
         private static readonly Action _callbackCompleted = () => { };
 
         private readonly PipeScheduler _ioScheduler;
 
-        private Action _callback;
+        private Action? _callback;
 
         public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
+            : base(unsafeSuppressExecutionContextFlow: true)
         {
             _ioScheduler = ioScheduler;
         }
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             if (continuation != null)
             {
-                _ioScheduler.Schedule(state => ((Action)state)(), continuation);
+                _ioScheduler.Schedule(state => ((Action)state!)(), continuation);
             }
         }
     }

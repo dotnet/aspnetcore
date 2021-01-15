@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -373,11 +374,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             public override int GetHashCode()
             {
-                var hashCodeCombiner = HashCodeCombiner.Start();
+                var hashCodeCombiner = new HashCode();
                 hashCodeCombiner.Add(Include);
                 hashCodeCombiner.Add(Exclude);
 
-                return hashCodeCombiner.CombinedHash;
+                return hashCodeCombiner.ToHashCode();
             }
         }
     }

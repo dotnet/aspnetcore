@@ -6,6 +6,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,14 +26,14 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
-        public void CanSetCultureAndParseCultueSensitiveNumbersAndDates(string culture)
+        public virtual void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
             SetCulture(culture);
 
             // int
-            var input = Browser.FindElement(By.Id("input_type_text_int"));
-            var display = Browser.FindElement(By.Id("input_type_text_int_value"));
+            var input = Browser.Exists(By.Id("input_type_text_int"));
+            var display = Browser.Exists(By.Id("input_type_text_int_value"));
             Browser.Equal(42.ToString(cultureInfo), () => display.Text);
 
             input.Clear();
@@ -41,8 +42,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
 
             // decimal
-            input = Browser.FindElement(By.Id("input_type_text_decimal"));
-            display = Browser.FindElement(By.Id("input_type_text_decimal_value"));
+            input = Browser.Exists(By.Id("input_type_text_decimal"));
+            display = Browser.Exists(By.Id("input_type_text_decimal_value"));
             Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
 
             input.Clear();
@@ -51,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.42m.ToString(cultureInfo), () => display.Text);
 
             // datetime
-            input = Browser.FindElement(By.Id("input_type_text_datetime"));
-            display = Browser.FindElement(By.Id("input_type_text_datetime_value"));
+            input = Browser.Exists(By.Id("input_type_text_datetime"));
+            display = Browser.Exists(By.Id("input_type_text_datetime_value"));
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
 
             input.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
@@ -60,8 +61,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
 
             // datetimeoffset
-            input = Browser.FindElement(By.Id("input_type_text_datetimeoffset"));
-            display = Browser.FindElement(By.Id("input_type_text_datetimeoffset_value"));
+            input = Browser.Exists(By.Id("input_type_text_datetimeoffset"));
+            display = Browser.Exists(By.Id("input_type_text_datetimeoffset_value"));
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
 
             input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
@@ -88,14 +89,15 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27155")]
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
             SetCulture(culture);
 
             // int
-            var input = Browser.FindElement(By.Id("input_type_number_int"));
-            var display = Browser.FindElement(By.Id("input_type_number_int_value"));
+            var input = Browser.Exists(By.Id("input_type_number_int"));
+            var display = Browser.Exists(By.Id("input_type_number_int_value"));
             Browser.Equal(42.ToString(cultureInfo), () => display.Text);
             Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -106,8 +108,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // decimal
-            input = Browser.FindElement(By.Id("input_type_number_decimal"));
-            display = Browser.FindElement(By.Id("input_type_number_decimal_value"));
+            input = Browser.Exists(By.Id("input_type_number_decimal"));
+            display = Browser.Exists(By.Id("input_type_number_decimal_value"));
             Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
             Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -118,9 +120,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // datetime
-            input = Browser.FindElement(By.Id("input_type_date_datetime"));
-            display = Browser.FindElement(By.Id("input_type_date_datetime_value"));
-            var extraInput = Browser.FindElement(By.Id("input_type_date_datetime_extrainput"));
+            input = Browser.Exists(By.Id("input_type_date_datetime"));
+            display = Browser.Exists(By.Id("input_type_date_datetime_value"));
+            var extraInput = Browser.Exists(By.Id("input_type_date_datetime_extrainput"));
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -130,9 +132,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // datetimeoffset
-            input = Browser.FindElement(By.Id("input_type_date_datetimeoffset"));
-            display = Browser.FindElement(By.Id("input_type_date_datetimeoffset_value"));
-            extraInput = Browser.FindElement(By.Id("input_type_date_datetimeoffset_extrainput"));
+            input = Browser.Exists(By.Id("input_type_date_datetimeoffset"));
+            display = Browser.Exists(By.Id("input_type_date_datetimeoffset_value"));
+            extraInput = Browser.Exists(By.Id("input_type_date_datetimeoffset_extrainput"));
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -151,8 +153,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             SetCulture(culture);
 
             // int
-            var input = Browser.FindElement(By.Id("inputnumber_int"));
-            var display = Browser.FindElement(By.Id("inputnumber_int_value"));
+            var input = Browser.Exists(By.Id("inputnumber_int"));
+            var display = Browser.Exists(By.Id("inputnumber_int_value"));
             Browser.Equal(42.ToString(cultureInfo), () => display.Text);
             Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -163,8 +165,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // long
-            input = Browser.FindElement(By.Id("inputnumber_long"));
-            display = Browser.FindElement(By.Id("inputnumber_long_value"));
+            input = Browser.Exists(By.Id("inputnumber_long"));
+            display = Browser.Exists(By.Id("inputnumber_long_value"));
             Browser.Equal(4200.ToString(cultureInfo), () => display.Text);
             Browser.Equal(4200.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -174,9 +176,21 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(90000000000.ToString(cultureInfo), () => display.Text);
             Browser.Equal(90000000000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
+            // short
+            input = Browser.Exists(By.Id("inputnumber_short"));
+            display = Browser.Exists(By.Id("inputnumber_short_value"));
+            Browser.Equal(42.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            input.Clear();
+            input.SendKeys(127.ToString(CultureInfo.InvariantCulture));
+            input.SendKeys("\t");
+            Browser.Equal(127.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(127.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
             // decimal
-            input = Browser.FindElement(By.Id("inputnumber_decimal"));
-            display = Browser.FindElement(By.Id("inputnumber_decimal_value"));
+            input = Browser.Exists(By.Id("inputnumber_decimal"));
+            display = Browser.Exists(By.Id("inputnumber_decimal_value"));
             Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
             Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -187,9 +201,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // datetime
-            input = Browser.FindElement(By.Id("inputdate_datetime"));
-            display = Browser.FindElement(By.Id("inputdate_datetime_value"));
-            var extraInput = Browser.FindElement(By.Id("inputdate_datetime_extrainput"));
+            input = Browser.Exists(By.Id("inputdate_datetime"));
+            display = Browser.Exists(By.Id("inputdate_datetime_value"));
+            var extraInput = Browser.Exists(By.Id("inputdate_datetime_extrainput"));
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
@@ -199,9 +213,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // datetimeoffset
-            input = Browser.FindElement(By.Id("inputdate_datetimeoffset"));
-            display = Browser.FindElement(By.Id("inputdate_datetimeoffset_value"));
-            extraInput = Browser.FindElement(By.Id("inputdate_datetimeoffset_extrainput"));
+            input = Browser.Exists(By.Id("inputdate_datetimeoffset"));
+            display = Browser.Exists(By.Id("inputdate_datetimeoffset_value"));
+            extraInput = Browser.Exists(By.Id("inputdate_datetimeoffset_extrainput"));
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 

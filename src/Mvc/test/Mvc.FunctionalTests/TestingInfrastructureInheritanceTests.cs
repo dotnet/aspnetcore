@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
             Assert.True(factory.CreateServerCalled);
             Assert.True(factory.CreateWebHostBuilderCalled);
-            Assert.True(factory.GetTestAssembliesCalled);
+            // GetTestAssemblies is not called when reading content roots from MvcAppManifest
+            Assert.False(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.False(factory.CreateHostCalled);
         }
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-            Assert.True(factory.GetTestAssembliesCalled);
+            Assert.False(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.True(factory.CreateHostCalled);
             Assert.False(factory.CreateServerCalled);

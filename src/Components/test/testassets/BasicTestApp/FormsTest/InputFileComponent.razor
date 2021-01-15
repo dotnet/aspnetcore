@@ -1,0 +1,104 @@
+﻿@using System.IO;
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>File preview</h1>
+
+Max file size:
+<br />
+<input type="number" id="max-file-size" @bind-value="@maxFileSize" />
+<br />
+
+Max allowed files:
+<br />
+<input type="number" id="max-allowed-files" @bind-value="@maxAllowedFiles" />
+<br />
+
+<InputFile OnChange="LoadFiles" id="input-file" multiple />
+<br />
+
+<span id="exception-message">@exceptionMessage</span>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+    <br />
+}
+
+@foreach (var (file, content) in loadedFiles)
+{
+    <p id="file-@(file.Name)">
+        <strong>Name:</strong> <span id="file-name">@(file.Name)</span><br />
+        <strong>Last modified:</strong> <span id="file-last-modified">@(file.LastModified.ToString())</span><br />
+        <strong>Size (bytes):</strong> <span id="file-size">@(file.Size)</span><br />
+        <strong>Content type:</strong> <span id="file-content-type">@(file.ContentType)</span><br />
+        <strong>Content:</strong> <span id="file-content">@content</span><br />
+    </p>
+}
+
+<h1>Image upload</h1>
+
+<InputFile OnChange="LoadImage" id="input-image" />
+<br />
+
+@if (imageDataUri != null)
+{
+    <p>
+        Uploaded image:<br />
+        <img id="image-uploaded" src="@imageDataUri" />
+    </p>
+}
+
+<p>
+    Source image:<br />
+    <img id="image-source" src="images/blazor_logo_1000x.png" />
+</p>
+
+@code {
+    Dictionary<IBrowserFile, string> loadedFiles = new Dictionary<IBrowserFile, string>();
+
+    long maxFileSize = 1024 * 1024 * 15;
+    int maxAllowedFiles = 3;
+
+    bool isLoading;
+
+    string imageDataUri;
+
+    string exceptionMessage;
+
+    async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+        exceptionMessage = string.Empty;
+
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+            {
+                StateHasChanged();
+
+                using var reader = new StreamReader(file.OpenReadStream(maxFileSize));
+
+                loadedFiles.Add(file, await reader.ReadToEndAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            exceptionMessage = ex.Message;
+        }
+
+        isLoading = false;
+    }
+
+    async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        var format = "image/jpeg";
+        var imageFile = await e.File.RequestImageFileAsync(format, 640, 480);
+
+        using var fileStream = imageFile.OpenReadStream(maxFileSize);
+        using var memoryStream = new MemoryStream();
+        await fileStream.CopyToAsync(memoryStream);
+
+        imageDataUri = $"data:{format};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+    }
+}

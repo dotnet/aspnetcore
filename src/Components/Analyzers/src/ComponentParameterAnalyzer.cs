@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterCompilationStartAction(context =>
             {
                 if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))

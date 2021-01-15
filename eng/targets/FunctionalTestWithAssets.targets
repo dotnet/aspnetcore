@@ -1,0 +1,27 @@
+<Project>
+
+  <ItemGroup>
+    <ProjectReference Include="@(FunctionalTestAssetProjectReference)" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="CollectTestAssetPayload" BeforeTargets="GetCopyToOutputDirectoryItems" >
+    <MSBuild Targets="CollectFunctionalTestPayload"
+             BuildInParallel="true"
+             SkipNonexistentTargets="true"
+             Projects="%(FunctionalTestAssetProjectReference.Identity)"
+             RebaseOutputs="True">
+      <Output TaskParameter="TargetOutputs" ItemName="DependencyPayload" />
+    </MSBuild>
+
+    <ItemGroup>
+      <ContentWithTargetPath
+        Include="@(DependencyPayload)"
+        Condition="'@(DependencyPayload->Count())' != '0'">
+        <TargetPath>%(DependencyPayload.RelativePath)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ContentWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+</Project>

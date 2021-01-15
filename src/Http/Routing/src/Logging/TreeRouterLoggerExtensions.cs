@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
 {
     internal static class TreeRouterLoggerExtensions
     {
-        private static readonly Action<ILogger, string, string, Exception> _requestMatchedRoute;
+        private static readonly Action<ILogger, string, string, Exception?> _requestMatchedRoute;
 
         static TreeRouterLoggerExtensions()
         {
