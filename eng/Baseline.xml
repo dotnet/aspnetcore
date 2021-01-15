@@ -35,8 +35,8 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.1.1" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="2.1.24" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.1.24" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.1.13" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Redis" Version="0.4.1" />
   <Package Id="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.1.1" />
