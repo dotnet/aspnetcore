@@ -60,7 +60,6 @@
       three do not. This is likely about our public APIs i.e. external compilation requirements.
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog.Messages"               Version="$(SystemDiagnosticsEventLogVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsVersion)" />
   </ItemGroup>
