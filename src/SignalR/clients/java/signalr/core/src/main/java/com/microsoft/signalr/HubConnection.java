@@ -521,7 +521,7 @@ public class HubConnection implements AutoCloseable {
 
             if (connectionState == null)
             {
-                this.logger.error("'stopConnection' called with a null ConnectionState. This is not expected, please file a bug.");
+                this.logger.error("'stopConnection' called with a null ConnectionState. This is not expected, please file a bug. https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=&template=bug_report.md");
                 return;
             }
 
