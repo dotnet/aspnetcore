@@ -9,10 +9,10 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Server",
-  "precedence": "7000",
-  "identity": "Microsoft.Web.Blazor.Server.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Web.Blazor.Server.CSharp.6.0",
   "shortName": "blazorserver",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/6.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
