@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _aborted = true;
 
-            _log.StreamAbort(ConnectionId, abortReason);
+            _log.StreamAbort(ConnectionId, abortReason.Message);
 
             lock (_shutdownLock)
             {
@@ -324,9 +324,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             {
                 lock (_shutdownLock)
                 {
+                    // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
                     _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
 
-                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
+                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason.Message);
                     _stream.Shutdown();
                 }
 

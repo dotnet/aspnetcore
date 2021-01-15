@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
     internal class QuicTrace : IQuicTrace
     {
         private static readonly Action<ILogger, string, Exception?> _acceptedConnection =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(NewConnection)), @"Connection id ""{ConnectionId}"" accepted.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AcceptedConnection"), @"Connection id ""{ConnectionId}"" accepted.");
         private static readonly Action<ILogger, string, Exception?> _acceptedStream =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(NewStream)), @"Stream id ""{ConnectionId}"" accepted.");
-        private static readonly Action<ILogger, string, string, Exception?> _connectionError =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, string, Exception?> _streamError =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" accepted.");
+        private static readonly Action<ILogger, string, Exception?> _connectionError =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.");
+        private static readonly Action<ILogger, string, Exception?> _streamError =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.");
         private static readonly Action<ILogger, string, Exception?> _streamPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamPause)), @"Stream id ""{ConnectionId}"" paused.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.");
         private static readonly Action<ILogger, string, Exception?> _streamResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamResume)), @"Stream id ""{ConnectionId}"" resumed.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.");
         private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes, exception: ""{Reason}"".");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".");
         private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" aborted by application, exception: ""{Reason}"".");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".");
 
         private ILogger _logger;
 
@@ -39,24 +39,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
 
-        public void NewConnection(string connectionId)
+        public void AcceptedConnection(string connectionId)
         {
             _acceptedConnection(_logger, connectionId, null);
         }
 
-        public void NewStream(string streamId)
+        public void AcceptedStream(string streamId)
         {
             _acceptedStream(_logger, streamId, null);
         }
 
         public void ConnectionError(string connectionId, Exception ex)
         {
-            _connectionError(_logger, connectionId, ex.Message, ex);
+            _connectionError(_logger, connectionId, ex);
         }
 
         public void StreamError(string streamId, Exception ex)
         {
-            _streamError(_logger, streamId, ex.Message, ex);
+            _streamError(_logger, streamId, ex);
         }
 
         public void StreamPause(string streamId)
@@ -69,14 +69,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _streamResume(_logger, streamId, null);
         }
 
-        public void StreamShutdownWrite(string streamId, Exception ex)
+        public void StreamShutdownWrite(string streamId, string reason)
         {
-            _streamShutdownWrite(_logger, streamId, ex.Message, ex);
+            _streamShutdownWrite(_logger, streamId, reason, null);
         }
 
-        public void StreamAbort(string streamId, Exception ex)
+        public void StreamAbort(string streamId, string reason)
         {
-            _streamAborted(_logger, streamId, ex.Message, ex);
+            _streamAborted(_logger, streamId, reason, null);
         }
     }
 }
