@@ -235,7 +235,6 @@ stages:
       parameters:
         BARBuildId: ${{ parameters.BARBuildId }}
         PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
-
     - job:
       displayName: Publish Using Darc
       dependsOn: setupMaestroVars
