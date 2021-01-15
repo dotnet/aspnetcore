@@ -1,21 +1,36 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 ////#if (IndividualLocalAuth)
 import authService from './api-authorization/AuthorizeService'
 ////#endif
 
-export class FetchData extends Component {
-  static displayName = FetchData.name;
+const FetchData = () => {
+  const [forecasts, setForecasts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  constructor(props) {
-    super(props);
-    this.state = { forecasts: [], loading: true };
+  const populateWeatherData = async () => {
+////#if (IndividualLocalAuth)
+    const token = await authService.getAccessToken();
+    const response = await fetch('weatherforecast', {
+      headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await response.json();
+    setForecasts(data);
+    setLoading(false);
+////#else
+    const response = await fetch('weatherforecast');
+    const data = await response.json();
+    setForecasts(data);
+    setLoading(false);
+////#endif
   }
 
-  componentDidMount() {
-    this.populateWeatherData();
-  }
+  useEffect(() => {
+    if (loading) {
+      populateWeatherData();
+    }
+  });
 
-  static renderForecastsTable(forecasts) {
+  const renderForecastsTable = (forecasts) => {
     return (
       <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
@@ -38,34 +53,19 @@ export class FetchData extends Component {
         </tbody>
       </table>
     );
-  }
+  };
 
-  render() {
-    let contents = this.state.loading
-      ? <p><em>Loading...</em></p>
-      : FetchData.renderForecastsTable(this.state.forecasts);
+  let contents = loading
+    ? <p><em>Loading...</em></p>
+    : renderForecastsTable(forecasts);
 
-    return (
-      <div>
-        <h1 id="tabelLabel" >Weather forecast</h1>
-        <p>This component demonstrates fetching data from the server.</p>
-        {contents}
-      </div>
-    );
-  }
+  return (
+    <div>
+      <h1 id="tabelLabel" >Weather forecast</h1>
+      <p>This component demonstrates fetching data from the server.</p>
+      {contents}
+    </div>
+  );
+};
 
-  async populateWeatherData() {
-    ////#if (IndividualLocalAuth)
-    const token = await authService.getAccessToken();
-    const response = await fetch('weatherforecast', {
-      headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await response.json();
-    this.setState({ forecasts: data, loading: false });
-    ////#else
-    const response = await fetch('weatherforecast');
-    const data = await response.json();
-    this.setState({ forecasts: data, loading: false });
-    ////#endif
-  }
-}
+export default FetchData;
