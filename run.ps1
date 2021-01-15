@@ -96,9 +96,15 @@ param(
     [string]$Projects,
     [string]$PackageVersionPropsUrl = $env:PB_PackageVersionPropsUrl,
     [string]$AccessTokenSuffix = $env:PB_AccessTokenSuffix,
-    [string]$RestoreSources = $null,
-    [string]$AssetRootUrl = $null,
-    [string]$ProductBuildId = $null,
+    [string]$RestoreSources = ${env:PB_RestoreSource},
+    [string]$AssetRootUrl = ${env:PB_AssetRootUrl},
+    [string]$ProductBuildId = ${env:ProductBuildId},
+    [string]$PublishBlobFeedUrl = ${env:PB_PublishBlobFeedUrl},
+    [string]$PublishType = ${env:PB_PublishType},
+    [string]$SkipTests = ${env:PB_SkipTests},
+    [string]$IsFinalBuild = ${env:PB_IsFinalBuild},
+    [string]$SignType = ${env:PB_SignType},
+    [string]$PublishBlobFeedKey = ${env:PB_PublishBlobFeedKey},
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
 )
@@ -220,6 +226,13 @@ if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/bu
 
 [string[]] $ProdConArgs = @()
 
+if ($Projects) {
+    $MSBuildArguments += "-p:Projects=$Projects"
+    $MSBuildArguments += "-p:_ProjectsOnly=true"
+}
+
+# PipeBuild parameters
+
 if ($PackageVersionPropsUrl) {
     $IntermediateDir = Join-Path $PSScriptRoot 'obj'
     $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
@@ -232,21 +245,41 @@ if ($AccessTokenSuffix) {
     $ProdConArgs += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
 }
 
-if ($Projects) {
-    $MSBuildArguments += "-p:Projects=$Projects"
-    $MSBuildArguments += "-p:_ProjectsOnly=true"
+if ($AssetRootUrl) {
+    $ProdConArgs += "-p:DotNetAssetRootUrl=$AssetRootUrl"
 }
 
-# PipeBuild parameters
-$ProdConArgs += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
-$ProdConArgs += "-p:DotNetAdditionalRestoreSources=${env:PB_RestoreSource}"
-$ProdConArgs += "-p:DotNetProductBuildId=${env:ProductBuildId}"
-$ProdConArgs += "-p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
-$ProdConArgs += "-p:PublishType=${env:PB_PublishType}"
-$ProdConArgs += "-p:SkipTests=${env:PB_SkipTests}"
-$ProdConArgs += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
-$ProdConArgs += "-p:SignType=${env:PB_SignType}"
-$ProdConArgs += "-p:PublishBlobFeedKey=${env:PB_PublishBlobFeedKey}"
+if ($RestoreSources) {
+    $ProdConArgs += "-p:DotNetAdditionalRestoreSources=$RestoreSources"
+}
+
+if ($ProductBuildId) {
+    $ProdConArgs += "-p:DotNetProductBuildId=$ProductBuildId"
+}
+
+if ($PublishBlobFeedUrl) {
+    $ProdConArgs += "-p:PublishBlobFeedUrl=$PublishBlobFeedUrl"
+}
+
+if ($PublishType) {
+    $ProdConArgs += "-p:PublishType=$PublishType"
+}
+
+if ($SkipTests) {
+    $ProdConArgs += "-p:SkipTests=$SkipTests"
+}
+
+if ($IsFinalBuild) {
+    $ProdConArgs += "-p:IsFinalBuild=$IsFinalBuild"
+}
+
+if ($SignType) {
+    $ProdConArgs += "-p:SignType=$SignType"
+}
+
+if ($PublishBlobFeedKey) {
+    $ProdConArgs += "-p:PublishBlobFeedKey=$PublishBlobFeedKey"
+}
 
 # Execute
 
