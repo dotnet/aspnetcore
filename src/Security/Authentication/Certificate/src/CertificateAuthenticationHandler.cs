@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
     {
         private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
-        private ICertificateValidationCache _cache;
+        private ICertificateValidationCache? _cache;
 
         public CertificateAuthenticationHandler(
             IOptionsMonitor<CertificateAuthenticationOptions> options,
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// </summary>
         protected new CertificateAuthenticationEvents Events
         {
-            get { return (CertificateAuthenticationEvents)base.Events; }
+            get { return (CertificateAuthenticationEvents)base.Events!; }
             set { base.Events = value; }
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
 
             certificateValidatedContext.Success();
-            return certificateValidatedContext.Result;
+            return certificateValidatedContext.Result!;
         }
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
