@@ -224,7 +224,7 @@ stages:
 - ${{ if or(ge(parameters.publishingInfraVersion, 3), eq(parameters.inline, 'false')) }}:
   - stage: publish_using_darc
     ${{ if or(eq(parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
-      dependsOn: Validate
+      dependsOn: ${{ parameters.publishDependsOn }}
     ${{ if and(ne(parameters.enableNugetValidation, 'true'), ne(parameters.enableSigningValidation, 'true'), ne(parameters.enableSourceLinkValidation, 'true'), ne(parameters.SDLValidationParameters.enable, 'true')) }}:
       dependsOn: ${{ parameters.validateDependsOn }}
     displayName: Publish using Darc
