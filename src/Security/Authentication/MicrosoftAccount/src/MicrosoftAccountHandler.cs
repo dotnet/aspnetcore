@@ -96,10 +96,10 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
            Dictionary<string, string> queryStrings,
            AuthenticationProperties properties,
            string name,
-           Func<T, string?> formatter,
+           Func<T, string> formatter,
            T defaultValue)
         {
-            string? value = null;
+            string? value;
             var parameterValue = properties.GetParameter<T>(name);
             if (parameterValue != null)
             {
@@ -124,6 +124,6 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             AuthenticationProperties properties,
             string name,
             string? defaultValue = null)
-            => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
+            => AddQueryString(queryStrings, properties, name, x => x!, defaultValue);
     }
 }
