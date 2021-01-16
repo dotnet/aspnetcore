@@ -26,42 +26,6 @@ const Login = (props) => {
     window.location.replace(returnUrl);
   };
 
-  const login = async (returnUrl) => {
-    const state = { returnUrl };
-    const result = await authService.signIn(state);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        break;
-      case AuthenticationResultStatus.Success:
-        await navigateToReturnUrl(returnUrl);
-        break;
-      case AuthenticationResultStatus.Fail:
-        setMessage(result.message);
-        break;
-      default:
-        throw new Error(`Invalid status result ${result.status}.`);
-    }
-  };
-
-  const processLoginCallback = async () => {
-    const url = window.location.href;
-    const result = await authService.completeSignIn(url);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        // There should not be any redirects as the only time completeSignIn finishes
-        // is when we are doing a redirect sign in flow.
-        throw new Error('Should not redirect.');
-      case AuthenticationResultStatus.Success:
-        await navigateToReturnUrl(getReturnUrl(result.state));
-        break;
-      case AuthenticationResultStatus.Fail:
-        setMessage(result.message);
-        break;
-      default:
-        throw new Error(`Invalid authentication result status '${result.status}'.`);
-    }
-  };
-
   const redirectToApiAuthorizationPath = (apiAuthorizationPath) => {
     const redirectUrl = `${window.location.origin}/${apiAuthorizationPath}`;
     // It's important that we do a replace here so that when the user hits the back arrow on the
@@ -70,15 +34,51 @@ const Login = (props) => {
     window.location.replace(redirectUrl);
   };
 
-  const redirectToProfile = () => {
-    redirectToApiAuthorizationPath(ApplicationPaths.IdentityManagePath);
-  };
-
-  const redirectToRegister = () => {
-    redirectToApiAuthorizationPath(`${ApplicationPaths.IdentityRegisterPath}?${QueryParameterNames.ReturnUrl}=${encodeURI(ApplicationPaths.Login)}`);
-  };
-
   useEffect(() => {
+    const login = async (returnUrl) => {
+      const state = { returnUrl };
+      const result = await authService.signIn(state);
+      switch (result.status) {
+        case AuthenticationResultStatus.Redirect:
+          break;
+        case AuthenticationResultStatus.Success:
+          await navigateToReturnUrl(returnUrl);
+          break;
+        case AuthenticationResultStatus.Fail:
+          setMessage(result.message);
+          break;
+        default:
+          throw new Error(`Invalid status result ${result.status}.`);
+      }
+    };
+
+    const processLoginCallback = async () => {
+      const url = window.location.href;
+      const result = await authService.completeSignIn(url);
+      switch (result.status) {
+        case AuthenticationResultStatus.Redirect:
+          // There should not be any redirects as the only time completeSignIn finishes
+          // is when we are doing a redirect sign in flow.
+          throw new Error('Should not redirect.');
+        case AuthenticationResultStatus.Success:
+          await navigateToReturnUrl(getReturnUrl(result.state));
+          break;
+        case AuthenticationResultStatus.Fail:
+          setMessage(result.message);
+          break;
+        default:
+          throw new Error(`Invalid authentication result status '${result.status}'.`);
+      }
+    };
+
+    const redirectToProfile = () => {
+      redirectToApiAuthorizationPath(ApplicationPaths.IdentityManagePath);
+    };
+
+    const redirectToRegister = () => {
+      redirectToApiAuthorizationPath(`${ApplicationPaths.IdentityRegisterPath}?${QueryParameterNames.ReturnUrl}=${encodeURI(ApplicationPaths.Login)}`);
+    };
+
     const action = props.action;
     switch (action) {
       case LoginActions.Login:
@@ -101,7 +101,7 @@ const Login = (props) => {
       default:
         throw new Error(`Invalid action '${action}'`);
     }
-  });
+  }, [props.action]);
 
   const action = props.action;
   if (!!message) {

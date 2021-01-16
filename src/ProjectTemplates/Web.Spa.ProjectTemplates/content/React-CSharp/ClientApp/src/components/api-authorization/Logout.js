@@ -28,47 +28,6 @@ const Logout = (props) => {
     return window.location.replace(returnUrl);
   };
 
-  const logout = async (returnUrl) => {
-    const state = { returnUrl };
-    const isauthenticated = await authService.isAuthenticated();
-    if (isauthenticated) {
-      const result = await authService.signOut(state);
-      switch (result.status) {
-        case AuthenticationResultStatus.Redirect:
-          break;
-        case AuthenticationResultStatus.Success:
-          await navigateToReturnUrl(returnUrl);
-          break;
-        case AuthenticationResultStatus.Fail:
-          setMessage(result.message);
-          break;
-        default:
-          throw new Error("Invalid authentication result status.");
-      }
-    } else {
-      setMessage("You successfully logged out!");
-    }
-  };
-
-  const processLogoutCallback = async () => {
-    const url = window.location.href;
-    const result = await authService.completeSignOut(url);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        // There should not be any redirects as the only time completeAuthentication finishes
-        // is when we are doing a redirect sign in flow.
-        throw new Error('Should not redirect.');
-      case AuthenticationResultStatus.Success:
-        await navigateToReturnUrl(getReturnUrl(result.state));
-        break;
-      case AuthenticationResultStatus.Fail:
-        setMessage(result.message);
-        break;
-      default:
-        throw new Error("Invalid authentication result status.");
-    }
-  };
-
   const populateAuthenticationState = async () => {
     const authenticated = await authService.isAuthenticated();
     setIsReady(true);
@@ -76,6 +35,47 @@ const Logout = (props) => {
   };
 
   useEffect(() => {
+    const logout = async (returnUrl) => {
+      const state = { returnUrl };
+      const isauthenticated = await authService.isAuthenticated();
+      if (isauthenticated) {
+        const result = await authService.signOut(state);
+        switch (result.status) {
+          case AuthenticationResultStatus.Redirect:
+            break;
+          case AuthenticationResultStatus.Success:
+            await navigateToReturnUrl(returnUrl);
+            break;
+          case AuthenticationResultStatus.Fail:
+            setMessage(result.message);
+            break;
+          default:
+            throw new Error("Invalid authentication result status.");
+        }
+      } else {
+        setMessage("You successfully logged out!");
+      }
+    };
+
+    const processLogoutCallback = async () => {
+      const url = window.location.href;
+      const result = await authService.completeSignOut(url);
+      switch (result.status) {
+        case AuthenticationResultStatus.Redirect:
+          // There should not be any redirects as the only time completeAuthentication finishes
+          // is when we are doing a redirect sign in flow.
+          throw new Error('Should not redirect.');
+        case AuthenticationResultStatus.Success:
+          await navigateToReturnUrl(getReturnUrl(result.state));
+          break;
+        case AuthenticationResultStatus.Fail:
+          setMessage(result.message);
+          break;
+        default:
+          throw new Error("Invalid authentication result status.");
+      }
+    };
+
     const action = props.action;
     switch (action) {
       case LogoutActions.Logout:
@@ -99,7 +99,7 @@ const Logout = (props) => {
     }
 
     populateAuthenticationState();
-  });
+  }, [props.action]);
 
   if (!isReady) {
     return <div></div>
