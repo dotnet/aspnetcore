@@ -11,8 +11,8 @@ Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengePropertie
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.DomainHint.set -> void
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.get -> string?
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.LoginHint.set -> void
-Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string!>! items) -> void
-Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string!>! items, System.Collections.Generic.IDictionary<string!, object!>! parameters) -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
+Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.MicrosoftChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items, System.Collections.Generic.IDictionary<string!, object?>! parameters) -> void
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.get -> string?
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.Prompt.set -> void
 Microsoft.AspNetCore.Authentication.MicrosoftAccount.MicrosoftChallengeProperties.ResponseMode.get -> string?

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// Initializes a new instance for <see cref="MicrosoftChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public MicrosoftChallengeProperties(IDictionary<string, string> items)
+        public MicrosoftChallengeProperties(IDictionary<string, string?> items)
             : base(items)
         { }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// Initializes a new instance for <see cref="MicrosoftChallengeProperties"/>.
         /// </summary>
         /// <inheritdoc />
-        public MicrosoftChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
+        public MicrosoftChallengeProperties(IDictionary<string, string?> items, IDictionary<string, object?> parameters)
             : base(items, parameters)
         { }
 
