@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 ////#if (IndividualLocalAuth)
-import { LoginMenu } from './api-authorization/LoginMenu';
+import LoginMenu from './api-authorization/LoginMenu';
 ////#endif
 import './NavMenu.css';
 
