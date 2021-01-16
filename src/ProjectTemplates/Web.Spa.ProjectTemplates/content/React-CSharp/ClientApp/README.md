@@ -372,13 +372,13 @@ For example:
 ### `Button.js`
 
 ```js
-import React, { Component } from 'react';
+import React from 'react';
 
-class Button extends Component {
-  render() {
+const Button = () => {
+  return (
     // ...
-  }
-}
+  );
+};
 
 export default Button; // Don’t forget to use export default!
 ```
@@ -387,14 +387,14 @@ export default Button; // Don’t forget to use export default!
 
 
 ```js
-import React, { Component } from 'react';
+import React from 'react';
 import Button from './Button'; // Import a component from another file
 
-class DangerButton extends Component {
-  render() {
+const DangerButton = () => {
+  return (
     return <Button color="red" />;
-  }
-}
+  );
+};
 
 export default DangerButton;
 ```
@@ -429,10 +429,10 @@ export { moduleA };
 ### `App.js`
 
 ```js
-import React, { Component } from 'react';
+import React from 'react';
 
-class App extends Component {
-  handleClick = () => {
+const App = () => {
+  const handleClick = () => {
     import('./moduleA')
       .then(({ moduleA }) => {
         // Use moduleA
@@ -442,14 +442,12 @@ class App extends Component {
       });
   };
 
-  render() {
-    return (
-      <div>
-        <button onClick={this.handleClick}>Load</button>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <button onClick={handleClick}>Load</button>
+    </div>
+  );
+};
 
 export default App;
 ```
@@ -477,14 +475,12 @@ This project setup uses [Webpack](https://webpack.js.org/) for handling all asse
 ### `Button.js`
 
 ```js
-import React, { Component } from 'react';
+import React from 'react';
 import './Button.css'; // Tell Webpack that Button.js uses these styles
 
-class Button extends Component {
-  render() {
-    // You can use them as regular CSS styles
-    return <div className="Button" />;
-  }
+const Button = () => {
+  // You can use them as regular CSS styles
+  return <div className="Button" />;
 }
 ```
 
@@ -637,7 +633,7 @@ import logo from './logo.png'; // Tell Webpack this JS file uses this image
 
 console.log(logo); // /logo.84287d09.png
 
-function Header() {
+const Header = () => {
   // Import result is the URL of your image
   return <img src={logo} alt="Logo" />;
 }
@@ -700,12 +696,12 @@ When you run `npm run build`, Create React App will substitute `%PUBLIC_URL%` wi
 In JavaScript code, you can use `process.env.PUBLIC_URL` for similar purposes:
 
 ```js
-render() {
+return (
   // Note: this is an escape hatch and should be used sparingly!
   // Normally we recommend using `import` for getting asset URLs
   // as described in “Adding Images and Fonts” above this section.
-  return <img src={process.env.PUBLIC_URL + '/img/logo.png'} />;
-}
+  <img src={process.env.PUBLIC_URL + '/img/logo.png'} />
+);
 ```
 
 Keep in mind the downsides of this approach:
@@ -826,16 +822,14 @@ First, you need to have environment variables defined. For example, let’s say 
 in the environment inside a `<form>`:
 
 ```jsx
-render() {
-  return (
-    <div>
-      <small>You are running this application in <b>{process.env.NODE_ENV}</b> mode.</small>
-      <form>
-        <input type="hidden" defaultValue={process.env.REACT_APP_SECRET_CODE} />
-      </form>
-    </div>
-  );
-}
+return (
+  <div>
+    <small>You are running this application in <b>{process.env.NODE_ENV}</b> mode.</small>
+    <form>
+      <input type="hidden" defaultValue={process.env.REACT_APP_SECRET_CODE} />
+    </form>
+  </div>
+);
 ```
 
 During the build, `process.env.REACT_APP_SECRET_CODE` will be replaced with the current value of the `REACT_APP_SECRET_CODE` environment variable. Remember that the `NODE_ENV` variable will be set for you automatically.
