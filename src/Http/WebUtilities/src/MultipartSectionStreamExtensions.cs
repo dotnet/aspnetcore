@@ -53,6 +53,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Reads the body of the section as a string
+        /// </summary>
+        /// <param name="section">The section to read from</param>
+        /// <param name="cancellationToken">cancelationToken</param>
+        /// <returns>The body steam as string</returns>
         public static async Task<string> ReadAsStringAsync(this MultipartPipeSection section, CancellationToken cancellationToken = default)
         {
             if (section == null)

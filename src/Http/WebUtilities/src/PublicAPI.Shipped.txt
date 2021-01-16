@@ -107,8 +107,6 @@ Microsoft.AspNetCore.WebUtilities.MultipartSection.Headers.get -> System.Collect
 Microsoft.AspNetCore.WebUtilities.MultipartSection.Headers.set -> void
 Microsoft.AspNetCore.WebUtilities.MultipartSection.MultipartSection() -> void
 Microsoft.AspNetCore.WebUtilities.MultipartPipeSection
-Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BaseStreamOffset.get -> long?
-Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BaseStreamOffset.set -> void
 Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BodyReader.get -> System.IO.Pipelines.PipeReader!
 Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.BodyReader.set -> void
 Microsoft.AspNetCore.WebUtilities.MultipartPipeSection.ContentDisposition.get -> string?

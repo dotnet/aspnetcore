@@ -15,6 +15,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// Pipe implementation of a reader for HTTP Multipart Content Type
+    /// </summary>
     public class MultipartPipeReader
     {
         private const int StackAllocThreshold = 128;
@@ -26,6 +29,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="boundary">the Multipart boundary</param>
+        /// <param name="pipeReader">a Pipe Reader</param>
         public MultipartPipeReader(string boundary, PipeReader pipeReader)
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
@@ -51,6 +59,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
+        /// <summary>
+        /// Read the next Multipart Section
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public async Task<MultipartPipeSection?> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentSectionReader.DrainAsync(cancellationToken);

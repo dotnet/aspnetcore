@@ -17,8 +17,14 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.WebUtilities
 {
 
+    /// <summary>
+    /// a Pipe Implementation of a Http Multipart Section
+    /// </summary>
     public class MultipartPipeSection
     {
+        /// <summary>
+        /// Gets the Content Type
+        /// </summary>
         public string? ContentType
         {
             get
@@ -31,6 +37,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Gets the Content Disposition
+        /// </summary>
         public string? ContentDisposition
         {
             get
@@ -43,17 +52,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Gets or sets the Headers
+        /// </summary>
         public Dictionary<string, StringValues>? Headers { get; set; }
 
         /// <summary>
         /// Gets or sets the body.
         /// </summary>
         public PipeReader BodyReader { get; set; } = default!;
-
-        /// <summary>
-        /// The position where the body starts in the total multipart body.
-        /// This may not be available if the total multipart body is not seekable.
-        /// </summary>
-        public long? BaseStreamOffset { get; set; }
     }
 }
