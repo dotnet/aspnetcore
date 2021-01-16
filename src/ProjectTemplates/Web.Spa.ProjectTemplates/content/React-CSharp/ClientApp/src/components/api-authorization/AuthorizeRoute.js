@@ -4,22 +4,22 @@ import { ApplicationPaths, QueryParameterNames } from './ApiAuthorizationConstan
 import authService from './AuthorizeService'
 
 const AuthorizeRoute = (props) => {
-  const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const _subscription = useRef();
 
   const populateAuthenticationState = async () => {
     const authenticated = await authService.isAuthenticated();
-    setReady(true);
     setAuthenticated(authenticated);
-  }
+    setReady(true);
+  };
 
   const authenticationChanged = async () => {
-    setReady(false);
     setAuthenticated(false);
+    setReady(false);
     await populateAuthenticationState();
-  }
+  };
 
   useEffect(() => {
     _subscription.current = authService.subscribe(() => authenticationChanged());
