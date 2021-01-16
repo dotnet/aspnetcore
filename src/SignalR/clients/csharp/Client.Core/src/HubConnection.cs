@@ -646,36 +646,54 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             Dictionary<string, object> readers = null;
             streamIds = null;
-            var newArgs = new List<object>(args.Length);
-
+            int newArgsCount = args.Length;
+            Span<bool> isStreaming = args.Length < 1024
+                ? stackalloc bool[args.Length]
+                : new bool[args.Length];
             for (var i = 0; i < args.Length; i++)
             {
-                if (args[i] != null && ReflectionHelper.IsStreamingType(args[i].GetType()))
+                object arg = args[i];
+                if (arg is not null && ReflectionHelper.IsStreamingType(arg.GetType()))
                 {
-                    if (readers == null)
+                    isStreaming[i] = true;
+                    newArgsCount--;
+
+                    if (readers is null)
                     {
                         readers = new Dictionary<string, object>();
                     }
-
-                    var id = connectionState.GetNextId();
-                    readers[id] = args[i];
-
-                    if (streamIds == null)
+                    if (streamIds is null)
                     {
                         streamIds = new List<string>();
                     }
 
+                    var id = connectionState.GetNextId();
+                    readers[id] = args[i];
                     streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
                 }
-                else
+            }
+
+            if (newArgsCount == args.Length)
+            {
+                return null;
+            }
+
+            object[] newArgs = newArgsCount > 0
+                ? new object[newArgsCount]
+                : Array.Empty<object>();
+            int newArgsIndex = 0;
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!isStreaming[i])
                 {
-                    newArgs.Add(args[i]);
+                    newArgs[newArgsIndex++] = args[i];
                 }
             }
 
-            args = newArgs.ToArray();
+            args = newArgs;
             return readers;
         }
 
