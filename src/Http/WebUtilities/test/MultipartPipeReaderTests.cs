@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_OneSectionReadsSuccessfullySecondSectionThrows()
+        public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_OneSectionReadsSuccessfullyThirdSectionThrows()
         {
             var pipeReader = MakeReader(TwoPartBodyIncompleteBuffer);
             var reader = new MultipartPipeReader(Boundary, pipeReader);
@@ -290,13 +290,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(2, section!.Headers?.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section!.Headers!["Content-Disposition"][0]);
             Assert.Equal("text/plain", section!.Headers!["Content-Type"][0]);
+            var read = await section!.BodyReader.ReadAsync();
+            section.BodyReader.AdvanceTo(read.Buffer.End);
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
                 // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
-                var read = await section!.BodyReader.ReadAsync();
-                section.BodyReader.AdvanceTo(read.Buffer.End);
-                await section!.BodyReader.ReadAsync();
+                var section = await reader.ReadNextSectionAsync();
             });
         }
 

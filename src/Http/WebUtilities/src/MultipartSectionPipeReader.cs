@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!_boundaryFound)
                 {
                     // We must be examining a partial boundary match, keep reading.
-                    _pipeReader.AdvanceTo(_unconsumedData.Start, _unconsumedData.End);
+                    _pipeReader.AdvanceTo(readResult.Buffer.Start, _unconsumedData.End);
                     continue;
                 }
 
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!_endOfSectionFound)
                 {
                     // We need more data find the end of the section
-                    _pipeReader.AdvanceTo(_bodyBuffer.Start, _unconsumedData.End);
+                    _pipeReader.AdvanceTo(readResult.Buffer.Start, _unconsumedData.End);
                     continue;
                 }
 

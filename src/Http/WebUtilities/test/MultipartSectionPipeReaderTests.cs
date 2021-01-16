@@ -55,7 +55,7 @@ TextWithPartialBoundaryMatch +
             var sectionReader = new MultipartSectionPipeReader(pipeReader, new MultipartBoundary(Boundary));
 
             var result = await sectionReader.ReadAsync();
-            Assert.False(result.IsCompleted);
+            Assert.True(result.IsCompleted);
             Assert.False(result.IsCanceled);
             Assert.False(result.Buffer.IsEmpty);
 
@@ -102,8 +102,8 @@ TextWithPartialBoundaryMatch +
 
         [Theory]
         [InlineData(TextAndBoundary, Text, 1)]
-        [InlineData(HtmlWithNewLinesAndBoundary, HtmlWithNewLines, 52)]
-        [InlineData(TextWithPartialBoundaryMatchAndBoundary, TextWithPartialBoundaryMatch, 14)]
+        [InlineData(HtmlWithNewLinesAndBoundary, HtmlWithNewLines, 5)]
+        [InlineData(TextWithPartialBoundaryMatchAndBoundary, TextWithPartialBoundaryMatch, 2)]
         public async Task MultipartSectionPipeReader_SingleByteReadWithoutAdvance_Success(string input, string expected, int reads)
         {
             var pipeReader = MakeSingleByteReader(input);
@@ -135,6 +135,7 @@ TextWithPartialBoundaryMatch +
             Assert.True(result.Buffer.IsEmpty);
         }
 
+     
         // Returns one byte at a time to test parsing boundary logic
         private class SingleByteReadStream : Stream
         {
