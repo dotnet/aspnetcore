@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.StopAsync();
         }
 
-        [ConditionalTheory(Skip="Hanging test")]
+        [ConditionalTheory]
         [MemberData(nameof(OneToTen))]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Tests fail on OS X due to low file descriptor limit.")]
         public async Task OneToTenThreads(int threadCount)
