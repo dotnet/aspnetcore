@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="collection">The <see cref="ClaimActionCollection"/>.</param>
         /// <param name="claimType">The value to use for Claim.Type when creating a Claim.</param>
         /// <param name="resolver">The Func that will be called to select value from the given json user data.</param>
-        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, Func<JsonElement, string> resolver)
+        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, Func<JsonElement, string?> resolver)
         {
             if (collection == null)
             {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="claimType">The value to use for Claim.Type when creating a Claim.</param>
         /// <param name="valueType">The value to use for Claim.ValueType when creating a Claim.</param>
         /// <param name="resolver">The Func that will be called to select value from the given json user data.</param>
-        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, string valueType, Func<JsonElement, string> resolver)
+        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, string valueType, Func<JsonElement, string?> resolver)
         {
             if (collection == null)
             {
