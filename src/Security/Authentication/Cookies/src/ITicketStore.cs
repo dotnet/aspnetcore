@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         /// <param name="key">The key associated with the identity.</param>
         /// <returns>The identity associated with the given key, or if not found.</returns>
-        Task<AuthenticationTicket> RetrieveAsync(string key);
+        Task<AuthenticationTicket?> RetrieveAsync(string key);
 
         /// <summary>
         /// Remove the identity associated with the given key.
