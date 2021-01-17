@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
