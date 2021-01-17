@@ -231,7 +231,11 @@ You would need to install an ESLint plugin for your editor first. Then, add a fi
 
 ```js
 {
-  "extends": "react-app"
+  "extends": [
+    // ...
+    "react-app",
+    "plugin:react-hooks/recommended"
+  ]
 }
 ```
 
