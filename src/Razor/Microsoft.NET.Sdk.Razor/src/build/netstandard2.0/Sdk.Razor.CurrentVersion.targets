@@ -73,7 +73,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
 
     <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
-    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
+    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' AND '$(StaticWebAssetsEnabled)' == 'true' AND '$(_TargetingNET50OrLater)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
   </PropertyGroup>
 
 
