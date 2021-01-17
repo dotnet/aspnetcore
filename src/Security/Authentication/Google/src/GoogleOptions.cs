@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
             ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
             ClaimActions.MapJsonKey("urn:google:profile", "link");
+            ClaimActions.MapJsonKey("urn:google:photo", "picture");
             ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
         }
 
