@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Retrieves an identity from the store for the given key.
         /// </summary>
         /// <param name="key">The key associated with the identity.</param>
-        /// <returns>The identity associated with the given key, or if not found.</returns>
+        /// <returns>The identity associated with the given key, or <c>null</c> if not found.</returns>
         Task<AuthenticationTicket?> RetrieveAsync(string key);
 
         /// <summary>
