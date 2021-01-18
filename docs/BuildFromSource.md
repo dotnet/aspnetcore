@@ -19,7 +19,7 @@ ASP.NET Core uses git submodules to include the source from a few other projects
 git clone --recursive https://github.com/dotnet/aspnetcore
 ```
 
-If you've already cloned the aspnetcore repo without fetching subdmoule sources, you can fetch them after cloning by running the following command.
+If you've already cloned the aspnetcore repo without fetching submodule sources, you can fetch them after cloning by running the following command.
 
 ```powershell
 git submodule update --init --recursive
