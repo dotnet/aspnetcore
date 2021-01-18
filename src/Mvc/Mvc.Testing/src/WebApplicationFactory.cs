@@ -524,6 +524,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 _server?.Dispose();
+                _host?.StopAsync().Wait();
                 _host?.Dispose();
             }
 
