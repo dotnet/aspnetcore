@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Internal
             // If the process exited before setting up the Exited handler we need to handle the cleanup manually
             if (proc.HasExited)
             {
-                _process.WaitForExit();
+                proc.WaitForExit();
             }
         }
 
