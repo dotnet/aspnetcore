@@ -44,10 +44,9 @@ namespace Microsoft.AspNetCore.Internal
             proc.EnableRaisingEvents = true;
             proc.OutputDataReceived += OnOutputData;
             proc.ErrorDataReceived += OnErrorData;
-            proc.Exited += OnProcessExited;
+            proc.Exited += (_, _) => OnProcessExited();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
-
 
             // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
             // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
@@ -59,6 +58,12 @@ namespace Microsoft.AspNetCore.Internal
             {
                 _exited.TrySetException(new TimeoutException(timeoutExMessage));
             });
+
+            // If the process exited before setting up the Exited handler we need to handle the cleanup manually
+            if (proc.HasExited)
+            {
+                _process.WaitForExit();
+            }
         }
 
         public Process Process => _process;
@@ -174,7 +179,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        private void OnProcessExited(object sender, EventArgs e)
+        private void OnProcessExited()
         {
             lock (_testOutputLock)
             {
@@ -250,7 +255,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 _process.ErrorDataReceived -= OnErrorData;
                 _process.OutputDataReceived -= OnOutputData;
-                _process.Exited -= OnProcessExited;
+                _process.Exited -= (_, _) => OnProcessExited();
                 _process.Dispose();
             }
         }
