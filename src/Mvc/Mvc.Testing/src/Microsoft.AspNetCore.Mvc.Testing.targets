@@ -46,6 +46,16 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+    <ItemGroup>
+      <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
+        <ContentRoot>~</ContentRoot>
+      </_PublishManifestProjects>
+    </ItemGroup>
+
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
+  </Target>
+
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
     <ItemGroup>
       <DepsFilePaths
