@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27557")]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
         {
             using (StartLog(out var loggerFactory))

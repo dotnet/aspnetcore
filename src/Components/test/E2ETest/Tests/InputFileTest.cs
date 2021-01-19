@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26331")]
         public void CanUploadSingleLargeFile()
         {
             // Create a large text file
@@ -131,7 +130,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";

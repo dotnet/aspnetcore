@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27556")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27155")]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
         public override void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
