@@ -128,3 +128,8 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 - Whenever a new OS is coming online, we ask CTI to do a run on it, and we submit a PR to add a queue for it to check for any failures in it, but if there aren’t any, we don’t merge it.
 - Link to [OS support calendar] (https://dev.azure.com/devdiv/DevDiv/_wiki/wikis/DevDiv.wiki/12624/OS-Version-Management-Calendar-2021)
 - Link to [current list of queues](../eng/targets/Helix.Common.props)
+
+## Example of adding a new docker image to helix
+
+- Example PR: https://github.com/dotnet/dotnet-buildtools-prereqs-docker/pull/398
+- Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
