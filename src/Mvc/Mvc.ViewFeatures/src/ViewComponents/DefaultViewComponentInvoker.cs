@@ -81,24 +81,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             IViewComponentResult result;
-            if (executor.IsMethodAsync)
+            object? component = null;
+            try
             {
-                result = await InvokeAsyncCore(executor, context);
+                component = _viewComponentFactory.CreateViewComponent(context);
+                if (executor.IsMethodAsync)
+                {
+                    result = await InvokeAsyncCore(executor, component, context);
+                }
+                else
+                {
+                    // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
+                    // execute the IViewResult asynchronously.
+                    result = InvokeSyncCore(executor, component, context);
+                }
             }
-            else
+            finally
             {
-                // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
-                // execute the IViewResult asynchronously.
-                result = InvokeSyncCore(executor, context);
+                if (component != null)
+                {
+                    await _viewComponentFactory.ReleaseViewComponentAsync(context, executor);
+                }
             }
 
             await result.ExecuteAsync(context);
         }
 
-        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
-
             using (_logger.ViewComponentScope(context))
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
@@ -150,16 +160,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
-                _viewComponentFactory.ReleaseViewComponent(context, component);
-
                 return viewComponentResult;
             }
         }
 
-        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
-
             using (_logger.ViewComponentScope(context))
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
@@ -170,20 +176,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 var stopwatch = ValueStopwatch.StartNew();
                 object? result;
 
-                try
-                {
                     result = executor.Execute(component, arguments);
-                }
-                finally
-                {
-                    _viewComponentFactory.ReleaseViewComponent(context, component);
-                }
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
-
-                _viewComponentFactory.ReleaseViewComponent(context, component);
 
                 return viewComponentResult;
             }

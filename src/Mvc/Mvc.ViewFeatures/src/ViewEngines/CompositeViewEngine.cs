@@ -53,6 +53,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 var result = ViewEngines[i].FindView(context, viewName, isMainPage);
                 if (result.Success)
                 {
+                    if (result.View is IAsyncDisposable)
+                    {
+                        throw new InvalidOperationException("Async disposable views are not supported.");
+                    }
                     return result;
                 }
 

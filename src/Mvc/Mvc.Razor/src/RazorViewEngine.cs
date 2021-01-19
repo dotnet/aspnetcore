@@ -484,6 +484,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticListener);
+            if (view is IAsyncDisposable)
+            {
+                throw new InvalidOperationException("Async disposable views are not supported.");
+            }
+
             return ViewEngineResult.Found(viewName, view);
         }
 
