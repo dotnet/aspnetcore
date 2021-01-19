@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 var stopwatch = ValueStopwatch.StartNew();
                 object? result;
 
-                    result = executor.Execute(component, arguments);
+                result = executor.Execute(component, arguments);
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);

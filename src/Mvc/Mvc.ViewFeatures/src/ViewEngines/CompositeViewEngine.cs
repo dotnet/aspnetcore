@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 {
                     if (result.View is IAsyncDisposable)
                     {
-                        throw new InvalidOperationException("Async disposable views are not supported.");
+                        throw new InvalidOperationException(Resources.FormatAsyncDisposableViewsNotSupported(typeof(IAsyncDisposable).FullName));
                     }
                     return result;
                 }

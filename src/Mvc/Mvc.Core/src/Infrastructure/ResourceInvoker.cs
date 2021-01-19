@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Awaited(this, task, scope);
             }
 
-            return ReleaseResourcesCore(scope);
+            return ReleaseResourcesCore(scope).AsTask();
 
             static async Task Awaited(ResourceInvoker invoker, Task task, IDisposable? scope)
             {
@@ -143,27 +143,26 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        internal Task ReleaseResourcesCore(IDisposable? scope)
+        internal ValueTask ReleaseResourcesCore(IDisposable? scope)
         {
             Exception? releaseException = null;
             ValueTask releaseResult = default;
             try
             {
                 releaseResult = ReleaseResources();
+                if (!releaseResult.IsCompletedSuccessfully)
+                {
+                    return HandleAsyncReleaseErrors(releaseResult, scope);
+                }
             }
             catch (Exception exception)
             {
                 releaseException = exception;
             }
 
-            if (releaseException == null && !releaseResult.IsCompletedSuccessfully)
-            {
-                return HandleAsyncReleaseErrors(releaseResult, scope);
-            }
-
             return HandleReleaseErrors(scope, releaseException);
 
-            static async Task HandleAsyncReleaseErrors(ValueTask releaseResult, IDisposable? scope)
+            static async ValueTask HandleAsyncReleaseErrors(ValueTask releaseResult, IDisposable? scope)
             {
                 Exception? releaseException = null;
                 try
@@ -178,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 await HandleReleaseErrors(scope, releaseException);
             }
 
-            static Task HandleReleaseErrors(IDisposable? scope, Exception? releaseException)
+            static ValueTask HandleReleaseErrors(IDisposable? scope, Exception? releaseException)
             {
                 Exception? scopeException = null;
                 try
@@ -192,19 +191,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 if (releaseException == null && scopeException == null)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
                 else if (releaseException != null && scopeException != null)
                 {
-                    return Task.FromException(new AggregateException(releaseException, scopeException));
+                    return ValueTask.FromException(new AggregateException(releaseException, scopeException));
                 }
                 else if (releaseException != null)
                 {
-                    return Task.FromException(releaseException);
+                    return ValueTask.FromException(releaseException);
                 }
                 else
                 {
-                    return Task.FromException(scopeException!);
+                    return ValueTask.FromException(scopeException!);
                 }
             }
         }

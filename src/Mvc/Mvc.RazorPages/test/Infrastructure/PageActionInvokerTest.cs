@@ -1400,8 +1400,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
             var logger = loggerFactory.CreateLogger("test");
 
-            var actionDescriptor = hasPageModel 
-                ? CreateDescriptorForPageModelPage() 
+            var actionDescriptor = hasPageModel
+                ? CreateDescriptorForPageModelPage()
                 : CreateDescriptorForSimplePage();
             actionDescriptor.ViewEnginePath = "/Pages/Foo";
             actionDescriptor.RouteValues.Add("page", "foo");

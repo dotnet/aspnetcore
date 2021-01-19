@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 ActionDescriptor = descriptor
             };
-            
+
             var viewContext = new ViewContext();
 
             // Act
@@ -404,14 +404,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .Setup(a => a.CreateAsyncReleaser(It.IsAny<CompiledPageActionDescriptor>()))
                 .Returns((CompiledPageActionDescriptor descriptor) =>
                 {
-                    return (context, viewContext, instance) => instance switch {
+                    return (context, viewContext, instance) => instance switch
+                    {
                         IAsyncDisposable asyncDisposable => asyncDisposable.DisposeAsync(),
                         IDisposable disposable => SyncDispose(disposable),
                         _ => default
                     };
                 });
 
-            ValueTask SyncDispose(IDisposable disposable) { disposable.Dispose(); return default; }
+            ValueTask SyncDispose(IDisposable disposable)
+            {
+                disposable.Dispose();
+                return default;
+            }
 
             return activator.Object;
         }
