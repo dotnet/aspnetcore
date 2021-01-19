@@ -3,7 +3,7 @@
     "version": "6.0.100-alpha.1.21063.4"
   },
   "tools": {
-    "dotnet": "6.0.100-alpha.1.20523.3",
+    "dotnet": "6.0.100-alpha.1.21063.4",
     "runtimes": {
       "dotnet/x64": [
         "2.1.23",

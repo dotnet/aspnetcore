@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Win32;
@@ -95,7 +97,7 @@ namespace Microsoft.Extensions.Logging
 
         private static Action<ILogger, string, Exception?> _writingDataToFile;
 
-        private static Action<ILogger, RegistryKey, string, Exception?> _readingDataFromRegistryKeyValue;
+        private static Action<ILogger, RegistryKey, string, Exception?>? _readingDataFromRegistryKeyValue;
 
         private static Action<ILogger, string, string, Exception?> _nameIsNotSafeRegistryValueName;
 
@@ -305,10 +307,15 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(39, "WritingDataToFile"),
                 logLevel: LogLevel.Information,
                 formatString: "Writing data to file '{FileName}'.");
-            _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
-                eventId: new EventId(40, "ReadingDataFromRegistryKeyValue"),
-                logLevel: LogLevel.Debug,
-                formatString: "Reading data from registry key '{RegistryKeyName}', value '{Value}'.");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
+                    eventId: new EventId(40, "ReadingDataFromRegistryKeyValue"),
+                    logLevel: LogLevel.Debug,
+                    formatString: "Reading data from registry key '{RegistryKeyName}', value '{Value}'.");
+            }
+
             _nameIsNotSafeRegistryValueName = LoggerMessage.Define<string, string>(
                 eventId: new EventId(41, "NameIsNotSafeRegistryValueName"),
                 logLevel: LogLevel.Debug,
@@ -662,9 +669,13 @@ namespace Microsoft.Extensions.Logging
             _writingDataToFile(logger, finalFilename, null);
         }
 
+        [SupportedOSPlatform("windows")]
         public static void ReadingDataFromRegistryKeyValue(this ILogger logger, RegistryKey regKey, string valueName)
         {
-            _readingDataFromRegistryKeyValue(logger, regKey, valueName, null);
+            if (_readingDataFromRegistryKeyValue != null)
+            {
+                _readingDataFromRegistryKeyValue(logger, regKey, valueName, null);
+            }
         }
 
         public static void NameIsNotSafeRegistryValueName(this ILogger logger, string friendlyName, string newFriendlyName)
