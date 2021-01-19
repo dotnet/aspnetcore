@@ -131,5 +131,5 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 
 ## Example of adding a new docker image to helix
 
-- Example PR: https://github.com/dotnet/dotnet-buildtools-prereqs-docker/pull/398
+- Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
 - Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
