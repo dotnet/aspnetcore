@@ -88,17 +88,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        protected override void ReleaseResources()
+        protected override ValueTask ReleaseResources()
         {
             if (_pageModel != null && CacheEntry.ReleaseModel != null)
             {
-                CacheEntry.ReleaseModel(_pageContext, _pageModel);
+                return CacheEntry.ReleaseModel(_pageContext, _pageModel);
             }
 
             if (_page != null && CacheEntry.ReleasePage != null)
             {
-                CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
+                return CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
             }
+
+            return default;
         }
 
         protected override Task InvokeResultAsync(IActionResult result)

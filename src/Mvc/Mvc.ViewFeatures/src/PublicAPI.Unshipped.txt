@@ -1,1 +1,4 @@
 #nullable enable
+~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask
+~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator.ReleaseAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object viewComponent) -> System.Threading.Tasks.ValueTask
+~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask

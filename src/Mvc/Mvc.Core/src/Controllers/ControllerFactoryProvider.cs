@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         private readonly IControllerActivatorProvider _activatorProvider;
         private readonly Func<ControllerContext, object> _factoryCreateController;
         private readonly Action<ControllerContext, object> _factoryReleaseController;
+        private readonly Func<ControllerContext, object, ValueTask> _factoryReleaseControllerAsync;
         private readonly IControllerPropertyActivator[] _propertyActivators;
 
         public ControllerFactoryProvider(
@@ -37,6 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             {
                 _factoryCreateController = controllerFactory.CreateController;
                 _factoryReleaseController = controllerFactory.ReleaseController;
+                _factoryReleaseControllerAsync = controllerFactory.ReleaseControllerAsync;
             }
 
             _propertyActivators = propertyActivators.ToArray();
@@ -102,6 +105,30 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             return _activatorProvider.CreateReleaser(descriptor);
+        }
+
+        public Func<ControllerContext, object, ValueTask> CreateAsyncControllerReleaser(ControllerActionDescriptor descriptor)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            var controllerType = descriptor.ControllerTypeInfo?.AsType();
+            if (controllerType == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(descriptor.ControllerTypeInfo),
+                    nameof(descriptor)),
+                    nameof(descriptor));
+            }
+
+            if (_factoryReleaseControllerAsync != null)
+            {
+                return _factoryReleaseControllerAsync;
+            }
+
+            return _activatorProvider.CreateAsyncReleaser(descriptor);
         }
 
         private Action<ControllerContext, object>[] GetPropertiesToActivate(ControllerActionDescriptor actionDescriptor)

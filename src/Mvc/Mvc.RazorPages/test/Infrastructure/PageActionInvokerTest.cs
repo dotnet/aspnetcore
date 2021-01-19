@@ -1400,8 +1400,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
             var logger = loggerFactory.CreateLogger("test");
 
-            var actionDescriptor = hasPageModel 
-                ? CreateDescriptorForPageModelPage() 
+            var actionDescriptor = hasPageModel
+                ? CreateDescriptorForPageModelPage()
                 : CreateDescriptorForSimplePage();
             actionDescriptor.ViewEnginePath = "/Pages/Foo";
             actionDescriptor.RouteValues.Add("page", "foo");
@@ -1552,9 +1552,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 actionDescriptor,
                 viewDataFactory,
                 pageFactory,
-                (c, viewContext, page) => { (page as IDisposable)?.Dispose(); },
+                (c, viewContext, page) => { (page as IDisposable)?.Dispose(); return default; },
                 modelFactory,
-                (c, model) => { (model as IDisposable)?.Dispose(); },
+                (c, model) => { (model as IDisposable)?.Dispose(); return default; },
                 null,
                 handlers,
                 handlerBinders,
