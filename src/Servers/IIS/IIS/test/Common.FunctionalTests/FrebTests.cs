@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29428")]
         public async Task CheckFrebDisconnect()
         {
             var result = await SetupFrebApp();
