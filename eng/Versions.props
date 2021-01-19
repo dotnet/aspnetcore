@@ -82,8 +82,8 @@
     <MicrosoftExtensionsConfigurationVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsConfigurationUserSecretsVersion>
     <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsConfigurationXmlVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-ci</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-ci</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsFileProvidersAbstractionsVersion>
     <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsFileProvidersCompositeVersion>
     <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsFileProvidersPhysicalVersion>
@@ -214,7 +214,7 @@
     <MicrosoftAspNetWebApiClientVersion>5.2.6</MicrosoftAspNetWebApiClientVersion>
     <MonoWebAssemblyInteropVersion>3.1.1-preview4.19614.4</MonoWebAssemblyInteropVersion>
     <!-- Partner teams -->
-    <MicrosoftBclAsyncInterfacesVersion>1.0.0</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftBclAsyncInterfacesVersion>6.0.0-ci</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBuildVersion>15.8.166</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildFrameworkVersion>15.8.166</MicrosoftBuildFrameworkVersion>
