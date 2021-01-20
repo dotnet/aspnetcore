@@ -134,4 +134,4 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 
 - Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
 - Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
-- The resulting new docker queue id will be found in: https://github.com/dotnet/versions/blob/master/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json
+- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json](https://github.com/dotnet/versions/blob/master/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json)
