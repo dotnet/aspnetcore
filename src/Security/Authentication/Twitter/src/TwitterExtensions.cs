@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="configureOptions">A delegate to configure <see cref="FacebookOptions"/>.</param>
+        /// <param name="configureOptions">A delegate to configure <see cref="TwitterOptions"/>.</param>
         /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, Action<TwitterOptions> configureOptions)
             => builder.AddTwitter(TwitterDefaults.AuthenticationScheme, configureOptions);
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme">The authentication scheme.</param>
-        /// <param name="configureOptions">A delegate to configure <see cref="FacebookOptions"/>.</param>
+        /// <param name="configureOptions">A delegate to configure <see cref="TwitterOptions"/>.</param>
         /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, Action<TwitterOptions> configureOptions)
             => builder.AddTwitter(authenticationScheme, TwitterDefaults.DisplayName, configureOptions);
@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme">The authentication scheme.</param>
         /// <param name="displayName">A display name for the authentication handler.</param>
-        /// <param name="configureOptions">A delegate to configure <see cref="FacebookOptions"/>.</param>
+        /// <param name="configureOptions">A delegate to configure <see cref="TwitterOptions"/>.</param>
         /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TwitterOptions> configureOptions)
         {
