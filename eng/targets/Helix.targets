@@ -21,14 +21,6 @@
     <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Java test projects do not use xUnit. -->
-    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll"
-        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
-    <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll"
-        Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
-  </ItemGroup>
-
   <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
@@ -103,6 +95,14 @@
   </Target>
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
+    <ItemGroup>
+      <!-- Java test projects do not use xUnit. -->
+      <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll"
+          Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
+      <HelixContent Include="$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll"
+          Condition=" EXISTS('$(OutputPath)Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll') " />
+    </ItemGroup>
+
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
