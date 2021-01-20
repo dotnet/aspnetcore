@@ -174,8 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
 
             var fromFile = File.Exists("MvcTestingAppManifest.json");
-            var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : GetContentRootFromAssembly();
-
+            var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : null;
             if (contentRoot != null)
             {
                 builder.UseContentRoot(contentRoot);
@@ -199,34 +198,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
         }
 
-        private string GetContentRootFromAssembly()
-        {
-            var metadataAttributes = GetContentRootMetadataAttributes(
-                typeof(TEntryPoint).Assembly.FullName,
-                typeof(TEntryPoint).Assembly.GetName().Name);
-
-            string contentRoot = null;
-            for (var i = 0; i < metadataAttributes.Length; i++)
-            {
-                var contentRootAttribute = metadataAttributes[i];
-                var contentRootCandidate = Path.Combine(
-                    AppContext.BaseDirectory,
-                    contentRootAttribute.ContentRootPath);
-
-                var contentRootMarker = Path.Combine(
-                    contentRootCandidate,
-                    Path.GetFileName(contentRootAttribute.ContentRootTest));
-
-                if (File.Exists(contentRootMarker))
-                {
-                    contentRoot = contentRootCandidate;
-                    break;
-                }
-            }
-
-            return contentRoot;
-        }
-
         private static bool SetContentRootFromSetting(IWebHostBuilder builder)
         {
             // Attempt to look for TEST_CONTENTROOT_APPNAME in settings. This should result in looking for
@@ -243,21 +214,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             builder.UseContentRoot(settingValue);
             return true;
-        }
-
-        private WebApplicationFactoryContentRootAttribute[] GetContentRootMetadataAttributes(
-            string tEntryPointAssemblyFullName,
-            string tEntryPointAssemblyName)
-        {
-            var testAssembly = GetTestAssemblies();
-            var metadataAttributes = testAssembly
-                .SelectMany(a => a.GetCustomAttributes<WebApplicationFactoryContentRootAttribute>())
-                .Where(a => string.Equals(a.Key, tEntryPointAssemblyFullName, StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(a.Key, tEntryPointAssemblyName, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(a => a.Priority)
-                .ToArray();
-
-            return metadataAttributes;
         }
 
         /// <summary>

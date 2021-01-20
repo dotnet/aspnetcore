@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
         public string ManifestPath { get; set; }
 
         /// <summary>
+        /// The path to copy deps files to.
+        /// </summary>
+        public string PathToCopyDeps { get; set; }
+
+        /// <summary>
         /// A list of content root paths and assembly names to generate the
         /// manifest from.
         /// </summary>
@@ -40,7 +45,25 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
             {
                 var contentRoot = project.GetMetadata("ContentRoot");
                 var assemblyName = project.GetMetadata("Identity");
-                output[assemblyName] = contentRoot;
+
+                // This is only set when publishing
+                if (string.IsNullOrEmpty(PathToCopyDeps))
+                {
+                    output[assemblyName] = contentRoot;
+                }
+                else
+                {
+                    // When publishing content root is always the BaseDirectory
+                    output[assemblyName] = "~";
+                    var depsFileName = $"{assemblyName}.deps.json";
+                    var depsPath = Path.Combine(contentRoot, depsFileName);
+                    Log.LogMessage("Looking for " + depsPath + ": "+ File.Exists(depsPath));
+                    Console.WriteLine("Looking for " + depsFileName);
+                    if (File.Exists(depsPath))
+                    {
+                        File.Copy(depsPath, Path.Combine(PathToCopyDeps, depsFileName));
+                    }
+                }
             }
 
             var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>), new DataContractJsonSerializerSettings
