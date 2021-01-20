@@ -38,7 +38,7 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
-            // "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
@@ -177,7 +177,7 @@ namespace Templates.Test.Helpers
             {
                 var proc = await RunDotNetNew(output, $"\"{templateName}\"");
 
-                if (!proc.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
+                if (!proc.Output.Contains("No templates found matching:"))
                 {
                     throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
                 }
