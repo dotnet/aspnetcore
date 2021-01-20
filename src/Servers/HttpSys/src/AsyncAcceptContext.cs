@@ -177,14 +177,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _requestContext.ReleasePins();
                     _requestContext.Dispose();
                     _requestContext = null;
+                }
 
-                    var boundHandle = Server.RequestQueue.BoundHandle;
+                var boundHandle = Server.RequestQueue.BoundHandle;
 
-                    if (_overlapped != null)
-                    {
-                        boundHandle.FreeNativeOverlapped(_overlapped);
-                        _overlapped = null;
-                    }
+                if (_overlapped != null)
+                {
+                    boundHandle.FreeNativeOverlapped(_overlapped);
+                    _overlapped = null;
                 }
             }
         }
