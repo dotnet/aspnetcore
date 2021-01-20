@@ -125,7 +125,7 @@ Make sure to file an issue for any skipped tests and include that in a comment n
 
 Goal is to balance cost/flakiness against having some coverage of supported distros:
 - At the start of each product version, we pick a set of queues/versions/arches to run based on popularity and perceived risk, and how long is left in the support for that OS version.
-- Whenever a new OS is coming online, we ask CTI to do a run on it, and we submit a PR to add a queue for it to check for any failures in it, but if there aren’t any, we don’t merge it.
+- Whenever a new OS is coming online, we ask CTI to do a run on it, and if there is support for it in helix, we submit a PR to update our helix-matrix to include it for it to check for any failures in it, but if there aren’t any, we don’t merge it.
 - Link to [OS support calendar](https://dev.azure.com/devdiv/DevDiv/_wiki/wikis/DevDiv.wiki/12624/OS-Version-Management-Calendar-2021)
 - Link to [current list of queues](../eng/targets/Helix.Common.props)
 
