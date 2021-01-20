@@ -8,13 +8,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
-using System.Runtime.Serialization.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     /// </summary>
     /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
     /// Typically the Startup or Program classes can be used.</typeparam>
-    public class WebApplicationFactory<TEntryPoint> : IDisposable where TEntryPoint : class
+    public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
     {
         private bool _disposed;
         private TestServer _server;
@@ -526,6 +526,42 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 _host?.StopAsync().Wait();
                 _host?.Dispose();
             }
+
+            _disposed = true;
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore();
+
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources asynchronously
+        /// </summary>
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var client in _clients)
+            {
+                client.Dispose();
+            }
+
+            foreach (var factory in _derivedFactories)
+            {
+                await factory.DisposeAsync().ConfigureAwait(false);
+            }
+
+            _server?.Dispose();
+            await _host?.StopAsync();
+            _host?.Dispose();
 
             _disposed = true;
         }

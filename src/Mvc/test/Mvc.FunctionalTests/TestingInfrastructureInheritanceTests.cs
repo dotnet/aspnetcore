@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -80,6 +81,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(callbackCalled);
         }
 
+        [Fact]
+        public async Task TestingInfrastructure_GenericHost_HostDisposeAsync()
+        {
+            // Act
+            await using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+            var callbackCalled = false;
+
+            var lifetimeService = (IHostApplicationLifetime) factory.Services.GetService(typeof(IHostApplicationLifetime));
+            lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
+            await factory.DisposeAsync();
+
+            // Assert
+            Assert.True(callbackCalled);
+        }
+
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
         {
             public bool GetTestAssembliesCalled { get; private set; }
@@ -88,7 +104,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public bool CreateServerCalled { get; private set; }
             public bool CreateHostCalled { get; private set; }
             public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
-            public bool DisposeHostCalled { get; private set; }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
             {
