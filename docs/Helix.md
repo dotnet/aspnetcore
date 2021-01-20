@@ -120,3 +120,18 @@ There are two main ways to opt out of helix
 - Skipping an individual test via `[SkipOnHelix("url to github issue")]`.
 
 Make sure to file an issue for any skipped tests and include that in a comment next to either of these
+
+## Process for updating helix matrix
+
+Goal is to balance cost/flakiness against having some coverage of supported distros:
+- At the start of each product version, we pick a set of queues/versions/arches to run based on popularity and perceived risk, and how long is left in the support for that OS version.
+- Whenever a new OS is coming online, we ask CTI to do a run on it, and if there is support for it in helix, we submit a PR to update our helix-matrix to include it for it to check for any failures in it, but if there aren’t any, we don’t merge it.
+    - If an appropriate queue does not yet exist, we could submit a PR to https://github.com/dotnet/dotnet-buildtools-prereqs-docker to add it. This helps even if we do not plan to keep the dotnet/aspnetcore change around.
+- Link to [OS support calendar](https://dev.azure.com/devdiv/DevDiv/_wiki/wikis/DevDiv.wiki/12624/OS-Version-Management-Calendar-2021)
+- Link to [current list of queues](../eng/targets/Helix.Common.props)
+
+## Example of adding a new docker image to helix
+
+- Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
+- Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
+- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json](https://github.com/dotnet/versions/blob/master/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json)

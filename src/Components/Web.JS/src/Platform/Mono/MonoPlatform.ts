@@ -205,7 +205,6 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
   // The callback is put in the global scope so that it can be run after the script is loaded.
   // onload cannot be used in this case for non-file scripts.
   window['__wasmmodulecallback__'] = callback;
-  scriptElem.type = 'text/javascript';
   scriptElem.text = 'var Module; window.__wasmmodulecallback__(); delete window.__wasmmodulecallback__;';
 
   document.body.appendChild(scriptElem);

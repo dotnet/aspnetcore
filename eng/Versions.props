@@ -64,12 +64,12 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftExtensionsDependencyModelVersion>6.0.0-alpha.1.21068.8</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppRefVersion>6.0.0-alpha.1.21068.8</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-alpha.1.21068.8</MicrosoftNETCoreAppRuntimewinx64Version>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-alpha.1.21068.8</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftWin32RegistryVersion>6.0.0-alpha.1.21068.8</MicrosoftWin32RegistryVersion>
-    <MicrosoftWin32SystemEventsVersion>6.0.0-alpha.1.21068.8</MicrosoftWin32SystemEventsVersion>
+    <MicrosoftExtensionsDependencyModelVersion>6.0.0-alpha.1.21070.2</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftNETCoreAppRefVersion>6.0.0-alpha.1.21070.2</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-alpha.1.21070.2</MicrosoftNETCoreAppRuntimewinx64Version>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-alpha.1.21070.2</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftWin32RegistryVersion>6.0.0-alpha.1.21070.2</MicrosoftWin32RegistryVersion>
+    <MicrosoftWin32SystemEventsVersion>6.0.0-alpha.1.21070.2</MicrosoftWin32SystemEventsVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-ci</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>6.0.0-ci</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-ci</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -105,32 +105,32 @@
     <MicrosoftExtensionsOptionsVersion>6.0.0-ci</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-ci</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsInternalTransportVersion>6.0.0-ci</MicrosoftExtensionsInternalTransportVersion>
-    <SystemComponentModelAnnotationsVersion>6.0.0-alpha.1.21068.8</SystemComponentModelAnnotationsVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-alpha.1.21068.8</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsEventLogVersion>6.0.0-alpha.1.21068.8</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>6.0.0-alpha.1.21068.8</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>6.0.0-alpha.1.21068.8</SystemDrawingCommonVersion>
-    <SystemIOPipelinesVersion>6.0.0-alpha.1.21068.8</SystemIOPipelinesVersion>
-    <SystemNetHttpJsonVersion>6.0.0-alpha.1.21068.8</SystemNetHttpJsonVersion>
-    <SystemNetHttpWinHttpHandlerVersion>6.0.0-alpha.1.21068.8</SystemNetHttpWinHttpHandlerVersion>
-    <SystemNetWebSocketsWebSocketProtocolVersion>6.0.0-alpha.1.21068.8</SystemNetWebSocketsWebSocketProtocolVersion>
-    <SystemReflectionMetadataVersion>6.0.0-alpha.1.21068.8</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsVersion>6.0.0-alpha.1.21068.8</SystemResourcesExtensionsVersion>
-    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-alpha.1.21068.8</SystemRuntimeCompilerServicesUnsafeVersion>
+    <SystemComponentModelAnnotationsVersion>6.0.0-alpha.1.21070.2</SystemComponentModelAnnotationsVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-alpha.1.21070.2</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsEventLogVersion>6.0.0-alpha.1.21070.2</SystemDiagnosticsEventLogVersion>
+    <SystemDirectoryServicesProtocolsVersion>6.0.0-alpha.1.21070.2</SystemDirectoryServicesProtocolsVersion>
+    <SystemDrawingCommonVersion>6.0.0-alpha.1.21070.2</SystemDrawingCommonVersion>
+    <SystemIOPipelinesVersion>6.0.0-alpha.1.21070.2</SystemIOPipelinesVersion>
+    <SystemNetHttpJsonVersion>6.0.0-alpha.1.21070.2</SystemNetHttpJsonVersion>
+    <SystemNetHttpWinHttpHandlerVersion>6.0.0-alpha.1.21070.2</SystemNetHttpWinHttpHandlerVersion>
+    <SystemNetWebSocketsWebSocketProtocolVersion>6.0.0-alpha.1.21070.2</SystemNetWebSocketsWebSocketProtocolVersion>
+    <SystemReflectionMetadataVersion>6.0.0-alpha.1.21070.2</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsVersion>6.0.0-alpha.1.21070.2</SystemResourcesExtensionsVersion>
+    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-alpha.1.21070.2</SystemRuntimeCompilerServicesUnsafeVersion>
     <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
-    <SystemSecurityAccessControlVersion>6.0.0-alpha.1.21068.8</SystemSecurityAccessControlVersion>
-    <SystemSecurityCryptographyCngVersion>6.0.0-alpha.1.21068.8</SystemSecurityCryptographyCngVersion>
-    <SystemSecurityCryptographyPkcsVersion>6.0.0-alpha.1.21068.8</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>6.0.0-alpha.1.21068.8</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-alpha.1.21068.8</SystemSecurityPermissionsVersion>
-    <SystemSecurityPrincipalWindowsVersion>6.0.0-alpha.1.21068.8</SystemSecurityPrincipalWindowsVersion>
-    <SystemServiceProcessServiceControllerVersion>6.0.0-alpha.1.21068.8</SystemServiceProcessServiceControllerVersion>
-    <SystemTextEncodingsWebVersion>6.0.0-alpha.1.21068.8</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>6.0.0-alpha.1.21068.8</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>6.0.0-alpha.1.21068.8</SystemThreadingChannelsVersion>
-    <SystemWindowsExtensionsVersion>6.0.0-alpha.1.21068.8</SystemWindowsExtensionsVersion>
+    <SystemSecurityAccessControlVersion>6.0.0-alpha.1.21070.2</SystemSecurityAccessControlVersion>
+    <SystemSecurityCryptographyCngVersion>6.0.0-alpha.1.21070.2</SystemSecurityCryptographyCngVersion>
+    <SystemSecurityCryptographyPkcsVersion>6.0.0-alpha.1.21070.2</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>6.0.0-alpha.1.21070.2</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-alpha.1.21070.2</SystemSecurityPermissionsVersion>
+    <SystemSecurityPrincipalWindowsVersion>6.0.0-alpha.1.21070.2</SystemSecurityPrincipalWindowsVersion>
+    <SystemServiceProcessServiceControllerVersion>6.0.0-alpha.1.21070.2</SystemServiceProcessServiceControllerVersion>
+    <SystemTextEncodingsWebVersion>6.0.0-alpha.1.21070.2</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>6.0.0-alpha.1.21070.2</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>6.0.0-alpha.1.21070.2</SystemThreadingChannelsVersion>
+    <SystemWindowsExtensionsVersion>6.0.0-alpha.1.21070.2</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>6.0.0-alpha.1.21068.8</MicrosoftNETCorePlatformsVersion>
+    <MicrosoftNETCorePlatformsVersion>6.0.0-alpha.1.21070.2</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>6.0.0-alpha.1.21069.1</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-alpha.1.21069.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
