@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
