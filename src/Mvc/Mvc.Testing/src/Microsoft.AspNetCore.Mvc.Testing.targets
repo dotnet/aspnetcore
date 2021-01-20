@@ -50,11 +50,11 @@
     <ItemGroup>
       <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
         <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
-        <PathToCopyDeps>$(PublishDir)</PathToCopyDeps>
+        <DepsFile>$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))</DepsFile>
       </_PublishManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" PathToCopyDeps="$(PublishDir)" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">

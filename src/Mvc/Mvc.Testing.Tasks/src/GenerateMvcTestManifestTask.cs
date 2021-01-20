@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
         {
             using var fileStream = File.Create(ManifestPath);
             var output = new Dictionary<string, string>();
-
             foreach (var project in Projects)
             {
                 var contentRoot = project.GetMetadata("ContentRoot");
@@ -55,13 +54,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
                 {
                     // When publishing content root is always the BaseDirectory
                     output[assemblyName] = "~";
-                    var depsFileName = $"{assemblyName}.deps.json";
-                    var depsPath = Path.Combine(contentRoot, depsFileName);
-                    Log.LogMessage("Looking for " + depsPath + ": "+ File.Exists(depsPath));
-                    Console.WriteLine("Looking for " + depsFileName);
-                    if (File.Exists(depsPath))
+                    var depsFile = project.GetMetadata("DepsFile");
+                    Log.LogMessage("Looking for " + depsFile + ": "+ File.Exists(depsFile));
+                    if (File.Exists(depsFile))
                     {
-                        File.Copy(depsPath, Path.Combine(PathToCopyDeps, depsFileName));
+                        File.Copy(depsFile, Path.Combine(PathToCopyDeps, Path.GetFileName(depsFile)));
                     }
                 }
             }
