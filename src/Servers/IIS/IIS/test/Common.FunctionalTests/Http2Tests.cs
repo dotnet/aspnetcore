@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public IISTestSiteFixture Fixture { get; }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28265")]
         [ConditionalTheory]
         [InlineData("GET")]
         [InlineData("HEAD")]

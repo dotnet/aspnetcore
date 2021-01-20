@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26288")]
         public void CanInvokeDotNetMethods()
         {
             // Arrange
