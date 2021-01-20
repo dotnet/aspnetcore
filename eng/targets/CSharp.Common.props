@@ -35,22 +35,6 @@
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   </ImportGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <!-- See comments further up in the file when we import the Razor SDK-->
-    <Reference Include="Microsoft.NET.Sdk.BlazorWebAssembly"
-      PrivateAssets="All"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks" />
-  </ItemGroup>
-
-  <ImportGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net6.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
-  </ImportGroup>
-
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <BlazorWebAssemblySdkDirectoryRoot>$(ArtifactsBinDir)\Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
-  </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
     <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
