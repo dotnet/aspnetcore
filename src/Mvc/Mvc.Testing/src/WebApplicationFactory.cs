@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 _server?.Dispose();
-                _host?.StopAsync().Wait();
+                _host?.StopAsync().GetAwaiter().GetResult();
                 _host?.Dispose();
             }
 
@@ -561,7 +561,15 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             _server?.Dispose();
             await _host?.StopAsync();
-            _host?.Dispose();
+
+            if (_host is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else
+            {
+                _host.Dispose();
+            }
 
             _disposed = true;
         }
