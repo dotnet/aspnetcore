@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (tagBuilder.HasInnerHtml)
                 {
                     // Overwrite current Content to ensure expression result round-trips correctly.
-                    output.Content.SetHtmlContent(tagBuilder.InnerHtml);
+                    output.Content.SetHtmlContent(output.GetChildContentAsync().Result.GetContent());
                 }
             }
         }
