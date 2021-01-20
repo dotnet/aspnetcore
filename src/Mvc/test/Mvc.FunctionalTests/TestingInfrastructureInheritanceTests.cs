@@ -70,10 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Act
             using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+            var callbackCalled = false;
+
+            var lifetimeService = (IHostApplicationLifetime) factory.Services.GetService(typeof(IHostApplicationLifetime));
+            lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
             factory.Dispose();
 
             // Assert
-            Assert.True(factory.DisposeHostCalled);
+            Assert.True(callbackCalled);
         }
 
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
@@ -120,12 +124,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 GetTestAssembliesCalled = true;
                 return base.GetTestAssemblies();
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                DisposeHostCalled = true;
-                base.Dispose(disposing);
             }
         }
     }
