@@ -36,11 +36,6 @@
       <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</_Parameter2>
     </AssemblyAttribute>
 
-     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>BlazorWebAssemblySdkDirectoryRoot</_Parameter1>
-      <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</_Parameter2>
-    </AssemblyAttribute>
-
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestAppsRoot</_Parameter1>
       <_Parameter2>$(TestAppsRoot)</_Parameter2>

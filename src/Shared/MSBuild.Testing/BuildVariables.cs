@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public static string RazorSdkDirectoryRoot => TestAssemblyMetadata.SingleOrDefault(a => a.Key == "RazorSdkDirectoryRoot").Value;
 
-        public static string BlazorWebAssemblySdkDirectoryRoot => TestAssemblyMetadata.SingleOrDefault(a => a.Key == "BlazorWebAssemblySdkDirectoryRoot").Value;
-
         public static string RepoRoot => TestAssemblyMetadata.SingleOrDefault(a => a.Key == "Testing.RepoRoot").Value;
 
         public static string DefaultNetCoreTargetFramework => TestAssemblyMetadata.SingleOrDefault(a => a.Key == "DefaultNetCoreTargetFramework").Value;
