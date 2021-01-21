@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class RequestContext<TContext> : RequestContext
+    internal sealed class RequestContext<TContext> : RequestContext where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
         private readonly MessagePump _messagePump;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     return;
                 }
 
-                TContext context = default;
+                TContext? context = default;
                 messagePump.IncrementOutstandingRequest();
                 try
                 {
@@ -53,7 +53,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 catch (Exception ex)
                 {
                     Logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
-                    application.DisposeContext(context, ex);
+                    if (context != null)
+                    {
+                        application.DisposeContext(context, ex);
+                    }
                     if (Response.HasStarted)
                     {
                         // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7

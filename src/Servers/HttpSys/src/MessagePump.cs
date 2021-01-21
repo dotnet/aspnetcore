@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private volatile int _stopping;
         private int _outstandingRequests;
-        private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<object?> _shutdownSignal = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _shutdownSignalCompleted;
 
         private readonly ServerAddressesFeature _serverAddresses;
@@ -66,13 +66,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpSysListener Listener { get; }
 
-        internal IRequestContextFactory RequestContextFactory { get; set; }
+        internal IRequestContextFactory? RequestContextFactory { get; set; }
 
         public IFeatureCollection Features { get; }
 
         internal bool Stopping => _stopping == 1;
 
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
             if (application == null)
             {
@@ -178,6 +178,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The awaits will manage stack depth for us.
         private async Task ProcessRequestsWorker()
         {
+            Debug.Assert(RequestContextFactory != null);
+
             // Allocate and accept context per loop and reuse it for all accepts
             using var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
 

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             try
             {
-                RegistryKey httpSysParameters = Registry.LocalMachine.OpenSubKey(HttpSysParametersKey);
+                RegistryKey? httpSysParameters = Registry.LocalMachine.OpenSubKey(HttpSysParametersKey);
 
                 if (httpSysParameters == null)
                 {

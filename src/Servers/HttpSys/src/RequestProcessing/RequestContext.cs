@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkItem
     {
-        private static readonly Action<object> AbortDelegate = Abort;
-        private CancellationTokenSource _requestAbortSource;
+        private static readonly Action<object?> AbortDelegate = Abort;
+        private CancellationTokenSource? _requestAbortSource;
         private CancellationToken? _disconnectToken;
         private bool _disposed;
         private bool _initialized;
@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ILogger Logger => Server.Logger;
 
-        public Request Request { get; private set; }
+        public Request Request { get; private set; } = default!;
 
-        public Response Response { get; private set; }
+        public Response Response { get; private set; } = default!;
 
         public WindowsPrincipal User => Request.User;
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         // TODO: Public when needed
-        internal bool TryGetChannelBinding(ref ChannelBinding value)
+        internal bool TryGetChannelBinding(ref ChannelBinding? value)
         {
             if (!Request.IsHttps)
             {
@@ -188,9 +188,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Response.Abort();
         }
 
-        private static void Abort(object state)
+        private static void Abort(object? state)
         {
-            var context = (RequestContext)state;
+            var context = (RequestContext)state!;
             context.Abort();
         }
 
