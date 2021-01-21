@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": "MvcSandbox-build",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "build",
+              "${workspaceFolder}/src/Mvc/samples/MvcSandbox/MvcSandbox.csproj"
+          ],
+          "problemMatcher": "$msCompile"
+      }
+  ]
+}

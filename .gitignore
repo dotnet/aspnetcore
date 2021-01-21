@@ -7,7 +7,6 @@ obj/
 .packages/
 .tools/
 .vs/
-.vscode/
 node_modules/
 BenchmarkDotNet.Artifacts/
 .gradle/
