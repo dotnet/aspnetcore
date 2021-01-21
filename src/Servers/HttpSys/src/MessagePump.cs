@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private volatile int _stopping;
         private int _outstandingRequests;
-        private readonly TaskCompletionSource<object?> _shutdownSignal = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _shutdownSignalCompleted;
 
         private readonly ServerAddressesFeature _serverAddresses;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void SetShutdownSignal()
         {
-            _shutdownSignal.TrySetResult(null);
+            _shutdownSignal.TrySetResult();
         }
 
         // The message pump.
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
                     {
                         _logger.LogInformation(LoggerEventIds.StopCancelled, "Canceled, terminating " + _outstandingRequests + " request(s).");
-                        _shutdownSignal.TrySetResult(null);
+                        _shutdownSignal.TrySetResult();
                     }
                 });
             }
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 else
                 {
-                    _shutdownSignal.TrySetResult(null);
+                    _shutdownSignal.TrySetResult();
                 }
             }
             catch (Exception ex)
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public void Dispose()
         {
             _stopping = 1;
-            _shutdownSignal.TrySetResult(null);
+            _shutdownSignal.TrySetResult();
 
             Listener.Dispose();
         }
