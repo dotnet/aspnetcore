@@ -51,6 +51,7 @@ echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj 
 dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
 if errorlevel neq 0 (
     set exit_code=%errorlevel%
+    %HELIX_PYTHONPATH% -c "from helix.workitemutil import request_infra_retry; request_infra_retry('ASP.NET Core helix retry')"
 )
 echo "Finished running tests: exit_code=%exit_code%"
 exit /b %exit_code%
