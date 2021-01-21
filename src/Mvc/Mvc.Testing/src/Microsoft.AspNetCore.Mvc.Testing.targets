@@ -49,12 +49,13 @@
   <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup>
       <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
-        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
-        <DepsFile>$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))</DepsFile>
+        <ContentRoot>~</ContentRoot>
       </_PublishManifestProjects>
+      <_DepsFileToPublish Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))" />
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" PathToCopyDeps="$(PublishDir)" />
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
+    <Copy SourceFiles="%(_DepsFileToPublish.FullPath)" DestinationFolder="$(PublishDir)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
