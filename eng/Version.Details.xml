@@ -199,7 +199,7 @@
     </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>855283979d7835fadb6399369d0e47ae967d69f7</Sha>
+      <Sha>44db96a62877a4056d28134c00e9228c12a03e7f</Sha>
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -296,22 +296,22 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>855283979d7835fadb6399369d0e47ae967d69f7</Sha>
+      <Sha>44db96a62877a4056d28134c00e9228c12a03e7f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.3-servicing.21065.6">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.3-servicing.21070.15">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>855283979d7835fadb6399369d0e47ae967d69f7</Sha>
+      <Sha>44db96a62877a4056d28134c00e9228c12a03e7f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.3-servicing.21065.6">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.3-servicing.21070.15">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>855283979d7835fadb6399369d0e47ae967d69f7</Sha>
+      <Sha>44db96a62877a4056d28134c00e9228c12a03e7f</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>855283979d7835fadb6399369d0e47ae967d69f7</Sha>
+      <Sha>44db96a62877a4056d28134c00e9228c12a03e7f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21063.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
