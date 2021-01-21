@@ -83,6 +83,11 @@ $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
 $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
 exit_code=$?
+
+if (test exit_code  -ne 0) then
+  $HELIX_PYTHONPATH -c "from helix.workitemutil import request_infra_retry; request_infra_retry('ASP.NET Core helix retry')"
+fi
+
 echo "Finished tests...exit_code=$exit_code"
 
 # dotnet-install.sh leaves the temporary SDK archive on the helix machine which slowly fills the disk, we'll be nice and clean it until the script fixes the issue
