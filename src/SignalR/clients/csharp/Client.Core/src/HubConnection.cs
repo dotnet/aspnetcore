@@ -642,13 +642,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return channel;
         }
 
+#if NETCOREAPP
+        [SkipLocalsInit]
+#endif
         private Dictionary<string, object> PackageStreamingParams(ConnectionState connectionState, ref object[] args, out List<string> streamIds)
         {
             Dictionary<string, object> readers = null;
             streamIds = null;
             int newArgsCount = args.Length;
-            Span<bool> isStreaming = args.Length < 1024
-                ? stackalloc bool[args.Length]
+            const int MaxStackSize = 256;
+            Span<bool> isStreaming = args.Length <= MaxStackSize
+                ? stackalloc bool[MaxStackSize].Slice(0, args.Length)
                 : new bool[args.Length];
             for (var i = 0; i < args.Length; i++)
             {
@@ -672,6 +676,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
+                }
+                else
+                {
+                    isStreaming[i] = false;
                 }
             }
 
