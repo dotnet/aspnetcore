@@ -380,8 +380,8 @@ namespace Microsoft.AspNetCore.Antiforgery
 		    // Because Pragma is non-standard, deprecated, and only has one possible value ("no-cache"), set it unconditionally:
 		    httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
     
-		    CacheControlHeaderValue.TryParse(httpContext.Response.Headers[HeaderNames.CacheControl].ToString(), out var cacheControlHeaderValue);
-		    if (cacheControlHeaderValue == null)
+		    if (!httpContext.Response.Headers.TryGetValue(HeaderNames.CacheControl, out var cacheControlHeader) ||  
+		      !CacheControlHeaderValue.TryParse(cacheControlHeader.ToString(), out var cacheControlHeaderValue))
 		    {
 		    	httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
 		    	return;
