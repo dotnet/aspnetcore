@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private bool _disposed;
 
         // The last write needs special handling to cancel.
-        private ResponseStreamAsyncResult _lastWrite;
+        private ResponseStreamAsyncResult? _lastWrite;
 
         internal ResponseBody(RequestContext requestContext)
         {
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         &bytesSent,
                         IntPtr.Zero,
                         0,
-                        asyncResult.NativeOverlapped,
+                        asyncResult.NativeOverlapped!,
                         IntPtr.Zero);
                 }
             }
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             &bytesSent,
                             IntPtr.Zero,
                             0,
-                            asyncResult.NativeOverlapped,
+                            asyncResult.NativeOverlapped!,
                             IntPtr.Zero);
                 }
             }
@@ -720,10 +720,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Sync can only be Canceled by CancelSynchronousIo, but we don't attempt this right now.
         internal unsafe void CancelLastWrite()
         {
-            ResponseStreamAsyncResult asyncState = _lastWrite;
+            ResponseStreamAsyncResult? asyncState = _lastWrite;
             if (asyncState != null && !asyncState.IsCompleted)
             {
-                UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped);
+                UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped!);
             }
         }
 
@@ -737,28 +737,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _fewerBytesThanExpected =
+            private static readonly Action<ILogger, Exception?> _fewerBytesThanExpected =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
 
             private static readonly Action<ILogger, Exception> _writeError =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.WriteError, "Flush");
 
-            private static readonly Action<ILogger, uint, Exception> _writeErrorIgnored =
+            private static readonly Action<ILogger, uint, Exception?> _writeErrorIgnored =
                 LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteErrorIgnored, "Flush; Ignored write exception: {StatusCode}");
 
             private static readonly Action<ILogger, Exception> _errorWhenFlushAsync =
                 LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenFlushAsync, "FlushAsync");
 
-            private static readonly Action<ILogger, uint, Exception> _writeFlushCancelled =
+            private static readonly Action<ILogger, uint, Exception?> _writeFlushCancelled =
                 LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteFlushCancelled, "FlushAsync; Write cancelled with error code: {StatusCode}");
 
             private static readonly Action<ILogger, Exception> _fileSendAsyncError =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FileSendAsyncError, "SendFileAsync");
 
-            private static readonly Action<ILogger, uint, Exception> _fileSendAsyncCancelled =
+            private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncCancelled =
                 LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncCancelled, "SendFileAsync; Write cancelled with error code: {StatusCode}");
 
-            private static readonly Action<ILogger, uint, Exception> _fileSendAsyncErrorIgnored =
+            private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncErrorIgnored =
                 LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncErrorIgnored, "SendFileAsync; Ignored write exception: {StatusCode}");
 
             public static void FewerBytesThanExpected(ILogger logger)
