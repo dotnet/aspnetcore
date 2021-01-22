@@ -38,7 +38,7 @@ Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHa
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.HttpMessageHandlerFactory.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.get -> System.Net.IWebProxy?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Proxy.set -> void
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> System.Uri?
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> System.Uri!
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.get -> System.Action<System.Net.WebSockets.ClientWebSocketOptions!>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.set -> void

@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
         {
             public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
-                : base(httpConnectionOptions.Value.Url!)
+                : base(httpConnectionOptions.Value.Url)
             {
             }
         }

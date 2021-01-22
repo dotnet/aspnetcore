@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
-            var uri = _httpConnectionOptions.Url!;
+            var uri = _httpConnectionOptions.Url;
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
 

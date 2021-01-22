@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Internal
             return CopyToSlowAsync(destination);
         }
 
-        [MemberNotNull("_currentSegment")]
+        [MemberNotNull(nameof(_currentSegment))]
         private void EnsureCapacity(int sizeHint)
         {
             // This does the Right Thing. It only subtracts _position from the current segment length if it's non-null.
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Internal
             AddSegment(sizeHint);
         }
 
-        [MemberNotNull("_currentSegment")]
+        [MemberNotNull(nameof(_currentSegment))]
         private void AddSegment(int sizeHint = 0)
         {
             if (_currentSegment != null)

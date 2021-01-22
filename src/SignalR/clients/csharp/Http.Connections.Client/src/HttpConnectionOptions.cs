@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <summary>
         /// Gets or sets the URL used to send HTTP requests.
         /// </summary>
-        public Uri? Url { get; set; }
+        public Uri Url { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use to send HTTP requests.
