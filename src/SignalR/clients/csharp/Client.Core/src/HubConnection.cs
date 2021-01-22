@@ -642,9 +642,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return channel;
         }
 
-#if NETCOREAPP
-        [SkipLocalsInit]
-#endif
         private Dictionary<string, object> PackageStreamingParams(ConnectionState connectionState, ref object[] args, out List<string> streamIds)
         {
             Dictionary<string, object> readers = null;
@@ -676,10 +673,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
-                }
-                else
-                {
-                    isStreaming[i] = false;
                 }
             }
 
