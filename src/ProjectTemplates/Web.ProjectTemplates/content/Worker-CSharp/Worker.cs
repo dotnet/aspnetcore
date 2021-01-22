@@ -26,7 +26,7 @@ namespace Company.Application1
                 {
                     await Task.Delay(1000, stoppingToken);
                 }
-                catch (TaskCanceledException)
+                catch (OperationCanceledException)
                 {
                     return;
                 }
