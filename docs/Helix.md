@@ -18,17 +18,17 @@ This will restore, and then publish all the test project including some bootstra
 
 ## Overview of the helix usage in our pipelines
 
-- Required queues: Windows10, OSX, Ubuntu1604 
+- Required queues: Windows10, OSX, Ubuntu1604
 - Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian9, Redhat7, Fedora28, Arm64 (Win10, Debian9)
-- The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/master/eng/targets/Helix.Common.props)
+- The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
 
-[aspnetcore-helix-matrix](https://dev.azure.com/dnceng/public/_build?definitionId=837) runs non quarantined tests against all queues twice a day only on public master.
+[aspnetcore-helix-matrix](https://dev.azure.com/dnceng/public/_build?definitionId=837) runs non quarantined tests against all queues twice a day only on public main.
 
-[aspnetcore-quarantined-pr](https://dev.azure.com/dnceng/public/_build?definitionId=869) runs only quarantined tests against the required queues on PRs and on master every 4 hours.
+[aspnetcore-quarantined-pr](https://dev.azure.com/dnceng/public/_build?definitionId=869) runs only quarantined tests against the required queues on PRs and on main every 4 hours.
 
-[aspnetcore-quarantined-tests](https://dev.azure.com/dnceng/public/_build?definitionId=331) runs only quarantined tests against all queues only on public master once a day at 11 PM.
+[aspnetcore-quarantined-tests](https://dev.azure.com/dnceng/public/_build?definitionId=331) runs only quarantined tests against all queues only on public main once a day at 11 PM.
 
 You can always manually queue pipeline runs by clicking on the link to the pipeline -> Run Pipeline -> select your branch/tag and commit
 
@@ -42,7 +42,7 @@ You can always manually queue pipeline runs by clicking on the link to the pipel
 
 The easiest way to look at a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachments to the relevant console logs.
 
-You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: `https://helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname>` which will show you more urls you can drill into for more info. 
+You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: `https://helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname>` which will show you more urls you can drill into for more info.
 
 There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on Azure Pipelines, near the bottom right that will look something like this:
 

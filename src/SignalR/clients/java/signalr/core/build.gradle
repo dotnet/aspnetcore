@@ -42,7 +42,7 @@ task generatePOM {
             scm {
                 connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
                 developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
-                url 'http://github.com/dotnet/aspnetcore/tree/master'
+                url 'http://github.com/dotnet/aspnetcore/tree/main'
             }
             developers {
                 developer {

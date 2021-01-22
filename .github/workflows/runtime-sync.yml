@@ -18,14 +18,14 @@ jobs:
     - name: Checkout aspnetcore
       uses: actions/checkout@v2.0.0
       with:
-        # Test this script using changes in a fork 
+        # Test this script using changes in a fork
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
-        ref: master
+        ref: main
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
       with:
-        # Test this script using changes in a fork 
+        # Test this script using changes in a fork
         repository: 'dotnet/runtime'
         path: runtime
         ref: master
@@ -67,6 +67,6 @@ jobs:
         title: 'Sync shared code from runtime'
         body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
         labels: area-servers
-        base: master
+        base: main
         branch: github-action/sync-runtime
         branch-suffix: timestamp
