@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMapping[] _rootComponents;
+        private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -36,7 +39,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private bool _started;
         private WebAssemblyRenderer? _renderer;
 
-        internal WebAssemblyHost(IServiceProvider services, IServiceScope scope, IConfiguration configuration, RootComponentMapping[] rootComponents)
+        internal WebAssemblyHost(
+            IServiceProvider services,
+            IServiceScope scope,
+            IConfiguration configuration,
+            RootComponentMapping[] rootComponents,
+            string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
             GC.KeepAlive(typeof(EntrypointInvoker));
@@ -46,6 +54,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _scope = scope;
             _configuration = configuration;
             _rootComponents = rootComponents;
+            _persistedState = persistedState;
         }
 
         /// <summary>
@@ -131,6 +140,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await CultureProvider.LoadCurrentCultureResourcesAsync();
 
+            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var store = _persistedState != null ?
+                new PrerenderComponentApplicationStore(_persistedState) :
+                new PrerenderComponentApplicationStore();
+
+            await manager.RestoreStateAsync(store);
+
             var tcs = new TaskCompletionSource();
 
             using (cancellationToken.Register(() => tcs.TrySetResult()))
@@ -146,6 +162,28 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 }
 
                 await tcs.Task;
+            }
+        }
+
+        internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
+        {
+            private readonly Dictionary<string, string> _existingState;
+
+            public PrerenderComponentApplicationStore() { _existingState = new(); }
+
+            public PrerenderComponentApplicationStore(string existingState)
+            {
+                _existingState = JsonSerializer.Deserialize<Dictionary<string, string>>(Convert.FromBase64String(existingState)) ?? new();
+            }
+
+            public IDictionary<string, string> GetPersistedState()
+            {
+                return _existingState ?? throw new InvalidOperationException("The store was not initialized with any state.");
+            }
+
+            public Task PersistStateAsync(IReadOnlyDictionary<string, string> state)
+            {
+                return Task.CompletedTask;
             }
         }
     }

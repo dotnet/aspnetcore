@@ -195,7 +195,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-
                 writer.Write("<!--Blazor-Component-State:");
                 writer.Write(_result);
                 writer.Write("-->");
