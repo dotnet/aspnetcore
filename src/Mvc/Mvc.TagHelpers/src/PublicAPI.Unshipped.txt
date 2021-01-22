@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.TagHelpers.SaveComponentStateTagHelper
+Microsoft.AspNetCore.Mvc.TagHelpers.SaveComponentStateTagHelper.SaveComponentStateTagHelper() -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.SaveComponentStateTagHelper.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
+~Microsoft.AspNetCore.Mvc.TagHelpers.SaveComponentStateTagHelper.ViewContext.set -> void
+~override Microsoft.AspNetCore.Mvc.TagHelpers.SaveComponentStateTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task

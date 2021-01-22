@@ -26,6 +26,33 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
+const blazorStateCommentRegularExpression = /\W*Blazor-Component-State:(?<state>[a-zA-Z0-9\+\/=]+)$/;
+
+export function discoverPersistedState(node: Node): string {
+  if (node.nodeType === Node.COMMENT_NODE) {
+    const content = node.textContent || '';
+    const stateCommentRegex = new RegExp(blazorStateCommentRegularExpression);
+    const parsedState = stateCommentRegex.exec(content);
+    const value = parsedState && parsedState.groups && parsedState.groups['state'];
+    return value || '';
+  }
+
+  if (!node.hasChildNodes()) {
+    return '';
+  }
+
+  const nodes = node.childNodes;
+  for (let index = 0; index < nodes.length; index++) {
+    const candidate = nodes[index];
+    const result = discoverPersistedState(candidate);
+    if(result !== ''){
+      return result;
+    }
+  }
+
+  return '';
+}
+
 function discoverWebAssemblyComponents(document: Document): WebAssemblyComponentDescriptor[] {
   const componentComments = resolveComponentComments(document, 'webassembly') as WebAssemblyComponentDescriptor[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];

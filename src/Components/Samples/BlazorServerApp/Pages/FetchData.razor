@@ -1,7 +1,10 @@
 ﻿@page "/fetchdata"
 
 @using BlazorServerApp.Data
+@using System.Text.Json
+ 
 @inject WeatherForecastService ForecastService
+@inject ComponentApplicationState ApplicationState
 
 <h1>Weather forecast</h1>
 
@@ -41,6 +44,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        if (!ApplicationState.TryRetrievePersistedState("fetchdata", out var data))
+        {
+            forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+            ApplicationState.PersistState("fetchdata", JsonSerializer.Serialize(forecasts));
+        }
+        else
+        {
+            forecasts = JsonSerializer.Deserialize<WeatherForecast[]>(data);
+        }
     }
 }

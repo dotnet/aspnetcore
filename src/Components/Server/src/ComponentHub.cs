@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Server
             return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
-        public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords)
+        public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
         {
             var circuitHost = GetCircuit();
             if (circuitHost != null)
@@ -114,12 +114,13 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
-                circuitHost = _circuitFactory.CreateCircuitHost(
+                circuitHost = await _circuitFactory.CreateCircuitHost(
                     components,
                     circuitClient,
                     baseUri,
                     uri,
-                    Context.User);
+                    Context.User,
+                    applicationState);
 
                 // Fire-and-forget the initialization process, because we can't block the
                 // SignalR message loop (we'd get a deadlock if any of the initialization

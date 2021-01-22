@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
@@ -53,6 +58,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var parameterView = parameters is null ?
                 ParameterView.Empty :
                 ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
+
+            var manager = context.RequestServices.GetRequiredService<ComponentApplicationLifetime>();
+            var store = new PrerenderComponentApplicationStore();
+            await manager.RestoreStateAsync(store);
 
             return renderMode switch
             {
@@ -145,6 +154,52 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
 
             return new ComponentHtmlContent(_WebAssemblyComponentSerializer.GetPreamble(currentInvocation));
+        }
+    }
+
+    internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
+    {
+        private readonly Dictionary<string, string> _existingState;
+
+        public PrerenderComponentApplicationStore() { _existingState = new(); }
+
+        public PrerenderComponentApplicationStore(string existingState)
+        {
+            _existingState = JsonSerializer.Deserialize<Dictionary<string, string>>(Convert.FromBase64String(existingState));
+        }
+
+        public IHtmlContent PersistedState { get; private set; }
+
+        public IDictionary<string, string> GetPersistedState()
+        {
+            return _existingState ?? throw new InvalidOperationException("The store was not initialized with any state.");
+        }
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, string> state)
+        {
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(state);
+
+            var result = Convert.ToBase64String(bytes);
+            PersistedState = new StateComment(result);
+            return Task.CompletedTask;
+        }
+
+        private class StateComment : IHtmlContent
+        {
+            private string _result;
+
+            public StateComment(string result)
+            {
+                _result = result;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+
+                writer.Write("<!--Blazor-Component-State:");
+                writer.Write(_result);
+                writer.Write("-->");
+            }
         }
     }
 }
