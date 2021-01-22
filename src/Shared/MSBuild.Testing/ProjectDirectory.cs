@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public static ProjectDirectory Create(string originalProjectName, ProjectDirectoryOptions options, params string[] additionalProjects)
         {
-            // string targetProjectName, string baseDirectory, 
+            // string targetProjectName, string baseDirectory,
             var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", options.BaseDirectory ?? string.Empty, Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
 
@@ -135,7 +135,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 $@"<Project>
   <PropertyGroup>
     <RepoRoot>{repoRoot}</RepoRoot>
-    <RazorSdkDirectoryRoot>{BuildVariables.RazorSdkDirectoryRoot}</RazorSdkDirectoryRoot>
     <BinariesRoot>{binariesRoot}</BinariesRoot>
   </PropertyGroup>
 </Project>";

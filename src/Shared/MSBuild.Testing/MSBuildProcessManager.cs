@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 $"/p:MicrosoftNETCoreAppRuntimeVersion={BuildVariables.MicrosoftNETCoreAppRuntimeVersion}",
                 $"/p:MicrosoftNetCompilersToolsetVersion={BuildVariables.MicrosoftNetCompilersToolsetVersion}",
-                $"/p:RazorSdkDirectoryRoot={BuildVariables.RazorSdkDirectoryRoot}",
                 $"/p:RepoRoot={BuildVariables.RepoRoot}",
                 $"/p:Configuration={project.Configuration}",
                 $"/t:{target}",

@@ -8,7 +8,6 @@
     <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
 
     <RepoRoot Condition=" '$(RepoRoot)' == '' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'global.json'))\</RepoRoot>
-    <RazorSdkArtifactsDirectory>$(RepoRoot)artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
 
     <!-- Build these test projects against the incoming Microsoft.NETCore.App framework. -->
@@ -44,6 +43,5 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
 </Project>
