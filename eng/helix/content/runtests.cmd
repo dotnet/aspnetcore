@@ -49,7 +49,7 @@ dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
 echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
 dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
-if errorlevel eq 0 goto end
+if errorlevel equ 0 goto end
 set exit_code=%errorlevel%
 %HELIX_PYTHONPATH% -c "from helix.workitemutil import request_infra_retry; request_infra_retry('ASP.NET Core helix retry')"
 :end
