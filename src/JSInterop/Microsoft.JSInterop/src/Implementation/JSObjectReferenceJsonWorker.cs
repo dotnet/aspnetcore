@@ -3,16 +3,24 @@
 
 using System.Text.Json;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Implementation
 {
     /// <summary>
     /// Used by JsonConverters to read or write a IJSObjectReference instance.
+    /// <para>
+    /// This type is part of ASP.NET Core's internal infrastructure and is not recommended for use by external code.
+    /// </para>
     /// </summary>
-    internal static class JSObjectReferenceJsonWorker
+    public static class JSObjectReferenceJsonWorker
     {
         private static readonly JsonEncodedText _idKey = JsonEncodedText.Encode("__jsObjectId");
 
-        public static long ReadIdentifier(ref Utf8JsonReader reader)
+        /// <summary>
+        /// Reads the id for a <see cref="JSObjectReference"/> instance.
+        /// </summary>
+        /// <param name="reader">The <see cref="Utf8JsonReader"/></param>
+        /// <returns></returns>
+        public static long ReadJSObjectReferenceIdentifier(ref Utf8JsonReader reader)
         {
             long id = -1;
 
@@ -44,10 +52,15 @@ namespace Microsoft.JSInterop
             return id;
         }
 
-        public static void Write(Utf8JsonWriter writer, long identifier)
+        /// <summary>
+        /// Writes a <see cref="JSObjectReference"/> to the <paramref name="objectReference"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="Utf8JsonWriter"/>.</param>
+        /// <param name="objectReference">The <see cref="JSObjectReference"/> to write.</param>
+        public static void WriteJSObjectReference(Utf8JsonWriter writer, JSObjectReference objectReference)
         {
             writer.WriteStartObject();
-            writer.WriteNumber(_idKey, identifier);
+            writer.WriteNumber(_idKey, objectReference.Id);
             writer.WriteEndObject();
         }
     }

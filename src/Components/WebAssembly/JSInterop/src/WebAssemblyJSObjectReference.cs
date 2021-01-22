@@ -15,8 +15,6 @@ namespace Microsoft.JSInterop.WebAssembly
             _jsRuntime = jsRuntime;
         }
 
-        internal new long Id => base.Id;
-
         public TResult InvokeUnmarshalled<TResult>(string identifier)
         {
             ThrowIfDisposed();

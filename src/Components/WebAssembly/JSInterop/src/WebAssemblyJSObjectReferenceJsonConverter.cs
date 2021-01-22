@@ -22,19 +22,18 @@ namespace Microsoft.JSInterop.WebAssembly
             return typeToConvert == typeof(WebAssemblyJSObjectReference) ||
                 typeToConvert == typeof(IJSObjectReference) ||
                 typeToConvert == typeof(IJSInProcessObjectReference) ||
-                typeToConvert == typeof(IJSUnmarshalledObjectReference) ||
-                typeToConvert == typeof(JSObjectReference);
+                typeToConvert == typeof(IJSUnmarshalledObjectReference);
         }
 
         public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var id = JSObjectReferenceJsonWorker.ReadIdentifier(ref reader);
+            var id = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
             return new WebAssemblyJSObjectReference(_jsRuntime, id);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSObjectReference value, JsonSerializerOptions options)
         {
-            JSObjectReferenceJsonWorker.Write(writer, ((WebAssemblyJSObjectReference)value).Id);
+            JSObjectReferenceJsonWorker.WriteJSObjectReference(writer, (JSObjectReference)value);
         }
     }
 }

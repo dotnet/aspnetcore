@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)JSInterop\JSCallResultTypeHelper.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)JSInterop\JSObjectReferenceJsonWorker.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
