@@ -80,7 +80,7 @@ Microsoft.AspNetCore.Authentication.Cookies.ICookieManager.GetRequestCookie(Micr
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RemoveAsync(string! key) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RenewAsync(string! key, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
+Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> System.Threading.Tasks.Task<string!>!
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options) -> void

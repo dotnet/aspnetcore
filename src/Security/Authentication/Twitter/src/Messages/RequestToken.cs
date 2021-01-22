@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// </summary>
         public string TokenSecret { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the callback was confirmed.
+        /// </summary>
         public bool CallbackConfirmed { get; set; }
 
         /// <summary>

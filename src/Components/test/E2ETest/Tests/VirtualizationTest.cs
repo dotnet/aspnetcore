@@ -195,7 +195,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24922")]
         public void CanUseViewportAsContainer()
         {
             Browser.MountTestComponent<VirtualizationComponent>();

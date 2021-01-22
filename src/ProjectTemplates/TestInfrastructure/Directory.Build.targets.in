@@ -15,7 +15,6 @@
   -->
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\${Configuration}\sdk-output\</RazorSdkDirectoryRoot>
-    <BlazorWebAssemblySdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\${Configuration}\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
   </PropertyGroup>
   <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"
       Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />

@@ -190,14 +190,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file));
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
-            try
+            
+            if (!data.TryGetValue(key, out var contentRoot))
             {
-                return data[key];
-            } catch
-            {
-                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+               throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
             }
 
+            return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
         }
 
         private string GetContentRootFromAssembly()
@@ -524,6 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 _server?.Dispose();
+                _host?.StopAsync().Wait();
                 _host?.Dispose();
             }
 

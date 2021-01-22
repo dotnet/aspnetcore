@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a Razor class library that targets .NET Standard",
   "groupIdentity": "Microsoft.Web.Razor",
-  "precedence": "7000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.6.0",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",

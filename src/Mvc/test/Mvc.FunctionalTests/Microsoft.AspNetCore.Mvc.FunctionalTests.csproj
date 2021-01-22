@@ -9,8 +9,6 @@
     <TestGroupName>Mvc.FunctionalTests</TestGroupName>
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
-    <!-- https://github.com/dotnet/aspnetcore/issues/10423 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,4 +58,31 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(ArtifactsBinDir)ApiExplorerWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\ApiExplorerWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)ApplicationModelWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\ApplicationModelWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)BasicWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\BasicWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)ControllersFromServicesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\ControllersFromServicesWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)CorsWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\CorsWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)ErrorPageMiddlewareWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\ErrorPageMiddlewareWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)FilesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\FilesWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)FormatterWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\FormatterWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)GenericHostWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\GenericHostWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)HtmlGenerationWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\HtmlGenerationWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Mvc.RoutingWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Mvc.RoutingWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)MvcSandbox\$(Configuration)\$(DefaultNetCoreTargetFramework)\MvcSandbox.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)RazorBuildWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorBuildWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)RazorPagesWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorPagesWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)RazorWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\RazorWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)SecurityWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\SecurityWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)SimpleWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\SimpleWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)TagHelpersWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\TagHelpersWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)VersioningWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\VersioningWebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)XmlFormattersWebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\XmlFormattersWebSite.deps.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />
+  </Target>
+
 </Project>

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(compiledActionDescriptor.DeclaredModelTypeInfo);
 
             var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
-            var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);
+            var pageDisposer = _pageFactoryProvider.CreateAsyncPageDisposer(compiledActionDescriptor);
             var propertyBinder = PageBinderFactory.CreatePropertyBinder(
                 _parameterBinder,
                 _modelMetadataProvider,
@@ -89,11 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 compiledActionDescriptor);
 
             Func<PageContext, object> modelFactory = null;
-            Action<PageContext, object> modelReleaser = null;
+            Func<PageContext, object, ValueTask> modelReleaser = null;
             if (compiledActionDescriptor.ModelTypeInfo != compiledActionDescriptor.PageTypeInfo)
             {
                 modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);
-                modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
+                modelReleaser = _modelFactoryProvider.CreateAsyncModelDisposer(compiledActionDescriptor);
             }
 
             var viewStartFactories = GetViewStartFactories(compiledActionDescriptor);

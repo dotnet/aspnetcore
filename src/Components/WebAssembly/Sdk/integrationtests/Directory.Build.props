@@ -1,9 +1,0 @@
-<Project>
-  <!-- UseVSTestRunner must be configured before $(RepoRoot)\Directory.Build.props is included. -->
-  <PropertyGroup>
-    <UseVSTestRunner>true</UseVSTestRunner>
-    <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) --blame "CollectHangDump;TestTimeout=6m"</TestRunnerAdditionalArguments>
-  </PropertyGroup>
-
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-</Project>

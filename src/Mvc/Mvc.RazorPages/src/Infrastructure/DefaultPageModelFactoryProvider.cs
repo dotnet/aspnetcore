@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -62,6 +63,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             return _modelActivator.CreateReleaser(descriptor);
+        }
+
+        public Func<PageContext, object, ValueTask> CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (descriptor.ModelTypeInfo == null)
+            {
+                return null;
+            }
+
+            return _modelActivator.CreateAsyncReleaser(descriptor);
         }
 
         private static PropertyActivator<PageContext> CreateActivateInfo(PropertyInfo property) =>

@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// The application may use the existing NegotiateEvents instance and assign delegates only to the events it
         /// wants to process. The application may also replace it with its own derived instance.
         /// </summary>
-        public new NegotiateEvents Events
+        public new NegotiateEvents? Events
         {
-            get { return (NegotiateEvents)base.Events; }
+            get { return (NegotiateEvents?)base.Events; }
             set { base.Events = value; }
         }
 

@@ -22,6 +22,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
+    /// <summary>
+    /// Authentication handler for Twitter's OAuth based authentication.
+    /// </summary>
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
         private static readonly JsonSerializerOptions ErrorSerializerOptions = new JsonSerializerOptions
@@ -41,12 +44,18 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TwitterHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new TwitterEvents());
 
+        /// <inheritdoc />
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             var query = Request.Query;
@@ -130,6 +139,14 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             }
         }
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticationTicket"/> from the specified <paramref name="token"/>.
+        /// </summary>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="token">The <see cref="AccessToken"/>.</param>
+        /// <param name="user">The <see cref="JsonElement"/> for the user.</param>
+        /// <returns>The <see cref="AuthenticationTicket"/>.</returns>
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(
             ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JsonElement user)
         {
@@ -144,6 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))

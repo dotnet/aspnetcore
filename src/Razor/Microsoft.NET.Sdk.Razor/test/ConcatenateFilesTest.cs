@@ -324,7 +324,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25623")]
         public async System.Threading.Tasks.Task BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange

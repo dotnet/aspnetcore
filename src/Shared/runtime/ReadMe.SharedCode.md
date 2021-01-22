@@ -24,7 +24,7 @@ dotnet/AspNetCore code paths:
 - `PS D:\github\runtime\src\libraries\System.Net.Http\tests\UnitTests> dotnet build /t:test`
 
 ## Building dotnet/AspNetCore code:
-- https://github.com/dotnet/AspNetCore/blob/master/docs/BuildFromSource.md
+- https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 - Run restore in the root once: `PS D:\github\AspNetCore> .\restore.cmd`
 - Activate to use the repo local runtime: `PS D:\github\AspNetCore> . .\activate.ps1`
 - Build the individual projects:

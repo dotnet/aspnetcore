@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReference.styles.css"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/29224")]
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_NoBuild_CopiesStaticWebAssetsToDestinationFolder()
         {

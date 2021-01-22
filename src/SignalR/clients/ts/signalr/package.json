@@ -40,7 +40,7 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/SignalR#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/SignalR#readme",
   "files": [
     "dist/**/*",
     "src/**/*"
