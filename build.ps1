@@ -116,7 +116,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
@@ -363,7 +363,7 @@ if($dotnetFormat)
 {
     Write-Host -f Magenta "dotnet format tool is already installed."
 }
-else 
+else
 {
     Write-Host -f Magenta "Installing dotnet-format tool.."
     & dotnet tool install -g dotnet-format
