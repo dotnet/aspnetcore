@@ -565,19 +565,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object[] args, CancellationTokenSource cts)
         {
             var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token);
-            try
+            while (await reader.WaitToReadAsync(cts.Token))
             {
-                while (await reader.WaitToReadAsync(cts.Token))
+                while (reader.TryRead(out var item))
                 {
-                    while (reader.TryRead(out var item))
-                    {
-                        yield return (T)item;
-                    }
+                    yield return (T)item;
                 }
-            }
-            finally
-            {
-                cts.Dispose();
             }
         }
 
