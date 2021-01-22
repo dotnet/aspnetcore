@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.CodeAnalysis;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public abstract class BuildServerTestFixtureBase : IDisposable
+    public abstract class BuildServerTestFixtureBase : IAsyncLifetime
     {
         private static readonly TimeSpan _defaultShutdownTimeout = TimeSpan.FromSeconds(120);
 
@@ -23,18 +25,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public string PipeName { get; }
 
-        public void Dispose()
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
         {
             // Shutdown the build server.
             using (var cts = new CancellationTokenSource(_defaultShutdownTimeout))
             {
                 var writer = new StringWriter();
-
-                cts.Token.Register(() =>
-                {
-                    var output = writer.ToString();
-                    throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.{Environment.NewLine}Output: {output}.");
-                });
 
                 var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>(), writer, writer);
 
@@ -52,7 +53,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     args.Add("-w");
                 }
 
-                var exitCode = application.Execute(args.ToArray());
+                var executeTask = Task.Run(() => application.Execute(args.ToArray()));
+
+                if (executeTask == await Task.WhenAny(executeTask, Task.Delay(Timeout.Infinite, cts.Token)))
+                {
+                    // Complete the Task.Delay
+                    cts.Cancel();
+                }
+                else
+                {
+                    var output = writer.ToString();
+                    throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.{Environment.NewLine}Output: {output}.");
+                }
+
+                var exitCode = await executeTask;
+
                 if (exitCode != 0)
                 {
                     var output = writer.ToString();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     /// Note that this fixture will always initialize a server of the current version since it
     /// invokes the ServerConnection API from the referenced rzc.
     /// </summary>
-    public class BuildServerTestFixture : BuildServerTestFixtureBase, IDisposable
+    public class BuildServerTestFixture : BuildServerTestFixtureBase
     {
         public BuildServerTestFixture() : this(Guid.NewGuid().ToString())
         {

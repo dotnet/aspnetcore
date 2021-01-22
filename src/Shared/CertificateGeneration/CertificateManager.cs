@@ -942,7 +942,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             [Event(30, Level = EventLevel.Verbose)]
-            public void TrustCertificateEnd() =>WriteEvent(30, "Finished trusting the certificate.");
+            public void TrustCertificateEnd() => WriteEvent(30, "Finished trusting the certificate.");
 
             [Event(31, Level = EventLevel.Error)]
             public void TrustCertificateError(string ex)
