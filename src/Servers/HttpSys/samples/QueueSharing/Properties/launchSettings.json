@@ -1,8 +1,9 @@
 {
   "profiles": {
-    "ServerComparison.TestSites": {
+    "QueueSharing": {
       "commandName": "Project",
       "launchBrowser": true
     }
   }
 }
+

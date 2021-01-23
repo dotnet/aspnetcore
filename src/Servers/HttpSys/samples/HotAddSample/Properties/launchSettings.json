@@ -1,8 +1,9 @@
 {
   "profiles": {
-    "ServerComparison.TestSites": {
+    "HotAddSample": {
       "commandName": "Project",
       "launchBrowser": true
     }
   }
 }
+

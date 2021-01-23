@@ -1,8 +1,9 @@
 {
   "profiles": {
-    "ServerComparison.TestSites": {
+    "SelfHostServer": {
       "commandName": "Project",
       "launchBrowser": true
     }
   }
 }
+
