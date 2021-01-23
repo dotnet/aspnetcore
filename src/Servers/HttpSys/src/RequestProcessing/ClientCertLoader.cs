@@ -26,22 +26,22 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int RequestChannelBindStatusSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
 
-        private SafeNativeOverlapped _overlapped;
-        private byte[] _backingBuffer;
+        private SafeNativeOverlapped? _overlapped;
+        private byte[]? _backingBuffer;
         private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
         private uint _size;
-        private TaskCompletionSource<object> _tcs;
+        private TaskCompletionSource<object?> _tcs;
         private RequestContext _requestContext;
 
         private int _clientCertError;
-        private X509Certificate2 _clientCert;
-        private Exception _clientCertException;
+        private X509Certificate2? _clientCert;
+        private Exception? _clientCertException;
         private CancellationTokenRegistration _cancellationRegistration;
 
         internal ClientCertLoader(RequestContext requestContext, CancellationToken cancellationToken)
         {
             _requestContext = requestContext;
-            _tcs = new TaskCompletionSource<object>();
+            _tcs = new TaskCompletionSource<object?>();
             // we will use this overlapped structure to issue async IO to ul
             // the event handle will be put in by the BeginHttpApi2.ERROR_SUCCESS() method
             Reset(CertBoblSize);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal SafeHandle RequestQueueHandle => _requestContext.Server.RequestQueue.Handle;
 
-        internal X509Certificate2 ClientCert
+        internal X509Certificate2? ClientCert
         {
             get
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal Exception ClientCertException
+        internal Exception? ClientCertException
         {
             get
             {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private SafeNativeOverlapped NativeOverlapped
+        private SafeNativeOverlapped? NativeOverlapped
         {
             get
             {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             if (_size != 0)
             {
-                _overlapped.Dispose();
+                _overlapped!.Dispose();
             }
             _size = size;
             if (size == 0)
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         RequestBlob,
                         size,
                         &bytesReceived,
-                        NativeOverlapped);
+                        NativeOverlapped!);
 
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Task;
         }
 
-        private void Complete(int certErrors, X509Certificate2 cert)
+        private void Complete(int certErrors, X509Certificate2? cert)
         {
             // May be null
             _clientCert = cert;
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             asyncResult._memoryBlob,
                             asyncResult._size,
                             &bytesReceived,
-                            asyncResult._overlapped);
+                            asyncResult._overlapped!);
 
                     if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING ||
                        (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static unsafe void WaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            var asyncResult = (ClientCertLoader)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            var asyncResult = (ClientCertLoader)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public object AsyncState
+        public object? AsyncState
         {
             get { return _tcs.Task.AsyncState; }
         }
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _tcs.Task.IsCompleted; }
         }
 
-        internal static unsafe ChannelBinding GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
+        internal static unsafe ChannelBinding? GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
         {
             // +128 since a CBT is usually <128 thus we need to call HRCC just once. If the CBT
             // is >128 we will get ERROR_MORE_DATA and call again
@@ -359,8 +359,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Debug.Assert(size >= 0);
 
-            byte[] blob = null;
-            SafeLocalFreeChannelBinding token = null;
+            byte[]? blob = null;
+            SafeLocalFreeChannelBinding? token = null;
 
             uint bytesReceived = 0; ;
             uint statusCode;

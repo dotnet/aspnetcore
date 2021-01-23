@@ -50,12 +50,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public ValueTask<FlushResult> FlushAsync(MinDataRate? minRate, long count, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
-            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
-
             if (minRate is object)
             {
+                // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
+                // control updates and if the test checks for a timeout it can fail
                 _timeoutControl!.BytesWrittenToBuffer(minRate, count);
             }
+
+            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
             if (pipeFlushTask.IsCompletedSuccessfully)
             {

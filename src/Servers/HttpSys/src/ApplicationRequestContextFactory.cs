@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class ApplicationRequestContextFactory<TContext> : IRequestContextFactory
+    internal class ApplicationRequestContextFactory<TContext> : IRequestContextFactory where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
         private readonly MessagePump _messagePump;

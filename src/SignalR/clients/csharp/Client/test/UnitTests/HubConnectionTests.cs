@@ -255,6 +255,36 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public async Task CanCancelTokenAfterStreamIsCompleted()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+                await hubConnection.StartAsync().OrTimeout();
+
+                var asyncEnumerable = hubConnection.StreamAsync<int>("Stream", 1);
+                using var cts = new CancellationTokenSource();
+                await using var e = asyncEnumerable.GetAsyncEnumerator(cts.Token);
+                var task = e.MoveNextAsync();
+
+                var item = await connection.ReadSentJsonAsync().OrTimeout();
+                await connection.ReceiveJsonMessage(
+                    new { type = HubProtocolConstants.CompletionMessageType, invocationId = item["invocationId"] }
+                    ).OrTimeout();
+
+                await task.OrTimeout();
+
+                while (await e.MoveNextAsync().OrTimeout())
+                {
+                }
+                // Cancel after stream is completed but before the AsyncEnumerator is disposed
+                cts.Cancel();
+            }
+        }
+
+        [Fact]
         public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
             bool ExpectedErrors(WriteContext writeContext)
