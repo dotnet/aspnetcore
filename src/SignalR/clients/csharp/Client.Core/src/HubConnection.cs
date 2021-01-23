@@ -646,14 +646,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             Dictionary<string, object> readers = null;
             streamIds = null;
-            int newArgsCount = args.Length;
+            var newArgsCount = args.Length;
             const int MaxStackSize = 256;
             Span<bool> isStreaming = args.Length <= MaxStackSize
                 ? stackalloc bool[MaxStackSize].Slice(0, args.Length)
                 : new bool[args.Length];
             for (var i = 0; i < args.Length; i++)
             {
-                object arg = args[i];
+                var arg = args[i];
                 if (arg is not null && ReflectionHelper.IsStreamingType(arg.GetType()))
                 {
                     isStreaming[i] = true;
@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return null;
             }
 
-            object[] newArgs = newArgsCount > 0
+            var newArgs = newArgsCount > 0
                 ? new object[newArgsCount]
                 : Array.Empty<object>();
             int newArgsIndex = 0;
@@ -690,7 +690,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 if (!isStreaming[i])
                 {
-                    newArgs[newArgsIndex++] = args[i];
+                    newArgs[newArgsIndex] = args[i];
+                    newArgsIndex++;
                 }
             }
 
