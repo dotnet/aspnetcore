@@ -1,4 +1,0 @@
-<Project>
-  <Import Project="RazorTest.Introspection.targets" />
-  <Import Project="$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" Exists('$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.targets') " />
-</Project>
