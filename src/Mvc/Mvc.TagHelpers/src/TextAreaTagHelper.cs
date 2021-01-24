@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (context == null)
             {
@@ -103,7 +104,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (tagBuilder.HasInnerHtml)
                 {
                     // Overwrite current Content to ensure expression result round-trips correctly.
-                    output.Content.SetHtmlContent(output.GetChildContentAsync().Result.GetContent());
+                    var content = await output.GetChildContentAsync();
+                    output.Content.SetHtmlContent(content.GetContent());
                 }
             }
         }
