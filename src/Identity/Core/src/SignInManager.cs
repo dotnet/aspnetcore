@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(principal));
             }
-            return principal?.Identities != null &&
+            return principal.Identities != null &&
                 principal.Identities.Any(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
         }
 
