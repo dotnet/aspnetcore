@@ -177,6 +177,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessSocketAsync(WebSocket socket)
         {
+            Debug.Assert(_application != null);
+
             using (socket)
             {
                 // Begin sending and receiving.
@@ -193,7 +195,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     // 2. Waiting for a websocket send to complete
 
                     // Cancel the application so that ReadAsync yields
-                    _application!.Input.CancelPendingRead();
+                    _application.Input.CancelPendingRead();
 
                     using (var delayCts = new CancellationTokenSource())
                     {
@@ -225,13 +227,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     socket.Abort();
 
                     // Cancel any pending flush so that we can quit
-                    _application!.Output.CancelPendingFlush();
+                    _application.Output.CancelPendingFlush();
                 }
             }
         }
 
         private async Task StartReceiving(WebSocket socket)
         {
+            Debug.Assert(_application != null);
+
             try
             {
                 while (true)
@@ -252,7 +256,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         return;
                     }
 #endif
-                    var memory = _application!.Output.GetMemory();
+                    var memory = _application.Output.GetMemory();
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
@@ -280,9 +284,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                     Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
-                    _application!.Output.Advance(receiveResult.Count);
+                    _application.Output.Advance(receiveResult.Count);
 
-                    var flushResult = await _application!.Output.FlushAsync();
+                    var flushResult = await _application.Output.FlushAsync();
 
                     // We canceled in the middle of applying back pressure
                     // or if the consumer is done
@@ -300,13 +304,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (!_aborted)
                 {
-                    _application!.Output.Complete(ex);
+                    _application.Output.Complete(ex);
                 }
             }
             finally
             {
                 // We're done writing
-                _application!.Output.Complete();
+                _application.Output.Complete();
 
                 Log.ReceiveStopped(_logger);
             }
@@ -314,13 +318,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task StartSending(WebSocket socket)
         {
+            Debug.Assert(_application != null);
+
             Exception? error = null;
 
             try
             {
                 while (true)
                 {
-                    var result = await _application!.Input.ReadAsync();
+                    var result = await _application.Input.ReadAsync();
                     var buffer = result.Buffer;
 
                     // Get a frame from the application
@@ -363,7 +369,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
                     finally
                     {
-                        _application!.Input.AdvanceTo(buffer.End);
+                        _application.Input.AdvanceTo(buffer.End);
                     }
                 }
             }
@@ -386,7 +392,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
                 }
 
-                _application!.Input.Complete();
+                _application.Input.Complete();
 
                 Log.SendStopped(_logger);
             }

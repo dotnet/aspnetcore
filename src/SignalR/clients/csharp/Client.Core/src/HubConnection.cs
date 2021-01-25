@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 while (reader.TryRead(out var item))
                 {
-                    yield return (T)item;
+                    yield return (T)item!;
                 }
             }
         }
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
 
                     var id = connectionState.GetNextId();
-                    readers[id] = args[i];
+                    readers[id] = arg;
                     streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
@@ -675,8 +675,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             var newArgs = newArgsCount > 0
-                ? new object[newArgsCount]
-                : Array.Empty<object>();
+                ? new object?[newArgsCount]
+                : Array.Empty<object?>();
             int newArgsIndex = 0;
 
             for (var i = 0; i < args.Length; i++)

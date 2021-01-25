@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
@@ -69,9 +70,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessAsync(Uri url)
         {
+            Debug.Assert(_application != null);
+
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = Poll(url, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application!, _httpClient, _logger);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // 2. Waiting for an outgoing send (this should be instantaneous)
 
                 // Cancel the application so that ReadAsync yields
-                _application!.Input.CancelPendingRead();
+                _application.Input.CancelPendingRead();
 
                 await sending;
             }
@@ -98,7 +101,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
-                _application!.Output.CancelPendingFlush();
+                _application.Output.CancelPendingFlush();
 
                 await receiving;
 
@@ -137,10 +140,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
+            Debug.Assert(_application != null);
+
             Log.StartReceive(_logger);
 
             // Allocate this once for the duration of the transport so we can continuously write to it
-            var applicationStream = new PipeWriterStream(_application!.Output);
+            var applicationStream = new PipeWriterStream(_application.Output);
 
             try
             {

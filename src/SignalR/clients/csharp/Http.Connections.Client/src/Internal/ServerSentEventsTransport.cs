@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -92,9 +93,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessAsync(Uri url, HttpResponseMessage response)
         {
+            Debug.Assert(_application != null);
+
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = ProcessEventStream(response, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application!, _httpClient, _logger, _inputCts.Token);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -108,7 +111,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _inputCts.Cancel();
 
                 // Cancel the application so that ReadAsync yields
-                _application!.Input.CancelPendingRead();
+                _application.Input.CancelPendingRead();
 
                 await sending;
             }
@@ -120,7 +123,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
-                _application!.Output.CancelPendingFlush();
+                _application.Output.CancelPendingFlush();
 
                 await receiving;
             }
@@ -128,6 +131,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessEventStream(HttpResponseMessage response, CancellationToken cancellationToken)
         {
+            Debug.Assert(_application != null);
+
             Log.StartReceive(_logger);
 
             static void CancelReader(object? state) => ((PipeReader)state!).CancelPendingRead();
@@ -168,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                                     case ServerSentEventsMessageParser.ParseResult.Completed:
                                         Log.MessageToApplication(_logger, message!.Length);
 
-                                        flushResult = await _application!.Output.WriteAsync(message);
+                                        flushResult = await _application.Output.WriteAsync(message);
 
                                         _parser.Reset();
                                         break;
@@ -205,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
                 finally
                 {
-                    _application!.Output.Complete(_error);
+                    _application.Output.Complete(_error);
 
                     Log.ReceiveStopped(_logger);
 

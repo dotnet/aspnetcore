@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                         reader.Read();
                                         while (reader.TokenType != JsonToken.EndArray)
                                         {
-                                            newStreamIds.Add(reader.Value?.ToString() ?? throw new InvalidDataException($"Null value for {StreamIdsPropertyName} is not valid."));
+                                            newStreamIds.Add(reader.Value?.ToString() ?? throw new InvalidDataException($"Null value for '{StreamIdsPropertyName}' is not valid."));
                                             reader.Read();
                                         }
 

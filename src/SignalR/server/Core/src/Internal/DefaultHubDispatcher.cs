@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            IServiceScope scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceScopeFactory.CreateScope();
 
             try
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
         {
-            IServiceScope scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceScopeFactory.CreateScope();
 
             try
             {

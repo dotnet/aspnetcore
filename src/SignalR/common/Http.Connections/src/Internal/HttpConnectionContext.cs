@@ -59,11 +59,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        /// <param name="connectionId"></param>
-        /// <param name="connectionToken"></param>
-        /// <param name="logger"></param>
-        /// <param name="transport"></param>
-        /// <param name="application"></param>
         public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application)
         {
             Transport = transport;
