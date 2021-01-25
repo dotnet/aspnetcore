@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var candidateSet = CreateCandidateSet(compiled);
 
-            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == Task.FromResult(compiled));
+            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()) == Task.FromResult(compiled));
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 await tcs.Task;
                 return compiled;
             });
-            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == loadTask);
+            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()) == loadTask);
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act

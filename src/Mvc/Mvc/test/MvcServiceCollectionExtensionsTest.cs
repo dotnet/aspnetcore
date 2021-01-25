@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(ControllerActionDescriptorProvider),
-                            typeof(PageActionDescriptorProvider),
+                            typeof(CompiledPageActionDescriptorProvider),
                         }
                     },
                     {
