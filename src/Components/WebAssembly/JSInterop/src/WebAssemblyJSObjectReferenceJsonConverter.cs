@@ -6,24 +6,29 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Implementation;
 
-namespace Microsoft.JSInterop.Infrastructure
+namespace Microsoft.JSInterop.WebAssembly
 {
-    internal sealed class JSObjectReferenceJsonConverter : JsonConverter<IJSObjectReference>
+    internal sealed class WebAssemblyJSObjectReferenceJsonConverter : JsonConverter<IJSObjectReference>
     {
-        private readonly JSRuntime _jsRuntime;
+        private readonly WebAssemblyJSRuntime _jsRuntime;
 
-        public JSObjectReferenceJsonConverter(JSRuntime jsRuntime)
+        public WebAssemblyJSObjectReferenceJsonConverter(WebAssemblyJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
         }
 
         public override bool CanConvert(Type typeToConvert)
-            => typeToConvert == typeof(IJSObjectReference) || typeToConvert == typeof(JSObjectReference);
+        {
+            return typeToConvert == typeof(WebAssemblyJSObjectReference) ||
+                typeToConvert == typeof(IJSObjectReference) ||
+                typeToConvert == typeof(IJSInProcessObjectReference) ||
+                typeToConvert == typeof(IJSUnmarshalledObjectReference);
+        }
 
         public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var id = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
-            return new JSObjectReference(_jsRuntime, id);
+            return new WebAssemblyJSObjectReference(_jsRuntime, id);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSObjectReference value, JsonSerializerOptions options)

@@ -14,7 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)JSInterop\*.cs" />
+    <Compile Include="$(SharedSourceRoot)JSInterop\JSCallResultTypeHelper.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
   </ItemGroup>
 
 </Project>
