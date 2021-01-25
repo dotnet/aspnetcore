@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 var typeMappingConvention = conventionSet.ModelFinalizingConventions.OfType<TypeMappingConvention>().FirstOrDefault();
                 if (typeMappingConvention != null)
                 {
-                    typeMappingConvention.ProcessModelFinalizing(conventionModel.Builder, null);
+                    typeMappingConvention.ProcessModelFinalizing(conventionModel.Builder, null!);
                 }
 
                 var relationalModelConvention = conventionSet.ModelFinalizedConventions.OfType<RelationalModelConvention>().FirstOrDefault();

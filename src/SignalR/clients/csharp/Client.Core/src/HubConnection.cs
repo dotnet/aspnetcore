@@ -565,19 +565,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object[] args, CancellationTokenSource cts)
         {
             var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token);
-            try
+            while (await reader.WaitToReadAsync(cts.Token))
             {
-                while (await reader.WaitToReadAsync(cts.Token))
+                while (reader.TryRead(out var item))
                 {
-                    while (reader.TryRead(out var item))
-                    {
-                        yield return (T)item;
-                    }
+                    yield return (T)item;
                 }
-            }
-            finally
-            {
-                cts.Dispose();
             }
         }
 
@@ -646,36 +639,56 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             Dictionary<string, object> readers = null;
             streamIds = null;
-            var newArgs = new List<object>(args.Length);
-
+            var newArgsCount = args.Length;
+            const int MaxStackSize = 256;
+            Span<bool> isStreaming = args.Length <= MaxStackSize
+                ? stackalloc bool[MaxStackSize].Slice(0, args.Length)
+                : new bool[args.Length];
             for (var i = 0; i < args.Length; i++)
             {
-                if (args[i] != null && ReflectionHelper.IsStreamingType(args[i].GetType()))
+                var arg = args[i];
+                if (arg is not null && ReflectionHelper.IsStreamingType(arg.GetType()))
                 {
-                    if (readers == null)
+                    isStreaming[i] = true;
+                    newArgsCount--;
+
+                    if (readers is null)
                     {
                         readers = new Dictionary<string, object>();
                     }
-
-                    var id = connectionState.GetNextId();
-                    readers[id] = args[i];
-
-                    if (streamIds == null)
+                    if (streamIds is null)
                     {
                         streamIds = new List<string>();
                     }
 
+                    var id = connectionState.GetNextId();
+                    readers[id] = args[i];
                     streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
                 }
-                else
+            }
+
+            if (newArgsCount == args.Length)
+            {
+                return null;
+            }
+
+            var newArgs = newArgsCount > 0
+                ? new object[newArgsCount]
+                : Array.Empty<object>();
+            int newArgsIndex = 0;
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!isStreaming[i])
                 {
-                    newArgs.Add(args[i]);
+                    newArgs[newArgsIndex] = args[i];
+                    newArgsIndex++;
                 }
             }
 
-            args = newArgs.ToArray();
+            args = newArgs;
             return readers;
         }
 

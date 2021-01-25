@@ -9,9 +9,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // a little perf app measured these times when comparing the internal

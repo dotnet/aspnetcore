@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             RunContinuationsAsynchronously = false
         };
 
-        private RequestContext _requestContext;
+        private RequestContext? _requestContext;
 
         internal AsyncAcceptContext(HttpSysListener server, IRequestContextFactory requestContextFactory)
         {
@@ -64,6 +65,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     return;
                 }
 
+                Debug.Assert(_requestContext != null);
+
                 if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
                     var requestContext = _requestContext;
@@ -98,16 +101,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
             acceptContext.IOCompleted(errorCode, numBytes);
         }
 
         private uint QueueBeginGetContext()
         {
-            uint statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+            uint statusCode;
             bool retry;
             do
             {
+                Debug.Assert(_requestContext != null);
+
                 retry = false;
                 uint bytesTransferred = 0;
                 statusCode = HttpApi.HttpReceiveHttpRequest(
@@ -199,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return _mrvts.GetStatus(token);
         }
 
-        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        public void OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags)
         {
             _mrvts.OnCompleted(continuation, state, token, flags);
         }

@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/JSInterop",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/JSInterop",
   "files": [
     "dist/**"
   ],

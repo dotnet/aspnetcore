@@ -12,7 +12,7 @@ RUN apt-get update \
     nodejs \
     git
 
-ARG gitBranch=master
+ARG gitBranch=main
 
 WORKDIR /src
 ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit
