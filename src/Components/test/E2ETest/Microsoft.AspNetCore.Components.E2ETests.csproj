@@ -22,6 +22,13 @@
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <!-- These tests are currently quarantined -->
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.QuarantinedTestAttribute">
+      <_Parameter1>https://github.com/dotnet/aspnetcore/issues/29553</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
