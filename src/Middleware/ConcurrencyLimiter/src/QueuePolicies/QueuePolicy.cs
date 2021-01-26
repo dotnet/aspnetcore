@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _serverSemaphore.Dispose();
         }
 
-        private async ValueTask<bool> SemaphoreAwaited(Task task)
+        private static async ValueTask<bool> SemaphoreAwaited(Task task)
         {
             await task;
 
