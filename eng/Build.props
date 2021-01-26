@@ -83,6 +83,9 @@
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+        <!-- VS ANCM wixlib -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMVS.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMVS.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
       <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">

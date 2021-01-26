@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <OutputNamePrefix>aspnetcoremodulevs-</OutputNamePrefix>
+    <OutputNameSuffix>-win-$(Platform)</OutputNameSuffix>
+    <ProductNameFolder>Microsoft ASP.NET Core Module</ProductNameFolder>
+    <ProductNameShort>AspNetCoreModule.VS</ProductNameShort>
+    <OutputType>Package</OutputType>
+    <Cabinet>sfx_$(Platform).cab</Cabinet>
+    <ProjectGuid>C681D730-4505-42C6-9E6C-87F757C4FB32</ProjectGuid>
+    <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
+    <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
+    <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
+    <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
+    <IsShipping>true</IsShipping>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
+    <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\AspNetCoreModule-Setup\ANCMVS.nuspec</ToolsetInstallerNuspecFile>
+    <SkipCopyToArtifactsDirectory>true</SkipCopyToArtifactsDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <HarvestDirectory Include="$(HarvestSource)">
+      <SuppressRootDirectory>true</SuppressRootDirectory>
+      <ComponentGroupName>CG_AspNetCoreModuleVS</ComponentGroupName>
+      <DirectoryRefId>DOTNETHOME</DirectoryRefId>
+      <PreprocessorVariable>var.AspNetCoreModuleVSSource</PreprocessorVariable>
+    </HarvestDirectory>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
+    <ProductName>Microsoft ASP.NET Core Module $(PackageBrandingVersion) ($(Platform))</ProductName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="ANCMV2\ANCMV2.wixproj">
+      <SetPlatform>Platform=$(Platform)</SetPlatform>
+      <Name>AspNetCoreModuleV2_$(Platform)</Name>
+      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="ANCMIISExpressV2\AncmIISExpressV2.wixproj">
+      <SetPlatform>Platform=$(Platform)</SetPlatform>
+      <Name>AspNetCoreModuleIISExpressV2_$(Platform)</Name>
+      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)ancm_iis_express_$(Platform)_en_v2_$(_GeneratedPackageVersion)$(TargetExt)</MsiFullPath>
+      <IISMsiFullPath>$(InstallersOutputPath)aspnetcoremodule_$(Platform)_en_v2_$(_GeneratedPackageVersion)$(TargetExt)</IISMsiFullPath>
+    </PropertyGroup>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^ 
+                      '$(MsiFullPath)' ^
+                      '$(IISMsiFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(_GeneratedPackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
+  </Target>
+</Project>
