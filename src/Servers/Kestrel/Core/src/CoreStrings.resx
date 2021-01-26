@@ -259,10 +259,10 @@
     <value>Unable to bind to {address} on the {interfaceName} interface: '{error}'.</value>
   </data>
   <data name="OverridingWithKestrelOptions" xml:space="preserve">
-    <value>Overriding address(es) '{addresses}'. Binding to endpoints defined in {methodName} instead.</value>
+    <value>Overriding address(es) '{addresses}'. Binding to endpoints defined via IConfiguration and/or UseKestrel() instead.</value>
   </data>
   <data name="OverridingWithPreferHostingUrls" xml:space="preserve">
-    <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
+    <value>Overriding endpoints defined via IConfiguration and/or UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
   </data>
   <data name="UnsupportedAddressScheme" xml:space="preserve">
     <value>Unrecognized scheme in server address '{address}'. Only 'http://' and 'https://' are supported.</value>
