@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Extensions
@@ -15,6 +17,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         private const char Hash = '#';
         private const char QuestionMark = '?';
         private static readonly string SchemeDelimiter = Uri.SchemeDelimiter;
+        private static readonly SpanAction<char, (string scheme, string host, string pathBase, string path, string query, string fragment)> InitializeAbsoluteUriStringSpanAction = new(InitializeAbsoluteUriString);
 
         /// <summary>
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
@@ -58,24 +61,36 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 throw new ArgumentNullException(nameof(scheme));
             }
 
-            var combinedPath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
+            var hostText = host.ToUriComponent();
+            var pathBaseText = pathBase.ToUriComponent();
+            var pathText = path.ToUriComponent();
+            var queryText = query.ToUriComponent();
+            var fragmentText = fragment.ToUriComponent();
 
-            var encodedHost = host.ToString();
-            var encodedQuery = query.ToString();
-            var encodedFragment = fragment.ToString();
+            // PERF: Calculate string length to allocate correct buffer size for string.Create.
+            var length =
+                scheme.Length +
+                Uri.SchemeDelimiter.Length +
+                hostText.Length +
+                pathBaseText.Length +
+                pathText.Length +
+                queryText.Length +
+                fragmentText.Length;
 
-            // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
-            var length = scheme.Length + SchemeDelimiter.Length + encodedHost.Length
-                + combinedPath.Length + encodedQuery.Length + encodedFragment.Length;
+            if (string.IsNullOrEmpty(pathBaseText) && string.IsNullOrEmpty(pathText))
+            {
+                pathText = "/";
+                length++;
+            }
+            else if (pathBaseText.Length > 0 && pathBaseText[^1] == '/')
+            {
+                // If the path string has a trailing slash and the other string has a leading slash, we need
+                // to trim one of them.
+                // Just decrement the total lenght, for now.
+                length--;
+            }
 
-            return new StringBuilder(length)
-                .Append(scheme)
-                .Append(SchemeDelimiter)
-                .Append(encodedHost)
-                .Append(combinedPath)
-                .Append(encodedQuery)
-                .Append(encodedFragment)
-                .ToString();
+            return string.Create(length, (scheme, hostText, pathBaseText, pathText, queryText, fragmentText), InitializeAbsoluteUriStringSpanAction);
         }
 
         /// <summary>
@@ -213,6 +228,48 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 .Append(path)
                 .Append(queryString)
                 .ToString();
+        }
+
+        /// <summary>
+        /// Copies the specified <paramref name="text"/> to the specified <paramref name="buffer"/> starting at the specified <paramref name="index"/>.
+        /// </summary>
+        /// <param name="buffer">The buffer to copy text to.</param>
+        /// <param name="index">The buffer start index.</param>
+        /// <param name="text">The text to copy.</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int CopyTextToBuffer(Span<char> buffer, int index, ReadOnlySpan<char> text)
+        {
+            text.CopyTo(buffer.Slice(index, text.Length));
+            return index + text.Length;
+        }
+
+        /// <summary>
+        /// Initializes the URI <see cref="string"/> for <see cref="BuildAbsolute(string, HostString, PathString, PathString, QueryString, FragmentString)"/>.
+        /// </summary>
+        /// <param name="buffer">The URI <see cref="string"/>'s <see cref="char"/> buffer.</param>
+        /// <param name="uriParts">The URI parts.</param>
+        private static void InitializeAbsoluteUriString(Span<char> buffer, (string scheme, string host, string pathBase, string path, string query, string fragment) uriParts)
+        {
+            var index = 0;
+
+            var pathBaseSpan = uriParts.pathBase.AsSpan();
+
+            if (uriParts.path.Length > 0 && pathBaseSpan.Length > 0 && pathBaseSpan[^1] == '/')
+            {
+                // If the path string has a trailing slash and the other string has a leading slash, we need
+                // to trim one of them.
+                // Trim the last slahs from pathBase. The total lenght was decremented before the call to string.Create.
+                pathBaseSpan = pathBaseSpan[..^1];
+            }
+
+            index = CopyTextToBuffer(buffer, index, uriParts.scheme.AsSpan());
+            index = CopyTextToBuffer(buffer, index, Uri.SchemeDelimiter.AsSpan());
+            index = CopyTextToBuffer(buffer, index, uriParts.host.AsSpan());
+            index = CopyTextToBuffer(buffer, index, pathBaseSpan);
+            index = CopyTextToBuffer(buffer, index, uriParts.path.AsSpan());
+            index = CopyTextToBuffer(buffer, index, uriParts.query.AsSpan());
+            _ = CopyTextToBuffer(buffer, index, uriParts.fragment.AsSpan());
         }
     }
 }
