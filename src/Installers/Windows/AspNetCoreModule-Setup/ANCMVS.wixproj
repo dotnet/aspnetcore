@@ -83,7 +83,7 @@
     </PropertyGroup>
 
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ProductNameShort)' ^ 
+                      '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
                       '$(IISMsiFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
