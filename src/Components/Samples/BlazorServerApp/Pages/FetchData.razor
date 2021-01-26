@@ -47,7 +47,7 @@ else
         if (!ApplicationState.TryRetrievePersistedState("fetchdata", out var data))
         {
             forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-            ApplicationState.PersistState("fetchdata", JsonSerializer.Serialize(forecasts));
+            ApplicationState.PersistState("fetchdata", JsonSerializer.SerializeToUtf8Bytes(forecasts));
         }
         else
         {

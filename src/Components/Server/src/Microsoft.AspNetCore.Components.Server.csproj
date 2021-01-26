@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
@@ -88,6 +88,8 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
   <PropertyGroup>

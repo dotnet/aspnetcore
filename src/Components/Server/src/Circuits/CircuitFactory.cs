@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
-            var store = new PrerenderComponentApplicationStore(existingState);
+            var store = new ProtectedPrerenderComponentApplicationStore(existingState, scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>());
             await appLifetime.RestoreStateAsync(store);
 
             var renderer = new RemoteRenderer(
@@ -104,28 +104,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             internal static void CreatedCircuit(ILogger logger, CircuitHost circuitHost) =>
                 _createdCircuit(logger, circuitHost.CircuitId.Id, circuitHost.Client.ConnectionId, null);
-        }
-
-        internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
-        {
-            private readonly Dictionary<string, string> _existingState;
-
-            public PrerenderComponentApplicationStore() { _existingState = new(); }
-
-            public PrerenderComponentApplicationStore(string existingState)
-            {
-                _existingState = JsonSerializer.Deserialize<Dictionary<string, string>>(Convert.FromBase64String(existingState));
-            }
-
-            public IDictionary<string, string> GetPersistedState()
-            {
-                return _existingState ?? throw new InvalidOperationException("The store was not initialized with any state.");
-            }
-
-            public Task PersistStateAsync(IReadOnlyDictionary<string, string> state)
-            {
-                return Task.CompletedTask;
-            }
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -32,6 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
+        public SaveMode SaveMode { get; set; }
+
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
@@ -45,13 +48,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            var manager = ViewContext.HttpContext.RequestServices.GetRequiredService<ComponentApplicationLifetime>();
-            await manager.PauseAsync();
-            var store = new PrerenderComponentApplicationStore();
+            var services = ViewContext.HttpContext.RequestServices;
+            var manager = services.GetRequiredService<ComponentApplicationLifetime>();
+            var store = SaveMode switch
+            {
+                SaveMode.Server => new ProtectedPrerenderComponentApplicationStore(
+                    services.GetRequiredService<IDataProtectionProvider>()),
+                SaveMode.WebAssembly => new PrerenderComponentApplicationStore(),
+                _ => throw new InvalidOperationException("Invalid save mode.")
+            };
 
+            await manager.PauseAsync();
             await manager.PersistStateAsync(store);
+
             output.TagName = null;
             output.Content.Clear().AppendHtml(store.PersistedState);
         }
+    }
+
+    public enum SaveMode
+    {
+        Server,
+        WebAssembly
     }
 }

@@ -8,19 +8,19 @@ namespace Microsoft.AspNetCore.Components
 {
     public class ComponentApplicationState
     {
-        private IDictionary<string, string>? _existingState;
-        private readonly IDictionary<string, string> _currentState;
+        private IDictionary<string, byte[]>? _existingState;
+        private readonly IDictionary<string, byte[]> _currentState;
         private readonly IDictionary<object, Func<Task>> _registeredCallbacks;
 
         internal ComponentApplicationState(
-            IDictionary<string, string> currentState,
+            IDictionary<string, byte[]> currentState,
             IDictionary<object, Func<Task>> pauseCallbacks)
         {
             _currentState = currentState;
             _registeredCallbacks = pauseCallbacks;
         }
 
-        internal void InitializeExistingState(IDictionary<string, string> existingState)
+        internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
         {
             if (_existingState != null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
             _registeredCallbacks.Add(instance, callback);
         }
 
-        public bool TryRetrievePersistedState(string key, [MaybeNullWhen(false)] out string value)
+        public bool TryRetrievePersistedState(string key, [MaybeNullWhen(false)] out byte[] value)
         {
             if (_existingState == null)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
             return _existingState.TryGetValue(key, out value);
         }
 
-        public void PersistState(string key, string value)
+        public void PersistState(string key, byte[] value)
         {
             _currentState[key] = value;
         }
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components
         private bool _stateIsPersisted;
         private bool _pauseInProgress;
         private Dictionary<object, Func<Task>> _pauseCallbacks = new();
-        private readonly Dictionary<string, string> _currentState = new();
+        private readonly Dictionary<string, byte[]> _currentState = new();
 
         public ComponentApplicationLifetime()
         {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new InvalidOperationException("Not all registered instances have been paused.");
             }
             _stateIsPersisted = true;
-            var data = new ReadOnlyDictionary<string, string>(_currentState);
+            var data = new ReadOnlyDictionary<string, byte[]>(_currentState);
             return store.PersistStateAsync(data);
         }
 
@@ -129,8 +129,8 @@ namespace Microsoft.AspNetCore.Components
 
     public interface IComponentApplicationStateStore
     {
-        IDictionary<string, string> GetPersistedState();
+        IDictionary<string, byte[]> GetPersistedState();
 
-        Task PersistStateAsync(IReadOnlyDictionary<string, string> manager);
+        Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> manager);
     }
 }

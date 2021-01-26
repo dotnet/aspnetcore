@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
