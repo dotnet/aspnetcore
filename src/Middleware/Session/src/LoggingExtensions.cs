@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,69 +7,74 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _errorClosingTheSession;
-        private static Action<ILogger, string, Exception> _accessingExpiredSession;
-        private static Action<ILogger, string, string, Exception> _sessionStarted;
-        private static Action<ILogger, string, string, int, Exception> _sessionLoaded;
-        private static Action<ILogger, string, string, int, Exception> _sessionStored;
-        private static Action<ILogger, string, Exception> _sessionCacheReadException;
-        private static Action<ILogger, Exception> _errorUnprotectingCookie;
-        private static Action<ILogger, Exception> _sessionLoadingTimeout;
-        private static Action<ILogger, Exception> _sessionCommitTimeout;
-        private static Action<ILogger, Exception> _sessionCommitCanceled;
-        private static Action<ILogger, Exception> _sessionRefreshTimeout;
-        private static Action<ILogger, Exception> _sessionRefreshCanceled;
+        private static Action<ILogger, Exception?> _errorClosingTheSession;
+        private static Action<ILogger, string, Exception?> _accessingExpiredSession;
+        private static Action<ILogger, string, string, Exception?> _sessionStarted;
+        private static Action<ILogger, string, string, int, Exception?> _sessionLoaded;
+        private static Action<ILogger, string, string, int, Exception?> _sessionStored;
+        private static Action<ILogger, string, Exception?> _sessionCacheReadException;
+        private static Action<ILogger, Exception?> _errorUnprotectingCookie;
+        private static Action<ILogger, Exception?> _sessionLoadingTimeout;
+        private static Action<ILogger, Exception?> _sessionCommitTimeout;
+        private static Action<ILogger, Exception?> _sessionCommitCanceled;
+        private static Action<ILogger, Exception?> _sessionRefreshTimeout;
+        private static Action<ILogger, Exception?> _sessionRefreshCanceled;
+        private static Action<ILogger, Exception?> _sessionNotAvailable;
 
         static LoggingExtensions()
         {
             _errorClosingTheSession = LoggerMessage.Define(
-                eventId: 1,
+                eventId: new EventId(1, "ErrorClosingTheSession"),
                 logLevel: LogLevel.Error,
                 formatString: "Error closing the session.");
             _accessingExpiredSession = LoggerMessage.Define<string>(
-                eventId: 2,
+                eventId: new EventId(2, "AccessingExpiredSession"),
                 logLevel: LogLevel.Information,
                 formatString: "Accessing expired session, Key:{sessionKey}");
             _sessionStarted = LoggerMessage.Define<string, string>(
-                eventId: 3,
+                eventId: new EventId(3, "SessionStarted"),
                 logLevel: LogLevel.Information,
                 formatString: "Session started; Key:{sessionKey}, Id:{sessionId}");
             _sessionLoaded = LoggerMessage.Define<string, string, int>(
-                eventId: 4,
+                eventId: new EventId(4, "SessionLoaded"),
                 logLevel: LogLevel.Debug,
                 formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
             _sessionStored = LoggerMessage.Define<string, string, int>(
-                eventId: 5,
+                eventId: new EventId(5, "SessionStored"),
                 logLevel: LogLevel.Debug,
                 formatString: "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
             _sessionCacheReadException = LoggerMessage.Define<string>(
-                eventId: 6,
+                eventId: new EventId(6, "SessionCacheReadException"),
                 logLevel: LogLevel.Error,
                 formatString: "Session cache read exception, Key:{sessionKey}");
             _errorUnprotectingCookie = LoggerMessage.Define(
-                eventId: 7,
+                eventId: new EventId(7, "ErrorUnprotectingCookie"),
                 logLevel: LogLevel.Warning,
                 formatString: "Error unprotecting the session cookie.");
             _sessionLoadingTimeout = LoggerMessage.Define(
-                eventId: 8,
+                eventId: new EventId(8, "SessionLoadingTimeout"),
                 logLevel: LogLevel.Warning,
                 formatString: "Loading the session timed out.");
             _sessionCommitTimeout = LoggerMessage.Define(
-                eventId: 9,
+                eventId: new EventId(9, "SessionCommitTimeout"),
                 logLevel: LogLevel.Warning,
                 formatString: "Committing the session timed out.");
             _sessionCommitCanceled = LoggerMessage.Define(
-                eventId: 10,
+                eventId: new EventId(10, "SessionCommitCanceled"),
                 logLevel: LogLevel.Information,
                 formatString: "Committing the session was canceled.");
             _sessionRefreshTimeout = LoggerMessage.Define(
-                eventId: 11,
+                eventId: new EventId(11, "SessionRefreshTimeout"),
                 logLevel: LogLevel.Warning,
                 formatString: "Refreshing the session timed out.");
             _sessionRefreshCanceled = LoggerMessage.Define(
-                eventId: 12,
+                eventId: new EventId(12, "SessionRefreshCanceled"),
                 logLevel: LogLevel.Information,
                 formatString: "Refreshing the session was canceled.");
+            _sessionNotAvailable = LoggerMessage.Define(
+                eventId: new EventId(13, "SessionCommitNotAvailable"),
+                logLevel: LogLevel.Information,
+                formatString: "Session cannot be committed since it is unavailable.");
         }
 
         public static void ErrorClosingTheSession(this ILogger logger, Exception exception)
@@ -131,5 +136,7 @@ namespace Microsoft.Extensions.Logging
         {
             _sessionRefreshCanceled(logger, null);
         }
+
+        public static void SessionNotAvailable(this ILogger logger) => _sessionNotAvailable(logger, null);
     }
 }

@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Biblioteka klas Razor",
+    "description": "Szablon projektu do tworzenia biblioteki klas Razor.",
+    "parameter.SupportPagesAndViews.name": "_Obsługa stron i widoków"
+  }
+}

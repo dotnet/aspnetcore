@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// A set of URL parameters used to listen for incoming requests.
+    /// </summary>
     public class UrlPrefix
     {
         private UrlPrefix(bool isHttps, string scheme, string host, string port, int portValue, string path)
@@ -15,8 +18,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Scheme = scheme;
             Host = host;
             Port = port;
+            HostAndPort = string.Format(CultureInfo.InvariantCulture, "{0}:{1}", Host, Port);
             PortValue = portValue;
             Path = path;
+            PathWithoutTrailingSlash = Path.Length > 1 ? Path[0..^1] : string.Empty;
             FullPrefix = string.Format(CultureInfo.InvariantCulture, "{0}://{1}:{2}{3}", Scheme, Host, Port, Path);
         }
 
@@ -92,20 +97,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return new UrlPrefix(isHttps, scheme, host, port, portValue.Value, path);
         }
 
+        /// <summary>
+        /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx
+        /// </summary>
+        /// <param name="prefix">The string that the <see cref="UrlPrefix"/> will be created from.</param>
         public static UrlPrefix Create(string prefix)
         {
-            string scheme = null;
-            string host = null;
+            string scheme;
+            string host;
             int? port = null;
-            string path = null;
+            string path;
             var whole = prefix ?? string.Empty;
 
-            var schemeDelimiterEnd = whole.IndexOf("://", StringComparison.Ordinal);
+            var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
             if (schemeDelimiterEnd < 0)
             {
                 throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
             }
-            var hostDelimiterStart = schemeDelimiterEnd + "://".Length;
+            var hostDelimiterStart = schemeDelimiterEnd + Uri.SchemeDelimiter.Length;
 
             var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
             if (pathDelimiterStart < 0)
@@ -144,24 +153,58 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Create(scheme, host, port, path);
         }
 
-        public bool IsHttps { get; private set; }
-        public string Scheme { get; private set; }
-        public string Host { get; private set; }
-        public string Port { get; private set; }
-        public int PortValue { get; private set; }
-        public string Path { get; private set; }
-        public string FullPrefix { get; private set; }
+        /// <summary>
+        /// Gets a value that determines if the prefix's scheme is HTTPS.
+        /// </summary>
+        public bool IsHttps { get; }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Gets the scheme used by the prefix.
+        /// </summary>
+        public string Scheme { get; }
+
+        /// <summary>
+        /// Gets the host domain name used by the prefix.
+        /// </summary>
+        public string Host { get; }
+
+        /// <summary>
+        /// Gets a string representation of the port used by the prefix.
+        /// </summary>
+        public string Port { get; }
+
+        internal string HostAndPort { get; }
+
+        /// <summary>
+        /// Gets an integer representation of the port used by the prefix.
+        /// </summary>
+        public int PortValue { get; }
+
+        /// <summary>
+        /// Gets the path component of the prefix.
+        /// </summary>
+        public string Path { get; }
+
+        internal string PathWithoutTrailingSlash { get; }
+
+        /// <summary>
+        /// Gets a string representation of the prefix
+        /// </summary>
+        public string FullPrefix { get; }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
-            return string.Equals(FullPrefix, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(FullPrefix, Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return StringComparer.OrdinalIgnoreCase.GetHashCode(FullPrefix);
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return FullPrefix;

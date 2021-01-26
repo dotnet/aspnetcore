@@ -1,20 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -32,22 +34,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly string _plaintextPipelinedExpectedResponse =
             string.Concat(Enumerable.Repeat(_plaintextExpectedResponse, RequestParsingData.Pipelining));
 
-        private IWebHost _host;
+        private IHost _host;
         private InMemoryConnection _connection;
 
         [GlobalSetup(Target = nameof(Plaintext) + "," + nameof(PlaintextPipelined))]
         public void GlobalSetupPlaintext()
         {
             var transportFactory = new InMemoryTransportFactory(connectionsPerEndPoint: 1);
-
-            _host = new WebHostBuilder()
-                // Prevent VS from attaching to hosting startup which could impact results
-                .UseSetting("preventHostingStartup", "true")
-                .UseKestrel()
-                // Bind to a single non-HTTPS endpoint
-                .UseUrls("http://127.0.0.1:5000")
-                .ConfigureServices(services => services.AddSingleton<ITransportFactory>(transportFactory))
-                .Configure(app => app.UseMiddleware<PlaintextMiddleware>())
+            
+            _host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        // Prevent VS from attaching to hosting startup which could impact results
+                        .UseSetting("preventHostingStartup", "true")
+                        .UseKestrel()
+                        // Bind to a single non-HTTPS endpoint
+                        .UseUrls("http://127.0.0.1:5000")
+                        .Configure(app => app.UseMiddleware<PlaintextMiddleware>());
+                })                
+                .ConfigureServices(services => services.AddSingleton<IConnectionListenerFactory>(transportFactory))
                 .Build();
 
             _host.Start();
@@ -65,8 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var response = Encoding.ASCII.GetString(await _connection.GetResponseAsync(expectedResponse.Length));
 
             // Exclude date header since the value changes on every request
-            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:"));
-            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:"));
+            var expectedResponseLines = expectedResponse.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
+            var responseLines = response.Split("\r\n").Where(s => !s.StartsWith("Date:", StringComparison.Ordinal));
 
             if (!Enumerable.SequenceEqual(expectedResponseLines, responseLines))
             {
@@ -95,21 +101,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             await _connection.ReadResponseAsync(_plaintextPipelinedExpectedResponse.Length);
         }
 
-        public class InMemoryTransportFactory : ITransportFactory
+        internal class InMemoryTransportFactory : IConnectionListenerFactory
         {
             private readonly int _connectionsPerEndPoint;
 
-            private readonly Dictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>> _connections =
-                new Dictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>>();
+            private readonly Dictionary<EndPoint, IReadOnlyList<InMemoryConnection>> _connections =
+                new Dictionary<EndPoint, IReadOnlyList<InMemoryConnection>>();
 
-            public IReadOnlyDictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>> Connections => _connections;
+            public IReadOnlyDictionary<EndPoint, IReadOnlyList<InMemoryConnection>> Connections => _connections;
 
             public InMemoryTransportFactory(int connectionsPerEndPoint)
             {
                 _connectionsPerEndPoint = connectionsPerEndPoint;
             }
 
-            public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher handler)
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
             {
                 var connections = new InMemoryConnection[_connectionsPerEndPoint];
                 for (var i = 0; i < _connectionsPerEndPoint; i++)
@@ -117,46 +123,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                     connections[i] = new InMemoryConnection();
                 }
 
-                _connections.Add(endPointInformation, connections);
+                _connections.Add(endpoint, connections);
 
-                return new InMemoryTransport(handler, connections);
+                return new ValueTask<IConnectionListener>(new InMemoryTransport(endpoint, connections));
             }
         }
 
-        public class InMemoryTransport : ITransport
+        internal class InMemoryTransport : IConnectionListener
         {
-            private readonly IConnectionDispatcher _dispatcher;
             private readonly IReadOnlyList<InMemoryConnection> _connections;
+            private readonly TaskCompletionSource<ConnectionContext> _tcs = new TaskCompletionSource<ConnectionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private int _acceptedConnections;
 
-            public InMemoryTransport(IConnectionDispatcher dispatcher, IReadOnlyList<InMemoryConnection> connections)
+            public InMemoryTransport(EndPoint endpoint, IReadOnlyList<InMemoryConnection> connections)
             {
-                _dispatcher = dispatcher;
+                EndPoint = endpoint;
                 _connections = connections;
             }
 
-            public Task BindAsync()
+            public EndPoint EndPoint { get; }
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
             {
-                foreach (var connection in _connections)
+                if (_acceptedConnections < _connections.Count)
                 {
-                    _dispatcher.OnConnection(connection);
+                    return new ValueTask<ConnectionContext>(_connections[_acceptedConnections++]);
                 }
-
-                return Task.CompletedTask;
+                return new ValueTask<ConnectionContext>(_tcs.Task);   
             }
 
-            public Task StopAsync()
+            public ValueTask DisposeAsync()
             {
-                return Task.CompletedTask;
+                _tcs.TrySetResult(null);
+                return default;
             }
 
-            public Task UnbindAsync()
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
             {
-                return Task.CompletedTask;
+                _tcs.TrySetResult(null);
+                return default;
             }
         }
 
-        public class InMemoryConnection : TransportConnection
+        internal class InMemoryConnection : TransportConnection
         {
+            public InMemoryConnection()
+            {
+                var inputOptions = new PipeOptions(useSynchronizationContext: false);
+                var outputOptions = new PipeOptions(useSynchronizationContext: false);
+
+                var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+                // Set the transport and connection id
+                Transport = pair.Transport;
+                Application = pair.Application;
+            }
+
+            public PipeWriter Input => Application.Output;
+
+            public PipeReader Output => Application.Input;
+
             public ValueTask<FlushResult> SendRequestAsync(byte[] request)
             {
                 return Input.WriteAsync(request);

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public static class ReasonPhrases
+    internal static class ReasonPhrases
     {
         private static readonly byte[] _bytesStatus100 = CreateStatusBytes(StatusCodes.Status100Continue);
         private static readonly byte[] _bytesStatus101 = CreateStatusBytes(StatusCodes.Status101SwitchingProtocols);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase);
         }
 
-        public static byte[] ToStatusBytes(int statusCode, string reasonPhrase = null)
+        public static byte[] ToStatusBytes(int statusCode, string? reasonPhrase = null)
         {
             if (string.IsNullOrEmpty(reasonPhrase))
             {

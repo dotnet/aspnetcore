@@ -3,180 +3,312 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
-using System.Text;
+using System.Net.Http.HPack;
+using System.Runtime.CompilerServices;
+using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
+    internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
     {
-        private enum RequestHeaderParsingState
-        {
-            Ready,
-            PseudoHeaderFields,
-            Headers,
-            Trailers
-        }
-
-        [Flags]
-        private enum PseudoHeaderFields
-        {
-            None = 0x0,
-            Authority = 0x1,
-            Method = 0x2,
-            Path = 0x4,
-            Scheme = 0x8,
-            Status = 0x10,
-            Unknown = 0x40000000
-        }
-
-        public static byte[] ClientPreface { get; } = Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n");
+        public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
 
         private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private static readonly byte[] _authorityBytes = Encoding.ASCII.GetBytes("authority");
-        private static readonly byte[] _methodBytes = Encoding.ASCII.GetBytes("method");
-        private static readonly byte[] _pathBytes = Encoding.ASCII.GetBytes("path");
-        private static readonly byte[] _schemeBytes = Encoding.ASCII.GetBytes("scheme");
-        private static readonly byte[] _statusBytes = Encoding.ASCII.GetBytes("status");
-        private static readonly byte[] _connectionBytes = Encoding.ASCII.GetBytes("connection");
-        private static readonly byte[] _teBytes = Encoding.ASCII.GetBytes("te");
-        private static readonly byte[] _trailersBytes = Encoding.ASCII.GetBytes("trailers");
-        private static readonly byte[] _connectBytes = Encoding.ASCII.GetBytes("CONNECT");
-
-        private readonly Http2ConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
+        private readonly Pipe _input;
+        private readonly Task _inputTask;
+        private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
+        private readonly InputFlowControl _inputFlowControl;
+        private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
 
         private readonly Http2Frame _incomingFrame = new Http2Frame();
 
-        private Http2Stream _currentHeadersStream;
+        private Http2Stream? _currentHeadersStream;
         private RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
+        private Http2HeadersFrameFlags _headerFlags;
+        private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
         private int _highestOpenedStreamId;
+        private bool _gracefulCloseStarted;
 
-        private bool _stopping;
+        private int _clientActiveStreamCount = 0;
+        private int _serverActiveStreamCount = 0;
 
-        private readonly ConcurrentDictionary<int, Http2Stream> _streams = new ConcurrentDictionary<int, Http2Stream>();
+        // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
+        private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
+        private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
+        private int _gracefulCloseInitiator;
+        private int _isClosed;
 
-        public Http2Connection(Http2ConnectionContext context)
+        // Internal for testing
+        internal readonly Http2KeepAlive? _keepAlive;
+        internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
+        internal Http2StreamStack StreamPool;
+        // Max tracked streams is double max concurrent streams.
+        // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
+        // to support clients that send a burst of streams while the connection is being established.
+        internal uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
+
+        internal const int InitialStreamPoolSize = 5;
+        internal const int MaxStreamPoolSize = 100;
+        internal const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
+
+        public Http2Connection(HttpConnectionContext context)
         {
+            var httpLimits = context.ServiceContext.ServerOptions.Limits;
+            var http2Limits = httpLimits.Http2;
+
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input);
-            _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
+
+            // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
+            _context.InitialExecutionContext = ExecutionContext.Capture();
+
+            _frameWriter = new Http2FrameWriter(
+                context.Transport.Output,
+                context.ConnectionContext,
+                this,
+                _outputFlowControl,
+                context.TimeoutControl,
+                httpLimits.MinResponseDataRate,
+                context.ConnectionId,
+                context.MemoryPool,
+                context.ServiceContext);
+
+            var inputOptions = new PipeOptions(pool: context.MemoryPool,
+                readerScheduler: context.ServiceContext.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
+                useSynchronizationContext: false);
+
+            _input = new Pipe(inputOptions);
+            _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
+
+            _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
+
+            var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
+            _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
+
+            if (http2Limits.KeepAlivePingDelay != TimeSpan.MaxValue)
+            {
+                _keepAlive = new Http2KeepAlive(
+                    http2Limits.KeepAlivePingDelay,
+                    http2Limits.KeepAlivePingTimeout,
+                    context.ServiceContext.SystemClock);
+            }
+
+            _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
+            _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
+            _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
+            _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
+            _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+
+            // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
+            StreamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+
+            _inputTask = ReadInputAsync();
         }
 
         public string ConnectionId => _context.ConnectionId;
 
-        public PipeReader Input => _context.Transport.Input;
+        public PipeReader Input => _input.Reader;
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
-
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
+        public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
+        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
+        public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
+
+        internal Http2PeerSettings ServerSettings => _serverSettings;
 
         public void OnInputOrOutputCompleted()
         {
-            _stopping = true;
-            _frameWriter.Abort(ex: null);
+            TryClose();
+            _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         }
 
         public void Abort(ConnectionAbortedException ex)
         {
-            _stopping = true;
+            if (TryClose())
+            {
+                _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+            }
+
             _frameWriter.Abort(ex);
         }
 
         public void StopProcessingNextRequest()
+            => StopProcessingNextRequest(serverInitiated: true);
+
+        public void HandleRequestHeadersTimeout()
         {
-            _stopping = true;
-            Input.CancelPendingRead();
+            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
+            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout));
         }
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        public void HandleReadDataRateTimeout()
         {
-            Exception error = null;
+            Debug.Assert(Limits.MinRequestBodyDataRate != null);
+
+            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
+            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout));
+        }
+
+        public void StopProcessingNextRequest(bool serverInitiated)
+        {
+            var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
+
+            if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
+            {
+                Input.CancelPendingRead();
+            }
+        }
+
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+        {
+            Exception? error = null;
             var errorCode = Http2ErrorCode.NO_ERROR;
 
             try
             {
-                while (!_stopping)
+                ValidateTlsRequirements();
+
+                TimeoutControl.InitializeHttp2(_inputFlowControl);
+                TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+
+                if (!await TryReadPrefaceAsync())
+                {
+                    return;
+                }
+
+                if (_isClosed == 0)
+                {
+                    await _frameWriter.WriteSettingsAsync(_serverSettings.GetNonProtocolDefaults());
+                    // Inform the client that the connection window is larger than the default. It can't be lowered here,
+                    // It can only be lowered by not issuing window updates after data is received.
+                    var connectionWindow = _context.ServiceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+                    var diff = connectionWindow - (int)Http2PeerSettings.DefaultInitialWindowSize;
+                    if (diff > 0)
+                    {
+                        await _frameWriter.WriteWindowUpdateAsync(0, diff);
+                    }
+                }
+
+                while (_isClosed == 0)
                 {
                     var result = await Input.ReadAsync();
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.End;
+                    var buffer = result.Buffer;
+
+                    // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceeded their drain timeouts.
+                    UpdateCompletedStreams();
+
+                    if (result.IsCanceled)
+                    {
+                        // Heartbeat will cancel ReadAsync and trigger expiring unused streams from pool.
+                        StreamPool.RemoveExpired(SystemClock.UtcNowTicks);
+                    }
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty && ParsePreface(readableBuffer, out consumed, out examined))
+                        bool frameReceived = false;
+                        while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
-                            break;
+                            frameReceived = true;
+                            Log.Http2FrameReceived(ConnectionId, _incomingFrame);
+
+                            try
+                            {
+                                await ProcessFrameAsync(application, framePayload);
+                            }
+                            catch (Http2StreamErrorException ex)
+                            {
+                                Log.Http2StreamError(ConnectionId, ex);
+                                // The client doesn't know this error is coming, allow draining additional frames for now.
+                                AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
+
+                                await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+
+                                // Resume reading frames after aborting this HTTP/2 stream.
+                                // This is important because additional frames could be
+                                // in the current buffer. We don't want to delay reading
+                                // them until the next incoming read/heartbeat.
+                            }
                         }
 
                         if (result.IsCompleted)
                         {
                             return;
                         }
-                    }
-                    finally
-                    {
-                        Input.AdvanceTo(consumed, examined);
-                    }
-                }
 
-                if (!_stopping)
-                {
-                    await _frameWriter.WriteSettingsAsync(_serverSettings);
-                }
-
-                while (!_stopping)
-                {
-                    var result = await Input.ReadAsync();
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.End;
-
-                    try
-                    {
-                        if (!readableBuffer.IsEmpty && Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, out consumed, out examined))
+                        if (_keepAlive != null)
                         {
-                            Log.LogTrace($"Connection id {ConnectionId} received {_incomingFrame.Type} frame with flags 0x{_incomingFrame.Flags:x} and length {_incomingFrame.Length} for stream ID {_incomingFrame.StreamId}");
-                            await ProcessFrameAsync<TContext>(application);
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            return;
+                            // Note that the keep alive uses a complete frame being received to reset state.
+                            // Some other keep alive implementations use any bytes being received to reset state.
+                            var state = _keepAlive.ProcessKeepAlive(frameReceived);
+                            if (state == KeepAliveState.SendPing)
+                            {
+                                await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
+                            }
+                            else if (state == KeepAliveState.Timeout)
+                            {
+                                // There isn't a good error code to return with the GOAWAY.
+                                // NO_ERROR isn't a good choice because it indicates the connection is gracefully shutting down.
+                                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR);
+                            }
                         }
                     }
                     finally
                     {
-                        Input.AdvanceTo(consumed, examined);
+                        Input.AdvanceTo(buffer.Start, buffer.End);
+
+                        UpdateConnectionState();
                     }
                 }
             }
             catch (ConnectionResetException ex)
             {
                 // Don't log ECONNRESET errors when there are no active streams on the connection. Browsers like IE will reset connections regularly.
-                if (_streams.Count > 0)
+                if (_clientActiveStreamCount > 0)
                 {
                     Log.RequestProcessingError(ConnectionId, ex);
                 }
 
+                error = ex;
+            }
+            catch (IOException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+                error = ex;
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
                 error = ex;
             }
             catch (Http2ConnectionErrorException ex)
@@ -187,62 +319,147 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (HPackDecodingException ex)
             {
+                Debug.Assert(_currentHeadersStream != null);
+
                 Log.HPackDecodingError(ConnectionId, _currentHeadersStream.StreamId, ex);
                 error = ex;
                 errorCode = Http2ErrorCode.COMPRESSION_ERROR;
             }
             catch (Exception ex)
             {
+                Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
                 error = ex;
                 errorCode = Http2ErrorCode.INTERNAL_ERROR;
-                throw;
             }
             finally
             {
+                var connectionError = error as ConnectionAbortedException
+                    ?? new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted, error!);
+
                 try
                 {
-                    foreach (var stream in _streams.Values)
+                    if (TryClose())
                     {
-                        stream.Http2Abort(error);
+                        await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
                     }
 
-                    await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
+                    // Ensure aborting each stream doesn't result in unnecessary WINDOW_UPDATE frames being sent.
+                    _inputFlowControl.StopWindowUpdates();
+
+                    foreach (var stream in _streams.Values)
+                    {
+                        stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
+                    }
+
+                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
+                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
+                    while (_serverActiveStreamCount > 0)
+                    {
+                        await _streamCompletionAwaitable;
+                        UpdateCompletedStreams();
+                    }
+
+                    while (StreamPool.TryPop(out var pooledStream))
+                    {
+                        pooledStream.Dispose();
+                    }
+
+                    // This cancels keep-alive and request header timeouts, but not the response drain timeout.
+                    TimeoutControl.CancelTimeout();
+                    TimeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
+
+                    _frameWriter.Complete();
+                }
+                catch
+                {
+                    _frameWriter.Abort(connectionError);
+                    throw;
                 }
                 finally
                 {
                     Input.Complete();
-                    _frameWriter.Abort(ex: null);
+                    _context.Transport.Input.CancelPendingRead();
+                    await _inputTask;
                 }
             }
         }
 
-        private bool ParsePreface(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        // https://tools.ietf.org/html/rfc7540#section-9.2
+        // Some of these could not be checked in advance. Fail before using the connection.
+        private void ValidateTlsRequirements()
         {
-            consumed = readableBuffer.Start;
-            examined = readableBuffer.End;
+            var tlsFeature = ConnectionFeatures.Get<ITlsHandshakeFeature>();
+            if (tlsFeature == null)
+            {
+                // Not using TLS at all.
+                return;
+            }
 
-            if (readableBuffer.Length < ClientPreface.Length)
+            if (tlsFeature.Protocol < SslProtocols.Tls12)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorMinTlsVersion(tlsFeature.Protocol), Http2ErrorCode.INADEQUATE_SECURITY);
+            }
+        }
+
+        private async Task<bool> TryReadPrefaceAsync()
+        {
+            while (_isClosed == 0)
+            {
+                var result = await Input.ReadAsync();
+                var readableBuffer = result.Buffer;
+                var consumed = readableBuffer.Start;
+                var examined = readableBuffer.End;
+
+                try
+                {
+                    if (!readableBuffer.IsEmpty)
+                    {
+                        if (ParsePreface(readableBuffer, out consumed, out examined))
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        return false;
+                    }
+                }
+                finally
+                {
+                    Input.AdvanceTo(consumed, examined);
+
+                    UpdateConnectionState();
+                }
+            }
+
+            return false;
+        }
+
+        private bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        {
+            consumed = buffer.Start;
+            examined = buffer.End;
+
+            if (buffer.Length < ClientPreface.Length)
             {
                 return false;
             }
 
-            var span = readableBuffer.IsSingleSegment
-                ? readableBuffer.First.Span
-                : readableBuffer.ToSpan();
+            var preface = buffer.Slice(0, ClientPreface.Length);
+            var span = preface.ToSpan();
 
-            for (var i = 0; i < ClientPreface.Length; i++)
+            if (!span.SequenceEqual(ClientPreface))
             {
-                if (ClientPreface[i] != span[i])
-                {
-                    throw new Exception("Invalid HTTP/2 connection preface.");
-                }
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            consumed = examined = readableBuffer.GetPosition(ClientPreface.Length);
+            consumed = examined = preface.End;
             return true;
         }
 
-        private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application)
+        private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
             // Streams initiated by a client MUST use odd-numbered stream identifiers; ...
@@ -253,34 +470,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdEven(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            switch (_incomingFrame.Type)
+            return _incomingFrame.Type switch
             {
-                case Http2FrameType.DATA:
-                    return ProcessDataFrameAsync();
-                case Http2FrameType.HEADERS:
-                    return ProcessHeadersFrameAsync<TContext>(application);
-                case Http2FrameType.PRIORITY:
-                    return ProcessPriorityFrameAsync();
-                case Http2FrameType.RST_STREAM:
-                    return ProcessRstStreamFrameAsync();
-                case Http2FrameType.SETTINGS:
-                    return ProcessSettingsFrameAsync();
-                case Http2FrameType.PUSH_PROMISE:
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR);
-                case Http2FrameType.PING:
-                    return ProcessPingFrameAsync();
-                case Http2FrameType.GOAWAY:
-                    return ProcessGoAwayFrameAsync();
-                case Http2FrameType.WINDOW_UPDATE:
-                    return ProcessWindowUpdateFrameAsync();
-                case Http2FrameType.CONTINUATION:
-                    return ProcessContinuationFrameAsync<TContext>(application);
-                default:
-                    return ProcessUnknownFrameAsync();
-            }
+                Http2FrameType.DATA => ProcessDataFrameAsync(payload),
+                Http2FrameType.HEADERS => ProcessHeadersFrameAsync(application, payload),
+                Http2FrameType.PRIORITY => ProcessPriorityFrameAsync(),
+                Http2FrameType.RST_STREAM => ProcessRstStreamFrameAsync(),
+                Http2FrameType.SETTINGS => ProcessSettingsFrameAsync(payload),
+                Http2FrameType.PUSH_PROMISE => throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR),
+                Http2FrameType.PING => ProcessPingFrameAsync(payload),
+                Http2FrameType.GOAWAY => ProcessGoAwayFrameAsync(),
+                Http2FrameType.WINDOW_UPDATE => ProcessWindowUpdateFrameAsync(),
+                Http2FrameType.CONTINUATION => ProcessContinuationFrameAsync(payload),
+                _ => ProcessUnknownFrameAsync(),
+            };
         }
 
-        private Task ProcessDataFrameAsync()
+        private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -292,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.DataHasPadding && _incomingFrame.DataPadLength >= _incomingFrame.Length)
+            if (_incomingFrame.DataHasPadding && _incomingFrame.DataPadLength >= _incomingFrame.PayloadLength)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
@@ -301,6 +507,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
+                if (stream.RstStreamReceived)
+                {
+                    // Hard abort, do not allow any more frames on this stream.
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
                 if (stream.EndStreamReceived)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
@@ -313,8 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
 
-                return stream.OnDataAsync(_incomingFrame.DataPayload,
-                    endStream: (_incomingFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM);
+                return stream.OnDataAsync(_incomingFrame, payload);
             }
 
             // If we couldn't find the stream, it was either alive previously but closed with
@@ -331,7 +542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
         }
 
-        private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application)
+        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
         {
             if (_currentHeadersStream != null)
             {
@@ -343,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.Length)
+            if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.PayloadLength - 1)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
@@ -355,6 +566,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
+                if (stream.RstStreamReceived)
+                {
+                    // Hard abort, do not allow any more frames on this stream.
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
                 // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
                 //
                 // ...an endpoint that receives any frames after receiving a frame with the
@@ -368,7 +585,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // This is the last chance for the client to send END_STREAM
-                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == 0)
+                if (!_incomingFrame.HeadersEndStream)
                 {
                     throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeadersWithTrailersNoEndStream, Http2ErrorCode.PROTOCOL_ERROR);
                 }
@@ -377,8 +594,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _currentHeadersStream = stream;
                 _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
 
-                var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
-                await DecodeTrailersAsync(endHeaders, _incomingFrame.HeadersPayload);
+                var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
+                return DecodeTrailersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
             }
             else if (_incomingFrame.StreamId <= _highestOpenedStreamId)
             {
@@ -393,29 +610,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else
             {
-                // Start a new stream
-                _currentHeadersStream = new Http2Stream(new Http2StreamContext
+                // Cancel keep-alive timeout and start header timeout if necessary.
+                if (TimeoutControl.TimerReason != TimeoutReason.None)
                 {
-                    ConnectionId = ConnectionId,
-                    StreamId = _incomingFrame.StreamId,
-                    ServiceContext = _context.ServiceContext,
-                    ConnectionFeatures = _context.ConnectionFeatures,
-                    MemoryPool = _context.MemoryPool,
-                    LocalEndPoint = _context.LocalEndPoint,
-                    RemoteEndPoint = _context.RemoteEndPoint,
-                    StreamLifetimeHandler = this,
-                    FrameWriter = _frameWriter
-                });
-
-                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
-                {
-                    await _currentHeadersStream.OnDataAsync(Constants.EmptyData, endStream: true);
+                    Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.KeepAlive, "Non keep-alive timeout set at start of stream.");
+                    TimeoutControl.CancelTimeout();
                 }
 
-                _currentHeadersStream.Reset();
+                if (!_incomingFrame.HeadersEndHeaders)
+                {
+                    TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout.Ticks, TimeoutReason.RequestHeaders);
+                }
 
-                var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
-                await DecodeHeadersAsync(application, endHeaders, _incomingFrame.HeadersPayload);
+                // Start a new stream
+                _currentHeadersStream = GetStream(application);
+
+                _headerFlags = _incomingFrame.HeadersFlags;
+
+                var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
+                return DecodeHeadersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
+            }
+        }
+
+        private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+        {
+            if (StreamPool.TryPop(out var stream))
+            {
+                stream.InitializeWithExistingContext(_incomingFrame.StreamId);
+                return stream;
+            }
+
+            return new Http2Stream<TContext>(
+                application,
+                CreateHttp2StreamContext());
+        }
+
+        private Http2StreamContext CreateHttp2StreamContext()
+        {
+            var streamContext = new Http2StreamContext(
+                ConnectionId,
+                protocols: default,
+                _context.ServiceContext,
+                _context.ConnectionFeatures,
+                _context.MemoryPool,
+                _context.LocalEndPoint,
+                _context.RemoteEndPoint,
+                _incomingFrame.StreamId,
+                streamLifetimeHandler: this,
+                _clientSettings,
+                _serverSettings,
+                _frameWriter,
+                _inputFlowControl,
+                _outputFlowControl);
+            streamContext.TimeoutControl = _context.TimeoutControl;
+            streamContext.InitialExecutionContext = _context.InitialExecutionContext;
+
+            return streamContext;
+        }
+
+        private void ReturnStream(Http2Stream stream)
+        {
+            // We're conservative about what streams we can reuse.
+            // If there is a chance the stream is still in use then don't attempt to reuse it.
+            Debug.Assert(stream.CanReuse);
+
+            if (StreamPool.Count < MaxStreamPoolSize)
+            {
+                // This property is used to remove unused streams from the pool
+                stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+
+                StreamPool.Push(stream);
             }
         }
 
@@ -436,7 +700,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamSelfDependency(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.Length != 5)
+            if (_incomingFrame.PayloadLength != 5)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 5), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
@@ -456,7 +720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.Length != 4)
+            if (_incomingFrame.PayloadLength != 4)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 4), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
@@ -465,13 +729,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
-                stream.Abort(abortReason: null);
+                // Second reset
+                if (stream.RstStreamReceived)
+                {
+                    // Hard abort, do not allow any more frames on this stream.
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
+                // No additional inbound header or data frames are allowed for this stream after receiving a reset.
+                stream.AbortRstStreamReceived();
             }
 
             return Task.CompletedTask;
         }
 
-        private Task ProcessSettingsFrameAsync()
+        private Task ProcessSettingsFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -483,20 +755,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if ((_incomingFrame.SettingsFlags & Http2SettingsFrameFlags.ACK) == Http2SettingsFrameFlags.ACK && _incomingFrame.Length != 0)
+            if (_incomingFrame.SettingsAck)
             {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsAckLengthNotZero, Http2ErrorCode.FRAME_SIZE_ERROR);
+                if (_incomingFrame.PayloadLength != 0)
+                {
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsAckLengthNotZero, Http2ErrorCode.FRAME_SIZE_ERROR);
+                }
+
+                return Task.CompletedTask;
             }
 
-            if (_incomingFrame.Length % 6 != 0)
+            if (_incomingFrame.PayloadLength % 6 != 0)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsLengthNotMultipleOfSix, Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             try
             {
-                _clientSettings.ParseFrame(_incomingFrame);
-                return _frameWriter.WriteSettingsAckAsync();
+                // int.MaxValue is the largest allowed windows size.
+                var previousInitialWindowSize = (int)_clientSettings.InitialWindowSize;
+                var previousMaxFrameSize = _clientSettings.MaxFrameSize;
+
+                _clientSettings.Update(Http2FrameReader.ReadSettings(payload));
+
+                // Ack before we update the windows, they could send data immediately.
+                var ackTask = _frameWriter.WriteSettingsAckAsync();
+
+                if (_clientSettings.MaxFrameSize != previousMaxFrameSize)
+                {
+                    // Don't let the client choose an arbitrarily large size, this will be used for response buffers.
+                    _frameWriter.UpdateMaxFrameSize(Math.Min(_clientSettings.MaxFrameSize, _serverSettings.MaxFrameSize));
+                }
+
+                // This difference can be negative.
+                var windowSizeDifference = (int)_clientSettings.InitialWindowSize - previousInitialWindowSize;
+
+                if (windowSizeDifference != 0)
+                {
+                    foreach (var stream in _streams.Values)
+                    {
+                        if (!stream.TryUpdateOutputWindow(windowSizeDifference))
+                        {
+                            // This means that this caused a stream window to become larger than int.MaxValue.
+                            // This can never happen with a well behaved client and MUST be treated as a connection error.
+                            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.2
+                            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInitialWindowSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+                        }
+                    }
+                }
+
+                // Maximum HPack encoder size is limited by Http2Limits.HeaderTableSize, configured max the server.
+                //
+                // Note that the client HPack decoder doesn't care about the ACK so we don't need to lock sending the
+                // ACK and updating the table size on the server together.
+                // The client will wait until a size agreed upon by it (sent in SETTINGS_HEADER_TABLE_SIZE) and the
+                // server (sent as a dynamic table size update in the next HEADERS frame) is received before applying
+                // the new size.
+                _frameWriter.UpdateMaxHeaderTableSize(Math.Min(_clientSettings.HeaderTableSize, (uint)Limits.Http2.HeaderTableSize));
+
+                return ackTask.GetAsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
@@ -506,7 +823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private Task ProcessPingFrameAsync()
+        private Task ProcessPingFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -518,18 +835,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.Length != 8)
+            if (_incomingFrame.PayloadLength != 8)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 8), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
-            if ((_incomingFrame.PingFlags & Http2PingFrameFlags.ACK) == Http2PingFrameFlags.ACK)
+            // Incoming ping resets connection keep alive timeout
+            if (TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
+            {
+                TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            }
+
+            if (_incomingFrame.PingAck)
             {
                 // TODO: verify that payload is equal to the outgoing PING frame
                 return Task.CompletedTask;
             }
 
-            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, _incomingFrame.Payload);
+            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).GetAsTask();
         }
 
         private Task ProcessGoAwayFrameAsync()
@@ -544,7 +867,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            StopProcessingNextRequest();
+            StopProcessingNextRequest(serverInitiated: false);
+
             return Task.CompletedTask;
         }
 
@@ -555,7 +879,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_incomingFrame.Length != 4)
+            if (_incomingFrame.PayloadLength != 4)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 4), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
@@ -582,10 +906,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateIncrementZero, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
+            if (_incomingFrame.StreamId == 0)
+            {
+                if (!_frameWriter.TryUpdateConnectionWindow(_incomingFrame.WindowUpdateSizeIncrement))
+                {
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+                }
+            }
+            else if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
+            {
+                if (stream.RstStreamReceived)
+                {
+                    // Hard abort, do not allow any more frames on this stream.
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
+                if (!stream.TryUpdateOutputWindow(_incomingFrame.WindowUpdateSizeIncrement))
+                {
+                    throw new Http2StreamErrorException(_incomingFrame.StreamId, CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+                }
+            }
+            else
+            {
+                // The stream was not found in the dictionary which means the stream was probably closed. This can
+                // happen when the client sends a window update for a stream right as the server closes the same stream
+                // Since this is an unavoidable race, we just ignore the window update frame.
+            }
+
             return Task.CompletedTask;
         }
 
-        private Task ProcessContinuationFrameAsync<TContext>(IHttpApplication<TContext> application)
+        private Task ProcessContinuationFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream == null)
             {
@@ -597,15 +948,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            var endHeaders = (_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS;
-
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                return DecodeTrailersAsync(endHeaders, _incomingFrame.Payload);
+                return DecodeTrailersAsync(_incomingFrame.ContinuationEndHeaders, payload);
             }
             else
             {
-                return DecodeHeadersAsync(application, endHeaders, _incomingFrame.Payload);
+                Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.RequestHeaders, "Received continuation frame without request header timeout being set.");
+
+                if (_incomingFrame.HeadersEndHeaders)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
+                return DecodeHeadersAsync(_incomingFrame.ContinuationEndHeaders, payload);
             }
         }
 
@@ -619,67 +975,125 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task DecodeHeadersAsync<TContext>(IHttpApplication<TContext> application, bool endHeaders, Span<byte> payload)
+        private Task DecodeHeadersAsync(bool endHeaders, in ReadOnlySequence<byte> payload)
         {
+            Debug.Assert(_currentHeadersStream != null);
+
             try
             {
+                _highestOpenedStreamId = _currentHeadersStream.StreamId;
                 _hpackDecoder.Decode(payload, endHeaders, handler: this);
 
                 if (endHeaders)
                 {
-                    StartStream(application);
+                    StartStream();
                     ResetRequestHeaderParsingState();
                 }
             }
-            catch (Http2StreamErrorException ex)
+            catch (Http2StreamErrorException)
             {
-                Log.Http2StreamError(ConnectionId, ex);
+                _currentHeadersStream.Dispose();
                 ResetRequestHeaderParsingState();
-                return _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+                throw;
             }
 
             return Task.CompletedTask;
         }
 
-        private Task DecodeTrailersAsync(bool endHeaders, Span<byte> payload)
+        private Task DecodeTrailersAsync(bool endHeaders, in ReadOnlySequence<byte> payload)
         {
+            Debug.Assert(_currentHeadersStream != null);
+
             _hpackDecoder.Decode(payload, endHeaders, handler: this);
 
             if (endHeaders)
             {
-                var endStreamTask = _currentHeadersStream.OnDataAsync(Constants.EmptyData, endStream: true);
+                _currentHeadersStream.OnEndStreamReceived();
                 ResetRequestHeaderParsingState();
-                return endStreamTask;
             }
 
             return Task.CompletedTask;
         }
 
-        private void StartStream<TContext>(IHttpApplication<TContext> application)
+        private void StartStream()
         {
-            if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+            Debug.Assert(_currentHeadersStream != null);
+
+            // The stream now exists and must be tracked and drained even if Http2StreamErrorException is thrown before dispatching to the application.
+            _streams[_incomingFrame.StreamId] = _currentHeadersStream;
+            IncrementActiveClientStreamCount();
+            _serverActiveStreamCount++;
+
+            try
             {
-                // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
-                // fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header
-                // fields is malformed (Section 8.1.2.6).
-                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
+                // This must be initialized before we offload the request or else we may start processing request body frames without it.
+                _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
+
+                // This must wait until we've received all of the headers so we can verify the content-length.
+                // We also must set the proper EndStream state before rejecting the request for any reason.
+                if ((_headerFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
+                {
+                    _currentHeadersStream.OnEndStreamReceived();
+                }
+
+                if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+                {
+                    // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
+                    // fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header
+                    // fields is malformed (Section 8.1.2.6).
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
+                }
+
+                if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
+                {
+                    // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
+                    // and that the client is likely waiting for existing streams to be completed before it can continue.
+                    Log.Http2MaxConcurrentStreamsReached(_context.ConnectionId);
+                }
+                else if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
+                {
+                    // The protocol default stream limit is infinite so the client can exceed our limit at the start of the connection.
+                    // Refused streams can be retried, by which time the client must have received our settings frame with our limit information.
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
+                }
+
+                // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
+                // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
+                // Also, we care about the dictionary size for too much memory consumption.
+                if (_streams.Count > MaxTrackedStreams)
+                {
+                    // Server is getting hit hard with connection resets.
+                    // Tell client to calm down.
+                    // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
+                }
+            }
+            catch (Http2StreamErrorException)
+            {
+                MakeSpaceInDrainQueue();
+
+                // Because this stream isn't being queued, OnRequestProcessingEnded will not be
+                // automatically called and the stream won't be completed.
+                // Manually complete stream to ensure pipes are completed.
+                // Completing the stream will add it to the completed stream queue.
+                _currentHeadersStream.DecrementActiveClientStreamCount();
+                _currentHeadersStream.CompleteStream(errored: true);
+                throw;
             }
 
-            _streams[_incomingFrame.StreamId] = _currentHeadersStream;
-            _ = _currentHeadersStream.ProcessRequestsAsync(application);
+            KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
+            // Must not allow app code to block the connection handling loop.
+            ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }
 
         private void ResetRequestHeaderParsingState()
         {
-            if (_requestHeaderParsingState != RequestHeaderParsingState.Trailers)
-            {
-                _highestOpenedStreamId = _currentHeadersStream.StreamId;
-            }
-
             _currentHeadersStream = null;
             _requestHeaderParsingState = RequestHeaderParsingState.Ready;
             _parsedPseudoHeaderFields = PseudoHeaderFields.None;
+            _headerFlags = Http2HeadersFrameFlags.NONE;
             _isMethodConnect = false;
+            _totalParsedHeaderSize = 0;
         }
 
         private void ThrowIfIncomingFrameSentToIdleStream()
@@ -701,28 +1115,298 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        void IHttp2StreamLifetimeHandler.OnStreamCompleted(int streamId)
+        private void AbortStream(int streamId, IOException error)
         {
-            _streams.TryRemove(streamId, out _);
+            if (_streams.TryGetValue(streamId, out var stream))
+            {
+                stream.DecrementActiveClientStreamCount();
+                stream.Abort(error);
+            }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        void IRequestProcessor.Tick(DateTimeOffset now)
         {
-            ValidateHeader(name, value);
-            _currentHeadersStream.OnHeader(name, value);
+            Input.CancelPendingRead();
         }
 
-        private void ValidateHeader(Span<byte> name, Span<byte> value)
+        void IHttp2StreamLifetimeHandler.OnStreamCompleted(Http2Stream stream)
+        {
+            _completedStreams.Enqueue(stream);
+            _streamCompletionAwaitable.Complete();
+        }
+
+        private void UpdateCompletedStreams()
+        {
+            Http2Stream? firstRequedStream = null;
+            var now = SystemClock.UtcNowTicks;
+
+            while (_completedStreams.TryDequeue(out var stream))
+            {
+                if (stream == firstRequedStream)
+                {
+                    // We've checked every stream that was in _completedStreams by the time
+                    // _checkCompletedStreams was unset, so exit the loop.
+                    _completedStreams.Enqueue(stream);
+                    break;
+                }
+
+                if (stream.DrainExpirationTicks == default)
+                {
+                    _serverActiveStreamCount--;
+                    stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
+                }
+
+                if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < now)
+                {
+                    if (stream == _currentHeadersStream)
+                    {
+                        // The drain expired out while receiving trailers. The most recent incoming frame is either a header or continuation frame for the timed out stream.
+                        throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                    }
+
+                    RemoveStream(stream);
+                }
+                else
+                {
+                    if (firstRequedStream == null)
+                    {
+                        firstRequedStream = stream;
+                    }
+
+                    _completedStreams.Enqueue(stream);
+                }
+            }
+        }
+
+        private void RemoveStream(Http2Stream stream)
+        {
+            _streams.Remove(stream.StreamId);
+            if (stream.CanReuse)
+            {
+                ReturnStream(stream);
+            }
+            else
+            {
+                stream.Dispose();
+            }
+        }
+
+        // Compare to UpdateCompletedStreams, but only removes streams if over the max stream drain limit.
+        private void MakeSpaceInDrainQueue()
+        {
+            var maxStreams = MaxTrackedStreams;
+            // If we're tracking too many streams, discard the oldest.
+            while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
+            {
+                if (stream.DrainExpirationTicks == default)
+                {
+                    _serverActiveStreamCount--;
+                }
+
+                RemoveStream(stream);
+            }
+        }
+
+        private void UpdateConnectionState()
+        {
+            if (_isClosed != 0)
+            {
+                return;
+            }
+
+            if (_gracefulCloseInitiator != GracefulCloseInitiator.None && !_gracefulCloseStarted)
+            {
+                _gracefulCloseStarted = true;
+
+                Log.Http2ConnectionClosing(_context.ConnectionId);
+
+                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && _clientActiveStreamCount > 0)
+                {
+                    _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.NO_ERROR);
+                }
+            }
+
+            if (_clientActiveStreamCount == 0)
+            {
+                if (_gracefulCloseStarted)
+                {
+                    if (TryClose())
+                    {
+                        _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR);
+                    }
+                }
+                else
+                {
+                    if (TimeoutControl.TimerReason == TimeoutReason.None)
+                    {
+                        TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    }
+
+                    // If we're awaiting headers, either a new stream will be started, or there will be a connection
+                    // error possibly due to a request header timeout, so no need to start a keep-alive timeout.
+                    Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.RequestHeaders ||
+                        TimeoutControl.TimerReason == TimeoutReason.KeepAlive);
+                }
+            }
+        }
+
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeaderCore(index: null, indexedValue: false, name, value);
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            ref readonly var entry = ref H2StaticTable.Get(index - 1);
+            OnHeaderCore(index, indexedValue: true, entry.Name, entry.Value);
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            OnHeaderCore(index, indexedValue: false, H2StaticTable.Get(index - 1).Name, value);
+        }
+
+        // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
+        // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
+        // rework the flow so that the remaining headers are drained and the decompression state is maintained.
+        private void OnHeaderCore(int? index, bool indexedValue, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            Debug.Assert(_currentHeadersStream != null);
+
+            // https://tools.ietf.org/html/rfc7540#section-6.5.2
+            // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
+            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
+            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
+            if (index != null)
+            {
+                ValidateStaticHeader(index.Value, value);
+            }
+            else
+            {
+                ValidateHeader(name, value);
+            }
+
+            try
+            {
+                if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                {
+                    _currentHeadersStream.OnTrailer(name, value);
+                }
+                else
+                {
+                    // Throws BadRequest for header count limit breaches.
+                    // Throws InvalidOperation for bad encoding.
+                    if (index != null)
+                    {
+                        _currentHeadersStream.OnHeader(index.Value, indexedValue, name, value);
+                    }
+                    else
+                    {
+                        _currentHeadersStream.OnHeader(name, value);
+                    }
+                }
+            }
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
+            {
+                throw new Http2ConnectionErrorException(bre.Message, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+        }
+
+        public void OnHeadersComplete(bool endStream)
+            => _currentHeadersStream!.OnHeadersComplete();
+
+        private void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            // Clients will normally send pseudo headers as an indexed header.
+            // Because pseudo headers can still be sent by name we need to check for them.
+            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+
+            if (IsConnectionSpecificHeaderField(name, value))
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
+            // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
+            for (var i = 0; i < name.Length; i++)
+            {
+                if (((uint)name[i] - 65) <= (90 - 65))
+                {
+                    if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+                    else
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+                }
+            }
+        }
+
+        private void ValidateStaticHeader(int index, ReadOnlySpan<byte> value)
+        {
+            var headerField = index switch
+            {
+                1 => PseudoHeaderFields.Authority,
+                2 => PseudoHeaderFields.Method,
+                3 => PseudoHeaderFields.Method,
+                4 => PseudoHeaderFields.Path,
+                5 => PseudoHeaderFields.Path,
+                6 => PseudoHeaderFields.Scheme,
+                7 => PseudoHeaderFields.Scheme,
+                8 => PseudoHeaderFields.Status,
+                9 => PseudoHeaderFields.Status,
+                10 => PseudoHeaderFields.Status,
+                11 => PseudoHeaderFields.Status,
+                12 => PseudoHeaderFields.Status,
+                13 => PseudoHeaderFields.Status,
+                14 => PseudoHeaderFields.Status,
+                _ => PseudoHeaderFields.None
+            };
+
+            UpdateHeaderParsingState(value, headerField);
+
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
+            // No need to validate if header name if it is specified using a static index.
+        }
+
+        private void UpdateHeaderParsingState(ReadOnlySpan<byte> value, PseudoHeaderFields headerField)
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
-            if (IsPseudoHeaderField(name, out var headerField))
+            /*
+               Intermediaries that process HTTP requests or responses (i.e., any
+               intermediary not acting as a tunnel) MUST NOT forward a malformed
+               request or response.  Malformed requests or responses that are
+               detected MUST be treated as a stream error (Section 5.4.2) of type
+               PROTOCOL_ERROR.
+
+               For malformed requests, a server MAY send an HTTP response prior to
+               closing or resetting the stream.  Clients MUST NOT accept a malformed
+               response.  Note that these requirements are intended to protect
+               against several types of common attacks against HTTP; they are
+               deliberately strict because being permissive can expose
+               implementations to these vulnerabilities.*/
+            if (headerField != PseudoHeaderFields.None)
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
                 {
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
                     // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
@@ -737,26 +1421,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Endpoints MUST treat a request or response that contains undefined or invalid pseudo-header
                     // fields as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Status)
                 {
                     // Pseudo-header fields defined for requests MUST NOT appear in responses; pseudo-header fields
                     // defined for responses MUST NOT appear in requests.
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if ((_parsedPseudoHeaderFields & headerField) == headerField)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.3
                     // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Method)
                 {
-                    _isMethodConnect = value.SequenceEqual(_connectBytes);
+                    _isMethodConnect = value.SequenceEqual(ConnectBytes);
                 }
 
                 _parsedPseudoHeaderFields |= headerField;
@@ -765,113 +1449,140 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _requestHeaderParsingState = RequestHeaderParsingState.Headers;
             }
-
-            if (IsConnectionSpecificHeaderField(name, value))
-            {
-                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
-            }
-
-            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
-            // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
-            for (var i = 0; i < name.Length; i++)
-            {
-                if (name[i] >= 65 && name[i] <= 90)
-                {
-                    if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
-                    {
-                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
-                    }
-                    else
-                    {
-                        throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
-                    }
-                }
-            }
         }
 
-        private bool IsPseudoHeaderField(Span<byte> name, out PseudoHeaderFields headerField)
+        private PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
         {
-            headerField = PseudoHeaderFields.None;
-
             if (name.IsEmpty || name[0] != (byte)':')
             {
-                return false;
+                return PseudoHeaderFields.None;
             }
-
-            // Skip ':'
-            name = name.Slice(1);
-
-            if (name.SequenceEqual(_pathBytes))
+            else if (name.SequenceEqual(PathBytes))
             {
-                headerField = PseudoHeaderFields.Path;
+                return PseudoHeaderFields.Path;
             }
-            else if (name.SequenceEqual(_methodBytes))
+            else if (name.SequenceEqual(MethodBytes))
             {
-                headerField = PseudoHeaderFields.Method;
+                return PseudoHeaderFields.Method;
             }
-            else if (name.SequenceEqual(_schemeBytes))
+            else if (name.SequenceEqual(SchemeBytes))
             {
-                headerField = PseudoHeaderFields.Scheme;
+                return PseudoHeaderFields.Scheme;
             }
-            else if (name.SequenceEqual(_statusBytes))
+            else if (name.SequenceEqual(StatusBytes))
             {
-                headerField = PseudoHeaderFields.Status;
+                return PseudoHeaderFields.Status;
             }
-            else if (name.SequenceEqual(_authorityBytes))
+            else if (name.SequenceEqual(AuthorityBytes))
             {
-                headerField = PseudoHeaderFields.Authority;
+                return PseudoHeaderFields.Authority;
             }
             else
             {
-                headerField = PseudoHeaderFields.Unknown;
+                return PseudoHeaderFields.Unknown;
+            }
+        }
+
+        private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
+        }
+
+        private bool TryClose()
+        {
+            if (Interlocked.Exchange(ref _isClosed, 1) == 0)
+            {
+                Log.Http2ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
+                return true;
             }
 
-            return true;
+            return false;
         }
 
-        private static bool IsConnectionSpecificHeaderField(Span<byte> name, Span<byte> value)
+        public void IncrementActiveClientStreamCount()
         {
-            return name.SequenceEqual(_connectionBytes) || (name.SequenceEqual(_teBytes) && !value.SequenceEqual(_trailersBytes));
+            Interlocked.Increment(ref _clientActiveStreamCount);
         }
 
-        void ITimeoutControl.SetTimeout(long ticks, TimeoutAction timeoutAction)
+        public void DecrementActiveClientStreamCount()
         {
+            Interlocked.Decrement(ref _clientActiveStreamCount);
         }
 
-        void ITimeoutControl.ResetTimeout(long ticks, TimeoutAction timeoutAction)
+        private async Task ReadInputAsync()
         {
+            Exception? error = null;
+            try
+            {
+                while (true)
+                {
+                    var reader = _context.Transport.Input;
+                    var writer = _input.Writer;
+
+                    var readResult = await reader.ReadAsync();
+
+                    if ((readResult.IsCompleted && readResult.Buffer.Length == 0) || readResult.IsCanceled)
+                    {
+                        // FIN
+                        break;
+                    }
+
+                    var outputBuffer = writer.GetMemory(_minAllocBufferSize);
+
+                    var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
+                    var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
+
+                    bufferSlice.CopyTo(outputBuffer.Span);
+
+                    reader.AdvanceTo(bufferSlice.End);
+                    writer.Advance(copyAmount);
+
+                    var result = await writer.FlushAsync();
+
+                    if (result.IsCompleted || result.IsCanceled)
+                    {
+                        // flushResult should not be canceled.
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.
+                error = ex;
+            }
+            finally
+            {
+                await _context.Transport.Input.CompleteAsync();
+                _input.Writer.Complete(error);
+            }
         }
 
-        void ITimeoutControl.CancelTimeout()
+        private enum RequestHeaderParsingState
         {
+            Ready,
+            PseudoHeaderFields,
+            Headers,
+            Trailers
         }
 
-        void ITimeoutControl.StartTimingReads()
+        [Flags]
+        private enum PseudoHeaderFields
         {
+            None = 0x0,
+            Authority = 0x1,
+            Method = 0x2,
+            Path = 0x4,
+            Scheme = 0x8,
+            Status = 0x10,
+            Unknown = 0x40000000
         }
 
-        void ITimeoutControl.PauseTimingReads()
+        private static class GracefulCloseInitiator
         {
-        }
-
-        void ITimeoutControl.ResumeTimingReads()
-        {
-        }
-
-        void ITimeoutControl.StopTimingReads()
-        {
-        }
-
-        void ITimeoutControl.BytesRead(long count)
-        {
-        }
-
-        void ITimeoutControl.StartTimingWrite(long size)
-        {
-        }
-
-        void ITimeoutControl.StopTimingWrite()
-        {
+            public const int None = 0;
+            public const int Server = 1;
+            public const int Client = 2;
         }
     }
 }

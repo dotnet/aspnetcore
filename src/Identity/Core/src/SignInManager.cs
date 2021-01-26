@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -31,12 +32,14 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
         /// <param name="schemes">The scheme provider that is used enumerate the authentication schemes.</param>
+        /// <param name="confirmation">The <see cref="IUserConfirmation{TUser}"/> used check whether a user account is confirmed.</param>
         public SignInManager(UserManager<TUser> userManager,
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor,
             ILogger<SignInManager<TUser>> logger,
-            IAuthenticationSchemeProvider schemes)
+            IAuthenticationSchemeProvider schemes,
+            IUserConfirmation<TUser> confirmation)
         {
             if (userManager == null)
             {
@@ -57,11 +60,13 @@ namespace Microsoft.AspNetCore.Identity
             Options = optionsAccessor?.Value ?? new IdentityOptions();
             Logger = logger;
             _schemes = schemes;
+            _confirmation = confirmation;
         }
 
         private readonly IHttpContextAccessor _contextAccessor;
         private HttpContext _context;
         private IAuthenticationSchemeProvider _schemes;
+        private IUserConfirmation<TUser> _confirmation;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> used to log messages from the manager.
@@ -124,7 +129,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(principal));
             }
-            return principal?.Identities != null &&
+            return principal.Identities != null &&
                 principal.Identities.Any(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
         }
 
@@ -140,29 +145,50 @@ namespace Microsoft.AspNetCore.Identity
         {
             if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user)))
             {
-                Logger.LogWarning(0, "User {userId} cannot sign in without a confirmed email.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedEmail, "User cannot sign in without a confirmed email.");
                 return false;
             }
             if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user)))
             {
-                Logger.LogWarning(1, "User {userId} cannot sign in without a confirmed phone number.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedPhoneNumber, "User cannot sign in without a confirmed phone number.");
                 return false;
             }
-
+            if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
+            {
+                Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedAccount, "User cannot sign in without a confirmed account.");
+                return false;
+            }
             return true;
         }
 
         /// <summary>
-        /// Regenerates the user's application cookie, whilst preserving the existing
-        /// AuthenticationProperties like rememberMe, as an asynchronous operation.
+        /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+        /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
         /// </summary>
-        /// <param name="user">The user whose sign-in cookie should be refreshed.</param>
+        /// <param name="user">The user to sign-in.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task RefreshSignInAsync(TUser user)
         {
             var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            var authenticationMethod = auth?.Principal?.FindFirstValue(ClaimTypes.AuthenticationMethod);
-            await SignInAsync(user, auth?.Properties, authenticationMethod);
+            IList<Claim> claims = Array.Empty<Claim>();
+
+            var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
+            var amr = auth?.Principal?.FindFirst("amr");
+
+            if (authenticationMethod != null || amr != null)
+            {
+                claims = new List<Claim>();
+                if (authenticationMethod != null)
+                {
+                    claims.Add(authenticationMethod);
+                }
+                if (amr != null)
+                {
+                    claims.Add(amr);
+                }
+            }
+
+            await SignInWithClaimsAsync(user, auth?.Properties, claims);
         }
 
         /// <summary>
@@ -172,10 +198,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatibility")]
         public virtual Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null)
-        {
-            return SignInAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, authenticationMethod);
-        }
+            => SignInAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, authenticationMethod);
 
         /// <summary>
         /// Signs in the specified <paramref name="user"/>.
@@ -184,13 +209,41 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public virtual async Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatibility")]
+        public virtual Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
-            var userPrincipal = await CreateUserPrincipalAsync(user);
-            // Review: should we guard against CreateUserPrincipal returning null?
+            IList<Claim> additionalClaims = Array.Empty<Claim>();
             if (authenticationMethod != null)
             {
-                userPrincipal.Identities.First().AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+                additionalClaims = new List<Claim>();
+                additionalClaims.Add(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+            }
+            return SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);
+        }
+
+        /// <summary>
+        /// Signs in the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to sign-in.</param>
+        /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+        /// <param name="additionalClaims">Additional claims that will be stored in the cookie.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        public virtual Task SignInWithClaimsAsync(TUser user, bool isPersistent, IEnumerable<Claim> additionalClaims)
+            => SignInWithClaimsAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, additionalClaims);
+
+        /// <summary>
+        /// Signs in the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to sign-in.</param>
+        /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
+        /// <param name="additionalClaims">Additional claims that will be stored in the cookie.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        public virtual async Task SignInWithClaimsAsync(TUser user, AuthenticationProperties authenticationProperties, IEnumerable<Claim> additionalClaims)
+        {
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
             }
             await Context.SignInAsync(IdentityConstants.ApplicationScheme,
                 userPrincipal,
@@ -225,6 +278,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
+            Logger.LogDebug(EventIds.SecurityStampValidationFailedId4, "Failed to validate a security stamp.");
             return null;
         }
 
@@ -247,19 +301,21 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
+            Logger.LogDebug(EventIds.TwoFactorSecurityStampValidationFailed, "Failed to validate a security stamp.");
             return null;
         }
 
         /// <summary>
-        /// Validates the security stamp for the specified <paramref name="user"/>. Will always return false
-        /// if the userManager does not support security stamps.
+        /// Validates the security stamp for the specified <paramref name="user"/>.  If no user is specified, or if the store
+        /// does not support security stamps, validation is considered successful.
         /// </summary>
         /// <param name="user">The user whose stamp should be validated.</param>
         /// <param name="securityStamp">The expected security stamp value.</param>
-        /// <returns>True if the stamp matches the persisted value, otherwise it will return false.</returns>
+        /// <returns>The result of the validation.</returns>
         public virtual async Task<bool> ValidateSecurityStampAsync(TUser user, string securityStamp)
-            => user != null && UserManager.SupportsUserSecurityStamp
-            && securityStamp == await UserManager.GetSecurityStampAsync(user);
+            => user != null &&
+            // Only validate the security stamp if the store supports it
+            (!UserManager.SupportsUserSecurityStamp || securityStamp == await UserManager.GetSecurityStampAsync(user));
 
         /// <summary>
         /// Attempts to sign in the specified <paramref name="user"/> and <paramref name="password"/> combination
@@ -332,15 +388,15 @@ namespace Microsoft.AspNetCore.Identity
             if (await UserManager.CheckPasswordAsync(user, password))
             {
                 var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
-                // Only reset the lockout when TFA is not enabled when not in quirks mode
-                if (alwaysLockout || !await IsTfaEnabled(user))
+                // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
+                if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
                 {
                     await ResetLockout(user);
                 }
 
                 return SignInResult.Success;
             }
-            Logger.LogWarning(2, "User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
+            Logger.LogWarning(EventIds.InvalidPassword, "User failed to provide the correct password.");
 
             if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
@@ -427,9 +483,13 @@ namespace Microsoft.AspNetCore.Identity
             // When token is verified correctly, clear the access failed count used for lockout
             await ResetLockout(user);
 
+            var claims = new List<Claim>();
+            claims.Add(new Claim("amr", "mfa"));
+
             // Cleanup external cookie
             if (twoFactorInfo.LoginProvider != null)
             {
+                claims.Add(new Claim(ClaimTypes.AuthenticationMethod, twoFactorInfo.LoginProvider));
                 await Context.SignOutAsync(IdentityConstants.ExternalScheme);
             }
             // Cleanup two factor user id cookie
@@ -438,7 +498,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 await RememberTwoFactorClientAsync(user);
             }
-            await SignInAsync(user, isPersistent, twoFactorInfo.LoginProvider);
+            await SignInWithClaimsAsync(user, isPersistent, claims);
         }
 
         /// <summary>
@@ -613,10 +673,13 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return null;
             }
-            // TODO: display name gone?.  Add [] indexer for Authproperties
-            return new ExternalLoginInfo(auth.Principal, provider, providerKey, provider)
+
+            var providerDisplayName = (await GetExternalAuthenticationSchemesAsync()).FirstOrDefault(p => p.Name == provider)?.DisplayName
+                                      ?? provider;
+            return new ExternalLoginInfo(auth.Principal, provider, providerKey, providerDisplayName)
             {
-                AuthenticationTokens = auth.Properties.GetTokens()
+                AuthenticationTokens = auth.Properties.GetTokens(),
+                AuthenticationProperties = auth.Properties
             };
         }
 
@@ -700,22 +763,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             return new ClaimsPrincipal(rememberBrowserIdentity);
         }
-
-        private ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)
-        {
-            if (info == null)
-            {
-                return null;
-            }
-            var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
-            identity.AddClaim(new Claim(ClaimTypes.Name, info.UserId));
-            if (info.LoginProvider != null)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, info.LoginProvider));
-            }
-            return identity;
-        }
-
+        
         private async Task<bool> IsTfaEnabled(TUser user)
             => UserManager.SupportsUserTwoFactor &&
             await UserManager.GetTwoFactorEnabledAsync(user) &&
@@ -747,7 +795,14 @@ namespace Microsoft.AspNetCore.Identity
             {
                 await Context.SignOutAsync(IdentityConstants.ExternalScheme);
             }
-            await SignInAsync(user, isPersistent, loginProvider);
+            if (loginProvider == null)
+            {
+                await SignInWithClaimsAsync(user, isPersistent, new Claim[] { new Claim("amr", "pwd") });
+            }
+            else
+            {
+                await SignInAsync(user, isPersistent, loginProvider);
+            }
             return SignInResult.Success;
         }
 
@@ -780,10 +835,10 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A locked out SignInResult</returns>
-        protected virtual async Task<SignInResult> LockedOut(TUser user)
+        protected virtual Task<SignInResult> LockedOut(TUser user)
         {
-            Logger.LogWarning(3, "User {userId} is currently locked out.", await UserManager.GetUserIdAsync(user));
-            return SignInResult.LockedOut;
+            Logger.LogWarning(EventIds.UserLockedOut, "User is currently locked out.");
+            return Task.FromResult(SignInResult.LockedOut);
         }
 
         /// <summary>

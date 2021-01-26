@@ -99,17 +99,17 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of User roles.
         /// </summary>
-        public DbSet<TUserRole> UserRoles { get; set; }
+        public virtual DbSet<TUserRole> UserRoles { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of roles.
         /// </summary>
-        public DbSet<TRole> Roles { get; set; }
+        public virtual DbSet<TRole> Roles { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of role claims.
         /// </summary>
-        public DbSet<TRoleClaim> RoleClaims { get; set; }
+        public virtual DbSet<TRoleClaim> RoleClaims { get; set; }
 
         /// <summary>
         /// Configures the schema needed for the identity framework.
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             builder.Entity<TRole>(b =>
             {
                 b.HasKey(r => r.Id);
-                b.HasIndex(r => r.NormalizedName).HasName("RoleNameIndex").IsUnique();
+                b.HasIndex(r => r.NormalizedName).HasDatabaseName("RoleNameIndex").IsUnique();
                 b.ToTable("AspNetRoles");
                 b.Property(r => r.ConcurrencyStamp).IsConcurrencyToken();
 

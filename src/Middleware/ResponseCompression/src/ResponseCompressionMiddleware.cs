@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {
@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Initialize the Response Compression middleware.
         /// </summary>
-        /// <param name="next"></param>
-        /// <param name="provider"></param>
+        /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
+        /// <param name="provider">The <see cref="IResponseCompressionProvider"/>.</param>
         public ResponseCompressionMiddleware(RequestDelegate next, IResponseCompressionProvider provider)
         {
             if (next == null)
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Invoke the middleware.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <returns>A task that represents the execution of this middleware.</returns>
         public async Task Invoke(HttpContext context)
         {
             if (!_provider.CheckRequestAcceptsCompression(context))
@@ -52,34 +52,24 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return;
             }
 
-            var bodyStream = context.Response.Body;
-            var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
-            var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
+            var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context, bodyStream, _provider,
-                originalBufferFeature, originalSendFileFeature);
-            context.Response.Body = bodyWrapperStream;
-            context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
-            if (originalSendFileFeature != null)
-            {
-                context.Features.Set<IHttpSendFileFeature>(bodyWrapperStream);
-            }
+            Debug.Assert(originalBodyFeature != null);
+
+            var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature);
+            context.Features.Set<IHttpResponseBodyFeature>(compressionBody);
+            context.Features.Set<IHttpsCompressionFeature>(compressionBody);
 
             try
             {
                 await _next(context);
-                // This is not disposed via a using statement because we don't want to flush the compression buffer for unhandled exceptions,
-                // that may cause secondary exceptions.
-                bodyWrapperStream.Dispose();
+                await compressionBody.FinishCompressionAsync();
             }
             finally
             {
-                context.Response.Body = bodyStream;
-                context.Features.Set(originalBufferFeature);
-                if (originalSendFileFeature != null)
-                {
-                    context.Features.Set(originalSendFileFeature);
-                }
+                context.Features.Set(originalBodyFeature);
+                context.Features.Set(originalCompressionFeature);
             }
         }
     }

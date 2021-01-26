@@ -1,11 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -15,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class DictionaryModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -26,15 +29,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var dictionaryType = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(IDictionary<,>));
             if (dictionaryType != null)
             {
+                var binderType = typeof(DictionaryModelBinder<,>).MakeGenericType(dictionaryType.GenericTypeArguments);
+
                 var keyType = dictionaryType.GenericTypeArguments[0];
                 var keyBinder = context.CreateBinder(context.MetadataProvider.GetMetadataForType(keyType));
 
                 var valueType = dictionaryType.GenericTypeArguments[1];
                 var valueBinder = context.CreateBinder(context.MetadataProvider.GetMetadataForType(valueType));
 
-                var binderType = typeof(DictionaryModelBinder<,>).MakeGenericType(dictionaryType.GenericTypeArguments);
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                return (IModelBinder)Activator.CreateInstance(binderType, keyBinder, valueBinder, loggerFactory);
+                var mvcOptions = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
+                return (IModelBinder)Activator.CreateInstance(
+                    binderType,
+                    keyBinder,
+                    valueBinder,
+                    loggerFactory,
+                    true /* allowValidatingTopLevelNodes */,
+                    mvcOptions)!;
             }
 
             return null;

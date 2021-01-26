@@ -1,14 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -23,23 +25,22 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            var supportedCultures = new [] { "en-US", "en-AU", "en-GB", "es-ES", "ja-JP", "fr-FR", "zh", "zh-CN" };
+            var supportedCultures = new[] { "en-US", "en-AU", "en-GB", "es-ES", "ja-JP", "fr-FR", "zh", "zh-CN" };
             app.UseRequestLocalization(options =>
                 options
                     .AddSupportedCultures(supportedCultures)
                     .AddSupportedUICultures(supportedCultures)
                     .SetDefaultCulture(supportedCultures[0])
-                  // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
-                  // Inserting it as position 0 ensures it has priority over any of the default providers.
-                  //.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
-                  //{
+            // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
+            //.AddRequestCultureProvider(new CustomRequestCultureProvider(async context =>
+            //{
 
-                 //}));
+            //}));
             );
 
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path.Value.EndsWith("favicon.ico"))
+                if (context.Request.Path.Value.EndsWith("favicon.ico", StringComparison.Ordinal))
                 {
                     // Pesky browsers
                     context.Response.StatusCode = 404;
@@ -101,18 +102,18 @@ $@"<!doctype html>
                 await context.Response.WriteAsync($"<tr><th>{SR["Current thread UI culture:"]}</th><td>{CultureInfo.CurrentUICulture.DisplayName} ({CultureInfo.CurrentUICulture})</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current date (invariant full):"]}</th><td>{DateTime.Now.ToString("F", CultureInfo.InvariantCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current date (invariant):"]}</th><td>{DateTime.Now.ToString(CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Current date (request full):"]}</th><td>{DateTime.Now.ToString("F")}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Current date (request):"]}</th><td>{DateTime.Now.ToString()}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Current date (request full):"]}</th><td>{DateTime.Now.ToString("F", CultureInfo.CurrentCulture)}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Current date (request):"]}</th><td>{DateTime.Now.ToString(CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current time (invariant):"]}</th><td>{DateTime.Now.ToString("T", CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Current time (request):"]}</th><td>{DateTime.Now.ToString("T")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Current time (request):"]}</th><td>{DateTime.Now.ToString("T", CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Big number (invariant):"]}</th><td>{(Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Big number (request):"]}</th><td>{(Math.Pow(2, 42) + 0.42).ToString("N")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Big number (request):"]}</th><td>{(Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Big number negative (invariant):"]}</th><td>{(-Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Big number negative (request):"]}</th><td>{(-Math.Pow(2, 42) + 0.42).ToString("N")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Big number negative (request):"]}</th><td>{(-Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Money (invariant):"]}</th><td>{2199.50.ToString("C", CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Money (request):"]}</th><td>{2199.50.ToString("C")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money (request):"]}</th><td>{2199.50.ToString("C", CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Money negative (invariant):"]}</th><td>{(-2199.50).ToString("C", CultureInfo.InvariantCulture)}</td></tr>");
-                await context.Response.WriteAsync($"<tr><th>{SR["Money negative (request):"]}</th><td>{(-2199.50).ToString("C")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money negative (request):"]}</th><td>{(-2199.50).ToString("C", CultureInfo.CurrentCulture)}</td></tr>");
                 await context.Response.WriteAsync("</tbody></table>");
                 await context.Response.WriteAsync(
 @"</body>
@@ -135,21 +136,25 @@ $@"<!doctype html>
             await context.Response.WriteAsync($"    <option value=\"pp-NOTREAL\">Made-up (Not a real anything)</option>");
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
 
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory => factory.AddConsole())
-                .UseKestrel()
-                .UseConfiguration(config)
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .ConfigureLogging(factory => factory.AddConsole())
+                    .UseKestrel()
+                    .UseConfiguration(config)
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

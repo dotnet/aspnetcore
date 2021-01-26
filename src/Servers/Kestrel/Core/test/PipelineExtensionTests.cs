@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private const int _ulongMaxValueLength = 20;
 
         private readonly Pipe _pipe;
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
 
         public PipelineExtensionTests()
         {
@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
+            _pipe.Reader.Complete();
+            _pipe.Writer.Complete();
             _memoryPool.Dispose();
         }
 
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-            var numAsStr = number.ToString();
+            var numAsStr = number.ToString(CultureInfo.InvariantCulture);
             var expected = Encoding.ASCII.GetBytes(numAsStr);
             AssertExtensions.Equal(expected, reader.Buffer.Slice(0, numAsStr.Length).ToArray());
         }
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-            var numAsString = ulong.MaxValue.ToString();
+            var numAsString = ulong.MaxValue.ToString(CultureInfo.InvariantCulture);
             var written = reader.Buffer.Slice(spacer.Length, numAsString.Length);
             Assert.False(written.IsSingleSegment, "The buffer should cross spans");
             AssertExtensions.Equal(Encoding.ASCII.GetBytes(numAsString), written.ToArray());
@@ -86,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var pipeWriter = _pipe.Writer;
             var writer = new BufferWriter<PipeWriter>(pipeWriter);
-            writer.WriteAsciiNoValidation(input);
+            writer.WriteAscii(input);
             writer.Commit();
             pipeWriter.FlushAsync().GetAwaiter().GetResult();
             pipeWriter.Complete();
@@ -110,13 +112,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("𤭢𐐝")]
         // non-ascii characters stored in 16 bits
         [InlineData("ñ٢⛄⛵")]
-        public void WriteAsciiNoValidationWritesOnlyOneBytePerChar(string input)
+        public void WriteAsciiWritesOnlyOneBytePerChar(string input)
         {
             // WriteAscii doesn't validate if characters are in the ASCII range
             // but it shouldn't produce more than one byte per character
             var writerBuffer = _pipe.Writer;
             var writer = new BufferWriter<PipeWriter>(writerBuffer);
-            writer.WriteAsciiNoValidation(input);
+            writer.WriteAscii(input);
             writer.Commit();
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
@@ -125,14 +127,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WriteAsciiNoValidation()
+        public void WriteAscii()
         {
             const byte maxAscii = 0x7f;
             var writerBuffer = _pipe.Writer;
             var writer = new BufferWriter<PipeWriter>(writerBuffer);
             for (var i = 0; i < maxAscii; i++)
             {
-                writer.WriteAsciiNoValidation(new string((char)i, 1));
+                writer.WriteAscii(new string((char)i, 1));
             }
             writer.Commit();
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
@@ -166,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(gapSize, writer.Span.Length);
 
             var bufferLength = writer.Span.Length;
-            writer.WriteAsciiNoValidation(testString);
+            writer.WriteAscii(testString);
             Assert.NotEqual(bufferLength, writer.Span.Length);
             writer.Commit();
             writerBuffer.FlushAsync().GetAwaiter().GetResult();

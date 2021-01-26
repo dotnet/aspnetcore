@@ -1,10 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
+    /// <summary>
+    /// <see cref="AuthenticationProperties"/> for an OpenId Connect challenge.
+    /// </summary>
     public class OpenIdConnectChallengeProperties : OAuthChallengeProperties
     {
         /// <summary>
@@ -17,13 +20,24 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         public static readonly string PromptKey = OpenIdConnectParameterNames.Prompt;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectChallengeProperties"/>.
+        /// </summary>
         public OpenIdConnectChallengeProperties()
         { }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectChallengeProperties"/>.
+        /// </summary>
+        /// <inheritdoc />
         public OpenIdConnectChallengeProperties(IDictionary<string, string> items)
             : base(items)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectChallengeProperties"/>.
+        /// </summary>
+        /// <inheritdoc />
         public OpenIdConnectChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
             : base(items, parameters)
         { }

@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvLoopHandle : UvMemory
+    internal class UvLoopHandle : UvMemory
     {
         public UvLoopHandle(ILibuvTrace logger) : base(logger)
         {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             CreateMemory(
                 uv,
-                Thread.CurrentThread.ManagedThreadId,
+                Environment.CurrentManagedThreadId,
                 uv.loop_size());
 
             _uv.loop_init(this);

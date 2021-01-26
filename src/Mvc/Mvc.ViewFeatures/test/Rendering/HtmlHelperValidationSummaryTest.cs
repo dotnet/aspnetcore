@@ -7,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering

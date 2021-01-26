@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,11 +9,14 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
-    /// A base class for infrastructure that implements ASP.NET Core MVC's support for 
+    /// A base class for infrastructure that implements ASP.NET Core MVC's support for
     /// <see cref="CompatibilityVersion"/>. This is framework infrastructure and should not be used
     /// by application code.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
+    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
+        DiagnosticId = "ASP5001",
+        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
     public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOptions<TOptions>
         where TOptions : class, IEnumerable<ICompatibilitySwitch>
     {
@@ -61,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(options));
             }
 
-            // Evaluate DefaultValues onces so subclasses don't have to cache.
+            // Evaluate DefaultValues once so subclasses don't have to cache.
             var defaultValues = DefaultValues;
 
             foreach (var @switch in options)

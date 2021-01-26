@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
@@ -12,47 +13,39 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Provides correct handling for QueryString value when needed to reconstruct a request or redirect URI string
     /// </summary>
-    public struct QueryString : IEquatable<QueryString>
+    public readonly struct QueryString : IEquatable<QueryString>
     {
         /// <summary>
         /// Represents the empty query string. This field is read-only.
         /// </summary>
         public static readonly QueryString Empty = new QueryString(string.Empty);
 
-        private readonly string _value;
-
         /// <summary>
         /// Initialize the query string with a given value. This value must be in escaped and delimited format with
-        /// a leading '?' character. 
+        /// a leading '?' character.
         /// </summary>
         /// <param name="value">The query string to be assigned to the Value property.</param>
-        public QueryString(string value)
+        public QueryString(string? value)
         {
             if (!string.IsNullOrEmpty(value) && value[0] != '?')
             {
                 throw new ArgumentException("The leading '?' must be included for a non-empty query.", nameof(value));
             }
-            _value = value;
+            Value = value;
         }
 
         /// <summary>
         /// The escaped query string with the leading '?' character
         /// </summary>
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string? Value { get; }
 
         /// <summary>
         /// True if the query string is not empty
         /// </summary>
-        public bool HasValue
-        {
-            get { return !string.IsNullOrEmpty(_value); }
-        }
+        public bool HasValue => !string.IsNullOrEmpty(Value);
 
         /// <summary>
-        /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
+        /// Provides the query string escaped in a way which is correct for combining into the URI representation.
         /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
@@ -63,7 +56,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
+        /// Provides the query string escaped in a way which is correct for combining into the URI representation.
         /// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
         /// dangerous are escaped.
         /// </summary>
@@ -71,7 +64,7 @@ namespace Microsoft.AspNetCore.Http
         public string ToUriComponent()
         {
             // Escape things properly so System.Uri doesn't mis-interpret the data.
-            return HasValue ? _value.Replace("#", "%23") : string.Empty;
+            return !string.IsNullOrEmpty(Value) ? Value!.Replace("#", "%23") : string.Empty;
         }
 
         /// <summary>
@@ -134,10 +127,10 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns>The resulting QueryString</returns>
-        public static QueryString Create(IEnumerable<KeyValuePair<string, string>> parameters)
+        public static QueryString Create(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
             var builder = new StringBuilder();
-            bool first = true;
+            var first = true;
             foreach (var pair in parameters)
             {
                 AppendKeyValuePair(builder, pair.Key, pair.Value, first);
@@ -155,7 +148,7 @@ namespace Microsoft.AspNetCore.Http
         public static QueryString Create(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             var builder = new StringBuilder();
-            bool first = true;
+            var first = true;
 
             foreach (var pair in parameters)
             {
@@ -177,21 +170,33 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Concatenates <paramref name="other"/> to the current query string.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to concatenate.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public QueryString Add(QueryString other)
         {
-            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
             {
                 return other;
             }
-            if (!other.HasValue || other.Value.Equals("?", StringComparison.Ordinal))
+            if (!other.HasValue || other.Value!.Equals("?", StringComparison.Ordinal))
             {
                 return this;
             }
 
             // ?name1=value1 Add ?name2=value2 returns ?name1=value1&name2=value2
-            return new QueryString(_value + "&" + other.Value.Substring(1));
+            return new QueryString(Value + "&" + other.Value.Substring(1));
         }
 
+        /// <summary>
+        /// Concatenates a query string with <paramref name="name"/> and <paramref name="value"/>
+        /// to the current query string.
+        /// </summary>
+        /// <param name="name">The name of the query string to concatenate.</param>
+        /// <param name="value">The value of the query string to concatenate.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public QueryString Add(string name, string value)
         {
             if (name == null)
@@ -199,7 +204,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
             {
                 return Create(name, value);
             }
@@ -209,16 +214,26 @@ namespace Microsoft.AspNetCore.Http
             return new QueryString(builder.ToString());
         }
 
+        /// <summary>
+        /// Evalutes if the current query string is equal to <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="QueryString"/> to compare.</param>
+        /// <returns><see langword="true"/> if the ssquery strings are equal.</returns>
         public bool Equals(QueryString other)
         {
             if (!HasValue && !other.HasValue)
             {
                 return true;
             }
-            return string.Equals(_value, other._value, StringComparison.Ordinal);
+            return string.Equals(Value, other.Value, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Evaluates if the current query string is equal to an object <paramref name="obj"/>.
+        /// </summary>
+        /// <param name="obj">An object to compare.</param>
+        /// <returns><see langword="true" /> if the query strings are equal.</returns>
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -227,27 +242,49 @@ namespace Microsoft.AspNetCore.Http
             return obj is QueryString && Equals((QueryString)obj);
         }
 
+        /// <summary>
+        /// Gets a hash code for the value.
+        /// </summary>
+        /// <returns>The hash code as an <see cref="int"/>.</returns>
         public override int GetHashCode()
         {
-            return (HasValue ? _value.GetHashCode() : 0);
+            return (HasValue ? Value!.GetHashCode() : 0);
         }
 
+        /// <summary>
+        /// Evaluates if one query string is equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns><see langword="true" /> if the query strings are equal.</returns>
         public static bool operator ==(QueryString left, QueryString right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evaluates if one query string is not equal to another.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns><see langword="true" /> if the query strings are not equal.</returns>
         public static bool operator !=(QueryString left, QueryString right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Concatenates <paramref name="left"/> and <paramref name="right"/> into a single query string.
+        /// </summary>
+        /// <param name="left">A <see cref="QueryString"/> instance.</param>
+        /// <param name="right">A <see cref="QueryString"/> instance.</param>
+        /// <returns>The concatenated <see cref="QueryString"/>.</returns>
         public static QueryString operator +(QueryString left, QueryString right)
         {
             return left.Add(right);
         }
 
-        private static void AppendKeyValuePair(StringBuilder builder, string key, string value, bool first)
+        private static void AppendKeyValuePair(StringBuilder builder, string key, string? value, bool first)
         {
             builder.Append(first ? "?" : "&");
             builder.Append(UrlEncoder.Default.Encode(key));

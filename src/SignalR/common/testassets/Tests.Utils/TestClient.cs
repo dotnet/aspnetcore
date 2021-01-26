@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
@@ -14,13 +15,18 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class TestClient : ITransferFormatFeature, IConnectionHeartbeatFeature, IDisposable
+#if TESTUTILS
+    public
+#else
+    internal
+#endif
+    class TestClient : ITransferFormatFeature, IConnectionHeartbeatFeature, IDisposable
     {
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         private static int _id;
-        private readonly IHubProtocol _protocol;
+        private IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
         private readonly CancellationTokenSource _cts;
 
@@ -43,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.Features.Set<ITransferFormatFeature>(this);
             Connection.Features.Set<IConnectionHeartbeatFeature>(this);
 
-            var claimValue = Interlocked.Increment(ref _id).ToString();
+            var claimValue = Interlocked.Increment(ref _id).ToString(CultureInfo.InvariantCulture);
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
             if (userIdentifier != null)
             {
@@ -53,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
             Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
 
-            _protocol = protocol ?? new JsonHubProtocol();
+            _protocol = protocol ?? new NewtonsoftJsonHubProtocol();
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();
@@ -82,9 +88,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return connection;
         }
 
-        public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
+        public Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendStreamInvocationAsync(methodName, args);
+            return StreamAsync(methodName, streamIds: null, args);
+        }
+
+        public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streamIds, params object[] args)
+        {
+            var invocationId = await SendStreamInvocationAsync(methodName, streamIds, args);
 
             var messages = new List<HubMessage>();
             while (true)
@@ -110,7 +121,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         messages.Add(message);
                         return messages;
                     default:
-                        throw new NotSupportedException("TestClient does not support receiving invocations!");
+                        // Message implement ToString so this should be helpful.
+                        throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");
                 }
             }
         }
@@ -143,7 +155,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // Pings are ignored
                         break;
                     default:
-                        throw new NotSupportedException("TestClient does not support receiving invocations!");
+                        // Message implement ToString so this should be helpful.
+                        throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");
                 }
             }
         }
@@ -161,8 +174,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
         {
+            return SendStreamInvocationAsync(methodName, streamIds: null, args);
+        }
+
+        public Task<string> SendStreamInvocationAsync(string methodName, string[] streamIds, params object[] args)
+        {
             var invocationId = GetInvocationId();
-            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args));
+            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args, streamIds));
+        }
+
+        public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, string[] streamIds, params object[] args)
+        {
+            var message = new InvocationMessage(invocationId, methodName, args, streamIds);
+            return SendHubMessageAsync(message);
         }
 
         public async Task<string> SendHubMessageAsync(HubMessage message)
@@ -228,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
                 else
                 {
-                    // read first message out of the incoming data 
+                    // read first message out of the incoming data
                     if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var responseMessage))
                     {
                         return responseMessage;
@@ -308,6 +332,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Type GetReturnType(string invocationId)
             {
                 return typeof(object);
+            }
+
+            public Type GetStreamItemType(string streamId)
+            {
+                throw new NotImplementedException();
             }
         }
     }

@@ -4,9 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Internal;
@@ -17,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// A metadata representation of a model type, property or parameter.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public abstract class ModelMetadata : IEquatable<ModelMetadata>, IModelMetadataProvider
+    public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadataProvider
     {
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
@@ -25,6 +29,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static readonly int DefaultOrder = 10000;
 
         private int? _hashCode;
+        private IReadOnlyList<ModelMetadata>? _boundProperties;
+        private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
+        private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _boundConstructorPropertyMapping;
+        private Exception? _recordTypeValidatorsOnPropertiesError;
+        private bool _recordTypeConstructorDetailsCalculated;
 
         /// <summary>
         /// Creates a new <see cref="ModelMetadata"/>.
@@ -40,13 +49,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the type containing the property if this metadata is for a property; <see langword="null"/> otherwise.
         /// </summary>
-        public Type ContainerType => Identity.ContainerType;
+        public Type? ContainerType => Identity.ContainerType;
 
         /// <summary>
         /// Gets the metadata for <see cref="ContainerType"/> if this metadata is for a property;
         /// <see langword="null"/> otherwise.
         /// </summary>
-        public virtual ModelMetadata ContainerMetadata
+        public virtual ModelMetadata? ContainerMetadata
         {
             get
             {
@@ -68,22 +77,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the name of the parameter or property if this metadata is for a parameter or property;
         /// <see langword="null"/> otherwise i.e. if this is the metadata for a type.
         /// </summary>
-        public string Name => Identity.Name;
+        public string? Name => Identity.Name;
 
         /// <summary>
         /// Gets the name of the parameter if this metadata is for a parameter; <see langword="null"/> otherwise.
         /// </summary>
-        public string ParameterName => MetadataKind == ModelMetadataKind.Parameter ? Identity.Name : null;
+        public string? ParameterName => MetadataKind == ModelMetadataKind.Parameter ? Identity.Name : null;
 
         /// <summary>
         /// Gets the name of the property if this metadata is for a property; <see langword="null"/> otherwise.
         /// </summary>
-        public string PropertyName => MetadataKind == ModelMetadataKind.Property ? Identity.Name : null;
+        public string? PropertyName => MetadataKind == ModelMetadataKind.Property ? Identity.Name : null;
 
         /// <summary>
         /// Gets the key for the current instance.
         /// </summary>
-        protected ModelMetadataIdentity Identity { get; }
+        protected internal ModelMetadataIdentity Identity { get; }
 
         /// <summary>
         /// Gets a collection of additional information about the model.
@@ -95,21 +104,97 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public abstract ModelPropertyCollection Properties { get; }
 
+        internal IReadOnlyList<ModelMetadata> BoundProperties
+        {
+            get
+            {
+                // In record types, each constructor parameter in the primary constructor is also a settable property with the same name.
+                // Executing model binding on these parameters twice may have detrimental effects, such as duplicate ModelState entries,
+                // or failures if a model expects to be bound exactly ones.
+                // Consequently when binding to a constructor, we only bind and validate the subset of properties whose names
+                // haven't appeared as parameters.
+                if (BoundConstructor is null)
+                {
+                    return Properties;
+                }
+
+                if (_boundProperties is null)
+                {
+                    var boundParameters = BoundConstructor.BoundConstructorParameters!;
+                    var boundProperties = new List<ModelMetadata>();
+
+                    foreach (var metadata in Properties)
+                    {
+                        if (!boundParameters.Any(p =>
+                            string.Equals(p.ParameterName, metadata.PropertyName, StringComparison.Ordinal)
+                            && p.ModelType == metadata.ModelType))
+                        {
+                            boundProperties.Add(metadata);
+                        }
+                    }
+
+                    _boundProperties = boundProperties;
+                }
+
+                return _boundProperties;
+            }
+        }
+
+        /// <summary>
+        /// A mapping from parameters to their corresponding properties on a record type.
+        /// </summary>
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorParameterMapping
+        {
+            get
+            {
+                Debug.Assert(BoundConstructor != null, "This API can be only called for types with bound constructors.");
+                CalculateRecordTypeConstructorDetails();
+
+                return _parameterMapping;
+            }
+        }
+
+        /// <summary>
+        /// A mapping from properties to their corresponding constructor parameter on a record type.
+        /// This is the inverse mapping of <see cref="BoundConstructorParameterMapping"/>.
+        /// </summary>
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorPropertyMapping
+        {
+            get
+            {
+                Debug.Assert(BoundConstructor != null, "This API can be only called for types with bound constructors.");
+                CalculateRecordTypeConstructorDetails();
+
+                return _boundConstructorPropertyMapping;
+            }
+        }
+
+        /// <summary>
+        /// Gets <see cref="ModelMetadata"/> instance for a constructor of a record type that is used during binding and validation.
+        /// </summary>
+        public virtual ModelMetadata? BoundConstructor { get; }
+
+        /// <summary>
+        /// Gets the collection of <see cref="ModelMetadata"/> instances for parameters on a <see cref="BoundConstructor"/>.
+        /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Constructor"/>.
+        /// </summary>
+        public virtual IReadOnlyList<ModelMetadata>? BoundConstructorParameters { get; }
+
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
         /// </summary>
-        public abstract string BinderModelName { get; }
+        public abstract string? BinderModelName { get; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> of a model if specified explicitly using
         /// <see cref="IBinderTypeProviderMetadata"/>.
         /// </summary>
-        public abstract Type BinderType { get; }
+        public abstract Type? BinderType { get; }
 
         /// <summary>
         /// Gets a binder metadata for this model.
         /// </summary>
-        public abstract BindingSource BindingSource { get; }
+        public abstract BindingSource? BindingSource { get; }
 
         /// <summary>
         /// Gets a value indicating whether or not to convert an empty string value or one containing only whitespace
@@ -122,28 +207,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// display scenarios.
         /// </summary>
         /// <value><c>null</c> unless set manually or through additional metadata e.g. attributes.</value>
-        public abstract string DataTypeName { get; }
+        public abstract string? DataTypeName { get; }
 
         /// <summary>
         /// Gets the description of the model.
         /// </summary>
-        public abstract string Description { get; }
+        public abstract string? Description { get; }
 
         /// <summary>
         /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the
         /// model.
         /// </summary>
-        public abstract string DisplayFormatString { get; }
+        public abstract string? DisplayFormatString { get; }
 
         /// <summary>
         /// Gets the display name of the model.
         /// </summary>
-        public abstract string DisplayName { get; }
+        public abstract string? DisplayName { get; }
 
         /// <summary>
         /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
         /// </summary>
-        public abstract string EditFormatString { get; }
+        public abstract string? EditFormatString { get; }
 
         /// <summary>
         /// Gets the <see cref="ModelMetadata"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
@@ -155,7 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// implements <see cref="IEnumerable"/> but not <see cref="IEnumerable{T}"/>. <c>null</c> otherwise i.e. when
         /// <see cref="IsEnumerableType"/> is <c>false</c>.
         /// </value>
-        public abstract ModelMetadata ElementMetadata { get; }
+        public abstract ModelMetadata? ElementMetadata { get; }
 
         /// <summary>
         /// Gets the ordered and grouped display names and values of all <see cref="Enum"/> values in
@@ -165,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// An <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{EnumGroupAndName, String}"/> of mappings between
         /// <see cref="Enum"/> field groups, names and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
-        public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; }
+        public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues { get; }
 
         /// <summary>
         /// Gets the names and values of all <see cref="Enum"/> values in <see cref="UnderlyingOrModelType"/>.
@@ -174,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// An <see cref="IReadOnlyDictionary{String, String}"/> of mappings between <see cref="Enum"/> field names
         /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
-        public abstract IReadOnlyDictionary<string, string> EnumNamesAndValues { get; }
+        public abstract IReadOnlyDictionary<string, string>? EnumNamesAndValues { get; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="EditFormatString"/> has a non-<c>null</c>, non-empty
@@ -270,28 +355,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a value indicating where the current metadata should be ordered relative to other properties
         /// in its containing type.
         /// </summary>
+        /// <value>The order value of the current metadata.</value>
         /// <remarks>
         /// <para>For example this property is used to order items in <see cref="Properties"/>.</para>
         /// <para>The default order is <c>10000</c>.</para>
         /// </remarks>
-        /// <value>The order value of the current metadata.</value>
         public abstract int Order { get; }
 
         /// <summary>
         /// Gets the text to display as a placeholder value for an editor.
         /// </summary>
-        public abstract string Placeholder { get; }
+        public abstract string? Placeholder { get; }
 
         /// <summary>
         /// Gets the text to display when the model is <c>null</c>.
         /// </summary>
-        public abstract string NullDisplayText { get; }
+        public abstract string? NullDisplayText { get; }
 
         /// <summary>
         /// Gets the <see cref="IPropertyFilterProvider"/>, which can determine which properties
         /// should be model bound.
         /// </summary>
-        public abstract IPropertyFilterProvider PropertyFilterProvider { get; }
+        public abstract IPropertyFilterProvider? PropertyFilterProvider { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the property should be displayed in read-only views.
@@ -306,24 +391,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets  a value which is the name of the property used to display the model.
         /// </summary>
-        public abstract string SimpleDisplayProperty { get; }
+        public abstract string? SimpleDisplayProperty { get; }
 
         /// <summary>
         /// Gets a string used by the templating system to discover display-templates and editor-templates.
         /// </summary>
-        public abstract string TemplateHint { get; }
+        public abstract string? TemplateHint { get; }
 
         /// <summary>
         /// Gets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model should be
         /// validated. If <c>null</c>, properties with this <see cref="ModelMetadata"/> are validated.
         /// </summary>
         /// <value>Defaults to <c>null</c>.</value>
-        public virtual IPropertyValidationFilter PropertyValidationFilter => null;
+        public virtual IPropertyValidationFilter? PropertyValidationFilter => null;
 
         /// <summary>
         /// Gets a value that indicates whether properties or elements of the model should be validated.
         /// </summary>
         public abstract bool ValidateChildren { get; }
+
+        /// <summary>
+        /// Gets a value that indicates if the model, or one of it's properties, or elements has associated validators.
+        /// </summary>
+        /// <remarks>
+        /// When <see langword="false"/>, validation can be assume that the model is valid (<see cref="ModelValidationState.Valid"/>) without
+        /// inspecting the object graph.
+        /// </remarks>
+        public virtual bool? HasValidators { get; }
 
         /// <summary>
         /// Gets a collection of metadata items for validators.
@@ -334,14 +428,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the <see cref="Type"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
         /// implements <see cref="IEnumerable"/>.
         /// </summary>
-        public Type ElementType { get; private set; }
+        public Type? ElementType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
         /// </summary>
         /// <remarks>
-        /// A complex type is defined as a <see cref="Type"/> which has a
-        /// <see cref="TypeConverter"/> that can convert from <see cref="string"/>.
+        /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
+        /// from <see cref="string"/>. Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
+        /// not all, BCL value types are simple types.
         /// </remarks>
         public bool IsComplexType { get; private set; }
 
@@ -379,17 +474,81 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <remarks>
         /// Identical to <see cref="ModelType"/> unless <see cref="IsNullableValueType"/> is <c>true</c>.
         /// </remarks>
-        public Type UnderlyingOrModelType { get; private set; }
+        public Type UnderlyingOrModelType { get; private set; } = default!;
 
         /// <summary>
         /// Gets a property getter delegate to get the property value from a model object.
         /// </summary>
-        public abstract Func<object, object> PropertyGetter { get; }
+        public abstract Func<object, object?>? PropertyGetter { get; }
 
         /// <summary>
         /// Gets a property setter delegate to set the property value on a model object.
         /// </summary>
-        public abstract Action<object, object> PropertySetter { get; }
+        public abstract Action<object, object?>? PropertySetter { get; }
+
+        /// <summary>
+        /// Gets a delegate that invokes the bound constructor <see cref="BoundConstructor" /> if non-<see langword="null" />.
+        /// </summary>
+        public virtual Func<object?[], object>? BoundConstructorInvoker => null;
+
+        /// <summary>
+        /// Gets a value that determines if validators can be constructed using metadata exclusively defined on the property.
+        /// </summary>
+        internal virtual bool PropertyHasValidators => false;
+
+        /// <summary>
+        /// Throws if the ModelMetadata is for a record type with validation on properties.
+        /// </summary>
+        internal void ThrowIfRecordTypeHasValidationOnProperties()
+        {
+            CalculateRecordTypeConstructorDetails();
+            if (_recordTypeValidatorsOnPropertiesError != null)
+            {
+                throw _recordTypeValidatorsOnPropertiesError;
+            }
+        }
+
+        [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
+        private void CalculateRecordTypeConstructorDetails()
+        {
+            if (_recordTypeConstructorDetailsCalculated)
+            {
+                Debug.Assert(_parameterMapping != null);
+                Debug.Assert(_boundConstructorPropertyMapping != null);
+                return;
+            }
+
+            var boundParameters = BoundConstructor!.BoundConstructorParameters!;
+            var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+            var propertyMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+
+            foreach (var parameter in boundParameters)
+            {
+                var property = Properties.FirstOrDefault(p =>
+                    string.Equals(p.Name, parameter.ParameterName, StringComparison.Ordinal) &&
+                    p.ModelType == parameter.ModelType);
+
+                if (property != null)
+                {
+                    parameterMapping[parameter] = property;
+                    propertyMapping[property] = parameter;
+
+                    if (property.PropertyHasValidators)
+                    {
+                        // When constructing the mapping of paramets -> properties, also determine
+                        // if the property has any validators (without looking at metadata on the type).
+                        // This will help us throw during validation if a user defines validation attributes
+                        // on the property of a record type.
+                        _recordTypeValidatorsOnPropertiesError = new InvalidOperationException(
+                            Resources.FormatRecordTypeHasValidationOnProperties(ModelType, property.Name));
+                    }
+                }
+            }
+
+             _recordTypeConstructorDetailsCalculated = true;
+            _parameterMapping = parameterMapping;
+            _boundConstructorPropertyMapping = propertyMapping;
+        }
 
         /// <summary>
         /// Gets a display name for the model.
@@ -405,7 +564,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool Equals(ModelMetadata other)
+        public bool Equals(ModelMetadata? other)
         {
             if (object.ReferenceEquals(this, other))
             {
@@ -423,7 +582,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as ModelMetadata);
         }
@@ -446,7 +605,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             IsComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
             IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
-            IsReferenceOrNullableType = !ModelType.GetTypeInfo().IsValueType || IsNullableValueType;
+            IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
             UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
 
             var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
@@ -459,14 +618,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             else if (ModelType.IsArray)
             {
                 IsEnumerableType = true;
-                ElementType = ModelType.GetElementType();
+                ElementType = ModelType.GetElementType()!;
             }
             else
             {
                 IsEnumerableType = true;
 
                 var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(IEnumerable<>));
-                ElementType = enumerableType?.GenericTypeArguments[0];
+                ElementType = enumerableType?.GenericTypeArguments[0]!;
 
                 if (ElementType == null)
                 {
@@ -487,9 +646,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 case ModelMetadataKind.Parameter:
                     return $"ModelMetadata (Parameter: '{ParameterName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Property:
-                    return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
+                    return $"ModelMetadata (Property: '{ContainerType!.Name}.{PropertyName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Type:
                     return $"ModelMetadata (Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Constructor:
+                    return $"ModelMetadata (Constructor: '{ModelType.Name}')";
                 default:
                     return $"Unsupported MetadataKind '{MetadataKind}'.";
             }

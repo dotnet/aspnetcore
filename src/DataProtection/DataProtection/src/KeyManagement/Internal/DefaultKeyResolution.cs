@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public struct DefaultKeyResolution
     {
         /// <summary>
@@ -14,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// If this property is non-null, its <see cref="IKey.CreateEncryptor()"/> method will succeed
         /// so is appropriate for use with deferred keys.
         /// </remarks>
-        public IKey DefaultKey;
+        public IKey? DefaultKey;
 
         /// <summary>
         /// The fallback key, which should be used only if the caller is configured not to
@@ -25,7 +29,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// If this property is non-null, its <see cref="IKey.CreateEncryptor()"/> method will succeed
         /// so is appropriate for use with deferred keys.
         /// </remarks>
-        public IKey FallbackKey;
+        public IKey? FallbackKey;
 
         /// <summary>
         /// 'true' if a new key should be persisted to the keyring, 'false' otherwise.

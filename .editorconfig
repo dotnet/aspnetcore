@@ -1,6 +1,14 @@
 ; EditorConfig to support per-solution formatting.
 ; Use the EditorConfig VS add-in to make this work.
 ; http://editorconfig.org/
+;
+; Here are some resources for what's supported for .NET/C#
+; https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
+; https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference?view=vs-2017
+;
+; Be **careful** editing this because some of the rules don't support adding a severity level
+; For instance if you change to `dotnet_sort_system_directives_first = true:warning` (adding `:warning`)
+; then the rule will be silently ignored.
 
 ; This is the default for the codeline.
 root = true
@@ -11,11 +19,15 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{cs}]
+[*.cs]
 indent_size = 4
-dotnet_sort_system_directives_first = true:warning
+dotnet_sort_system_directives_first = true
 
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
+indent_size = 2
+
+# Xml config files
+[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
 
 [*.json]
@@ -27,3 +39,11 @@ indent_size = 4
 [*.sh]
 indent_size = 4
 end_of_line = lf
+
+[*.{razor,cshtml}]
+charset = utf-8-bom
+
+[*.cs]
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1310.severity = error

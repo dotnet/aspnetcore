@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -10,22 +12,32 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFUserStoreTestWithGenerics : IdentitySpecificationTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IDisposable
+    public class InMemoryEFUserStoreTestWithGenerics
+        : IdentitySpecificationTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IClassFixture<InMemoryDatabaseFixture>
     {
+        private readonly InMemoryDatabaseFixture _fixture;
         private readonly InMemoryContextWithGenerics _context;
         private UserStoreWithGenerics _store;
 
-        public InMemoryEFUserStoreTestWithGenerics()
+        public InMemoryEFUserStoreTestWithGenerics(InMemoryDatabaseFixture fixture)
         {
+            _fixture = fixture;
+
             var services = new ServiceCollection();
             services.AddHttpContextAccessor();
-            services.AddDbContext<InMemoryContextWithGenerics>(options => options.UseInMemoryDatabase("Scratch"));
+            services.AddDbContext<InMemoryContextWithGenerics>(
+                options => options
+                    .UseSqlite(_fixture.Connection)
+                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)));
             _context = services.BuildServiceProvider().GetRequiredService<InMemoryContextWithGenerics>();
+
+            _context.Database.EnsureCreated();
         }
 
         protected override object CreateTestContext()
@@ -49,7 +61,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         {
             return new IdentityUserWithGenerics
             {
-                UserName = useNamePrefixAsUserName ? namePrefix : string.Format("{0}{1}", namePrefix, Guid.NewGuid()),
+                UserName = useNamePrefixAsUserName ? namePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", namePrefix, Guid.NewGuid()),
                 Email = email,
                 PhoneNumber = phoneNumber,
                 LockoutEnabled = lockoutEnabled,
@@ -59,7 +71,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
         protected override MyIdentityRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
         {
-            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
+            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", roleNamePrefix, Guid.NewGuid());
             return new MyIdentityRole(roleName);
         }
 
@@ -72,17 +84,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
         protected override Expression<Func<MyIdentityRole, bool>> RoleNameEqualsPredicate(string roleName) => r => r.Name == roleName;
 
+#pragma warning disable CA1310 // Specify StringComparison for correctness
         protected override Expression<Func<IdentityUserWithGenerics, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
 
         protected override Expression<Func<MyIdentityRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
+#pragma warning restore CA1310 // Specify StringComparison for correctness
 
         [Fact]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -111,10 +121,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task RemoveClaimWithIssuerOnlyAffectsUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var user2 = CreateTestUser();
@@ -144,10 +150,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task CanReplaceUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -163,10 +165,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
             Assert.Equal(claim.Type, newClaim.Type);
             Assert.Equal(claim.Value, newClaim.Value);
             Assert.Equal(claim.Issuer, newClaim.Issuer);
-        }
-
-        public void Dispose()
-        {
         }
     }
 
@@ -320,13 +318,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
     public class InMemoryContextWithGenerics : InMemoryContext<IdentityUserWithGenerics, MyIdentityRole, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityRoleClaimWithIssuer, IdentityUserTokenWithStuff>
     {
-        public InMemoryContextWithGenerics(DbContextOptions options) : base(options)
+        public InMemoryContextWithGenerics(DbContextOptions<InMemoryContextWithGenerics> options) : base(options)
         { }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseInMemoryDatabase("Scratch");
-        }
     }
 
     #endregion

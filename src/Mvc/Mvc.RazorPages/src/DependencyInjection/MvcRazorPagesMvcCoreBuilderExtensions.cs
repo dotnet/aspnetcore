@@ -4,18 +4,28 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds razor page functionality to <see cref="IMvcCoreBuilder"/>.
+    /// </summary>
     public static class MvcRazorPagesMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Register services needed for Razor Pages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
         {
             if (builder == null)
@@ -25,11 +35,17 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddRazorViewEngine();
 
-            AddServices(builder.Services);
+            AddRazorPagesServices(builder.Services);
 
             return builder;
         }
 
+        /// <summary>
+        /// Register services needed for Razor Pages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The action to setup the <see cref="RazorPagesOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddRazorPages(
             this IMvcCoreBuilder builder,
             Action<RazorPagesOptions> setupAction)
@@ -46,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddRazorViewEngine();
 
-            AddServices(builder.Services);
+            AddRazorPagesServices(builder.Services);
 
             builder.Services.Configure(setupAction);
 
@@ -76,22 +92,27 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // Internal for testing.
-        internal static void AddServices(IServiceCollection services)
+        internal static void AddRazorPagesServices(IServiceCollection services)
         {
             // Options
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorPagesRazorViewEngineOptionsSetup>());
+
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<RazorPagesOptions>, RazorPagesOptionsConfigureCompatibilityOptions>());
+                ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
+
+            // Routing
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
+            services.TryAddSingleton<DynamicPageEndpointSelectorCache>();
+            services.TryAddSingleton<PageActionEndpointDataSourceIdProvider>();
 
             // Action description and invocation
             services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
-            services.TryAddSingleton<IActionDescriptorChangeProvider, PageActionDescriptorChangeProvider>();
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IPageRouteModelProvider, RazorProjectPageRouteModelProvider>());
+                ServiceDescriptor.Singleton<IActionDescriptorProvider, CompiledPageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
+            services.TryAddSingleton<PageActionEndpointDataSourceFactory>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, DefaultPageApplicationModelProvider>());
@@ -106,8 +127,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, ResponseCacheFilterApplicationModelProvider>());
 
+            services.TryAddSingleton<IPageApplicationModelPartsProvider, DefaultPageApplicationModelPartsProvider>();
+
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IRequestDelegateFactory, PageRequestDelegateFactory>());
+            services.TryAddSingleton<PageActionInvokerCache>();
 
             // Page and Page model creation and activation
             services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();
@@ -116,13 +142,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPageActivatorProvider, DefaultPageActivatorProvider>();
             services.TryAddSingleton<IPageFactoryProvider, DefaultPageFactoryProvider>();
 
-            services.TryAddSingleton<IPageLoader, DefaultPageLoader>();
-            services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
-
-            // Page model binding
 #pragma warning disable CS0618 // Type or member is obsolete
-            services.TryAddSingleton<PageArgumentBinder, DefaultPageArgumentBinder>();
+            services.TryAddSingleton<IPageLoader>(s => s.GetRequiredService<PageLoader>());
 #pragma warning restore CS0618 // Type or member is obsolete
+            services.TryAddSingleton<PageLoader, DefaultPageLoader>();
+            services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
 
             // Action executors
             services.TryAddSingleton<PageResultExecutor>();

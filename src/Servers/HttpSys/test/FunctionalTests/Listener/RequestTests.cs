@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -15,74 +15,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 {
     public class RequestTests
     {
-        [ConditionalFact]
-        public async Task Request_SimpleGet_Success()
-        {
-            string root;
-            using (var server = Utilities.CreateHttpServerReturnRoot("/basepath", out root))
-            {
-                Task<string> responseTask = SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-
-                // General fields
-                var request = context.Request;
-
-                // Request Keys
-                Assert.Equal("GET", request.Method);
-                Assert.Equal(Stream.Null, request.Body);
-                Assert.NotNull(request.Headers);
-                Assert.Equal("http", request.Scheme);
-                Assert.Equal("/basepath", request.PathBase);
-                Assert.Equal("/SomePath", request.Path);
-                Assert.Equal("?SomeQuery", request.QueryString);
-                Assert.Equal(new Version(1, 1), request.ProtocolVersion);
-
-                Assert.Equal("::1", request.RemoteIpAddress.ToString());
-                Assert.NotEqual(0, request.RemotePort);
-                Assert.Equal("::1", request.LocalIpAddress.ToString());
-                Assert.NotEqual(0, request.LocalPort);
-
-                // Note: Response keys are validated in the ResponseTests
-
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalTheory]
-        [InlineData("/", "/", "", "/")]
-        [InlineData("/basepath/", "/basepath", "/basepath", "")]
-        [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
-        [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
-        [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
-        [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
-        public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
-        {
-            string root;
-            using (var server = Utilities.CreateHttpServerReturnRoot(pathBase, out root))
-            {
-                Task<string> responseTask = SendRequestAsync(root + requestPath);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-
-                // General fields
-                var request = context.Request;
-
-                // Request Keys
-                Assert.Equal("http", request.Scheme);
-                Assert.Equal(expectedPath, request.Path);
-                Assert.Equal(expectedPathBase, request.PathBase);
-                Assert.Equal(string.Empty, request.QueryString);
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
 
         [ConditionalTheory]
         [InlineData("/path%")]
@@ -103,90 +35,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task Request_DoubleEscapingAllowed()
-        {
-            string root;
-            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
-            {
-                var responseTask = SendSocketRequestAsync(root, "/%252F");
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                Assert.Equal("/%2F", context.Request.Path);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Request_FullUriInRequestLine_ParsesPath()
-        {
-            string root;
-            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
-            {
-                // Send a HTTP request with the request line:
-                // GET http://localhost:5001 HTTP/1.1
-                var responseTask = SendSocketRequestAsync(root, root);
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                Assert.Equal("/", context.Request.Path);
-                Assert.Equal("", context.Request.PathBase);
-                Assert.Equal(root, context.Request.RawUrl);
-                Assert.False(root.EndsWith("/")); // make sure root doesn't have a trailing slash
-            }
-        }
-
-        [ConditionalFact]
         public async Task Request_OptionsStar_EmptyPath()
         {
             string root;
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "*", "OPTIONS");
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal("", context.Request.PathBase);
                 Assert.Equal("", context.Request.Path);
                 Assert.Equal("*", context.Request.RawUrl);
                 context.Dispose();
-            }
-        }
-
-        [ConditionalTheory]
-        // The test server defines these prefixes: "/", "/11", "/2/3", "/2", "/11/2"
-        [InlineData("/", "", "/")]
-        [InlineData("/random", "", "/random")]
-        [InlineData("/11", "/11", "")]
-        [InlineData("/11/", "/11", "/")]
-        [InlineData("/11/random", "/11", "/random")]
-        [InlineData("/2", "/2", "")]
-        [InlineData("/2/", "/2", "/")]
-        [InlineData("/2/random", "/2", "/random")]
-        [InlineData("/2/3", "/2/3", "")]
-        [InlineData("/2/3/", "/2/3", "/")]
-        [InlineData("/2/3/random", "/2/3", "/random")]
-        public async Task Request_MultiplePrefixes(string requestUri, string expectedPathBase, string expectedPath)
-        {
-            // TODO: We're just doing this to get a dynamic port. This can be removed later when we add support for hot-adding prefixes.
-            string root;
-            var server = Utilities.CreateHttpServerReturnRoot("/", out root);
-            server.Dispose();
-            server = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
-            using (server)
-            {
-                var uriBuilder = new UriBuilder(root);
-                foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
-                {
-                    server.Options.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
-                }
-                server.Start();
-
-                Task<string> responseTask = SendRequestAsync(root + requestUri);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var request = context.Request;
-
-                Assert.Equal(expectedPath, request.Path);
-                Assert.Equal(expectedPathBase, request.PathBase);
-
-                context.Dispose();
-
-                string response = await responseTask;
-                Assert.Equal(string.Empty, response);
             }
         }
 
@@ -220,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "/" + requestPath);
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 actualPath = context.Request.Path;
                 context.Dispose();
 
@@ -270,20 +129,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, requestPath);
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal(expectedPath, context.Request.Path);
                 context.Dispose();
 
                 var response = await responseTask;
                 Assert.Equal("200", response.Substring(9));
-            }
-        }
-
-        private async Task<string> SendRequestAsync(string uri)
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                return await client.GetStringAsync(uri);
             }
         }
 

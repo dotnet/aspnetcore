@@ -25,7 +25,7 @@ namespace RazorWebSite.Controllers
         // (b) Partials rendered via PartialAsync can execute Layout.
         public IActionResult PartialsRenderedViaPartialAsync()
         {
-            return View();
+            return View(nameof(PartialsRenderedViaPartialAsync));
         }
     }
 }

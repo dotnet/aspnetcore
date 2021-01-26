@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -20,18 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class FormCollectionModelBinder : IModelBinder
     {
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="FormCollectionModelBinder"/>.</para>
-        /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that takes an " + nameof(ILoggerFactory) + ".")]
-        public FormCollectionModelBinder()
-            : this(NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormCollectionModelBinder"/>.
@@ -108,11 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
         {
-            public IFormFile this[string name] => null;
+            public IFormFile? this[string name] => null;
 
-            public IFormFile GetFile(string name) => null;
+            public IFormFile? GetFile(string name) => null;
 
-            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name) => null;
+            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name) => Array.Empty<IFormFile>();
         }
     }
 }

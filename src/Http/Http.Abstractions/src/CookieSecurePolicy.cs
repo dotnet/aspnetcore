@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// If the URI that provides the cookie is HTTPS, then the cookie will only be returned to the server on 
         /// subsequent HTTPS requests. Otherwise if the URI that provides the cookie is HTTP, then the cookie will 
-        /// be returned to the server on all HTTP and HTTPS requests. This is the default value because it ensures
+        /// be returned to the server on all HTTP and HTTPS requests. This value ensures
         /// HTTPS for all authenticated requests on deployed servers, and also supports HTTP for localhost development 
         /// and for servers that do not have HTTPS support.
         /// </summary>

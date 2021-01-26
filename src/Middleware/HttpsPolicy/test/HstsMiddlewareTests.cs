@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -22,20 +25,27 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                })
-                .Configure(app =>
-                {
-                    app.UseHsts();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
             client.BaseAddress = new Uri("https://example.com:5050");
 
@@ -56,25 +66,33 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(50000, true, true, "max-age=50000; includeSubDomains; preload")]
         public async Task SetOptionsThroughConfigure_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.Configure<HstsOptions>(options => {
-                        options.Preload = preload;
-                        options.IncludeSubDomains = includeSubDomains;
-                        options.MaxAge = TimeSpan.FromSeconds(maxAge);
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHsts();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.Configure<HstsOptions>(options =>
+                        {
+                            options.Preload = preload;
+                            options.IncludeSubDomains = includeSubDomains;
+                            options.MaxAge = TimeSpan.FromSeconds(maxAge);
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
             client.BaseAddress = new Uri("https://example.com:5050");
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -94,25 +112,33 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(50000, true, true, "max-age=50000; includeSubDomains; preload")]
         public async Task SetOptionsThroughHelper_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddHsts(options => {
-                        options.Preload = preload;
-                        options.IncludeSubDomains = includeSubDomains;
-                        options.MaxAge = TimeSpan.FromSeconds(maxAge);
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHsts();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddHsts(options =>
+                        {
+                            options.Preload = preload;
+                            options.IncludeSubDomains = includeSubDomains;
+                            options.MaxAge = TimeSpan.FromSeconds(maxAge);
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
             client.BaseAddress = new Uri("https://example.com:5050");
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -129,91 +155,253 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData("LOCALHOST")]
         [InlineData("127.0.0.1")]
         [InlineData("[::1]")]
-        public async Task DefaultExcludesCommonLocalhostDomains_DoesNotSetHstsHeader(string host)
+        public async Task DefaultExcludesCommonLocalhostDomains_DoesNotSetHstsHeader(string hostUrl)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<HstsMiddleware>,
+                TestSink.EnableWithTypeName<HstsMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHsts();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
-            client.BaseAddress = new Uri($"https://{host}:5050");
+            client.BaseAddress = new Uri($"https://{hostUrl}:5050");
             var request = new HttpRequestMessage(HttpMethod.Get, "");
 
             var response = await client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Empty(response.Headers);
+
+            var logMessages = sink.Writes.ToList();
+
+            Assert.Single(logMessages);
+            var message = logMessages.Single();
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal($"The host '{hostUrl}' is excluded. Skipping HSTS header.", message.State.ToString(), ignoreCase: true);
         }
 
         [Theory]
         [InlineData("localhost")]
         [InlineData("127.0.0.1")]
         [InlineData("[::1]")]
-        public async Task AllowLocalhostDomainsIfListIsReset_SetHstsHeader(string host)
+        public async Task AllowLocalhostDomainsIfListIsReset_SetHstsHeader(string hostUrl)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<HstsMiddleware>,
+                TestSink.EnableWithTypeName<HstsMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddHsts(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.ExcludedHosts.Clear();
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHsts();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+                        services.AddHsts(options =>
+                        {
+                            options.ExcludedHosts.Clear();
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
-            client.BaseAddress = new Uri($"https://{host}:5050");
+            client.BaseAddress = new Uri($"https://{hostUrl}:5050");
             var request = new HttpRequestMessage(HttpMethod.Get, "");
 
             var response = await client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Single(response.Headers);
+
+            var logMessages = sink.Writes.ToList();
+
+            Assert.Single(logMessages);
+            var message = logMessages.Single();
+            Assert.Equal(LogLevel.Trace, message.LogLevel);
+            Assert.Equal("Adding HSTS header to response.", message.State.ToString());
         }
-        
+
         [Theory]
         [InlineData("example.com")]
         [InlineData("Example.com")]
         [InlineData("EXAMPLE.COM")]
-        public async Task AddExcludedDomains_DoesNotAddHstsHeader(string host)
+        public async Task AddExcludedDomains_DoesNotAddHstsHeader(string hostUrl)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<HstsMiddleware>,
+                TestSink.EnableWithTypeName<HstsMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddHsts(options => {
-                        options.ExcludedHosts.Add(host);
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHsts();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+                        services.AddHsts(options =>
+                        {
+                            options.ExcludedHosts.Add(hostUrl);
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
-            client.BaseAddress = new Uri($"https://{host}:5050");
+            client.BaseAddress = new Uri($"https://{hostUrl}:5050");
             var request = new HttpRequestMessage(HttpMethod.Get, "");
 
             var response = await client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Empty(response.Headers);
+
+            var logMessages = sink.Writes.ToList();
+
+            Assert.Single(logMessages);
+            var message = logMessages.Single();
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal($"The host '{hostUrl}' is excluded. Skipping HSTS header.", message.State.ToString(), ignoreCase: true);
+        }
+
+        [Fact]
+        public async Task WhenRequestIsInsecure_DoesNotAddHstsHeader()
+        {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<HstsMiddleware>,
+                TestSink.EnableWithTypeName<HstsMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.BaseAddress = new Uri("http://example.com:5050");
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Empty(response.Headers);
+
+            var logMessages = sink.Writes.ToList();
+
+            Assert.Single(logMessages);
+            var message = logMessages.Single();
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal("The request is insecure. Skipping HSTS header.", message.State.ToString());
+        }
+
+        [Fact]
+        public async Task WhenRequestIsSecure_AddsHstsHeader()
+        {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<HstsMiddleware>,
+                TestSink.EnableWithTypeName<HstsMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHsts();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+            var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.BaseAddress = new Uri("https://example.com:5050");
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(response.Headers, x => x.Key == HeaderNames.StrictTransportSecurity);
+
+            var logMessages = sink.Writes.ToList();
+
+            Assert.Single(logMessages);
+            var message = logMessages.Single();
+            Assert.Equal(LogLevel.Trace, message.LogLevel);
+            Assert.Equal("Adding HSTS header to response.", message.State.ToString());
         }
     }
 }

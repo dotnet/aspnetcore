@@ -1,15 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -180,6 +181,74 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Theory]
+        [InlineData(null, false)]
+        [InlineData(123, true)]
+        public async Task BindModelAsync_WithBindPageProperty_EnforcesBindRequired(int? input, bool isValid)
+        {
+            // Arrange
+            var propertyInfo = typeof(TestPage).GetProperty(nameof(TestPage.BindRequiredProperty));
+            var propertyDescriptor = new PageBoundPropertyDescriptor
+            {
+                BindingInfo = BindingInfo.GetBindingInfo(new[]
+                {
+                    new FromQueryAttribute { Name = propertyInfo.Name },
+                }),
+                Name = propertyInfo.Name,
+                ParameterType = propertyInfo.PropertyType,
+                Property = propertyInfo,
+            };
+
+            var typeInfo = typeof(TestPage).GetTypeInfo();
+            var actionDescriptor = new CompiledPageActionDescriptor
+            {
+                BoundProperties = new[] { propertyDescriptor },
+                HandlerTypeInfo = typeInfo,
+                ModelTypeInfo = typeInfo,
+                PageTypeInfo = typeInfo,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.Method = "POST";
+                if (input.HasValue)
+                {
+                    request.QueryString = new QueryString($"?{propertyDescriptor.Name}={input.Value}");
+                }
+            });
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+            var modelBinderFactory = ModelBindingTestHelper.GetModelBinderFactory(modelMetadataProvider);
+            var modelMetadata = modelMetadataProvider
+                .GetMetadataForProperty(typeof(TestPage), propertyDescriptor.Name);
+
+            var pageBinder = PageBinderFactory.CreatePropertyBinder(
+                parameterBinder,
+                modelMetadataProvider,
+                modelBinderFactory,
+                actionDescriptor);
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = actionDescriptor,
+                HttpContext = testContext.HttpContext,
+                RouteData = testContext.RouteData,
+                ValueProviderFactories = testContext.ValueProviderFactories,
+            };
+
+            var page = new TestPage();
+
+            // Act
+            await pageBinder(pageContext, page);
+
+            // Assert
+            Assert.Equal(isValid, pageContext.ModelState.IsValid);
+            if (isValid)
+            {
+                Assert.Equal(input.Value, page.BindRequiredProperty);
+            }
+        }
+
+        [Theory]
         [InlineData("RequiredAndStringLengthProp", null, false)]
         [InlineData("RequiredAndStringLengthProp", "", false)]
         [InlineData("RequiredAndStringLengthProp", "abc", true)]
@@ -231,12 +300,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
-        class TestController
+        private class TestController
         {
             [BindNever] public string BindNeverProp { get; set; }
             [BindRequired] public int BindRequiredProp { get; set; }
             [Required, StringLength(3)] public string RequiredAndStringLengthProp { get; set; }
             [DisplayName("My Display Name"), StringLength(3)] public string DisplayNameStringLengthProp { get; set; }
+        }
+
+        private class TestPage : PageModel
+        {
+            [BindRequired]
+            public int BindRequiredProperty { get; set; }
         }
     }
 }

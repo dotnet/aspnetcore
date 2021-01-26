@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

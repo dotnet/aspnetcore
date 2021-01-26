@@ -7,46 +7,46 @@
 
   <ItemGroup>
     <Platforms Include="x64;x86" />
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
   </ItemGroup>
 
-  <Target Name="FetchDependencies" BeforeTargets="Restore">
+  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <PropertyGroup>
       <DotNetAssetRootUrl Condition=" '$(DotNetAssetRootUrl)' == '' ">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
       <DotNetAssetRootUrl Condition=" ! $(DotNetAssetRootUrl.EndsWith('/'))">$(DotNetAssetRootUrl)/</DotNetAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" '$(DotNetPrivateAssetRootUrl)' == '' ">https://dotnetclimsrc.azureedge.net/dotnet/</DotNetPrivateAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" ! $(DotNetPrivateAssetRootUrl.EndsWith('/'))">$(DotNetPrivateAssetRootUrl)/</DotNetPrivateAssetRootUrl>
     </PropertyGroup>
 
+    <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe</TargetFileName>
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe</TargetFileName>
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 
     <MakeDir Directories="$(DepsPath)" />
 
-    <Exec Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
-          Command="powershell.exe -noprofile -NoLogo -ExecutionPolicy unrestricted -Command &quot;iwr -usebasicparsing -uri %(RemoteAsset.Identity) -outfile $(DepsPath)/%(RemoteAsset.TargetFileName)&quot;" />
-
-    <!-- Requires MSBuild 15.8 -->
-    <!-- <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
-                  SourceUrl="%(RemoteAsset.Identity)" DestinationFolder="$(DepsPath)" DestinationFileName="%(RemoteAsset.TargetFileName)" /> -->
+    <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
+                  Uri="$(DotNetAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUri="$(DotNetPrivateAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
+                  DestinationPath="$(DepsPath)%(RemoteAsset.TargetFileName)" />
   </Target>
 
-  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GetMsiProperty" />
-
-  <Target Name="ExtractPropertiesFromDotNetMsi" BeforeTargets="BeforeBuild">
+  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
     <CreateProperty Value="%(RuntimeInstallers.Filename)%(Extension)">
@@ -58,7 +58,7 @@
     <Exec Command="$(DarkToolPath) -x $(DotNetDarkOutputPath)\%(RuntimeInstallers.Version)\%(TargetPlatform) %(Identity)" />
 
     <ItemGroup>
-      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppPackageVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
+      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppRuntimeVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
         <ProductVersionProperty>DotNetRedistLtsInstallerProductVersion%(Platforms.Identity)</ProductVersionProperty>
         <ProductCodeProperty>DotNetRedistLtsInstallerProductCode%(Platforms.Identity)</ProductCodeProperty>
         <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCode%(Platforms.Identity)</UpgradeCodeProperty>

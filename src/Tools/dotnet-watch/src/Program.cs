@@ -1,12 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -15,17 +17,17 @@ namespace Microsoft.DotNet.Watcher
     public class Program : IDisposable
     {
         private readonly IConsole _console;
-        private readonly string _workingDir;
+        private readonly string _workingDirectory;
         private readonly CancellationTokenSource _cts;
         private IReporter _reporter;
 
-        public Program(IConsole console, string workingDir)
+        public Program(IConsole console, string workingDirectory)
         {
             Ensure.NotNull(console, nameof(console));
-            Ensure.NotNullOrEmpty(workingDir, nameof(workingDir));
+            Ensure.NotNullOrEmpty(workingDirectory, nameof(workingDirectory));
 
             _console = console;
-            _workingDir = workingDir;
+            _workingDirectory = workingDirectory;
             _cts = new CancellationTokenSource();
             _console.CancelKeyPress += OnCancelKeyPress;
             _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
@@ -38,6 +40,11 @@ namespace Microsoft.DotNet.Watcher
                 DebugHelper.HandleDebugSwitch(ref args);
                 using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
                 {
+                    //if no command argument provided, we fall back to dotnet watch run
+                    if (args.Length == 0)
+                    {
+                        args = new[] { "run" };
+                    }
                     return await program.RunAsync(args);
                 }
             }
@@ -134,7 +141,7 @@ namespace Microsoft.DotNet.Watcher
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, project);
             }
             catch (FileNotFoundException ex)
             {
@@ -142,7 +149,10 @@ namespace Microsoft.DotNet.Watcher
                 return 1;
             }
 
+            var watchOptions = DotNetWatchOptions.Default;
+
             var fileSetFactory = new MsBuildFileSetFactory(reporter,
+                watchOptions,
                 projectFile,
                 waitOnError: true,
                 trace: false);
@@ -162,8 +172,8 @@ namespace Microsoft.DotNet.Watcher
                 _reporter.Output("Polling file watcher is enabled");
             }
 
-            await new DotNetWatcher(reporter)
-                .WatchAsync(processInfo, fileSetFactory, cancellationToken);
+            await using var watcher = new DotNetWatcher(reporter, fileSetFactory, watchOptions);
+            await watcher.WatchAsync(processInfo, cancellationToken);
 
             return 0;
         }
@@ -177,7 +187,7 @@ namespace Microsoft.DotNet.Watcher
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, project);
             }
             catch (FileNotFoundException ex)
             {
@@ -186,6 +196,7 @@ namespace Microsoft.DotNet.Watcher
             }
 
             var fileSetFactory = new MsBuildFileSetFactory(reporter,
+                DotNetWatchOptions.Default,
                 projectFile,
                 waitOnError: false,
                 trace: false);
@@ -196,16 +207,31 @@ namespace Microsoft.DotNet.Watcher
                 return 1;
             }
 
-            foreach (var file in files)
+            foreach (var group in files.GroupBy(g => g.FileKind).OrderBy(g => g.Key))
             {
-                _console.Out.WriteLine(file);
+                if (group.Key == FileKind.StaticFile)
+                {
+                    _console.Out.WriteLine("::: Watch Action: Refresh browser :::");
+                }
+
+                foreach (var file in group)
+                {
+                    if (file.FileKind == FileKind.StaticFile)
+                    {
+                        _console.Out.WriteLine($"{file.FilePath} ~/{file.StaticWebAssetPath}");
+                    }
+                    else
+                    {
+                        _console.Out.WriteLine(file.FilePath);
+                    }
+                }
             }
 
             return 0;
         }
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
-            => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
+            => new PrefixConsoleReporter("watch : ", console, verbose || CliContext.IsGlobalVerbose(), quiet);
 
         public void Dispose()
         {

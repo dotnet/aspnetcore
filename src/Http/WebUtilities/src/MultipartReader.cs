@@ -12,9 +12,19 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.WebUtilities
 {
     // https://www.ietf.org/rfc/rfc2046.txt
+    /// <summary>
+    /// Reads multipart form content from the specified <see cref="Stream"/>.
+    /// </summary>
     public class MultipartReader
     {
+        /// <summary>
+        /// Gets the default value for <see cref="HeadersCountLimit"/>.
+        /// </summary>
         public const int DefaultHeadersCountLimit = 16;
+
+        /// <summary>
+        /// Gets the default value for <see cref="HeadersLengthLimit"/>.
+        /// </summary>
         public const int DefaultHeadersLengthLimit = 1024 * 16;
         private const int DefaultBufferSize = 1024 * 4;
 
@@ -22,11 +32,22 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private MultipartReaderStream _currentStream;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="MultipartReader"/>.
+        /// </summary>
+        /// <param name="boundary">The multipart boundary.</param>
+        /// <param name="stream">The <see cref="Stream"/> containing multipart data.</param>
         public MultipartReader(string boundary, Stream stream)
             : this(boundary, stream, DefaultBufferSize)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="MultipartReader"/>.
+        /// </summary>
+        /// <param name="boundary">The multipart boundary.</param>
+        /// <param name="stream">The <see cref="Stream"/> containing multipart data.</param>
+        /// <param name="bufferSize">The minimum buffer size to use.</param>
         public MultipartReader(string boundary, Stream stream, int bufferSize)
         {
             if (boundary == null)
@@ -65,7 +86,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
-        public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Reads the next <see cref="MultipartSection"/>.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.
+        /// The default value is <see cref="CancellationToken.None"/>.</param>
+        /// <returns></returns>
+        public async Task<MultipartSection?> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             // Drain the prior section.
             await _currentStream.DrainAsync(cancellationToken);

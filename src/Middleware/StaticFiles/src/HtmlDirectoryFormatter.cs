@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,7 +10,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.StaticFiles
@@ -21,8 +21,12 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         private const string TextHtmlUtf8 = "text/html; charset=utf-8";
 
-        private HtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
 
+        /// <summary>
+        /// Constructs the <see cref="HtmlDirectoryFormatter"/>.
+        /// </summary>
+        /// <param name="encoder">The character encoding representation to use.</param>
         public HtmlDirectoryFormatter(HtmlEncoder encoder)
         {
             if (encoder == null)
@@ -30,7 +34,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 throw new ArgumentNullException(nameof(encoder));
             }
             _htmlEncoder = encoder;
-        } 
+        }
 
         /// <summary>
         /// Generates an HTML view for a directory.
@@ -59,12 +63,15 @@ namespace Microsoft.AspNetCore.StaticFiles
             var builder = new StringBuilder();
 
             builder.AppendFormat(
+                CultureInfo.InvariantCulture,
 @"<!DOCTYPE html>
 <html lang=""{0}"">", CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
 
-            builder.AppendFormat(@"
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+@"
 <head>
-  <title>{0} {1}</title>", HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value));
+  <title>{0} {1}</title>", HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value!));
 
             builder.Append(@"
   <style>
@@ -78,8 +85,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         margin-top: 5px;
         margin-bottom: 0px;}
     #index {
-        border-collapse: separate; 
-        border-spacing: 0; 
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 0 0 20px; }
     #index th {
         vertical-align: bottom;
@@ -103,18 +110,23 @@ namespace Microsoft.AspNetCore.StaticFiles
 </head>
 <body>
   <section id=""main"">");
-            builder.AppendFormat(@"
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                @"
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
             string cumulativePath = "/";
-            foreach (var segment in requestPath.Value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var segment in requestPath.Value!.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 cumulativePath = cumulativePath + segment + "/";
-                builder.AppendFormat(@"<a href=""{0}"">{1}/</a>",
+                builder.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    @"<a href=""{0}"">{1}/</a>",
                     HtmlEncode(cumulativePath), HtmlEncode(segment));
             }
 
-            builder.AppendFormat(CultureInfo.CurrentUICulture,
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
   @"</h1></header>
     <table id=""index"" summary=""{0}"">
     <thead>
@@ -129,27 +141,70 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             foreach (var subdir in contents.Where(info => info.IsDirectory))
             {
-                builder.AppendFormat(@"
+                // Collect directory metadata in a try...catch in case the file is deleted while we're getting the data.
+                // The metadata is retrieved prior to calling AppendFormat so if it throws, we won't have written a row
+                // to the table.
+                try
+                {
+                    builder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        @"
       <tr class=""directory"">
         <td class=""name""><a href=""./{0}/"">{0}/</a></td>
         <td></td>
         <td class=""modified"">{1}</td>
       </tr>",
-                    HtmlEncode(subdir.Name),
-                    HtmlEncode(subdir.LastModified.ToString(CultureInfo.CurrentCulture)));
+                        HtmlEncode(subdir.Name),
+                        HtmlEncode(subdir.LastModified.ToString(CultureInfo.CurrentCulture)));
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // The physical DirectoryInfo class doesn't appear to throw for either
+                    // of Name or LastWriteTimeUtc (which backs LastModified in the physical provider)
+                    // if the directory doesn't exist. However, we don't know what other providers might do.
+
+                    // Just skip this directory. It was deleted while we were enumerating.
+                }
+                catch (FileNotFoundException)
+                {
+                    // The physical DirectoryInfo class doesn't appear to throw for either
+                    // of Name or LastWriteTimeUtc (which backs LastModified in the physical provider)
+                    // if the directory doesn't exist. However, we don't know what other providers might do.
+
+                    // Just skip this directory. It was deleted while we were enumerating.
+                }
             }
 
             foreach (var file in contents.Where(info => !info.IsDirectory))
             {
-                builder.AppendFormat(@"
+                // Collect file metadata in a try...catch in case the file is deleted while we're getting the data.
+                // The metadata is retrieved prior to calling AppendFormat so if it throws, we won't have written a row
+                // to the table.
+                try
+                {
+                    builder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        @"
       <tr class=""file"">
         <td class=""name""><a href=""./{0}"">{0}</a></td>
         <td class=""length"">{1}</td>
         <td class=""modified"">{2}</td>
       </tr>",
-                    HtmlEncode(file.Name),
-                    HtmlEncode(file.Length.ToString("n0", CultureInfo.CurrentCulture)),
-                    HtmlEncode(file.LastModified.ToString(CultureInfo.CurrentCulture)));
+                        HtmlEncode(file.Name),
+                        HtmlEncode(file.Length.ToString("n0", CultureInfo.CurrentCulture)),
+                        HtmlEncode(file.LastModified.ToString(CultureInfo.CurrentCulture)));
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // There doesn't appear to be a case where DirectoryNotFound is thrown in the physical provider,
+                    // but we don't know what other providers might do.
+
+                    // Just skip this file. It was deleted while we were enumerating.
+                }
+                catch (FileNotFoundException)
+                {
+                    // Just skip this file. It was deleted while we were enumerating.
+                }
             }
 
             builder.Append(@"

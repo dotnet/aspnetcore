@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
         /// </summary>
         /// <remarks>
-        /// By default, this property is intiailized when <see cref="Controllers.IControllerActivator"/> activates
+        /// By default, this property is initialized when <see cref="Controllers.IControllerActivator"/> activates
         /// controllers.
         /// <para>
         /// This property can be accessed after the controller has been activated, for example, in a controller action
@@ -300,20 +299,21 @@ namespace Microsoft.AspNetCore.Mvc
         /// to JSON.
         /// </summary>
         /// <param name="data">The object to serialize.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
-        /// the formatter.</param>
+        /// <param name="serializerSettings">The serializer settings to be used by the formatter.
+        /// <para>
+        /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />.
+        /// </para>
+        /// <para>
+        /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
+        /// </para>
+        /// </param>
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// as JSON format for the response.</returns>
-        /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
+        /// <remarks>Callers should cache an instance of serializer settings to avoid
         /// recreating cached data with each call.</remarks>
         [NonAction]
-        public virtual JsonResult Json(object data, JsonSerializerSettings serializerSettings)
+        public virtual JsonResult Json(object data, object serializerSettings)
         {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
             return new JsonResult(data, serializerSettings);
         }
 
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// of <see cref="OnActionExecutionAsync" /> to continue execution of the action.</param>
         /// <returns>A <see cref="Task"/> instance.</returns>
         [NonAction]
-        public virtual async Task OnActionExecutionAsync(
+        public virtual Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)
         {
@@ -360,7 +360,20 @@ namespace Microsoft.AspNetCore.Mvc
             OnActionExecuting(context);
             if (context.Result == null)
             {
-                OnActionExecuted(await next());
+                var task = next();
+                if (!task.IsCompletedSuccessfully)
+                {
+                    return Awaited(this, task);
+                }
+
+                OnActionExecuted(task.Result);
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(Controller controller, Task<ActionExecutedContext> task)
+            {
+                controller.OnActionExecuted(await task);
             }
         }
 

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,22 +30,6 @@ namespace SelfHostServer
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello world from " + context.Request.Host + " at " + DateTime.Now);
             });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory => factory.AddConsole())
-                .UseStartup<Startup>()
-                .UseHttpSys(options =>
-                {
-                    options.UrlPrefixes.Add("http://localhost:5000");
-                    options.Authentication.Schemes = AuthenticationSchemes.None;
-                    options.Authentication.AllowAnonymous = true;
-                })
-                .Build();
-
-            host.Run();
         }
     }
 }

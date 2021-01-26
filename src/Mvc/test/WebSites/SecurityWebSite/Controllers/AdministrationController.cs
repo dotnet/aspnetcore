@@ -20,8 +20,7 @@ namespace SecurityWebSite.Controllers
             return Content("Administration.Index");
         }
 
-        // Either cookie should allow access to this action (if AllowCombiningAuthorizeFilters is true)
-        // If AllowCombiningAuthorizeFilters is false, the main cookie is required.
+        // Either cookie should allow access to this action.
         [Authorize(AuthenticationSchemes = "Cookie2")]
         public IActionResult EitherCookie()
         {

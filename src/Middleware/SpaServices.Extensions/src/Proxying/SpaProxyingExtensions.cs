@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices;
 using Microsoft.AspNetCore.SpaServices.Extensions.Proxy;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,8 +87,8 @@ namespace Microsoft.AspNetCore.Builder
         {
             var applicationLifetime = appBuilder
                 .ApplicationServices
-                .GetService(typeof(IApplicationLifetime));
-            return ((IApplicationLifetime)applicationLifetime).ApplicationStopping;
+                .GetRequiredService<IHostApplicationLifetime>();
+            return applicationLifetime.ApplicationStopping;
         }
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IRazorPageActivator _razorPageActivator;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
         private readonly HtmlEncoder _htmlEncoder;
 
         /// <summary>
@@ -30,21 +30,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <param name="compositeViewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="razorViewEngine">The <see cref="IRazorViewEngine"/>.</param>
         /// <param name="razorPageActivator">The <see cref="IRazorPageActivator"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         public PageResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine compositeViewEngine,
             IRazorViewEngine razorViewEngine,
             IRazorPageActivator razorPageActivator,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             HtmlEncoder htmlEncoder)
-            : base(writerFactory, compositeViewEngine, diagnosticSource)
+            : base(writerFactory, compositeViewEngine, diagnosticListener)
         {
             _razorViewEngine = razorViewEngine;
             _htmlEncoder = htmlEncoder;
             _razorPageActivator = razorPageActivator;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
         }
 
         /// <summary>
@@ -76,13 +76,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var viewContext = result.Page.ViewContext;
+            var pageAdapter = new RazorPageAdapter(result.Page, pageContext.ActionDescriptor.DeclaredModelTypeInfo);
+
             viewContext.View = new RazorView(
                 _razorViewEngine,
                 _razorPageActivator,
                 viewStarts,
-                new RazorPageAdapter(result.Page),
+                pageAdapter,
                 _htmlEncoder,
-                _diagnosticSource);
+                _diagnosticListener)
+            {
+                OnAfterPageActivated = (page, currentViewContext) =>
+                {
+                    if (page != pageAdapter)
+                    {
+                        return;
+                    }
+
+                    // ViewContext is always activated with the "right" ViewData<T> type.
+                    // Copy that over to the PageContext since PageContext.ViewData is exposed
+                    // as the ViewData property on the Page that the user works with.
+                    pageContext.ViewData = currentViewContext.ViewData;
+                },
+            };
 
             return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
         }

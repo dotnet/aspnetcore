@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         private readonly BCryptAlgorithmHandle _symmetricAlgorithmHandle;
         private readonly uint _symmetricAlgorithmSubkeyLengthInBytes;
 
-        public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom genRandom = null)
+        public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom? genRandom = null)
         {
             // Is the key size appropriate?
             AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(symmetricAlgorithmKeySizeInBytes * 8));

@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.PatternSegments;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
         private static MatchResults CreateTestMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
     }
 }

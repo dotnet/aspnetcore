@@ -3,10 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Options to configure authentication.
+    /// </summary>
     public class AuthenticationOptions
     {
         private readonly IList<AuthenticationSchemeBuilder> _schemes = new List<AuthenticationSchemeBuilder>();
@@ -53,7 +58,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <typeparam name="THandler">The <see cref="IAuthenticationHandler"/> responsible for the scheme.</typeparam>
         /// <param name="name">The name of the scheme being added.</param>
         /// <param name="displayName">The display name for the scheme.</param>
-        public void AddScheme<THandler>(string name, string displayName) where THandler : IAuthenticationHandler
+        public void AddScheme<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]THandler>(string name, string? displayName) where THandler : IAuthenticationHandler
             => AddScheme(name, b =>
             {
                 b.DisplayName = displayName;
@@ -63,31 +68,37 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Used as the fallback default scheme for all the other defaults.
         /// </summary>
-        public string DefaultScheme { get; set; }
+        public string? DefaultScheme { get; set; }
 
         /// <summary>
         /// Used as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
         /// </summary>
-        public string DefaultAuthenticateScheme { get; set; }
+        public string? DefaultAuthenticateScheme { get; set; }
 
         /// <summary>
         /// Used as the default scheme by <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// </summary>
-        public string DefaultSignInScheme { get; set; }
+        public string? DefaultSignInScheme { get; set; }
 
         /// <summary>
         /// Used as the default scheme by <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
-        public string DefaultSignOutScheme { get; set; }
+        public string? DefaultSignOutScheme { get; set; }
 
         /// <summary>
         /// Used as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
-        public string DefaultChallengeScheme { get; set; }
+        public string? DefaultChallengeScheme { get; set; }
 
         /// <summary>
         /// Used as the default scheme by <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
-        public string DefaultForbidScheme { get; set; }
+        public string? DefaultForbidScheme { get; set; }
+
+        /// <summary>
+        /// If true, SignIn should throw if attempted with a user is not authenticated.
+        /// A user is considered authenticated if <see cref="ClaimsIdentity.IsAuthenticated"/> returns <see langword="true" /> for the <see cref="ClaimsPrincipal"/> associated with the HTTP request.
+        /// </summary>
+        public bool RequireAuthenticatedSignIn { get; set; } = true;
     }
 }

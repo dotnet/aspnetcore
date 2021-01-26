@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void ViewLocalizer_LooksForCorrectResourceBaseNameLocation(string appName, string viewPath, string executingPath, string expectedBaseName)
         {
             // Arrange
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns(appName);
             var htmlLocalizerFactory = new Mock<IHtmlLocalizerFactory>(MockBehavior.Loose);
             var view = new Mock<IView>();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void ViewLocalizer_UseIndexer_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
 
             var localizedString = new LocalizedHtmlString("Hello", "Bonjour");
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void ViewLocalizer_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
 
             var localizedString = new LocalizedHtmlString("Hello", "Bonjour test");
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -266,9 +266,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void ViewLocalizer_WithCulture_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var stringLocalizer = new TestStringLocalizer();
+            var stringLocalizer = new TestStringLocalizer(new CultureInfo("fr"));
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), hostingEnvironment.Object);
 
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             viewLocalizer.Contextualize(viewContext);
 
             // Act
-            var actualLocalizedString = viewLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+            var actualLocalizedString = htmlLocalizer["John"];
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedString.Value);
@@ -325,6 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                 return _stringLocalizer.GetAllStrings(includeParentCultures);
             }
 
+            [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
             public IHtmlLocalizer WithCulture(CultureInfo culture)
             {
                 return new TestHtmlLocalizer(new TestStringLocalizer(culture));

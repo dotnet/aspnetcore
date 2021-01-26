@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -16,6 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             "GET /plaintext HTTP/1.1\r\n" +
             "Host: localhost\r\n" +
             "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n" +
+            "Connection: keep-alive\r\n" +
+            "\r\n";
+
+        private const string _jsonTechEmpowerRequest =
+            "GET /json HTTP/1.1\r\n" +
+            "Host: localhost\r\n" +
+            "Accept: Accept:application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n" +
             "Connection: keep-alive\r\n" +
             "\r\n";
 
@@ -58,6 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static readonly byte[] PlaintextTechEmpowerPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(_plaintextTechEmpowerRequest, Pipelining)));
         public static readonly byte[] PlaintextTechEmpowerRequest = Encoding.ASCII.GetBytes(_plaintextTechEmpowerRequest);
+
+        public static readonly byte[] JsonTechEmpowerRequest = Encoding.ASCII.GetBytes(_jsonTechEmpowerRequest);
 
         public static readonly byte[] PlaintextAbsoluteUriRequest = Encoding.ASCII.GetBytes(_plaintextAbsoluteUriRequest);
 

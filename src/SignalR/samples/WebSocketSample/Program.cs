@@ -11,15 +11,24 @@ namespace WebSocketSample
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            RunWebSockets().GetAwaiter().GetResult();
+            if (args.Length < 1)
+            {
+                Console.Error.WriteLine("Usage: WebSocketSample <URL>");
+                Console.Error.WriteLine("");
+                Console.Error.WriteLine("To connect to an ASP.NET Connection Handler, use 'ws://example.com/path/to/hub' or 'wss://example.com/path/to/hub' (for HTTPS)");
+                return 1;
+            }
+
+            await RunWebSockets(args[0]);
+            return 0;
         }
 
-        private static async Task RunWebSockets()
+        private static async Task RunWebSockets(string url)
         {
             var ws = new ClientWebSocket();
-            await ws.ConnectAsync(new Uri("ws://localhost:5000/chat/ws"), CancellationToken.None);
+            await ws.ConnectAsync(new Uri(url), CancellationToken.None);
 
             Console.WriteLine("Connected");
 

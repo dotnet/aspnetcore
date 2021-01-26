@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- No need to track public APIs of this tool. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" PrivateAssets="None" />
-    <PackageReference Include="$(HostingStartupPackageName)" Version="$(HostingStartupPackageVersion)" PrivateAssets="None" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="$(HostingStartupPackageName)" Version="$(HostingStartupVersion)" PrivateAssets="None" />
   </ItemGroup>
 
 </Project>

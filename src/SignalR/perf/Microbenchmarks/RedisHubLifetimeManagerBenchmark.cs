@@ -10,7 +10,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.SignalR.Redis;
+using Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(2, 20)]
         public int ProtocolCount { get; set; }
 
-        [GlobalSetup]
+        // Re-enable micro-benchmark when https://github.com/aspnet/SignalR/issues/3088 is fixed
+        // [GlobalSetup]
         public void GlobalSetup()
         {
             var server = new TestRedisServer();
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _users.Add("EvenUser");
             _users.Add("OddUser");
 
-            _args = new object[] {"Foo"};
+            _args = new object[] { "Foo" };
         }
 
         private IEnumerable<IHubProtocol> GenerateProtocols(int protocolCount)
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             for (var i = 0; i < protocolCount; i++)
             {
                 yield return ((i % 2) == 0)
-                    ? new WrappedHubProtocol($"json_{i}", new JsonHubProtocol())
+                    ? new WrappedHubProtocol($"json_{i}", new NewtonsoftJsonHubProtocol())
                     : new WrappedHubProtocol($"messagepack_{i}", new MessagePackHubProtocol());
             }
         }
@@ -111,55 +112,55 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendAll()
         {
             await _manager1.SendAllAsync("Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendGroup()
         {
             await _manager1.SendGroupAsync("Everyone", "Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendUser()
         {
             await _manager1.SendUserAsync("EvenUser", "Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendConnection()
         {
             await _manager1.SendConnectionAsync(_clients[0].Connection.ConnectionId, "Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendConnections()
         {
             await _manager1.SendConnectionsAsync(_sendIds, "Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendAllExcept()
         {
             await _manager1.SendAllExceptAsync("Test", _args, _excludedConnectionIds);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendGroupExcept()
         {
             await _manager1.SendGroupExceptAsync("Everyone", "Test", _args, _excludedConnectionIds);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendGroups()
         {
             await _manager1.SendGroupsAsync(_groups, "Test", _args);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task SendUsers()
         {
             await _manager1.SendUsersAsync(_users, "Test", _args);

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds a route to the <see cref="IRouteBuilder"/> with the given MVC area with the specified
-        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>,
         /// <paramref name="defaults"/>, and <paramref name="constraints"/>.
         /// </summary>
         /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds a route to the <see cref="IRouteBuilder"/> with the given MVC area with the specified
-        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
         /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>

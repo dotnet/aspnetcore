@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests

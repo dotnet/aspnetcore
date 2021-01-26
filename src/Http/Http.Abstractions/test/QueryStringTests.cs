@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("", "value", "?=value")]
         [InlineData("", "", "?=")]
         [InlineData("", null, "?=")]
-        public void CreateNameValue_Success(string name, string value, string exepcted)
+        public void CreateNameValue_Success(string name, string value, string expected)
         {
             var query = QueryString.Create(name, value);
-            Assert.Equal(exepcted, query.Value);
+            Assert.Equal(expected, query.Value);
         }
 
         [Fact]
@@ -70,11 +70,11 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         {
             var query = QueryString.Create(new[]
             {
-                new KeyValuePair<string, string>("key1", "value1"),
-                new KeyValuePair<string, string>("key2", "value2"),
-                new KeyValuePair<string, string>("key3", "value3"),
-                new KeyValuePair<string, string>("key4", null),
-                new KeyValuePair<string, string>("key5", "")
+                new KeyValuePair<string, string?>("key1", "value1"),
+                new KeyValuePair<string, string?>("key2", "value2"),
+                new KeyValuePair<string, string?>("key3", "value3"),
+                new KeyValuePair<string, string?>("key4", null),
+                new KeyValuePair<string, string?>("key5", "")
             });
             Assert.Equal("?key1=value1&key2=value2&key3=value3&key4=&key5=", query.Value);
         }

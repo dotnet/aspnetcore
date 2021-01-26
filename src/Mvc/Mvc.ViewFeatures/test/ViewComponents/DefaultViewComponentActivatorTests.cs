@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Moq;
 using Xunit;
@@ -63,6 +63,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             Assert.Null(instance.C);
         }
 
+        [Fact]
+        public async Task DefaultViewComponentActivator_ReleaseAsync_PrefersAsyncDisposableOverDisposable()
+        {
+            // Arrange
+            var instance = new SyncAndAsyncDisposableViewComponent();
+
+            var activator = new DefaultViewComponentActivator(Mock.Of<ITypeActivatorCache>());
+
+            var context = CreateContext(typeof(SyncAndAsyncDisposableViewComponent));
+
+            // Act
+            await activator.ReleaseAsync(context, instance);
+
+            // Assert
+            Assert.True(instance.AsyncDisposed);
+            Assert.False(instance.SyncDisposed);
+        }
+
         private static ViewComponentContext CreateContext(Type componentType)
         {
             return new ViewComponentContext
@@ -93,6 +111,66 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         {
             [ViewComponentContext]
             protected internal ViewComponentContext C { get; set; }
+        }
+
+
+        public class ActivablePropertiesViewComponent : IDisposable
+        {
+            [ViewComponentContext]
+            public ViewComponentContext Context { get; set; }
+
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
+            public string Invoke()
+            {
+                return "something";
+            }
+        }
+
+        public class AsyncDisposableViewComponent : IAsyncDisposable
+        {
+            [ViewComponentContext]
+            public ViewComponentContext Context { get; set; }
+
+            public bool Disposed { get; private set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return default;
+            }
+
+            public string Invoke()
+            {
+                return "something";
+            }
+        }
+
+        public class SyncAndAsyncDisposableViewComponent : IDisposable, IAsyncDisposable
+        {
+            [ViewComponentContext]
+            public ViewComponentContext Context { get; set; }
+
+            public bool AsyncDisposed { get; private set; }
+            public bool SyncDisposed { get; private set; }
+
+            public void Dispose() => SyncDisposed = true;
+
+            public ValueTask DisposeAsync()
+            {
+                AsyncDisposed = true;
+                return default;
+            }
+
+            public string Invoke()
+            {
+                return "something";
+            }
         }
     }
 }

@@ -7,8 +7,16 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Contains methods for parsing processing constraints from a route definition.
+    /// </summary>
     public static class InlineRouteParameterParser
     {
+        /// <summary>
+        /// Parses a string representing the provided <paramref name="routeParameter"/> into a <see cref="TemplatePart"/>.
+        /// </summary>
+        /// <param name="routeParameter">A string representation of the route parameter.</param>
+        /// <returns>A <see cref="TemplatePart"/> instance.</returns>
         public static TemplatePart ParseRouteParameter(string routeParameter)
         {
             if (routeParameter == null)
@@ -75,7 +83,7 @@ namespace Microsoft.AspNetCore.Routing
             var parseResults = ParseConstraints(routeParameter, currentIndex, endIndex);
             currentIndex = parseResults.CurrentIndex;
 
-            string defaultValue = null;
+            string? defaultValue = null;
             if (currentIndex <= endIndex &&
                 routeParameter[currentIndex] == '=')
             {
@@ -218,11 +226,7 @@ namespace Microsoft.AspNetCore.Routing
 
             } while (state != ParseState.End);
 
-            return new ConstraintParseResults
-            {
-                CurrentIndex = currentIndex,
-                Constraints = inlineConstraints
-            };
+            return new ConstraintParseResults(currentIndex, inlineConstraints);
         }
 
         private enum ParseState
@@ -233,11 +237,17 @@ namespace Microsoft.AspNetCore.Routing
             End
         }
 
-        private struct ConstraintParseResults
+        private readonly struct ConstraintParseResults
         {
-            public int CurrentIndex;
+            public readonly int CurrentIndex;
 
-            public IEnumerable<InlineConstraint> Constraints;
+            public readonly IEnumerable<InlineConstraint> Constraints;
+
+            public ConstraintParseResults(int currentIndex, IEnumerable<InlineConstraint> constraints)
+            {
+                CurrentIndex = currentIndex;
+                Constraints = constraints;
+            }
         }
     }
 }

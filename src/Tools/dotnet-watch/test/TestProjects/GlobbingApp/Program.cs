@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,8 +14,9 @@ namespace ConsoleApplication
         public static void Main(string[] args)
         {
             Console.WriteLine("Started");
-            Console.WriteLine("PID = " + Process.GetCurrentProcess().Id);
-            Console.WriteLine("Defined types = " + typeof(Program).GetTypeInfo().Assembly.DefinedTypes.Count());
+            // Process ID is insufficient because PID's may be reused.
+            Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
+            Console.WriteLine("Defined types = " + typeof(Program).Assembly.DefinedTypes.Count());
             Thread.Sleep(Timeout.Infinite);
         }
     }

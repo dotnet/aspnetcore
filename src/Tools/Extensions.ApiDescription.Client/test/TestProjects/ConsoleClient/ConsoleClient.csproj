@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.props"
+      Condition="Exists('../../build/Microsoft.Extensions.ApiDescription.Client.props')" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <OpenApiReference Include="../files/azureMonitor.json" />
+    <OpenApiReference Include="../files/NSwag.json" />
+    <OpenApiReference Include="../files/swashbuckle.json" />
+  </ItemGroup>
+
+  <!-- Position tasks assembly where Microsoft.Extensions.ApiDescription.Client.props expects it. -->
+  <Target Name="CopyTargets" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <_Files Include="../../Microsoft.Extensions.ApiDescription.Client.*"
+          Exclude="../../Microsoft.Extensions.ApiDescription.Client.Tests.*" />
+    </ItemGroup>
+
+    <Copy
+        SourceFiles="@(_Files)"
+        DestinationFolder="../../tasks/netstandard2.0/"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)" />
+  </Target>
+
+  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.targets"
+      Condition="Exists('../../build/Microsoft.Extensions.ApiDescription.Client.targets')" />
+  <Import Project="../build/Fakes.targets" Condition="EXISTS('../build/Fakes.targets')" />
+</Project>

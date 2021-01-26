@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,11 +18,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
+    /// <summary>
+    /// An <see cref="AuthenticationHandler{TOptions}"/> that can perform JWT-bearer based authentication.
+    /// </summary>
     public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
-        private OpenIdConnectConfiguration _configuration;
+        private OpenIdConnectConfiguration? _configuration;
 
-        public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
+        /// <summary>
+        /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
+        public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
@@ -32,10 +39,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// </summary>
         protected new JwtBearerEvents Events
         {
-            get { return (JwtBearerEvents)base.Events; }
-            set { base.Events = value; }
+            get => (JwtBearerEvents)base.Events!;
+            set => base.Events = value;
         }
 
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new JwtBearerEvents());
 
         /// <summary>
@@ -44,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <returns></returns>
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            string token = null;
+            string? token = null;
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
@@ -62,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers["Authorization"];
+                    string authorization = Request.Headers[HeaderNames.Authorization];
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -97,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         ?? _configuration.SigningKeys;
                 }
 
-                List<Exception> validationFailures = null;
+                List<Exception>? validationFailures = null;
                 SecurityToken validatedToken;
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
@@ -150,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
 
                         tokenValidatedContext.Success();
-                        return tokenValidatedContext.Result;
+                        return tokenValidatedContext.Result!;
                     }
                 }
 
@@ -191,6 +199,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             var authResult = await HandleAuthenticateOnceSafeAsync();
@@ -225,7 +234,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 // https://tools.ietf.org/html/rfc6750#section-3.1
                 // WWW-Authenticate: Bearer realm="example", error="invalid_token", error_description="The access token expired"
                 var builder = new StringBuilder(Options.Challenge);
-                if (Options.Challenge.IndexOf(" ", StringComparison.Ordinal) > 0)
+                if (Options.Challenge.IndexOf(' ') > 0)
                 {
                     // Only add a comma after the first param, if any
                     builder.Append(',');
@@ -264,12 +273,19 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        /// <inheritdoc />
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        {
+            var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
+            Response.StatusCode = 403;
+            return Events.Forbidden(forbiddenContext);
+        }
+        
         private static string CreateErrorDescription(Exception authFailure)
         {
-            IEnumerable<Exception> exceptions;
-            if (authFailure is AggregateException)
+            IReadOnlyCollection<Exception> exceptions;
+            if (authFailure is AggregateException agEx)
             {
-                var agEx = authFailure as AggregateException;
                 exceptions = agEx.InnerExceptions;
             }
             else
@@ -277,43 +293,40 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 exceptions = new[] { authFailure };
             }
 
-            var messages = new List<string>();
+            var messages = new List<string>(exceptions.Count);
 
             foreach (var ex in exceptions)
             {
                 // Order sensitive, some of these exceptions derive from others
                 // and we want to display the most specific message possible.
-                if (ex is SecurityTokenInvalidAudienceException)
+                switch (ex)
                 {
-                    messages.Add("The audience is invalid");
-                }
-                else if (ex is SecurityTokenInvalidIssuerException)
-                {
-                    messages.Add("The issuer is invalid");
-                }
-                else if (ex is SecurityTokenNoExpirationException)
-                {
-                    messages.Add("The token has no expiration");
-                }
-                else if (ex is SecurityTokenInvalidLifetimeException)
-                {
-                    messages.Add("The token lifetime is invalid");
-                }
-                else if (ex is SecurityTokenNotYetValidException)
-                {
-                    messages.Add("The token is not valid yet");
-                }
-                else if (ex is SecurityTokenExpiredException)
-                {
-                    messages.Add("The token is expired");
-                }
-                else if (ex is SecurityTokenSignatureKeyNotFoundException)
-                {
-                    messages.Add("The signature key was not found");
-                }
-                else if (ex is SecurityTokenInvalidSignatureException)
-                {
-                    messages.Add("The signature is invalid");
+                    case SecurityTokenInvalidAudienceException stia:
+                        messages.Add($"The audience '{stia.InvalidAudience ?? "(null)"}' is invalid");
+                        break;
+                    case SecurityTokenInvalidIssuerException stii:
+                        messages.Add($"The issuer '{stii.InvalidIssuer ?? "(null)"}' is invalid");
+                        break;
+                    case SecurityTokenNoExpirationException _:
+                        messages.Add("The token has no expiration");
+                        break;
+                    case SecurityTokenInvalidLifetimeException stil:
+                        messages.Add("The token lifetime is invalid; NotBefore: "
+                            + $"'{stil.NotBefore?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'"
+                            + $", Expires: '{stil.Expires?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'");
+                        break;
+                    case SecurityTokenNotYetValidException stnyv:
+                        messages.Add($"The token is not valid before '{stnyv.NotBefore.ToString(CultureInfo.InvariantCulture)}'");
+                        break;
+                    case SecurityTokenExpiredException ste:
+                        messages.Add($"The token expired at '{ste.Expires.ToString(CultureInfo.InvariantCulture)}'");
+                        break;
+                    case SecurityTokenSignatureKeyNotFoundException _:
+                        messages.Add("The signature key was not found");
+                        break;
+                    case SecurityTokenInvalidSignatureException _:
+                        messages.Add("The signature is invalid");
+                        break;
                 }
             }
 

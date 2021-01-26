@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
-    /// Respresents a middleware that runs a sub-request pipeline when a given predicate is matched.
+    /// Represents a middleware that runs a sub-request pipeline when a given predicate is matched.
     /// </summary>
     public class MapWhenMiddleware
     {
@@ -32,6 +32,16 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (options.Predicate == null)
+            {
+                throw new ArgumentException("Predicate not set on options.", nameof(options));
+            }
+
+            if (options.Branch == null)
+            {
+                throw new ArgumentException("Branch not set on options.", nameof(options));
+            }
+
             _next = next;
             _options = options;
         }
@@ -48,9 +58,9 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (_options.Predicate(context))
+            if (_options.Predicate!(context))
             {
-                await _options.Branch(context);
+                await _options.Branch!(context);
             }
             else
             {

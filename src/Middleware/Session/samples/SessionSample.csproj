@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,8 +9,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.Caching.Redis" />
-    <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
+    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 

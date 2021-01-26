@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -40,8 +41,8 @@ namespace Microsoft.Net.Http.Headers
             AssertFormatException("text/plain;charset=utf-8"); // ctor takes only media-type name, no parameters
         }
 
-        public static TheoryData<string, string, string> MediaTypesWithSuffixes =>
-                 new TheoryData<string, string, string>
+        public static TheoryData<string, string, string?> MediaTypesWithSuffixes =>
+                 new TheoryData<string, string, string?>
                  {
                      // See https://tools.ietf.org/html/rfc6838#section-4.2 for allowed names spec
                      { "application/json", "json", null },
@@ -124,7 +125,7 @@ namespace Microsoft.Net.Http.Headers
         public void Parameters_AddNull_Throw()
         {
             var mediaType = new MediaTypeHeaderValue("text/plain");
-            Assert.Throws<ArgumentNullException>(() => mediaType.Parameters.Add(null));
+            Assert.Throws<ArgumentNullException>(() => mediaType.Parameters.Add(null!));
         }
 
         [Fact]
@@ -381,7 +382,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(mediaType1.Equals(mediaType2), "No params vs. charset.");
             Assert.False(mediaType2.Equals(mediaType1), "charset vs. no params.");
             Assert.False(mediaType1.Equals(null), "No params vs. <null>.");
-            Assert.False(mediaType1.Equals(mediaType3), "No params vs. custom param.");
+            Assert.False(mediaType1!.Equals(mediaType3), "No params vs. custom param.");
             Assert.False(mediaType2.Equals(mediaType3), "charset vs. custom param.");
             Assert.True(mediaType1.Equals(mediaType4), "Different casing.");
             Assert.True(mediaType2.Equals(mediaType5), "Different casing in charset.");
@@ -536,8 +537,7 @@ namespace Microsoft.Net.Http.Headers
         [Fact]
         public void TryParseList_NullOrEmptyArray_ReturnsFalse()
         {
-            IList<MediaTypeHeaderValue> results;
-            Assert.False(MediaTypeHeaderValue.TryParseList(null, out results));
+            Assert.False(MediaTypeHeaderValue.TryParseList(null, out var results));
             Assert.False(MediaTypeHeaderValue.TryParseList(new string[0], out results));
             Assert.False(MediaTypeHeaderValue.TryParseList(new string[] { "" }, out results));
         }
@@ -582,8 +582,7 @@ namespace Microsoft.Net.Http.Headers
         public void TryParseList_SetOfValidValueStrings_ReturnsTrue()
         {
             var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -601,8 +600,7 @@ namespace Microsoft.Net.Http.Headers
         public void TryParseStrictList_SetOfValidValueStrings_ReturnsTrue()
         {
             var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseStrictList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -617,7 +615,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -640,7 +638,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        public void ParseStrictList_WithSomeInvalidValues_Throws()
         {
             var inputs = new[]
             {
@@ -651,7 +649,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void TryParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -659,8 +657,7 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "application/xml;q=0 4"
             };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -676,7 +673,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
         {
             var inputs = new[]
             {
@@ -684,8 +681,116 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "application/xml;q=0 4"
             };
-            IList<MediaTypeHeaderValue> results;
-            Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out var results));
+        }
+
+        [Theory]
+        [InlineData("*/*;", "*/*")]
+        [InlineData("text/*", "text/*")]
+        [InlineData("text/*", "text/plain")]
+        [InlineData("*/*;", "text/plain")]
+        [InlineData("text/plain", "text/plain")]
+        [InlineData("text/plain;", "text/plain")]
+        [InlineData("text/plain;", "TEXT/PLAIN")]
+        public void MatchesMediaType_PositiveCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.True(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/html", "text/*")]
+        [InlineData("application/json", "application/html")]
+        [InlineData("text/plain;", "*/*")]
+        public void MatchesMediaType_NegativeCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.False(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/json", "application/entity+json")]
+        [InlineData("application/*+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
+        [InlineData("application/*", "application/*+JSON")]
+        [InlineData("application/*", "application/entity+JSON")]
+        [InlineData("*/*", "application/entity+json")]
+        public void MatchesMediaTypeWithSuffixes_PositiveCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Act
+            var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.True(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/json")]
+        [InlineData("application/entity+json", "application/entity.v2+json")]
+        [InlineData("application/*+json", "application/entity+txt")]
+        [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity", "application/entity+")]
+        [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
+        public void MatchesMediaTypeWithSuffixes_NegativeCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
+
+            // Arrange
+            var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
+
+            // Assert
+            Assert.False(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
+        }
+
+        [Fact]
+        public void MatchesMediaType_IgnoresParameters()
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse("application/json;param=1");
+
+            // Arrange
+            var result = parsedMediaType1.MatchesMediaType("application/json;param2=1");
+
+            // Assert
+            Assert.True(result);
         }
 
         [Theory]
@@ -750,6 +855,8 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/entity+json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
         [InlineData("application/*", "application/*+JSON")]
         [InlineData("application/vnd.github+json", "application/vnd.github+json")]
         [InlineData("application/*", "application/entity+JSON")]
@@ -774,6 +881,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/*+*", "application/json")]
         [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
         public void IsSubSetOfWithSuffixes_NegativeCases(string set, string subset)
         {
             // Arrange
@@ -814,28 +922,26 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(expected, result);
         }
 
-        private void CheckValidParse(string input, MediaTypeHeaderValue expectedResult)
+        private void CheckValidParse(string? input, MediaTypeHeaderValue expectedResult)
         {
             var result = MediaTypeHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => MediaTypeHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, MediaTypeHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, MediaTypeHeaderValue expectedResult)
         {
-            MediaTypeHeaderValue result = null;
-            Assert.True(MediaTypeHeaderValue.TryParse(input, out result));
+            Assert.True(MediaTypeHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            MediaTypeHeaderValue result = null;
-            Assert.False(MediaTypeHeaderValue.TryParse(input, out result));
+            Assert.False(MediaTypeHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

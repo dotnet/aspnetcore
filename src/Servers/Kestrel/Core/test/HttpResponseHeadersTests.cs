@@ -6,12 +6,14 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -21,19 +23,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            using (var memoryPool = KestrelMemoryPool.Create())
+            using (var memoryPool = SlabMemoryPoolFactory.Create())
             {
                 var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
                 var pair = DuplexPipe.CreateConnectionPair(options, options);
-                var http1ConnectionContext = new Http1ConnectionContext
-                {
-                    ServiceContext = new TestServiceContext(),
-                    ConnectionFeatures = new FeatureCollection(),
-                    MemoryPool = memoryPool,
-                    Application = pair.Application,
-                    Transport = pair.Transport,
-                    TimeoutControl = null
-                };
+                var http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                    serviceContext: new TestServiceContext(),
+                    connectionContext: Mock.Of<ConnectionContext>(),
+                    transport: pair.Transport,
+                    memoryPool: memoryPool,
+                    connectionFeatures: new FeatureCollection());
 
                 var http1Connection = new Http1Connection(http1ConnectionContext);
 
@@ -79,6 +78,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("Server", "Dašta")]
         [InlineData("Unknownš-Header", "Data")]
         [InlineData("Seršver", "Data")]
+        [InlineData("Server\"", "Data")]
+        [InlineData("Server(", "Data")]
+        [InlineData("Server)", "Data")]
+        [InlineData("Server,", "Data")]
+        [InlineData("Server/", "Data")]
+        [InlineData("Server:", "Data")]
+        [InlineData("Server;", "Data")]
+        [InlineData("Server<", "Data")]
+        [InlineData("Server=", "Data")]
+        [InlineData("Server>", "Data")]
+        [InlineData("Server?", "Data")]
+        [InlineData("Server@", "Data")]
+        [InlineData("Server[", "Data")]
+        [InlineData("Server\\", "Data")]
+        [InlineData("Server]", "Data")]
+        [InlineData("Server{", "Data")]
+        [InlineData("Server}", "Data")]
+        [InlineData("", "Data")]
+        [InlineData(null, "Data")]
         public void AddingControlOrNonAsciiCharactersToHeadersThrows(string key, string value)
         {
             var responseHeaders = new HttpResponseHeaders();
@@ -118,6 +136,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             headers.SetReadOnly();
 
             Assert.Throws<InvalidOperationException>(() => ((IDictionary<string, StringValues>)headers).Add("my-header", new[] { "value" }));
+        }
+
+        [Fact]
+        public void ThrowsWhenSettingContentLengthPropertyAfterReadOnlyIsSet()
+        {
+            var headers = new HttpResponseHeaders();
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => headers.ContentLength = null);
         }
 
         [Fact]

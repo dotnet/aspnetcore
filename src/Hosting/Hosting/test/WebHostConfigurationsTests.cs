@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests
@@ -18,18 +18,18 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 { WebHostDefaults.WebRootKey, "wwwroot"},
                 { WebHostDefaults.ApplicationKey, "MyProjectReference"},
                 { WebHostDefaults.StartupAssemblyKey, "MyProjectReference" },
-                { WebHostDefaults.EnvironmentKey, EnvironmentName.Development},
+                { WebHostDefaults.EnvironmentKey, Environments.Development},
                 { WebHostDefaults.DetailedErrorsKey, "true"},
                 { WebHostDefaults.CaptureStartupErrorsKey, "true" },
                 { WebHostDefaults.SuppressStatusMessagesKey, "true" }
             };
 
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
             Assert.Equal("wwwroot", config.WebRoot);
             Assert.Equal("MyProjectReference", config.ApplicationName);
             Assert.Equal("MyProjectReference", config.StartupAssembly);
-            Assert.Equal(EnvironmentName.Development, config.Environment);
+            Assert.Equal(Environments.Development, config.Environment);
             Assert.True(config.CaptureStartupErrors);
             Assert.True(config.DetailedErrors);
             Assert.True(config.SuppressStatusMessages);
@@ -38,10 +38,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ReadsOldEnvKey()
         {
-            var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", EnvironmentName.Development } };
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", Environments.Development } };
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
-            Assert.Equal(EnvironmentName.Development, config.Environment);
+            Assert.Equal(Environments.Development, config.Environment);
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void AllowsNumberForDetailedErrors(string value, bool expected)
         {
             var parameters = new Dictionary<string, string>() { { "detailedErrors", value } };
-            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
 
             Assert.Equal(expected, config.DetailedErrors);
         }

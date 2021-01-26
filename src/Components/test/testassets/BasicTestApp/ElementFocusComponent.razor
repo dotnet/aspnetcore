@@ -1,0 +1,16 @@
+﻿@using Microsoft.JSInterop
+
+<button id="focus-button" @onclick="@(() => FocusInput(false))">Click to focus!</button>
+<hr />
+<button id="focus-button-prevented" @onclick="@(() => FocusInput(true))">Click to focus with preventScroll!</button>
+<hr />
+<input id="focus-input" @ref="inputReference" style="margin-top: 10000px" />
+
+@code {
+    private ElementReference inputReference;
+
+    private async Task FocusInput(bool preventScroll)
+    {
+        await inputReference.FocusAsync(preventScroll);
+    }
+}

@@ -10,10 +10,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -84,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }));
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()));
 
             // Assert
             Assert.False(result);
@@ -99,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -124,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }));
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()));
 
             // Assert
             Assert.True(result);
@@ -165,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -202,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }),
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()),
                 propertyFilter);
 
             // Assert
@@ -245,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -278,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }),
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()),
                 m => m.IncludedProperty,
                 m => m.MyProperty);
 
@@ -296,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -329,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }));
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()));
 
             // Assert
             // Includes everything.
@@ -362,10 +359,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var ex = Assert.Throws<InvalidOperationException>(() =>
                         ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            Assert.Equal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "The passed expression of expression node type '{0}' is invalid." +
+                    " Only simple member access expressions for model properties are supported.",
+                    expression.Body.NodeType),
+                ex.Message);
         }
 
         public static IEnumerable<object[]> InvalidExpressionDataSet
@@ -493,7 +492,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -531,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }),
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()),
                 propertyFilter);
 
             // Assert
@@ -573,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -599,7 +598,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }));
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()));
 
             // Assert
             Assert.True(result);
@@ -607,7 +606,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task TryUpdataModel_ModelTypeDifferentFromModel_Throws()
+        public async Task TryUpdateModel_ModelTypeDifferentFromModel_Throws()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -763,7 +762,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             foreach (var entry in dictionary.Keys)
             {
-                if (entry.StartsWith(prefix))
+                if (entry.StartsWith(prefix, StringComparison.Ordinal))
                 {
                     Assert.Empty(dictionary[entry].Errors);
                     Assert.Equal(ModelValidationState.Unvalidated, dictionary[entry].ValidationState);

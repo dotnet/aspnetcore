@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -13,6 +14,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     public class DeploymentParameters
     {
+        public DeploymentParameters()
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+        }
+
+        public DeploymentParameters(TestVariant variant)
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+
+            ServerType = variant.Server;
+            TargetFramework = variant.Tfm;
+            ApplicationType = variant.ApplicationType;
+            RuntimeArchitecture = variant.Architecture;
+            HostingModel = variant.HostingModel;
+        }
+
         /// <summary>
         /// Creates an instance of <see cref="DeploymentParameters"/>.
         /// </summary>
@@ -33,12 +62,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (!Directory.Exists(applicationPath))
             {
-                throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
-            }
-
-            if (runtimeArchitecture == RuntimeArchitecture.x86 && runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                throw new NotSupportedException("32 bit deployment is not yet supported for CoreCLR. Don't remove the tests, just disable them for now.");
+                throw new DirectoryNotFoundException($"Application path {applicationPath} does not exist.");
             }
 
             ApplicationPath = applicationPath;
@@ -54,11 +78,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        public ServerType ServerType { get; }
+        public DeploymentParameters(DeploymentParameters parameters)
+        {
+            foreach (var propertyInfo in typeof(DeploymentParameters).GetProperties())
+            {
+                if (propertyInfo.CanWrite)
+                {
+                    propertyInfo.SetValue(this, propertyInfo.GetValue(parameters));
+                }
+            }
 
-        public RuntimeFlavor RuntimeFlavor { get; }
+            foreach (var kvp in parameters.EnvironmentVariables)
+            {
+                EnvironmentVariables.Add(kvp);
+            }
 
-        public RuntimeArchitecture RuntimeArchitecture { get; } = RuntimeArchitecture.x64;
+            foreach (var kvp in parameters.PublishEnvironmentVariables)
+            {
+                PublishEnvironmentVariables.Add(kvp);
+            }
+        }
+
+        public ApplicationPublisher ApplicationPublisher { get; set; }
+
+        public ServerType ServerType { get; set;  }
+
+        public RuntimeFlavor RuntimeFlavor { get; set;  }
+
+        public RuntimeArchitecture RuntimeArchitecture { get; set; } = RuntimeArchitecture.x64;
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
@@ -67,15 +114,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public string ApplicationBaseUriHint { get; set; }
 
+        public bool RestoreDependencies { get; set; }
+
+        /// <summary>
+        /// Scheme used by the deployed application if <see cref="ApplicationBaseUriHint"/> is empty.
+        /// </summary>
+        public string Scheme { get; set; } = Uri.UriSchemeHttp;
+
         public string EnvironmentName { get; set; }
 
         public string ServerConfigTemplateContent { get; set; }
 
         public string ServerConfigLocation { get; set; }
 
-        public string SiteName { get; set; }
+        public string SiteName { get; set; } = "HttpTestSite";
 
-        public string ApplicationPath { get; }
+        public string ApplicationPath { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the application. This is used to execute the application when deployed.
@@ -94,11 +148,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// Space separated command line arguments to be passed to dotnet-publish
         /// </summary>
         public string AdditionalPublishParameters { get; set; }
-
-        /// <summary>
-        /// Publish restores by default, this property opts out by default.
-        /// </summary>
-        public bool RestoreOnPublish { get; set; }
 
         /// <summary>
         /// To publish the application before deployment.
@@ -131,15 +180,21 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
 
+        /// <summary>
+        /// Timeout for publish
+        /// </summary>
+        public TimeSpan? PublishTimeout { get; set; }
+
         public override string ToString()
         {
             return string.Format(
-                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
-                    ServerType,
-                    RuntimeFlavor,
-                    RuntimeArchitecture,
-                    ApplicationBaseUriHint,
-                    PublishApplicationBeforeDeployment);
+                CultureInfo.InvariantCulture,
+                "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
+                ServerType,
+                RuntimeFlavor,
+                RuntimeArchitecture,
+                ApplicationBaseUriHint,
+                PublishApplicationBeforeDeployment);
         }
     }
 }

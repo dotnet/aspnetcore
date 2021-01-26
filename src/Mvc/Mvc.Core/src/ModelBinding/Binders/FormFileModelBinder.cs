@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,11 +10,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -22,18 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class FormFileModelBinder : IModelBinder
     {
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="FormFileModelBinder"/>.</para>
-        /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that takes an " + nameof(ILoggerFactory) + ".")]
-        public FormFileModelBinder()
-            : this(NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormFileModelBinder"/>.
@@ -48,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _logger = loggerFactory.CreateLogger<FormFileModelBinder>();
         }
-        
+
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -84,6 +71,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 : bindingContext.ModelName;
 
             await GetFormFilesAsync(modelName, bindingContext, postedFiles);
+
+            // If ParameterBinder incorrectly overrode ModelName, fall back to OriginalModelName prefix. Comparisons
+            // are tedious because e.g. top-level parameter or property is named Blah and it contains a BlahBlah
+            // property. OriginalModelName may be null in tests.
+            if (postedFiles.Count == 0 &&
+                bindingContext.OriginalModelName != null &&
+                !string.Equals(modelName, bindingContext.OriginalModelName, StringComparison.Ordinal) &&
+                !modelName.StartsWith(bindingContext.OriginalModelName + "[", StringComparison.Ordinal) &&
+                !modelName.StartsWith(bindingContext.OriginalModelName + ".", StringComparison.Ordinal))
+            {
+                modelName = ModelNames.CreatePropertyModelName(bindingContext.OriginalModelName, modelName);
+                await GetFormFilesAsync(modelName, bindingContext, postedFiles);
+            }
 
             object value;
             if (bindingContext.ModelType == typeof(IFormFile))
@@ -183,9 +183,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
             }
 
-            public IFormFile this[string name] => GetFile(name);
+            public IFormFile? this[string name] => GetFile(name);
 
-            public IFormFile GetFile(string name)
+            public IFormFile? GetFile(string name)
             {
                 for (var i = 0; i < Items.Count; i++)
                 {

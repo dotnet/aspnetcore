@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,26 +33,52 @@ namespace Microsoft.DotNet.Watcher.Internal
             var stopwatch = new Stopwatch();
 
             using (var process = CreateProcess(processSpec))
-            using (var processState = new ProcessState(process))
+            using (var processState = new ProcessState(process, _reporter))
             {
                 cancellationToken.Register(() => processState.TryKill());
 
-                stopwatch.Start();
-                process.Start();
-                _reporter.Verbose($"Started '{processSpec.Executable}' with process id {process.Id}");
-
+                var readOutput = false;
+                var readError = false;
                 if (processSpec.IsOutputCaptured)
                 {
-                    await Task.WhenAll(
-                        processState.Task,
-                        ConsumeStreamAsync(process.StandardOutput, processSpec.OutputCapture.AddLine),
-                        ConsumeStreamAsync(process.StandardError, processSpec.OutputCapture.AddLine)
-                    );
+                    readOutput = true;
+                    readError = true;
+                    process.OutputDataReceived += (_, a) =>
+                    {
+                        if (!string.IsNullOrEmpty(a.Data))
+                        {
+                            processSpec.OutputCapture.AddLine(a.Data);
+                        }
+                    };
+                    process.ErrorDataReceived += (_, a) =>
+                    {
+                        if (!string.IsNullOrEmpty(a.Data))
+                        {
+                            processSpec.OutputCapture.AddLine(a.Data);
+                        }
+                    };
                 }
-                else
+                else if (processSpec.OnOutput != null)
                 {
-                    await processState.Task;
+                    readOutput = true;
+                    process.OutputDataReceived += processSpec.OnOutput;
                 }
+
+                stopwatch.Start();
+                process.Start();
+
+                _reporter.Verbose($"Started '{processSpec.Executable}' with process id {process.Id}");
+
+                if (readOutput)
+                {
+                    process.BeginOutputReadLine();
+                }
+                if (readError)
+                {
+                    process.BeginErrorReadLine();
+                }
+
+                await processState.Task;
 
                 exitCode = process.ExitCode;
                 stopwatch.Stop();
@@ -73,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     Arguments = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments),
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
-                    RedirectStandardOutput = processSpec.IsOutputCaptured,
+                    RedirectStandardOutput = processSpec.IsOutputCaptured || (processSpec.OnOutput != null),
                     RedirectStandardError = processSpec.IsOutputCaptured,
                 }
             };
@@ -86,38 +112,38 @@ namespace Microsoft.DotNet.Watcher.Internal
             return process;
         }
 
-        private static async Task ConsumeStreamAsync(StreamReader reader, Action<string> consume)
-        {
-            string line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
-            {
-                consume?.Invoke(line);
-            }
-        }
-
         private class ProcessState : IDisposable
         {
+            private readonly IReporter _reporter;
             private readonly Process _process;
             private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
             private volatile bool _disposed;
 
-            public ProcessState(Process process)
+            public ProcessState(Process process, IReporter reporter)
             {
+                _reporter = reporter;
                 _process = process;
                 _process.Exited += OnExited;
                 Task = _tcs.Task.ContinueWith(_ =>
                 {
-                    // We need to use two WaitForExit calls to ensure that all of the output/events are processed. Previously
-                    // this code used Process.Exited, which could result in us missing some output due to the ordering of
-                    // events.
-                    //
-                    // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
-                    if (!process.WaitForExit(Int32.MaxValue))
+                    try
                     {
-                        throw new TimeoutException();
-                    }
+                        // We need to use two WaitForExit calls to ensure that all of the output/events are processed. Previously
+                        // this code used Process.Exited, which could result in us missing some output due to the ordering of
+                        // events.
+                        //
+                        // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
+                        if (!_process.WaitForExit(Int32.MaxValue))
+                        {
+                            throw new TimeoutException();
+                        }
 
-                    process.WaitForExit();
+                        _process.WaitForExit();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // suppress if this throws if no process is associated with this object anymore.
+                    }
                 });
             }
 
@@ -125,15 +151,26 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             public void TryKill()
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 try
                 {
                     if (!_process.HasExited)
                     {
+                        _reporter.Verbose($"Killing process {_process.Id}");
                         _process.KillTree();
                     }
                 }
-                catch
-                { }
+                catch (Exception ex)
+                {
+                    _reporter.Verbose($"Error while killing process '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}': {ex.Message}");
+#if DEBUG
+                    _reporter.Verbose(ex.ToString());
+#endif
+                }
             }
 
             private void OnExited(object sender, EventArgs args)
@@ -143,8 +180,8 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 if (!_disposed)
                 {
-                    _disposed = true;
                     TryKill();
+                    _disposed = true;
                     _process.Exited -= OnExited;
                     _process.Dispose();
                 }

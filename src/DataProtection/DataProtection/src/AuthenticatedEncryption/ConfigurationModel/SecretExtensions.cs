@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// Converts an <see cref="ISecret"/> to an &lt;masterKey&gt; element which is marked
         /// as requiring encryption.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="secret">The secret for accessing the master key.</param>
+        /// <returns>The master key <see cref="XElement"/>.</returns>
         public static XElement ToMasterKeyElement(this ISecret secret)
         {
             // Technically we'll be keeping the unprotected secret around in memory as
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// <summary>
         /// Converts a base64-encoded string into an <see cref="ISecret"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="Secret"/>.</returns>
         public static Secret ToSecret(this string base64String)
         {
             byte[] unprotectedSecret = Convert.FromBase64String(base64String);

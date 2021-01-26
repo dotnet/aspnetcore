@@ -8,10 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -1038,7 +1037,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         [Fact]
-        public void ListBoxFor_WithUnreleatedExpression_GeneratesExpectedValue()
+        public void ListBoxFor_WithUnrelatedExpression_GeneratesExpectedValue()
         {
             // Arrange
             var unrelated = new[] { "2" };

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Moq;
 using Xunit;
 
@@ -83,14 +83,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var attributes = new object[]
             {
-                new ModelBinderAttribute { BinderType = typeof(object), Name = "Test" },
+                new ModelBinderAttribute { BinderType = typeof(ComplexObjectModelBinder), Name = "Test" },
             };
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();
             provider.ForType(modelType).BindingDetails(metadata =>
             {
                 metadata.BindingSource = BindingSource.Special;
-                metadata.BinderType = typeof(string);
+                metadata.BinderType = typeof(SimpleTypeModelBinder);
                 metadata.BinderModelName = "Different";
             });
             var modelMetadata = provider.GetMetadataForType(modelType);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(object), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
             Assert.Same("Test", bindingInfo.BinderModelName);
         }
 
@@ -108,13 +108,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetBindingInfo_WithAttributesAndModelMetadata_UsesBinderNameFromModelMetadata_WhenNotFoundViaAttributes()
         {
             // Arrange
-            var attributes = new object[] { new ModelBinderAttribute(typeof(object)), new ControllerAttribute(), new BindNeverAttribute(), };
+            var attributes = new object[]
+            {
+                new ModelBinderAttribute(typeof(ComplexObjectModelBinder)),
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+            };
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();
             provider.ForType(modelType).BindingDetails(metadata =>
             {
                 metadata.BindingSource = BindingSource.Special;
-                metadata.BinderType = typeof(string);
+                metadata.BinderType = typeof(SimpleTypeModelBinder);
                 metadata.BinderModelName = "Different";
             });
             var modelMetadata = provider.GetMetadataForType(modelType);
@@ -124,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(object), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
             Assert.Same("Different", bindingInfo.BinderModelName);
             Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
         }
@@ -138,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var provider = new TestModelMetadataProvider();
             provider.ForType(modelType).BindingDetails(metadata =>
             {
-                metadata.BinderType = typeof(string);
+                metadata.BinderType = typeof(ComplexObjectModelBinder);
             });
             var modelMetadata = provider.GetMetadataForType(modelType);
 
@@ -147,14 +152,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(string), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
         }
 
         [Fact]
         public void GetBindingInfo_WithAttributesAndModelMetadata_UsesBinderSourceFromModelMetadata_WhenNotFoundViaAttributes()
         {
             // Arrange
-            var attributes = new object[] { new BindPropertyAttribute(), new ControllerAttribute(), new BindNeverAttribute(), };
+            var attributes = new object[]
+            {
+                new BindPropertyAttribute(),
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+            };
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();
             provider.ForType(modelType).BindingDetails(metadata =>
@@ -175,7 +185,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetBindingInfo_WithAttributesAndModelMetadata_UsesPropertyPredicateProviderFromModelMetadata_WhenNotFoundViaAttributes()
         {
             // Arrange
-            var attributes = new object[] { new ModelBinderAttribute(typeof(object)), new ControllerAttribute(), new BindNeverAttribute(), };
+            var attributes = new object[]
+            {
+                new ModelBinderAttribute(typeof(ComplexObjectModelBinder)),
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+            };
             var propertyFilterProvider = Mock.Of<IPropertyFilterProvider>();
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();

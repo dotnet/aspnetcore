@@ -1,15 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We want to validate runtime parser \ compilation exceptions -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <IsTestAssetProject>true</IsTestAssetProject>
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
 
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class DefaultConnectionInfo : ConnectionInfo
+    internal sealed class DefaultConnectionInfo : ConnectionInfo
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpConnectionFeature> _newHttpConnectionFeature = f => new HttpConnectionFeature();
@@ -23,21 +23,26 @@ namespace Microsoft.AspNetCore.Http.Internal
             Initialize(features);
         }
 
-        public virtual void Initialize( IFeatureCollection features)
+        public void Initialize( IFeatureCollection features)
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _features.Initalize(features);
         }
 
-        public virtual void Uninitialize()
+        public void Initialize(IFeatureCollection features, int revision)
         {
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features.Initalize(features, revision);
+        }
+
+        public void Uninitialize()
+        {
+            _features = default;
         }
 
         private IHttpConnectionFeature HttpConnectionFeature =>
-            _features.Fetch(ref _features.Cache.Connection, _newHttpConnectionFeature);
+            _features.Fetch(ref _features.Cache.Connection, _newHttpConnectionFeature)!;
 
         private ITlsConnectionFeature TlsConnectionFeature=>
-            _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature);
+            _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature)!;
 
         /// <inheritdoc />
         public override string Id
@@ -46,7 +51,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { HttpConnectionFeature.ConnectionId = value; }
         }
 
-        public override IPAddress RemoteIpAddress
+        public override IPAddress? RemoteIpAddress
         {
             get { return HttpConnectionFeature.RemoteIpAddress; }
             set { HttpConnectionFeature.RemoteIpAddress = value; }
@@ -58,7 +63,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { HttpConnectionFeature.RemotePort = value; }
         }
 
-        public override IPAddress LocalIpAddress
+        public override IPAddress? LocalIpAddress
         {
             get { return HttpConnectionFeature.LocalIpAddress; }
             set { HttpConnectionFeature.LocalIpAddress = value; }
@@ -70,21 +75,21 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { HttpConnectionFeature.LocalPort = value; }
         }
 
-        public override X509Certificate2 ClientCertificate
+        public override X509Certificate2? ClientCertificate
         {
             get { return TlsConnectionFeature.ClientCertificate; }
             set { TlsConnectionFeature.ClientCertificate = value; }
         }
 
-        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = default)
         {
             return TlsConnectionFeature.GetClientCertificateAsync(cancellationToken);
         }
 
         struct FeatureInterfaces
         {
-            public IHttpConnectionFeature Connection;
-            public ITlsConnectionFeature TlsConnection;
+            public IHttpConnectionFeature? Connection;
+            public ITlsConnectionFeature? TlsConnection;
         }
     }
 }

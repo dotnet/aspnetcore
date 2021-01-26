@@ -1,0 +1,11 @@
+﻿@page "/WithNumberParameters/{TestInt:int}/{TestLong:long}/{TestDouble:double}/{TestFloat:float}/{TestDec:decimal}"
+<div id="test-info">Test parameters: @TestInt @TestLong @TestDouble @TestFloat @TestDec</div>
+
+@code
+{
+    [Parameter] public int TestInt { get; set; }
+    [Parameter] public long TestLong { get; set; }
+    [Parameter] public double TestDouble { get; set; }
+    [Parameter] public float TestFloat { get; set; }
+    [Parameter] public decimal TestDec { get; set; }
+}

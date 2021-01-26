@@ -1,0 +1,14 @@
+{
+    "name": "GenericHostWebSite",
+    "description": "Web site demonstrating various validations.",
+    "private": true,
+    "dependencies": {
+        "jquery-validation-unobtrusive": "3.2.6"
+    },
+    "exportsOverride": {
+        "jquery-validation-unobtrusive": {
+            "": "jquery.validate.unobtrusive.min.js"
+        },
+        "*": { }
+    }
+}

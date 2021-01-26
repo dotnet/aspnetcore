@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -17,8 +18,19 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormReader : IDisposable
     {
+        /// <summary>
+        /// Gets the default value for <see cref="ValueCountLimit"/>.
+        /// </summary>
         public const int DefaultValueCountLimit = 1024;
+
+        /// <summary>
+        /// Gets the default value for <see cref="KeyLengthLimit"/>.
+        /// </summary>
         public const int DefaultKeyLengthLimit = 1024 * 2;
+
+        /// <summary>
+        /// Gets the default value for <see cref="ValueLengthLimit" />.
+        /// </summary>
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         private const int _rentedCharPoolLength = 8192;
@@ -28,16 +40,25 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly StringBuilder _builder = new StringBuilder();
         private int _bufferOffset;
         private int _bufferCount;
-        private string _currentKey;
-        private string _currentValue;
+        private string? _currentKey;
+        private string? _currentValue;
         private bool _endOfStream;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="data">The data to read.</param>
         public FormReader(string data)
             : this(data, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="data">The data to read.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FormReader(string data, ArrayPool<char> charPool)
         {
             if (data == null)
@@ -50,16 +71,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             _reader = new StringReader(data);
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a <c>utf-8</c> encoded stream.</param>
         public FormReader(Stream stream)
             : this(stream, Encoding.UTF8, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read.</param>
+        /// <param name="encoding">The character encoding to use.</param>
         public FormReader(Stream stream, Encoding encoding)
             : this(stream, encoding, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FormReader(Stream stream, Encoding encoding, ArrayPool<char> charPool)
         {
             if (stream == null)
@@ -101,7 +137,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public KeyValuePair<string, string>? ReadNextPair()
         {
             ReadNextPairImpl();
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
@@ -134,7 +170,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await ReadNextPairAsyncImpl(cancellationToken);
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
@@ -189,11 +225,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
-        private bool TryReadWord(char seperator, int limit, out string value)
+        private bool TryReadWord(char separator, int limit, [NotNullWhen(true)] out string? value)
         {
             do
             {
-                if (ReadChar(seperator, limit, out value))
+                if (ReadChar(separator, limit, out value))
                 {
                     return true;
                 }
@@ -201,7 +237,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return false;
         }
 
-        private bool ReadChar(char seperator, int limit, out string word)
+        private bool ReadChar(char separator, int limit, [NotNullWhen(true)] out string? word)
         {
             // End
             if (_bufferCount == 0)
@@ -213,7 +249,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var c = _buffer[_bufferOffset++];
             _bufferCount--;
 
-            if (c == seperator)
+            if (c == separator)
             {
                 word = BuildWord();
                 return true;
@@ -283,14 +319,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator.GetResults();
         }
 
-        private bool ReadSucceded()
+        [MemberNotNullWhen(true, nameof(_currentKey), nameof(_currentValue))]
+        private bool ReadSucceeded()
         {
             return _currentKey != null && _currentValue != null;
         }
 
         private void Append(ref KeyValueAccumulator accumulator)
         {
-            if (ReadSucceded())
+            if (ReadSucceeded())
             {
                 accumulator.Append(_currentKey, _currentValue);
                 if (accumulator.ValueCount > ValueCountLimit)
@@ -300,6 +337,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (!_disposed)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SpaServices.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,12 +24,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">If specified, this callback will be invoked to set additional configuration options.</param>
         public static void AddSpaStaticFiles(
             this IServiceCollection services,
-            Action<SpaStaticFilesOptions> configuration = null)
+            Action<SpaStaticFilesOptions>? configuration = null)
         {
             services.AddSingleton<ISpaStaticFileProvider>(serviceProvider =>
             {
                 // Use the options configured in DI (or blank if none was configured)
-                var optionsProvider = serviceProvider.GetService<IOptions<SpaStaticFilesOptions>>();
+                var optionsProvider = serviceProvider.GetService<IOptions<SpaStaticFilesOptions>>()!;
                 var options = optionsProvider.Value;
 
                 // Allow the developer to perform further configuration
@@ -110,14 +111,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
             }
 
-            
             app.UseStaticFiles(staticFileOptions);
         }
 
         private static bool ShouldServeStaticFiles(
             IApplicationBuilder app,
             bool allowFallbackOnServingWebRootFiles,
-            out IFileProvider fileProviderOrDefault)
+            out IFileProvider? fileProviderOrDefault)
         {
             var spaStaticFilesService = app.ApplicationServices.GetService<ISpaStaticFileProvider>();
             if (spaStaticFilesService != null)

@@ -196,11 +196,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             else if (required)
             {
                 // If the section is not found, and it is not optional, throw an error.
-                var message = Resources.FormatSectionNotDefined(
-                    ViewContext.ExecutingFilePath,
-                    sectionName,
-                    ViewContext.View.Path);
-                throw new InvalidOperationException(message);
+                var viewContext = ViewContext;
+                throw new InvalidOperationException(
+                    Resources.FormatSectionNotDefined(
+                        viewContext.ExecutingFilePath,
+                        sectionName,
+                        viewContext.View.Path));
             }
             else
             {
@@ -273,39 +274,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <inheritdoc/>
         public override void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    BeginContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                        position = position,
-                        length = length,
-                        isLiteral = isLiteral,
-                    });
-            }
+            // noop
         }
 
+        /// <inheritdoc/>
         public override void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    EndContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                    });
-            }
+            // noop
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)

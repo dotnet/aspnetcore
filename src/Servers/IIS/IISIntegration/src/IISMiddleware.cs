@@ -3,51 +3,77 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
+    /// <summary>
+    /// The middleware that enables IIS Out-Of-Process to work.
+    /// </summary>
     public class IISMiddleware
     {
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
         private const string MSAspNetCoreToken = "MS-ASPNETCORE-TOKEN";
         private const string MSAspNetCoreEvent = "MS-ASPNETCORE-EVENT";
+        private const string MSAspNetCoreWinAuthToken = "MS-ASPNETCORE-WINAUTHTOKEN";
         private const string ANCMShutdownEventHeaderValue = "shutdown";
         private static readonly PathString ANCMRequestPath = new PathString("/iisintegration");
+        private static readonly Func<object, Task> ClearUserDelegate = ClearUser;
 
         private readonly RequestDelegate _next;
         private readonly IISOptions _options;
         private readonly ILogger _logger;
         private readonly string _pairingToken;
-        private readonly IApplicationLifetime _applicationLifetime;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly bool _isWebsocketsSupported;
 
+        /// <summary>
+        /// The middleware that enables IIS Out-Of-Process to work.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         // Can't break public API, so creating a second constructor to propagate the isWebsocketsSupported flag.
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<IISOptions> options,
             string pairingToken,
             IAuthenticationSchemeProvider authentication,
-            IApplicationLifetime applicationLifetime)
+            IHostApplicationLifetime applicationLifetime)
             : this(next, loggerFactory, options, pairingToken, isWebsocketsSupported: true, authentication, applicationLifetime)
         {
         }
 
+        /// <summary>
+        /// The middleware that enables IIS Out-Of-Process to work.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="isWebsocketsSupported">Whether websockets are supported by IIS.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<IISOptions> options,
             string pairingToken,
             bool isWebsocketsSupported,
             IAuthenticationSchemeProvider authentication,
-            IApplicationLifetime applicationLifetime)
+            IHostApplicationLifetime applicationLifetime)
         {
             if (next == null)
             {
@@ -84,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _isWebsocketsSupported = isWebsocketsSupported;
         }
 
+        /// <summary>
+        /// Invoke the middleware.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
@@ -130,10 +161,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (_options.ForwardWindowsAuthentication)
             {
                 // We must always process and clean up the windows identity, even if we don't assign the User.
-                var result = await httpContext.AuthenticateAsync(IISDefaults.AuthenticationScheme);
-                if (result.Succeeded && _options.AutomaticAuthentication)
+                var user = GetUser(httpContext);
+                if (user != null)
                 {
-                    httpContext.User = result.Principal;
+                    // Flow it through to the authentication handler.
+                    httpContext.Features.Set(user);
+
+                    if (_options.AutomaticAuthentication)
+                    {
+                        httpContext.User = user;
+                    }
                 }
             }
 
@@ -141,10 +178,44 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // The feature must be removed on a per request basis as the Upgrade feature exists per request.
             if (!_isWebsocketsSupported)
             {
-                httpContext.Features.Set<IHttpUpgradeFeature>(null);
+                httpContext.Features.Set<IHttpUpgradeFeature?>(null);
             }
 
             await _next(httpContext);
+        }
+
+        private WindowsPrincipal? GetUser(HttpContext context)
+        {
+            var tokenHeader = context.Request.Headers[MSAspNetCoreWinAuthToken];
+
+            if (!StringValues.IsNullOrEmpty(tokenHeader)
+                && int.TryParse(tokenHeader, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var hexHandle))
+            {
+                // Always create the identity if the handle exists, we need to dispose it so it does not leak.
+                var handle = new IntPtr(hexHandle);
+                var winIdentity = new WindowsIdentity(handle, IISDefaults.AuthenticationScheme);
+
+                // WindowsIdentity just duplicated the handle so we need to close the original.
+                NativeMethods.CloseHandle(handle);
+
+                context.Response.OnCompleted(ClearUserDelegate, context);
+                context.Response.RegisterForDispose(winIdentity);
+                return new WindowsPrincipal(winIdentity);
+            }
+
+            return null;
+        }
+
+        private static Task ClearUser(object arg)
+        {
+            var context = (HttpContext)arg;
+            // We don't want loggers accessing a disposed identity.
+            // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
+            if (context.User is WindowsPrincipal)
+            {
+                context.User = null!;
+            }
+            return Task.CompletedTask;
         }
     }
 }

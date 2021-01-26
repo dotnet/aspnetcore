@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Localization.Routing
 {
@@ -28,15 +27,15 @@ namespace Microsoft.AspNetCore.Localization.Routing
         public string UIRouteDataStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            string culture = null;
-            string uiCulture = null;
+            string? culture = null;
+            string? uiCulture = null;
 
             if (!string.IsNullOrEmpty(RouteDataStringKey))
             {
@@ -59,8 +58,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 // Value for culture but not for UI culture so default to culture value for both
                 uiCulture = culture;
             }
-
-            if (culture == null && uiCulture != null)
+            else if (culture == null && uiCulture != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 culture = uiCulture;
@@ -68,7 +66,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
 
             var providerResultCulture = new ProviderCultureResult(culture, uiCulture);
 
-            return Task.FromResult(providerResultCulture);
+            return Task.FromResult<ProviderCultureResult?>(providerResultCulture);
         }
     }
 }

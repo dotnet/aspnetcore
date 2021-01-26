@@ -1,0 +1,10 @@
+﻿@page "/WithParameters/Name/{firstName}"
+@page "/WithParameters/Name/{firstName}/LastName/{lastName}"
+<div id="test-info">Your full name is @FirstName @LastName.</div>
+
+@code
+{
+    [Parameter] public string FirstName { get; set; }
+
+    [Parameter] public string LastName { get ; set; }
+}

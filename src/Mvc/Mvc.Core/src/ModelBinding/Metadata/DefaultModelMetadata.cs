@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -22,14 +25,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         // IBindingMetadataProvider instances to ensure customizations are not accidentally shared.
         private readonly DefaultModelBindingMessageProvider _modelBindingMessageProvider;
 
-        private ReadOnlyDictionary<object, object> _additionalValues;
-        private ModelMetadata _elementMetadata;
+        private ReadOnlyDictionary<object, object>? _additionalValues;
+        private ModelMetadata? _elementMetadata;
+        private ModelMetadata? _constructorMetadata;
         private bool? _isBindingRequired;
         private bool? _isReadOnly;
         private bool? _isRequired;
-        private ModelPropertyCollection _properties;
+        private ModelPropertyCollection? _properties;
         private bool? _validateChildren;
-        private ReadOnlyCollection<object> _validatorMetadata;
+        private bool? _hasValidators;
+        private ReadOnlyCollection<object>? _validatorMetadata;
 
         /// <summary>
         /// Creates a new <see cref="DefaultModelMetadata"/>.
@@ -91,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public ModelAttributes Attributes => _details.ModelAttributes;
 
         /// <inheritdoc />
-        public override ModelMetadata ContainerMetadata => _details.ContainerMetadata;
+        public override ModelMetadata? ContainerMetadata => _details.ContainerMetadata;
 
         /// <summary>
         /// Gets the <see cref="Metadata.BindingMetadata"/> for the current instance.
@@ -176,22 +181,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override BindingSource BindingSource => BindingMetadata.BindingSource;
+        public override BindingSource? BindingSource => BindingMetadata.BindingSource;
 
         /// <inheritdoc />
-        public override string BinderModelName => BindingMetadata.BinderModelName;
+        public override string? BinderModelName => BindingMetadata.BinderModelName;
 
         /// <inheritdoc />
-        public override Type BinderType => BindingMetadata.BinderType;
+        public override Type? BinderType => BindingMetadata.BinderType;
 
         /// <inheritdoc />
         public override bool ConvertEmptyStringToNull => DisplayMetadata.ConvertEmptyStringToNull;
 
         /// <inheritdoc />
-        public override string DataTypeName => DisplayMetadata.DataTypeName;
+        public override string? DataTypeName => DisplayMetadata.DataTypeName;
 
         /// <inheritdoc />
-        public override string Description
+        public override string? Description
         {
             get
             {
@@ -205,10 +210,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override string DisplayFormatString => DisplayMetadata.DisplayFormatStringProvider();
+        public override string? DisplayFormatString => DisplayMetadata.DisplayFormatStringProvider();
 
         /// <inheritdoc />
-        public override string DisplayName
+        public override string? DisplayName
         {
             get
             {
@@ -222,10 +227,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override string EditFormatString => DisplayMetadata.EditFormatStringProvider();
+        public override string? EditFormatString => DisplayMetadata.EditFormatStringProvider();
 
         /// <inheritdoc />
-        public override ModelMetadata ElementMetadata
+        public override ModelMetadata? ElementMetadata
         {
             get
             {
@@ -239,11 +244,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues
+        public override IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues
             => DisplayMetadata.EnumGroupedDisplayNamesAndValues;
 
         /// <inheritdoc />
-        public override IReadOnlyDictionary<string, string> EnumNamesAndValues => DisplayMetadata.EnumNamesAndValues;
+        public override IReadOnlyDictionary<string, string>? EnumNamesAndValues => DisplayMetadata.EnumNamesAndValues;
 
         /// <inheritdoc />
         public override bool HasNonDefaultEditFormat => DisplayMetadata.HasNonDefaultEditFormat;
@@ -346,16 +351,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         /// <inheritdoc />
         public override ModelBindingMessageProvider ModelBindingMessageProvider =>
-            BindingMetadata.ModelBindingMessageProvider;
+            BindingMetadata.ModelBindingMessageProvider!;
 
         /// <inheritdoc />
-        public override string NullDisplayText => DisplayMetadata.NullDisplayTextProvider();
+        public override string? NullDisplayText => DisplayMetadata.NullDisplayTextProvider();
 
         /// <inheritdoc />
         public override int Order => DisplayMetadata.Order;
 
         /// <inheritdoc />
-        public override string Placeholder
+        public override string? Placeholder
         {
             get
             {
@@ -385,7 +390,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override IPropertyFilterProvider PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
+        public override ModelMetadata? BoundConstructor
+        {
+            get
+            {
+                if (BindingMetadata.BoundConstructor == null)
+                {
+                    return null;
+                }
+
+                if (_constructorMetadata == null)
+                {
+                    var modelMetadataProvider = (ModelMetadataProvider)_provider;
+                    _constructorMetadata = modelMetadataProvider.GetMetadataForConstructor(BindingMetadata.BoundConstructor, ModelType);
+                }
+
+                return _constructorMetadata;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<ModelMetadata>? BoundConstructorParameters => _details.BoundConstructorParameters;
+
+        /// <inheritdoc />
+        public override IPropertyFilterProvider? PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
 
         /// <inheritdoc />
         public override bool ShowForDisplay => DisplayMetadata.ShowForDisplay;
@@ -394,13 +422,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public override bool ShowForEdit => DisplayMetadata.ShowForEdit;
 
         /// <inheritdoc />
-        public override string SimpleDisplayProperty => DisplayMetadata.SimpleDisplayProperty;
+        public override string? SimpleDisplayProperty => DisplayMetadata.SimpleDisplayProperty;
 
         /// <inheritdoc />
-        public override string TemplateHint => DisplayMetadata.TemplateHint;
+        public override string? TemplateHint => DisplayMetadata.TemplateHint;
 
         /// <inheritdoc />
-        public override IPropertyValidationFilter PropertyValidationFilter => ValidationMetadata.PropertyValidationFilter;
+        public override IPropertyValidationFilter? PropertyValidationFilter => ValidationMetadata.PropertyValidationFilter;
 
         /// <inheritdoc />
         public override bool ValidateChildren
@@ -428,6 +456,95 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override bool? HasValidators
+        {
+            get
+            {
+                if (!_hasValidators.HasValue)
+                {
+                    var visited = new HashSet<DefaultModelMetadata>();
+
+                    _hasValidators = CalculateHasValidators(visited, this);
+                }
+
+                return _hasValidators.Value;
+            }
+        }
+
+        internal override bool PropertyHasValidators => ValidationMetadata.PropertyHasValidators;
+
+        internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
+        {
+            RuntimeHelpers.EnsureSufficientExecutionStack();
+
+            if (metadata?.GetType() != typeof(DefaultModelMetadata))
+            {
+                // The calculation is valid only for DefaultModelMetadata instances. Null, other ModelMetadata instances
+                // or subtypes of DefaultModelMetadata will be treated as always requiring validation.
+                return true;
+            }
+
+            var defaultModelMetadata = (DefaultModelMetadata)metadata;
+
+            if (defaultModelMetadata._hasValidators.HasValue)
+            {
+                // Return a previously calculated value if available.
+                return defaultModelMetadata._hasValidators.Value;
+            }
+
+            if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
+            {
+                // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
+                // In either case, assume it has validators.
+                return true;
+            }
+
+            // Before inspecting properties or elements of a collection, ensure we do not have a cycle.
+            // Consider a model like so
+            //
+            // Employee { BusinessDivision Division; int Id; string Name; }
+            // BusinessDivision { int Id; List<Employee> Employees }
+            //
+            // If we get to the Employee element from Employee.Division.Employees, we can return false for that instance
+            // and allow other properties of BusinessDivision and Employee to determine if it has validators.
+            if (!visited.Add(defaultModelMetadata))
+            {
+                return false;
+            }
+
+            // We have inspected the current element. Inspect properties or elements that may contribute to this value.
+            if (defaultModelMetadata.IsEnumerableType)
+            {
+                if (CalculateHasValidators(visited, defaultModelMetadata.ElementMetadata!))
+                {
+                    return true;
+                }
+            }
+            else if (defaultModelMetadata.IsComplexType)
+            {
+                var parameters = defaultModelMetadata.BoundConstructor?.BoundConstructorParameters ?? Array.Empty<ModelMetadata>();
+                foreach (var parameter in parameters)
+                {
+                    if (CalculateHasValidators(visited, parameter))
+                    {
+                        return true;
+                    }
+                }
+
+                foreach (var property in defaultModelMetadata.BoundProperties)
+                {
+                    if (CalculateHasValidators(visited, property))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // We've come this far. The ModelMetadata does not have any validation
+            return false;
+        }
+
+        /// <inheritdoc />
         public override IReadOnlyList<object> ValidatorMetadata
         {
             get
@@ -442,10 +559,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override Func<object, object> PropertyGetter => _details.PropertyGetter;
+        public override Func<object, object?>? PropertyGetter => _details.PropertyGetter;
 
         /// <inheritdoc />
-        public override Action<object, object> PropertySetter => _details.PropertySetter;
+        public override Action<object, object?>? PropertySetter => _details.PropertySetter;
+
+        /// <inheritdoc/>
+        public override Func<object?[], object>? BoundConstructorInvoker => _details.BoundConstructorInvoker;
+
+        internal DefaultMetadataDetails Details => _details;
 
         /// <inheritdoc />
         public override ModelMetadata GetMetadataForType(Type modelType)

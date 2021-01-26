@@ -2,29 +2,41 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents an <c>If-Range</c> header value which can either be a date/time or an entity-tag value.
+    /// </summary>
     public class RangeConditionHeaderValue
     {
         private static readonly HttpHeaderParser<RangeConditionHeaderValue> Parser
             = new GenericHeaderParser<RangeConditionHeaderValue>(false, GetRangeConditionLength);
 
         private DateTimeOffset? _lastModified;
-        private EntityTagHeaderValue _entityTag;
+        private EntityTagHeaderValue? _entityTag;
 
         private RangeConditionHeaderValue()
         {
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="lastModified">A date value used to initialize the new instance.</param>
         public RangeConditionHeaderValue(DateTimeOffset lastModified)
         {
             _lastModified = lastModified;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="entityTag">An entity tag uniquely representing the requested resource.</param>
         public RangeConditionHeaderValue(EntityTagHeaderValue entityTag)
         {
             if (entityTag == null)
@@ -35,31 +47,43 @@ namespace Microsoft.Net.Http.Headers
             _entityTag = entityTag;
         }
 
-        public RangeConditionHeaderValue(string entityTag)
+        /// <summary>
+        /// Initializes a new instance of <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="entityTag">An entity tag uniquely representing the requested resource.</param>
+        public RangeConditionHeaderValue(string? entityTag)
             : this(new EntityTagHeaderValue(entityTag))
         {
         }
 
+        /// <summary>
+        /// Gets the LastModified date from header.
+        /// </summary>
         public DateTimeOffset? LastModified
         {
             get { return _lastModified; }
         }
 
-        public EntityTagHeaderValue EntityTag
+        /// <summary>
+        /// Gets the <see cref="EntityTagHeaderValue"/> from header.
+        /// </summary>
+        public EntityTagHeaderValue? EntityTag
         {
             get { return _entityTag; }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (_entityTag == null)
             {
-                return HeaderUtilities.FormatDate(_lastModified.Value);
+                return HeaderUtilities.FormatDate(_lastModified.GetValueOrDefault());
             }
             return _entityTag.ToString();
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
             var other = obj as RangeConditionHeaderValue;
 
@@ -70,35 +94,47 @@ namespace Microsoft.Net.Http.Headers
 
             if (_entityTag == null)
             {
-                return (other._lastModified != null) && (_lastModified.Value == other._lastModified.Value);
+                return (other._lastModified != null) && (_lastModified.GetValueOrDefault() == other._lastModified.GetValueOrDefault());
             }
 
             return _entityTag.Equals(other._entityTag);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             if (_entityTag == null)
             {
-                return _lastModified.Value.GetHashCode();
+                return _lastModified.GetValueOrDefault().GetHashCode();
             }
 
             return _entityTag.GetHashCode();
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="RangeConditionHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static RangeConditionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out RangeConditionHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="RangeConditionHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="RangeConditionHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeConditionHeaderValue? parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue parsedValue)
+        private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -114,7 +150,7 @@ namespace Microsoft.Net.Http.Headers
 
             // Caller must remove leading whitespaces.
             DateTimeOffset date = DateTimeOffset.MinValue;
-            EntityTagHeaderValue entityTag = null;
+            EntityTagHeaderValue? entityTag = null;
 
             // Entity tags are quoted strings optionally preceded by "W/". By looking at the first two character we
             // can determine whether the string is en entity tag or a date.

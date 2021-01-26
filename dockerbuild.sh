@@ -26,9 +26,10 @@ __usage() {
     echo ""
     echo "Options:"
     echo "    -v, --volume <VOLUME>      An additional volume mount to add to the build container"
+    echo "    -e, --env <NAME=VAL>       Additional environment variables to add to the build container"
     echo ""
     echo "Description:"
-    echo "    This will run build.sh inside the dockerfile as defined in build/docker/\$image.Dockerfile."
+    echo "    This will run build.sh inside the dockerfile as defined in eng/docker/\$image.Dockerfile."
 
     if [[ "${1:-}" != '--no-exit' ]]; then
         exit 2
@@ -69,6 +70,13 @@ while [[ $# -gt 0 ]]; do
             docker_args[${#docker_args[*]}]="--volume"
             docker_args[${#docker_args[*]}]="$volume_spec"
             ;;
+        -e|--env)
+            shift
+            env_var="${1:-}"
+            [ -z "$env_var" ] && __error "Missing value for parameter --env" && __usage
+            docker_args[${#docker_args[*]}]="-e"
+            docker_args[${#docker_args[*]}]="$env_var"
+            ;;
         *)
             build_args[${#build_args[*]}]="$1"
             ;;
@@ -87,35 +95,58 @@ if ! __machine_has docker; then
     exit 1
 fi
 
-dockerfile="$DIR/build/docker/$image.Dockerfile"
+commit_hash="$(git rev-parse HEAD || true)"
+
+if [ ! -z "$commit_hash" ]; then
+    build_args[${#build_args[*]}]="-p:SourceRevisionId=$commit_hash"
+fi
+
+dockerfile="$DIR/eng/docker/$image.Dockerfile"
 tagname="aspnetcore-build-$image"
+
+# Use docker pull with retries to pre-pull the image need by the dockerfile
+# docker build regularly fails with TLS handshake issues for unclear reasons.
+base_imagename="$(grep -E -o 'FROM (.*)' $dockerfile | cut -c 6-)"
+pull_retries=3
+while [ $pull_retries -gt 0 ]; do
+    failed=false
+    docker pull $base_imagename || failed=true
+    if [ "$failed" = true ]; then
+        let pull_retries=pull_retries-1
+        echo -e "${YELLOW}Failed to pull $base_imagename Retries left: $pull_retries.${RESET}"
+        sleep 1
+    else
+        pull_retries=0
+    fi
+done
 
 docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
     --build-arg "USER_ID=$(id -u)" \
     --build-arg "GROUP_ID=$(id -g)" \
+    --build-arg "WORKDIR=$DIR" \
     --tag $tagname \
     -f "$dockerfile"
 
 docker run \
     --rm \
     -t \
-    -e CI \
-    -e TEAMCITY_VERSION \
+    -e TF_BUILD \
+    -e BUILD_NUMBER \
+    -e BUILD_BUILDID \
+    -e SYSTEM_TEAMPROJECT \
+    -e BUILD_BUILDNUMBER \
+    -e BUILD_REPOSITORY_NAME \
+    -e BUILD_REPOSITORY_URI \
+    -e BUILD_REPOSITORY_NAME \
+    -e BUILD_SOURCEVERSION \
+    -e BUILD_SOURCEBRANCH \
+    -e SYSTEM_DEFINITIONID \
+    -e SYSTEM_TEAMFOUNDATIONCOLLECTIONURI \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
-    -e PB_RESTORESOURCE \
-    -e PB_PUBLISHBLOBFEEDURL \
-    -e PB_PUBLISHTYPE \
-    -e PB_SKIPTESTS \
-    -e PB_ISFINALBUILD \
-    -e PB_ACCESSTOKENSUFFIX \
-    -e PB_PACKAGEVERSIONPROPSURL\
-    -e PB_ASSETROOTURL \
-    -e PRODUCTBUILDID \
-    -v "$DIR:/code/build" \
+    -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \
-    ${build_args[@]+"${build_args[@]}"} \
-    "-p:HostMachineRepositoryRoot=$DIR"
+    ${build_args[@]+"${build_args[@]}"}

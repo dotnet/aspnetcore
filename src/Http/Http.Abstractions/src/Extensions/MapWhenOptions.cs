@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
     /// </summary>
     public class MapWhenOptions
     {
-        private Func<HttpContext, bool> _predicate;
+        private Func<HttpContext, bool>? _predicate;
 
         /// <summary>
         /// The user callback that determines if the branch should be taken.
         /// </summary>
-        public Func<HttpContext, bool> Predicate
+        public Func<HttpContext, bool>? Predicate
         {
             get
             {
@@ -36,6 +36,6 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         /// <summary>
         /// The branch taken for a positive match.
         /// </summary>
-        public RequestDelegate Branch { get; set; }
+        public RequestDelegate? Branch { get; set; }
     }
 }

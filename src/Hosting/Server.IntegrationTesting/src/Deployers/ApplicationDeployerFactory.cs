@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// <param name="deploymentParameters"></param>
         /// <param name="loggerFactory"></param>
         /// <returns></returns>
-        public static IApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+        public static ApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
             if (deploymentParameters == null)
             {
@@ -32,18 +33,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             switch (deploymentParameters.ServerType)
             {
                 case ServerType.IISExpress:
-                    return new IISExpressDeployer(deploymentParameters, loggerFactory);
                 case ServerType.IIS:
-                    throw new NotSupportedException("The IIS deployer is no longer supported");
-                case ServerType.WebListener:
+                    throw new NotSupportedException("Use Microsoft.AspNetCore.Server.IntegrationTesting.IIS package and IISApplicationDeployerFactory for IIS support.");
+                case ServerType.HttpSys:
                 case ServerType.Kestrel:
                     return new SelfHostDeployer(deploymentParameters, loggerFactory);
                 case ServerType.Nginx:
                     return new NginxDeployer(deploymentParameters, loggerFactory);
                 default:
                     throw new NotSupportedException(
-                        string.Format("Found no deployers suitable for server type '{0}' with the current runtime.",
-                        deploymentParameters.ServerType)
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Found no deployers suitable for server type '{0}' with the current runtime.",
+                            deploymentParameters.ServerType)
                         );
             }
         }

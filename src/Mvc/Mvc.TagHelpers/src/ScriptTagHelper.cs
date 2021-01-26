@@ -7,11 +7,13 @@ using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
@@ -34,12 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string SrcExcludeAttributeName = "asp-src-exclude";
         private const string FallbackSrcAttributeName = "asp-fallback-src";
         private const string FallbackSrcIncludeAttributeName = "asp-fallback-src-include";
+        private const string SuppressFallbackIntegrityAttributeName = "asp-suppress-fallback-integrity";
         private const string FallbackSrcExcludeAttributeName = "asp-fallback-src-exclude";
         private const string FallbackTestExpressionAttributeName = "asp-fallback-test";
         private const string SrcAttributeName = "src";
+        private const string IntegrityAttributeName = "integrity";
         private const string AppendVersionAttributeName = "asp-append-version";
         private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
-        private FileVersionProvider _fileVersionProvider;
         private StringWriter _stringWriter;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
@@ -79,21 +82,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="ScriptTagHelper"/>.
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
+        /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
+        /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
+        // to use this constructor in the default case.
         public ScriptTagHelper(
-            IHostingEnvironment hostingEnvironment,
-            IMemoryCache cache,
+            IWebHostEnvironment hostingEnvironment,
+            TagHelperMemoryCacheProvider cacheProvider,
+            IFileVersionProvider fileVersionProvider,
             HtmlEncoder htmlEncoder,
             JavaScriptEncoder javaScriptEncoder,
             IUrlHelperFactory urlHelperFactory)
             : base(urlHelperFactory, htmlEncoder)
         {
             HostingEnvironment = hostingEnvironment;
-            Cache = cache;
+            Cache = cacheProvider.Cache;
             JavaScriptEncoder = javaScriptEncoder;
+
+            FileVersionProvider = fileVersionProvider;
         }
 
         /// <inheritdoc />
@@ -130,6 +139,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public string FallbackSrc { get; set; }
 
         /// <summary>
+        /// Boolean value that determines if an integrity hash will be compared with <see cref="FallbackSrc"/> value.
+        /// </summary>
+        [HtmlAttributeName(SuppressFallbackIntegrityAttributeName)]
+        public bool SuppressFallbackIntegrity { get; set; }
+
+        /// <summary>
         /// Value indicating if file version should be appended to src urls.
         /// </summary>
         /// <remarks>
@@ -161,12 +176,26 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        protected IHostingEnvironment HostingEnvironment { get; }
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// </summary>
+        protected internal IWebHostEnvironment HostingEnvironment { get; }
 
-        protected IMemoryCache Cache { get; }
+        /// <summary>
+        /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
+        /// </summary>
+        protected internal IMemoryCache Cache { get; private set; }
 
+        internal IFileVersionProvider FileVersionProvider { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.JavaScriptEncoder"/> used to encode fallback information.
+        /// </summary>
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
+        /// <summary>
+        /// Gets the <see cref="GlobbingUrlBuilder"/> used to populate included and excluded urls.
+        /// </summary>
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
@@ -211,8 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // not function properly.
             Src = output.Attributes[SrcAttributeName]?.Value as string;
 
-            Mode mode;
-            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out mode))
+            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -228,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     var existingAttribute = output.Attributes[index];
                     output.Attributes[index] = new TagHelperAttribute(
                         existingAttribute.Name,
-                        _fileVersionProvider.AddFileVersionToPath(Src),
+                        FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src),
                         existingAttribute.ValueStyle);
                 }
             }
@@ -249,8 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (mode == Mode.Fallback)
             {
-                string resolvedUrl;
-                if (TryResolveUrl(FallbackSrc, resolvedUrl: out resolvedUrl))
+                if (TryResolveUrl(FallbackSrc, resolvedUrl: out string resolvedUrl))
                 {
                     FallbackSrc = resolvedUrl;
                 }
@@ -304,12 +331,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                     var addSrc = true;
 
-                    // Perf: Avoid allocating enumerator
-                    for (var i = 0; i < attributes.Count; i++)
+                    // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+                    var attributesCount = attributes.Count;
+                    for (var i = 0; i < attributesCount; i++)
                     {
                         var attribute = attributes[i];
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
+                            if (SuppressFallbackIntegrity && string.Equals(IntegrityAttributeName, attribute.Name, StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
                             StringWriter.Write(' ');
                             attribute.WriteTo(StringWriter, HtmlEncoder);
                         }
@@ -342,7 +375,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             if (AppendVersion == true)
             {
-                srcValue = _fileVersionProvider.AddFileVersionToPath(srcValue);
+                srcValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, srcValue);
             }
 
             return srcValue;
@@ -387,12 +420,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private void EnsureFileVersionProvider()
         {
-            if (_fileVersionProvider == null)
+            if (FileVersionProvider == null)
             {
-                _fileVersionProvider = new FileVersionProvider(
-                    HostingEnvironment.WebRootFileProvider,
-                    Cache,
-                    ViewContext.HttpContext.Request.PathBase);
+                FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
             }
         }
 
@@ -405,8 +435,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var addSrc = true;
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
                 if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))

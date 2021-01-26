@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -19,11 +18,14 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -33,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -48,17 +51,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
-        [PortSupportedCondition(5000)]
+        [SkipOnCI]
         public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, string testUrl)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrl, 5000);
         }
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port80))]
-        [PortSupportedCondition(80)]
+        [SkipOnCI]
         public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, string testUrl)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 80))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrl, 80);
         }
 
@@ -90,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26626")]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -98,39 +112,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(443)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
+            if (!CanBindToEndpoint(endpoint.Address, 443))
+            {
+                return;
+            }
+
             await RegisterIPEndPoint_Success(endpoint, testUrl, 443);
         }
 
-        [ConditionalTheory(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2434")]
+        [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25403")]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
+        [MemberData(nameof(AddressRegistrationDataIPv6Port5000And5001Default))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
-        public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
+        public async Task RegisterAddresses_IPv6Port5000And5001Default_Success(string addressInput, string[] testUrls)
         {
+            if ((!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)) &&
+                (!CanBindToEndpoint(IPAddress.Loopback, 5001) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5001)))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(80)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 80) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 80))
+            {
+                return;
+            }
+
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
@@ -155,11 +187,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task RegisterAddresses_Success(string addressInput, string[] testUrls, int testPort = 0)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(AddTestLogging)
-                .UseUrls(addressInput)
-                .Configure(ConfigureEchoAddress);
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(serverOptions =>
+                        {
+                            serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+                            {
+                                httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                            });
+                        })
+                        .UseUrls(addressInput)
+                        .Configure(ConfigureEchoAddress);
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -169,10 +211,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
 
-                    // Compare the response with Uri.ToString(), rather than testUrl directly.
-                    // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
-                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                    // Filter out the scope id for IPv6, that's not sent over the wire. "fe80::3%1"
+                    // See https://github.com/aspnet/Common/pull/369
+                    var uri = new Uri(testUrl);
+                    if (uri.HostNameType == UriHostNameType.IPv6)
+                    {
+                        var builder = new UriBuilder(uri);
+                        var ip = IPAddress.Parse(builder.Host);
+                        builder.Host = new IPAddress(ip.GetAddressBytes()).ToString(); // Without the scope id.
+                        uri = builder.Uri;
+                    }
+                    Assert.Equal(uri.ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -183,27 +235,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             RunTestWithStaticPort(port => RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port));
 
         [Fact]
-        public async Task RegisterHttpAddress_UpradedToHttpsByConfigureEndpointDefaults()
+        public async Task RegisterHttpAddress_UpgradedToHttpsByConfigureEndpointDefaults()
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(serverOptions =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    serverOptions.ConfigureEndpointDefaults(listenOptions =>
-                    {
-                        listenOptions.UseHttps(TestResources.GetTestCertificate());
-                    });
+                    webHostBuilder
+                        .UseKestrel(serverOptions =>
+                        {
+                            serverOptions.ConfigureEndpointDefaults(listenOptions =>
+                            {
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .UseUrls("http://127.0.0.1:0")
+                        .Configure(app =>
+                        {
+                            var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
+                            app.Run(context =>
+                            {
+                                Assert.Single(serverAddresses.Addresses);
+                                return context.Response.WriteAsync(serverAddresses.Addresses.First());
+                            });
+                        });
                 })
-                .ConfigureServices(AddTestLogging)
-                .UseUrls("http://127.0.0.1:0")
-                .Configure(app =>
-                {
-                    var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
-                    app.Run(context =>
-                    {
-                        Assert.Single(serverAddresses.Addresses);
-                        return context.Response.WriteAsync(serverAddresses.Addresses.First());
-                    });
-                });
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -213,6 +269,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var response = await HttpClientSlim.GetStringAsync(expectedUrl, validateCertificate: false);
 
                 Assert.Equal(expectedUrl, response);
+
+                await host.StopAsync();
             }
         }
 
@@ -252,23 +310,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task RegisterIPEndPoint_Success(IPEndPoint endPoint, string testUrl, int testPort = 0)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(endPoint, listenOptions =>
-                    {
-                        if (testUrl.StartsWith("https"))
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
-                        }
-                    });
+                            options.Listen(endPoint, listenOptions =>
+                            {
+                                if (testUrl.StartsWith("https", StringComparison.Ordinal))
+                                {
+                                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+                                }
+                            });
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
 
@@ -280,13 +342,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                 Assert.Equal(new Uri(testUrlWithPort).ToString(), response);
+
+                await host.StopAsync();
             }
         }
 
         private Task RegisterIPEndPoint_StaticPort_Success(IPAddress address, string testUrl)
             => RunTestWithStaticPort(port => RegisterIPEndPoint_Success(new IPEndPoint(address, port), testUrl, port));
 
-        [ConditionalFact]
+        [Fact]
         public async Task ListenAnyIP_IPv4_Success()
         {
             await ListenAnyIP_Success(new[] { "http://localhost", "http://127.0.0.1" });
@@ -301,6 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -309,17 +374,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task ListenAnyIP_Success(string[] testUrls, int testPort = 0)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.ListenAnyIP(testPort);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.ListenAnyIP(testPort);
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .ConfigureServices(AddTestLogging)
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -329,10 +398,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ListenLocalhost_IPv4LocalhostStaticPort_Success()
         {
             await ListenLocalhost_StaticPort_Success(new[] { "http://localhost", "http://127.0.0.1" });
@@ -350,17 +421,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task ListenLocalhost_Success(string[] testUrls, int testPort = 0)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.ListenLocalhost(testPort);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.ListenLocalhost(testPort);
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .ConfigureServices(AddTestLogging)
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -370,39 +445,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
         [ConditionalFact]
-        [PortSupportedCondition(5000)]
+        [SkipOnCI]
         public Task DefaultsServerAddress_BindsToIPv4()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000" });
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
+        [SkipOnCI]
         public Task DefaultsServerAddress_BindsToIPv6()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000", "http://[::1]:5000" });
         }
 
         [ConditionalFact]
-        [PortSupportedCondition(5000)]
-        [PortSupportedCondition(5001)]
+        [SkipOnCI]
         public Task DefaultsServerAddress_BindsToIPv4WithHttps()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.Loopback, 5001))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(
                 new[] { "http://127.0.0.1:5000", "https://127.0.0.1:5001" }, mockHttps: true);
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        [PortSupportedCondition(5000)]
-        [PortSupportedCondition(5001)]
+        [SkipOnCI]
         public Task DefaultsServerAddress_BindsToIPv6WithHttps()
         {
+            if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)
+                || !CanBindToEndpoint(IPAddress.Loopback, 5001) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5001))
+            {
+                return Task.CompletedTask;
+            }
+
             return RegisterDefaultServerAddresses_Success(new[] {
                 "http://127.0.0.1:5000", "http://[::1]:5000",
                 "https://127.0.0.1:5001", "https://[::1]:5001"},
@@ -411,20 +507,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task RegisterDefaultServerAddresses_Success(IEnumerable<string> addresses, bool mockHttps = false)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    if (mockHttps)
-                    {
-                        options.DefaultCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
-                    }
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            if (mockHttps)
+                            {
+                                options.DefaultCertificate = TestResources.GetTestCertificate();
+                            }
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(5000, host.GetPort());
 
@@ -433,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Contains(5001, host.GetPorts());
                 }
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Debug &&
+                Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Debug &&
                     (string.Equals(CoreStrings.FormatBindingToDefaultAddresses(Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress), log.Message, StringComparison.Ordinal)
                         || string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal)));
 
@@ -441,11 +541,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     Assert.Equal(new Uri(address).ToString(), await HttpClientSlim.GetStringAsync(address, validateCertificate: false));
                 }
+
+                await host.StopAsync();
             }
         }
 
         [Fact]
-        public void ThrowsWhenBindingToIPv4AddressInUse()
+        public async Task ThrowsWhenBindingToIPv4AddressInUse()
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
@@ -453,24 +555,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 socket.Listen(0);
                 var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .UseKestrel()
-                    .UseUrls($"http://127.0.0.1:{port}")
-                    .Configure(ConfigureEchoAddress);
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
+                    {
+                        webHostBuilder
+                            .UseKestrel()
+                            .UseUrls($"http://127.0.0.1:{port}")
+                            .Configure(ConfigureEchoAddress);
+                    });
 
                 using (var host = hostBuilder.Build())
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://127.0.0.1:{port}"), exception.Message);
+
+                    await host.StopAsync();
                 }
             }
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        public void ThrowsWhenBindingToIPv6AddressInUse()
+        public async Task ThrowsWhenBindingToIPv6AddressInUse()
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(IOException));
+            IgnoredCriticalLogExceptions.Add(typeof(IOException));
 
             using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
             {
@@ -478,16 +586,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 socket.Listen(0);
                 var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .ConfigureServices(AddTestLogging)
-                    .UseKestrel()
-                    .UseUrls($"http://[::1]:{port}")
-                    .Configure(ConfigureEchoAddress);
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
+                    {
+                        webHostBuilder
+                            .UseKestrel()
+                            .UseUrls($"http://[::1]:{port}")
+                            .Configure(ConfigureEchoAddress);
+                    })
+                    .ConfigureServices(AddTestLogging);
 
                 using (var host = hostBuilder.Build())
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://[::1]:{port}"), exception.Message);
+
+                    await host.StopAsync();
                 }
             }
         }
@@ -496,37 +610,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task OverrideDirectConfigurationWithIServerAddressesFeature_Succeeds()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
-                    {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
-                    });
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                            {
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .UseUrls(useUrlsAddress)
+                        .PreferHostingUrls(true)
+                        .Configure(ConfigureEchoAddress);
                 })
-               .UseUrls(useUrlsAddress)
-               .PreferHostingUrls(true)
-               .ConfigureServices(AddTestLogging)
-               .Configure(ConfigureEchoAddress);
+               .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
                 // If this isn't working properly, we'll get the HTTPS endpoint defined in UseKestrel
                 // instead of the HTTP endpoint defined in UseUrls.
-                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
                 Assert.Equal(1, serverAddresses.Count);
                 var useUrlsAddressWithPort = $"http://127.0.0.1:{port}";
                 Assert.Equal(serverAddresses.First(), useUrlsAddressWithPort);
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Information &&
+                Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Information &&
                     string.Equals(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(IServerAddressesFeature.PreferHostingUrls), useUrlsAddress),
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(useUrlsAddressWithPort).ToString(), await HttpClientSlim.GetStringAsync(useUrlsAddressWithPort));
+
+                await host.StopAsync();
             }
         }
 
@@ -535,68 +655,79 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
 
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
-                    {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
-                    });
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                            {
+                                listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                            });
+                        })
+                        .UseUrls($"http://127.0.0.1:0")
+                        .PreferHostingUrls(false)
+                        .Configure(ConfigureEchoAddress);
                 })
-                .UseUrls($"http://127.0.0.1:0")
-                .PreferHostingUrls(false)
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
                 // If this isn't working properly, we'll get the HTTP endpoint defined in UseUrls
                 // instead of the HTTPS endpoint defined in UseKestrel.
-                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
                 Assert.Equal(1, serverAddresses.Count);
                 var endPointAddress = $"https://127.0.0.1:{port}";
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
-                Assert.Single(TestApplicationErrorLogger.Messages, log => log.LogLevel == LogLevel.Warning &&
-                    string.Equals(CoreStrings.FormatOverridingWithKestrelOptions(useUrlsAddress, "UseKestrel()"),
+                Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Warning &&
+                    string.Equals(CoreStrings.FormatOverridingWithKestrelOptions(useUrlsAddress),
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+                await host.StopAsync();
             }
         }
 
         [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesEmpty()
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
-                    {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
-                    });
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                            {
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .PreferHostingUrls(true)
+                        .Configure(ConfigureEchoAddress);
                 })
-                .PreferHostingUrls(true)
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
                 // If this isn't working properly, we'll not get the HTTPS endpoint defined in UseKestrel.
-                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
                 Assert.Equal(1, serverAddresses.Count);
                 var endPointAddress = $"https://127.0.0.1:{port}";
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+
+                await host.StopAsync();
             }
         }
 
@@ -614,38 +745,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public void ThrowsWhenBindingLocalhostToDynamicPort()
+        public async Task ThrowsWhenBindingLocalhostToDynamicPort()
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
+            IgnoredCriticalLogExceptions.Add(typeof(InvalidOperationException));
 
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel()
-                .UseUrls("http://localhost:0")
-                .Configure(ConfigureEchoAddress);
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://localhost:0")
+                        .Configure(ConfigureEchoAddress);
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
                 Assert.Throws<InvalidOperationException>(() => host.Start());
+
+                await host.StopAsync();
             }
         }
 
         [Theory]
         [InlineData("ftp://localhost")]
         [InlineData("ssh://localhost")]
-        public void ThrowsForUnsupportedAddressFromHosting(string addr)
+        public async Task ThrowsForUnsupportedAddressFromHosting(string address)
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
+            IgnoredCriticalLogExceptions.Add(typeof(InvalidOperationException));
 
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel()
-                .UseUrls(addr)
-                .Configure(ConfigureEchoAddress);
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls(address)
+                        .Configure(ConfigureEchoAddress);
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
                 Assert.Throws<InvalidOperationException>(() => host.Start());
+
+                await host.StopAsync();
             }
         }
 
@@ -655,33 +798,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var port = GetNextPort();
             var endPointAddress = $"http://127.0.0.1:{port}/";
 
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, port);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, port);
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
 
-            hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
+            hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, port);
-                })
-                .Configure(ConfigureEchoAddress);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, port);
+                        })
+                        .Configure(ConfigureEchoAddress);
+                });
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
         }
 
@@ -693,43 +848,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var ipv4endPointAddress = $"http://127.0.0.1:{port}/";
             var ipv6endPointAddress = $"http://[::1]:{port}/";
 
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, port);
-                    options.Listen(IPAddress.IPv6Loopback, port);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, port);
+                            options.Listen(IPAddress.IPv6Loopback, port);
+                        })
+                        .Configure(ConfigureEchoAddress);
                 })
-                .Configure(ConfigureEchoAddress);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
             }
 
-            hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
+            hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, port);
-                    options.Listen(IPAddress.IPv6Loopback, port);
-                })
-                .Configure(ConfigureEchoAddress);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, port);
+                            options.Listen(IPAddress.IPv6Loopback, port);
+                        })
+                        .Configure(ConfigureEchoAddress);
+                });
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        [InlineData("http2", HttpProtocols.Http2)]
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+        public async Task EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
+        {
+            KestrelServerOptions capturedOptions = null;
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                            {
+                                new KeyValuePair<string, string>("EndpointDefaults:Protocols", input),
+                            }).Build();
+                            options.Configure(config);
+
+                            capturedOptions = options;
+                        })
+                    .UseUrls("http://127.0.0.1:0")
+                    .Configure(ConfigureEchoAddress);
+                })
+                .ConfigureServices(AddTestLogging);
+
+            using (var host = hostBuilder.Build())
+            {
+                await host.StartAsync();
+                Assert.Single(capturedOptions.OptionsInUse);
+                Assert.Equal(expected, capturedOptions.OptionsInUse[0].Protocols);
+                await host.StopAsync();
             }
         }
 
         private void ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily addressFamily)
         {
-            TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(IOException));
+            IgnoredCriticalLogExceptions.Add(typeof(IOException));
 
             var addressInUseCount = 0;
             var wrongMessageCount = 0;
@@ -743,7 +945,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    // Bind first to IPv6Any to ensure both the IPv4 and IPv6 ports are avaiable.
+                    // Bind first to IPv6Any to ensure both the IPv4 and IPv6 ports are available.
                     socket.Bind(new IPEndPoint(IPAddress.IPv6Any, 0));
                     socket.Listen(0);
                     port = ((IPEndPoint)socket.LocalEndPoint).Port;
@@ -762,18 +964,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         continue;
                     }
 
-                    var hostBuilder = TransportSelector.GetWebHostBuilder()
-                        .ConfigureServices(AddTestLogging)
-                        .UseKestrel()
-                        .UseUrls($"http://localhost:{port}")
-                        .Configure(ConfigureEchoAddress);
+                    var hostBuilder = TransportSelector.GetHostBuilder()
+                        .ConfigureWebHost(webHostBuilder =>
+                        {
+                            webHostBuilder
+                                .UseKestrel()
+                                .UseUrls($"http://localhost:{port}")
+                                .Configure(ConfigureEchoAddress);
+                        })
+                        .ConfigureServices(AddTestLogging);
 
                     using (var host = hostBuilder.Build())
                     {
                         var exception = Assert.Throws<IOException>(() => host.Start());
 
                         var thisAddressString = $"http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}";
-                        var otherAddressString = $"http://{(addressFamily == AddressFamily.InterNetworkV6? "127.0.0.1" : "[::1]")}:{port}";
+                        var otherAddressString = $"http://{(addressFamily == AddressFamily.InterNetworkV6 ? "127.0.0.1" : "[::1]")}:{port}";
 
                         if (exception.Message == CoreStrings.FormatEndpointAlreadyInUse(otherAddressString))
                         {
@@ -931,11 +1137,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000Default =>
+        public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000And5001Default =>
             new TheoryData<string, string[]>
             {
-                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
-                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
+                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/", "https://127.0.0.1:5001/", "https://[::1]:5001/" } },
+                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/", "https://127.0.0.1:5001/", "https://[::1]:5001/" } }
             };
 
         public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port80 =>
@@ -1040,37 +1246,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-        private class PortSupportedConditionAttribute : Attribute, ITestCondition
+        private static bool CanBindToEndpoint(IPAddress address, int port)
         {
-            private readonly int _port;
-            private readonly Lazy<bool> _portSupported;
-
-            public PortSupportedConditionAttribute(int port)
+            try
             {
-                _port = port;
-                _portSupported = new Lazy<bool>(CanBindToPort);
+                using (var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Bind(new IPEndPoint(address, port));
+                    socket.Listen(0);
+                    return true;
+                }
             }
-
-            public bool IsMet => _portSupported.Value;
-
-            public string SkipReason => $"Cannot bind to port {_port} on the host.";
-
-            private bool CanBindToPort()
+            catch (SocketException)
             {
-                try
-                {
-                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                    {
-                        socket.Bind(new IPEndPoint(IPAddress.Loopback, _port));
-                        socket.Listen(0);
-                        return true;
-                    }
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }

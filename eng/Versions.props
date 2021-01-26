@@ -3,6 +3,301 @@
   This file defines the versions of external dependencies used by ASP.NET Core.
   This file might be updated by automation.
 
-  TODO: move versions from build/dependencies.props into this location. Depends on https://github.com/aspnet/AspNetCore/issues/4246.
 -->
-<Project />
+<Project>
+  <PropertyGroup Label="Version settings">
+    <AspNetCoreMajorVersion>6</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel>Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
+    <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <VersionPrefix>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <!--
+      TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats.
+      It's also used in root Directory.Build.targets to determine the version of the last-built targeting pack.
+    -->
+    <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>
+    <!-- Targeting packs do not produce patch versions in servicing builds. No API changes are allowed in patches. -->
+    <TargetingPackVersionPrefix Condition="'$(IsTargetingPackBuilding)' != 'true'">$(AspNetCoreMajorMinorVersion).0</TargetingPackVersionPrefix>
+    <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
+    <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
+    <AspNetCoreModuleVersionMajor>$([MSBuild]::Add(10, $(AspNetCoreMajorVersion)))</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>$(AspNetCoreMinorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionRevision>$(AspNetCorePatchVersion)</AspNetCoreModuleVersionRevision>
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousAspNetCoreReleaseVersion Condition=" '$(AspNetCorePatchVersion)' != '0' ">$(AspNetCoreMajorMinorVersion).$([MSBuild]::Subtract($(AspNetCorePatchVersion), 1))</PreviousAspNetCoreReleaseVersion>
+    <!--
+      Update the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj,
+      src\Components\WebAssembly\Sdk\testassets\Directory.Build.props, and
+      src\Razor\test\testassets\Directory.Build.props when this changes.
+    -->
+    <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Label="Arcade settings">
+    <!-- Opt-in to Arcade tools for building VSIX projects. -->
+    <UsingToolVSSDK>true</UsingToolVSSDK>
+    <!-- Only use Microsoft.NETFramework.ReferenceAssemblies on non-windows builds. Using this on Windows breaks MVC runtime compilation. -->
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'">true</UsingToolNetFrameworkReferenceAssemblies>
+    <!-- Disable XLIFF tasks -->
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
+  <!--
+
+    These versions should ONLY be updated by automation.
+
+    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
+    Version.Details.xml.
+
+    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+
+  -->
+  <PropertyGroup Label="Automated">
+    <!-- Packages from dotnet/runtime -->
+    <MicrosoftExtensionsDependencyModelVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftNETCoreAppRefVersion>6.0.0-preview.2.21076.2</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-preview.2.21076.2</MicrosoftNETCoreAppRuntimewinx64Version>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-preview.2.21076.2</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftWin32RegistryVersion>6.0.0-preview.2.21076.2</MicrosoftWin32RegistryVersion>
+    <MicrosoftWin32SystemEventsVersion>6.0.0-preview.2.21076.2</MicrosoftWin32SystemEventsVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationCommandLineVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationCommandLineVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationIniVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationUserSecretsVersion>
+    <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsConfigurationXmlVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsFileProvidersCompositeVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsFileProvidersPhysicalVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsLoggingEventSourceVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingEventSourceVersion>
+    <MicrosoftExtensionsLoggingEventLogVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingEventLogVersion>
+    <MicrosoftExtensionsLoggingVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingTraceSourceVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsLoggingTraceSourceVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsOptionsDataAnnotationsVersion>
+    <MicrosoftExtensionsOptionsVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsInternalTransportVersion>6.0.0-preview.2.21076.2</MicrosoftExtensionsInternalTransportVersion>
+    <SystemComponentModelAnnotationsVersion>6.0.0-preview.2.21076.2</SystemComponentModelAnnotationsVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.2.21076.2</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsEventLogVersion>6.0.0-preview.2.21076.2</SystemDiagnosticsEventLogVersion>
+    <SystemDirectoryServicesProtocolsVersion>6.0.0-preview.2.21076.2</SystemDirectoryServicesProtocolsVersion>
+    <SystemDrawingCommonVersion>6.0.0-preview.2.21076.2</SystemDrawingCommonVersion>
+    <SystemIOPipelinesVersion>6.0.0-preview.2.21076.2</SystemIOPipelinesVersion>
+    <SystemNetHttpJsonVersion>6.0.0-preview.2.21076.2</SystemNetHttpJsonVersion>
+    <SystemNetHttpWinHttpHandlerVersion>6.0.0-preview.2.21076.2</SystemNetHttpWinHttpHandlerVersion>
+    <SystemNetWebSocketsWebSocketProtocolVersion>6.0.0-preview.2.21076.2</SystemNetWebSocketsWebSocketProtocolVersion>
+    <SystemReflectionMetadataVersion>6.0.0-preview.2.21076.2</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsVersion>6.0.0-preview.2.21076.2</SystemResourcesExtensionsVersion>
+    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.2.21076.2</SystemRuntimeCompilerServicesUnsafeVersion>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <SystemSecurityAccessControlVersion>6.0.0-preview.2.21076.2</SystemSecurityAccessControlVersion>
+    <SystemSecurityCryptographyCngVersion>6.0.0-preview.2.21076.2</SystemSecurityCryptographyCngVersion>
+    <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.2.21076.2</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>6.0.0-preview.2.21076.2</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-preview.2.21076.2</SystemSecurityPermissionsVersion>
+    <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.2.21076.2</SystemSecurityPrincipalWindowsVersion>
+    <SystemServiceProcessServiceControllerVersion>6.0.0-preview.2.21076.2</SystemServiceProcessServiceControllerVersion>
+    <SystemTextEncodingsWebVersion>6.0.0-preview.2.21076.2</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>6.0.0-preview.2.21076.2</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>6.0.0-preview.2.21076.2</SystemThreadingChannelsVersion>
+    <SystemWindowsExtensionsVersion>6.0.0-preview.2.21076.2</SystemWindowsExtensionsVersion>
+    <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
+    <MicrosoftNETCorePlatformsVersion>6.0.0-preview.2.21076.2</MicrosoftNETCorePlatformsVersion>
+    <!-- Packages from dotnet/efcore -->
+    <dotnetefVersion>6.0.0-alpha.1.21076.1</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-alpha.1.21076.1</MicrosoftEntityFrameworkCoreDesignVersion>
+    <!-- Packages from dotnet/arcade -->
+    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21071.2</MicrosoftDotNetBuildTasksInstallersVersion>
+  </PropertyGroup>
+  <!--
+
+    ^^^^^^^^^^
+    SEE NOTE ABOVE.
+
+    Versions above this comment are updated automatically. Don't change them manually.
+
+    Versions below this comment are not managed by automation and can be changed as needed.
+  -->
+  <PropertyGroup Label="Dependency version settings">
+    <!--
+      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
+      All Runtime.$rid packages should have the same version.
+    -->
+    <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64Version)</MicrosoftNETCoreAppRuntimeVersion>
+  </PropertyGroup>
+  <!--
+    We ship ref/ assemblies for runtime packages in our targeting targeting pack. When servicing that targeting pack,
+    these assemblies must not change. Must also compile our assemblies against the initial ref/ assemblies for runtime
+    packages. But, need to test against the latest implementation assemblies and ship them in our shared framework.
+    Upshot is we need Major.Minor.0 runtime packages for compilation and the targeting pack and Major.Minor.Latest
+    runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
+    Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
+
+    System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. Because
+    it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
+    the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
+
+    If testing this configuration prior to servicing, update the versions of dependencies too. E.g. change
+    `$(SystemSecurityPrincipalWindowsV0PackageVersion)` if you change `$(SystemSecurityAccessControlV0PackageVersion)`
+    because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
+  -->
+  <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
+    <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>
+    <MicrosoftWin32SystemEventsV0PackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0PackageVersion>
+    <SystemDiagnosticsEventLogV0PackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0PackageVersion>
+    <SystemDrawingCommonV0PackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonV0PackageVersion>
+    <SystemIOPipelinesV0PackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesV0PackageVersion>
+    <SystemSecurityAccessControlV0PackageVersion>$(SystemSecurityAccessControlPackageVersion.Split('.')[0]).$(SystemSecurityAccessControlPackageVersion.Split('.')[1]).0</SystemSecurityAccessControlV0PackageVersion>
+    <SystemSecurityCryptographyCngV0PackageVersion>$(SystemSecurityCryptographyCngPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyCngPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0PackageVersion>
+    <SystemSecurityCryptographyPkcsV0PackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0PackageVersion>
+    <SystemSecurityCryptographyXmlV0PackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0PackageVersion>
+    <SystemSecurityPermissionsV0PackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsV0PackageVersion>
+    <SystemSecurityPrincipalWindowsV0PackageVersion>$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0PackageVersion>
+    <SystemWindowsExtensionsV0PackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsV0PackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Manual">
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetVersion>3.8.0-5.20519.18</MicrosoftNetCompilersToolsetVersion>
+    <!-- DiagnosticAdapter package pinned temporarily until migrated/deprecated -->
+    <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.4.20180.4</MicrosoftExtensionsDiagnosticAdapterVersion>
+    <!-- Build tool dependencies -->
+    <InternalAspNetCoreBuildTasksVersion>3.0.0-build-20190530.3</InternalAspNetCoreBuildTasksVersion>
+    <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
+    <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
+    <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
+    <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
+    <SystemBuffersVersion>4.5.0</SystemBuffersVersion>
+    <SystemCodeDomVersion>4.4.0</SystemCodeDomVersion>
+    <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
+    <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
+    <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+    <SystemNetSocketsVersion>4.3.0</SystemNetSocketsVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationVersion>
+    <SystemThreadingTasksExtensionsVersion>4.5.3</SystemThreadingTasksExtensionsVersion>
+    <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
+    <!-- Packages developed by @aspnet, but manually updated as necessary. -->
+    <LibuvVersion>1.10.0</LibuvVersion>
+    <MicrosoftAspNetWebApiClientVersion>5.2.6</MicrosoftAspNetWebApiClientVersion>
+    <MonoWebAssemblyInteropVersion>3.1.1-preview4.19614.4</MonoWebAssemblyInteropVersion>
+    <!-- Partner teams -->
+    <MicrosoftBclAsyncInterfacesVersion>1.0.0</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftBuildVersion>15.8.166</MicrosoftBuildVersion>
+    <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
+    <MicrosoftBuildFrameworkVersion>15.8.166</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>15.8.166</MicrosoftBuildUtilitiesCoreVersion>
+    <MicrosoftCodeAnalysisCommonVersion>3.7.0</MicrosoftCodeAnalysisCommonVersion>
+    <MicrosoftCodeAnalysisCSharpVersion>3.7.0</MicrosoftCodeAnalysisCSharpVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.7.0</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisFxCopAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisFxCopAnalyzersVersion>
+    <MicrosoftCssParserVersion>1.0.0-20200708.1</MicrosoftCssParserVersion>
+    <MicrosoftIdentityModelClientsActiveDirectoryVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryVersion>
+    <MicrosoftIdentityModelLoggingVersion>6.7.1</MicrosoftIdentityModelLoggingVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.7.1</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationVersion>6.7.1</MicrosoftIdentityModelProtocolsWsFederationVersion>
+    <MicrosoftInternalAspNetCoreH2SpecAllVersion>2.2.1</MicrosoftInternalAspNetCoreH2SpecAllVersion>
+    <MicrosoftNETCoreWindowsApiSetsVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsVersion>
+    <MicrosoftOwinSecurityCookiesVersion>3.0.1</MicrosoftOwinSecurityCookiesVersion>
+    <MicrosoftOwinTestingVersion>3.0.1</MicrosoftOwinTestingVersion>
+    <MicrosoftWebAdministrationVersion>11.1.0</MicrosoftWebAdministrationVersion>
+    <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
+    <SystemIdentityModelTokensJwtVersion>6.7.1</SystemIdentityModelTokensJwtVersion>
+    <NuGetVersioningVersion>5.7.0</NuGetVersioningVersion>
+    <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
+    <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.10-servicing-20520-4</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.0-rtm-20529-7</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>
+    <!-- 3rd party dependencies -->
+    <AngleSharpVersion>0.9.9</AngleSharpVersion>
+    <BenchmarkDotNetVersion>0.12.1</BenchmarkDotNetVersion>
+    <CastleCoreVersion>4.2.1</CastleCoreVersion>
+    <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
+    <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
+    <GoogleProtobufVersion>3.13.0</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.32.0</GrpcAspNetCoreVersion>
+    <GrpcAuthVersion>2.32.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.32.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.32.0</GrpcToolsVersion>
+    <IdentityServer4AspNetIdentityVersion>4.1.0</IdentityServer4AspNetIdentityVersion>
+    <IdentityServer4EntityFrameworkVersion>4.1.0</IdentityServer4EntityFrameworkVersion>
+    <IdentityServer4Version>4.1.0</IdentityServer4Version>
+    <IdentityServer4StorageVersion>4.1.0</IdentityServer4StorageVersion>
+    <IdentityServer4EntityFrameworkStorageVersion>4.1.0</IdentityServer4EntityFrameworkStorageVersion>
+    <MessagePackVersion>2.1.90</MessagePackVersion>
+    <MicrosoftIdentityWebVersion>1.1.0</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebMicrosoftGraphVersion>1.1.0</MicrosoftIdentityWebMicrosoftGraphVersion>
+    <MicrosoftIdentityWebUIVersion>1.1.0</MicrosoftIdentityWebUIVersion>
+    <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
+    <MoqVersion>4.10.0</MoqVersion>
+    <MonoCecilVersion>0.11.2</MonoCecilVersion>
+    <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
+    <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
+    <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
+    <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
+    <PollyVersion>7.1.0</PollyVersion>
+    <SeleniumSupportVersion>4.0.0-alpha07</SeleniumSupportVersion>
+    <SeleniumWebDriverMicrosoftDriverVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverVersion>
+    <SeleniumWebDriverChromeDriverVersion>87.0.4280.2000-beta</SeleniumWebDriverChromeDriverVersion>
+    <SeleniumWebDriverVersion>4.0.0-alpha07</SeleniumWebDriverVersion>
+    <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
+    <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
+    <StackExchangeRedisVersion>2.0.593</StackExchangeRedisVersion>
+    <SystemReactiveLinqVersion>3.1.1</SystemReactiveLinqVersion>
+    <SwashbuckleAspNetCoreVersion>5.6.3</SwashbuckleAspNetCoreVersion>
+    <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
+    <XunitAnalyzersVersion>0.10.0</XunitAnalyzersVersion>
+    <XunitVersion>2.4.1</XunitVersion>
+    <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
+    <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
+    <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
+    <XUnitRunnerVisualStudioVersion>2.4.3</XUnitRunnerVisualStudioVersion>
+    <MicrosoftDataSqlClientVersion>1.0.19249.1</MicrosoftDataSqlClientVersion>
+  </PropertyGroup>
+  <!-- Restore feeds -->
+  <PropertyGroup Label="Restore feeds">
+    <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>
+    <DotNetPrivateAssetRootUrl Condition="'$(DotNetPrivateAssetRootUrl)'==''">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotNetPrivateAssetRootUrl>
+  </PropertyGroup>
+</Project>

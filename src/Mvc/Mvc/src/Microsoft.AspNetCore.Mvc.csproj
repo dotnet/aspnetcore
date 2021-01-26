@@ -1,15 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC is a web framework that gives you a powerful, patterns-based way to build dynamic websites and web APIs. ASP.NET Core MVC enables a clean separation of concerns and gives you full control over markup.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
@@ -18,13 +18,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-
-    <!-- Including these here specifically so that apps referencing the MVC package get razor compiler targets -->
-    <Reference Include="Microsoft.AspNetCore.Razor.Design" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-
   </ItemGroup>
 
 </Project>

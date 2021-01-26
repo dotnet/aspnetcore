@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 
@@ -8,16 +8,25 @@ Microsoft.AspNetCore.Builder.IApplicationBuilder
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpRequest
 Microsoft.AspNetCore.Http.HttpResponse</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
-    <Reference Include="System.Text.Encodings.Web" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+
+    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Microbenchmarks" />
   </ItemGroup>
 
 </Project>

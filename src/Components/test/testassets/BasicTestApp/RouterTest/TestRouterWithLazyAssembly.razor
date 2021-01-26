@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+
+@inject LazyAssemblyLoader lazyLoader
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigateAsync="@OnNavigateAsync" PreferExactMatches="true">
+    <Navigating>
+        <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
+            <p>Loading the requested page...</p>
+        </div>
+    </Navigating>
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private List<Assembly> lazyLoadedAssemblies = new List<Assembly>();
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        Console.WriteLine($"Running OnNavigate for {args.Path}...");
+        await LoadAssemblies(args.Path);
+    }
+
+    private async Task LoadAssemblies(string uri)
+    {
+        if (uri.EndsWith("WithLazyAssembly"))
+        {
+            Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "Newtonsoft.Json.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
+
+        if (uri.EndsWith("WithLazyLoadedRoutes"))
+        {
+            Console.WriteLine($"Loading assemblies for WithLazyLoadedRoutes...");
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "LazyTestContentPackage.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
+
+        if (uri.EndsWith("Other")) {
+            Console.WriteLine($"Loading assemblies for Other...");
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "DoesNotExist.dll" });
+            lazyLoadedAssemblies.AddRange(assemblies);
+        }
+    }
+}
+
+

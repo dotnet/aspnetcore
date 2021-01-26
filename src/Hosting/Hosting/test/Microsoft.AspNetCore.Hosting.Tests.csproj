@@ -1,11 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
+    <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Microsoft.AspNetCore.Hosting.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,8 +18,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Owin" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>

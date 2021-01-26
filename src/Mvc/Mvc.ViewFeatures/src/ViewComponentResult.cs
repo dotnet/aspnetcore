@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="IActionResult"/> which renders a view component to the response.
     /// </summary>
-    public class ViewComponentResult : ActionResult
+    public class ViewComponentResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the arguments provided to the view component.
@@ -65,7 +64,15 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<IActionResultExecutor<ViewComponentResult>>();
+            var executor = services.GetService<IActionResultExecutor<ViewComponentResult>>();
+            if (executor == null)
+            {
+                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddControllersWithViews()",
+                    "ConfigureServices(...)"));
+            }
+
             return executor.ExecuteAsync(context, this);
         }
     }

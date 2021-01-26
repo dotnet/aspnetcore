@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieBuilder
     {
-        private string _name;
+        private string? _name;
 
         /// <summary>
         /// The name of the cookie.
         /// </summary>
-        public virtual string Name
+        public virtual string? Name
         {
             get => _name;
             set => _name = !string.IsNullOrEmpty(value)
@@ -28,36 +28,36 @@ namespace Microsoft.AspNetCore.Http
         /// The cookie path.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.Path"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.Path"/>.
         /// </remarks>
-        public virtual string Path { get; set; }
+        public virtual string? Path { get; set; }
 
         /// <summary>
         /// The domain to associate the cookie with.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.Domain"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.Domain"/>.
         /// </remarks>
-        public virtual string Domain { get; set; }
+        public virtual string? Domain { get; set; }
 
         /// <summary>
         /// Indicates whether a cookie is accessible by client-side script.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.HttpOnly"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.HttpOnly"/>.
         /// </remarks>
         public virtual bool HttpOnly { get; set; }
 
         /// <summary>
-        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Lax"/>
+        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Lax;
+        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
-        /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.
+        /// The policy that will be used to determine <see cref="CookieOptions.Secure"/>.
         /// This is determined from the <see cref="HttpContext"/> passed to <see cref="Build(HttpContext, DateTimeOffset)"/>.
         /// </summary>
         public virtual CookieSecurePolicy SecurePolicy { get; set; }
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http
         /// Creates the cookie options from the given <paramref name="context"/> with an expiration based on <paramref name="expiresFrom"/> and <see cref="Expiration"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
-        /// <param name="expiresFrom">The time to use as the base for computing <seealso cref="CookieOptions.Expires" />.</param>
+        /// <param name="expiresFrom">The time to use as the base for computing <see cref="CookieOptions.Expires" />.</param>
         /// <returns>The cookie options.</returns>
         public virtual CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http
                 Domain = Domain,
                 IsEssential = IsEssential,
                 Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
-                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.Value) : default(DateTimeOffset?)
+                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.GetValueOrDefault()) : default(DateTimeOffset?)
             };
         }
     }

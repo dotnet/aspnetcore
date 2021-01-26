@@ -3,60 +3,76 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
+    /// <summary>
+    /// Provides a client for connecting over WebSockets to a test server.
+    /// </summary>
     public class WebSocketClient
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
-        internal WebSocketClient(PathString pathBase, IHttpApplication<Context> application)
+        internal WebSocketClient(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
-            if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+            if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
             {
-                pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                pathBase = new PathString(pathBase.Value[..^1]); // All but the last character.
             }
             _pathBase = pathBase;
 
             SubProtocols = new List<string>();
         }
 
-        public IList<string> SubProtocols
-        {
-            get;
-            private set;
-        }
+        /// <summary>
+        /// Gets the list of WebSocket subprotocols that are established in the initial handshake.
+        /// </summary>
+        public IList<string> SubProtocols { get; }
 
-        public Action<HttpRequest> ConfigureRequest
-        {
-            get;
-            set;
-        }
+        /// <summary>
+        /// Gets or sets the handler used to configure the outgoing request to the WebSocket endpoint.
+        /// </summary>
+        public Action<HttpRequest>? ConfigureRequest { get; set; }
 
+        internal bool AllowSynchronousIO { get; set; }
+        internal bool PreserveExecutionContext { get; set; }
+
+        /// <summary>
+        /// Establishes a WebSocket connection to an endpoint.
+        /// </summary>
+        /// <param name="uri">The <see cref="Uri" /> of the endpoint.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to terminate the connection.</param>
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            WebSocketFeature webSocketFeature = null;
-            var contextBuilder = new HttpContextBuilder(_application);
-            contextBuilder.Configure(context =>
+            WebSocketFeature? webSocketFeature = null;
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
+            contextBuilder.Configure((context, reader) =>
             {
                 var request = context.Request;
                 var scheme = uri.Scheme;
                 scheme = (scheme == "ws") ? "http" : scheme;
                 scheme = (scheme == "wss") ? "https" : scheme;
                 request.Scheme = scheme;
+                if (!request.Host.HasValue)
+                {
+                    request.Host = uri.IsDefaultPort
+                        ? new HostString(HostString.FromUriComponent(uri).Host)
+                        : HostString.FromUriComponent(uri);
+                }
                 request.Path = PathString.FromUriComponent(uri);
                 request.PathBase = PathString.Empty;
                 if (request.Path.StartsWithSegments(_pathBase, out var remainder))
@@ -65,10 +81,15 @@ namespace Microsoft.AspNetCore.TestHost
                     request.PathBase = _pathBase;
                 }
                 request.QueryString = QueryString.FromUriComponent(uri);
-                request.Headers.Add("Connection", new string[] { "Upgrade" });
-                request.Headers.Add("Upgrade", new string[] { "websocket" });
-                request.Headers.Add("Sec-WebSocket-Version", new string[] { "13" });
-                request.Headers.Add("Sec-WebSocket-Key", new string[] { CreateRequestKey() });
+                request.Headers.Add(HeaderNames.Connection, new string[] { "Upgrade" });
+                request.Headers.Add(HeaderNames.Upgrade, new string[] { "websocket" });
+                request.Headers.Add(HeaderNames.SecWebSocketVersion, new string[] { "13" });
+                request.Headers.Add(HeaderNames.SecWebSocketKey, new string[] { CreateRequestKey() });
+                if (SubProtocols.Any())
+                {
+                    request.Headers.Add(HeaderNames.SecWebSocketProtocol, SubProtocols.ToArray());
+                }
+
                 request.Body = Stream.Null;
 
                 // WebSocket
@@ -84,6 +105,8 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 throw new InvalidOperationException("Incomplete handshake, status code: " + httpContext.Response.StatusCode);
             }
+
+            Debug.Assert(webSocketFeature != null);
             if (webSocketFeature.ClientWebSocket == null)
             {
                 throw new InvalidOperationException("Incomplete handshake");
@@ -95,8 +118,7 @@ namespace Microsoft.AspNetCore.TestHost
         private string CreateRequestKey()
         {
             byte[] data = new byte[16];
-            var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return Convert.ToBase64String(data);
         }
 
@@ -111,9 +133,9 @@ namespace Microsoft.AspNetCore.TestHost
 
             bool IHttpWebSocketFeature.IsWebSocketRequest => true;
 
-            public WebSocket ClientWebSocket { get; private set; }
+            public WebSocket? ClientWebSocket { get; private set; }
 
-            public WebSocket ServerWebSocket { get; private set; }
+            public WebSocket? ServerWebSocket { get; private set; }
 
             async Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
             {

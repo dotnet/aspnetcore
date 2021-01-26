@@ -2,32 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using Microsoft.AspNetCore.Testing.xunit;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
-    /// Skips a 64 bit test if the current Windows OS is 32-bit.
+    /// Skips a 64 bit test if the current OS is 32-bit.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class SkipOn32BitOSAttribute : Attribute, ITestCondition
     {
-        public bool IsMet
-        {
-            get
-            {
-                // Directory found only on 64-bit OS.
-                return Directory.Exists(Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "SysWOW64"));
-            }
-        }
+        public bool IsMet =>
+            RuntimeInformation.OSArchitecture == Architecture.Arm64
+            || RuntimeInformation.OSArchitecture == Architecture.X64;
 
-        public string SkipReason
-        {
-            get
-            {
-                return "Skipping the x64 test since Windows is 32-bit";
-            }
-        }
+        public string SkipReason => "Skipping the x64 test since Windows is 32-bit";
     }
 }

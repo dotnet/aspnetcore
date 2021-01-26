@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Attribute routing does not call this method.
         /// </para>
         /// </remarks>
-        IReadOnlyList<ActionDescriptor> SelectCandidates(RouteContext context);
+        IReadOnlyList<ActionDescriptor>? SelectCandidates(RouteContext context);
 
         /// <summary>
         /// Selects the best <see cref="ActionDescriptor"/> candidate from <paramref name="candidates"/> for the 
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="context">The <see cref="RouteContext"/> associated with the current request.</param>
         /// <param name="candidates">The set of <see cref="ActionDescriptor"/> candidates.</param>
         /// <returns>The best <see cref="ActionDescriptor"/> candidate for the current request or <c>null</c>.</returns>
-        /// <exception cref="Internal.AmbiguousActionException">
+        /// <exception cref="AmbiguousActionException">
         /// Thrown when action selection results in an ambiguity.
         /// </exception>
         /// <remarks>
@@ -51,6 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Used by attribute routing to apply action constraints and disambiguate between multiple candidates.
         /// </para>
         /// </remarks>
-        ActionDescriptor SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates);
+        ActionDescriptor? SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates);
     }
 }

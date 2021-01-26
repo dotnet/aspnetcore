@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
+    internal readonly struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
     {
         private readonly StringValues _headers;
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             return StringValues.Equals(_headers, other._headers);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -254,6 +254,11 @@ namespace Microsoft.AspNetCore.Http.Internal
                                 switch (attr)
                                 {
                                     case Attr.Delimiter:
+                                        if (ch == (char)0)
+                                        {
+                                            _valueEnd = _offset;
+                                            _trailingStart = _offset;
+                                        }
                                         _mode = Mode.Produce;
                                         break;
                                     case Attr.Quote:

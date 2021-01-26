@@ -12,12 +12,12 @@ namespace BasicWebSite.Controllers.ContentNegotiation
     public class FallbackOnTypeBasedMatchController : Controller
     {
         private readonly IOptions<MvcOptions> _mvcOptions;
-        private readonly JsonOutputFormatter _jsonOutputFormatter;
+        private readonly NewtonsoftJsonOutputFormatter _jsonOutputFormatter;
 
         public FallbackOnTypeBasedMatchController(IOptions<MvcOptions> mvcOptions)
         {
             _mvcOptions = mvcOptions;
-            _jsonOutputFormatter = mvcOptions.Value.OutputFormatters.OfType<JsonOutputFormatter>().First();
+            _jsonOutputFormatter = mvcOptions.Value.OutputFormatters.OfType<NewtonsoftJsonOutputFormatter>().First();
         }
 
         public int UseTheFallback_WithDefaultFormatters(int input)

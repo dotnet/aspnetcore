@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
@@ -71,17 +70,17 @@ namespace Microsoft.AspNetCore.Authentication
         /// This cannot be set at the same time as BackchannelCertificateValidator unless the value 
         /// can be downcast to a WebRequestHandler.
         /// </summary>
-        public HttpMessageHandler BackchannelHttpHandler { get; set; }
+        public HttpMessageHandler? BackchannelHttpHandler { get; set; }
 
         /// <summary>
         /// Used to communicate with the remote identity provider.
         /// </summary>
-        public HttpClient Backchannel { get; set; }
+        public HttpClient Backchannel { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the type used to secure data.
         /// </summary>
-        public IDataProtectionProvider DataProtectionProvider { get; set; }
+        public IDataProtectionProvider? DataProtectionProvider { get; set; }
 
         /// <summary>
         /// The request path within the application's base path where the user-agent will be returned.
@@ -90,27 +89,46 @@ namespace Microsoft.AspNetCore.Authentication
         public PathString CallbackPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the optional path the user agent is redirected to if the user
+        /// doesn't approve the authorization demand requested by the remote server.
+        /// This property is not set by default. In this case, an exception is thrown
+        /// if an access_denied response is returned by the remote authorization server.
+        /// </summary>
+        public PathString AccessDeniedPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the parameter used to convey the original location
+        /// of the user before the remote challenge was triggered up to the access denied page.
+        /// This property is only used when the <see cref="AccessDeniedPath"/> is explicitly specified.
+        /// </summary>
+        // Note: this deliberately matches the default parameter name used by the cookie handler.
+        public string ReturnUrlParameter { get; set; } = "ReturnUrl";
+
+        /// <summary>
         /// Gets or sets the authentication scheme corresponding to the middleware
         /// responsible of persisting user's identity after a successful authentication.
         /// This value typically corresponds to a cookie middleware registered in the Startup class.
         /// When omitted, <see cref="AuthenticationOptions.DefaultSignInScheme"/> is used as a fallback value.
         /// </summary>
-        public string SignInScheme { get; set; }
+        public string? SignInScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the time limit for completing the authentication flow (15 minutes by default).
         /// </summary>
         public TimeSpan RemoteAuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(15);
 
+        /// <summary>
+        /// Gets or sets a value that allows subscribing to remote authentication events.
+        /// </summary>
         public new RemoteAuthenticationEvents Events
         {
-            get => (RemoteAuthenticationEvents)base.Events;
+            get => (RemoteAuthenticationEvents)base.Events!;
             set => base.Events = value;
         }
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
         /// This property is set to <c>false</c> by default to reduce
         /// the size of the final authentication cookie.
         /// </summary>

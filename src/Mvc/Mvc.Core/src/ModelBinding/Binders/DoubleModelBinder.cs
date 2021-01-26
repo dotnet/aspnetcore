@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -19,19 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly NumberStyles _supportedStyles;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="DoubleModelBinder"/>.</para>
-        /// </summary>
-        /// <param name="supportedStyles">The <see cref="NumberStyles"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public DoubleModelBinder(NumberStyles supportedStyles)
-            : this(supportedStyles, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="DoubleModelBinder"/>.
@@ -78,9 +65,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             try
             {
                 var value = valueProviderResult.FirstValue;
-                var culture = valueProviderResult.Culture;
 
-                object model;
+                object? model;
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     // Parse() method trims the value (with common NumberStyles) then throws if the result is empty.
@@ -88,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
                 else if (type == typeof(double))
                 {
-                    model = double.Parse(value, _supportedStyles, culture);
+                    model = double.Parse(value, _supportedStyles, valueProviderResult.Culture);
                 }
                 else
                 {

@@ -11,7 +11,7 @@ namespace Microsoft.Net.Http.Headers
     // type to throw if 'null' gets added. Collection<T> internally uses List<T> which comes at some cost. In addition
     // Collection<T>.Add() calls List<T>.InsertItem() which is an O(n) operation (compared to O(1) for List<T>.Add()).
     // This type is only used for very small collections (1-2 items) to keep the impact of using Collection<T> small.
-    internal class ObjectCollection<T> : Collection<T>
+    internal sealed class ObjectCollection<T> : Collection<T>
     {
         internal static readonly Action<T> DefaultValidator = CheckNotNull;
         internal static readonly ObjectCollection<T> EmptyReadOnlyCollection
@@ -21,7 +21,7 @@ namespace Microsoft.Net.Http.Headers
 
         // We need to create a 'read-only' inner list for Collection<T> to do the right
         // thing.
-        private static IList<T> CreateInnerList(bool isReadOnly, IEnumerable <T> other = null)
+        private static IList<T> CreateInnerList(bool isReadOnly, IEnumerable<T>? other = null)
         {
             var list = other == null ? new List<T>() : new List<T>(other);
             if (isReadOnly)
@@ -57,20 +57,10 @@ namespace Microsoft.Net.Http.Headers
 
         public bool IsReadOnly => ((ICollection<T>)this).IsReadOnly;
 
-        protected override void ClearItems()
-        {
-            base.ClearItems();
-        }
-
         protected override void InsertItem(int index, T item)
         {
             _validator(item);
             base.InsertItem(index, item);
-        }
-
-        protected override void RemoveItem(int index)
-        {
-            base.RemoveItem(index);
         }
 
         protected override void SetItem(int index, T item)

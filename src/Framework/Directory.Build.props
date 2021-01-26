@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <ManifestsPackagePath>data/</ManifestsPackagePath>
+    <!-- Shared between targeting pack and runtime build. -->
+    <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
+    <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
+
+    <!-- Platform manifest and package override metadata -->
+    <ReferencePackSharedFxVersion>$(AspNetCoreMajorMinorVersion).0</ReferencePackSharedFxVersion>
+    <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkListRootAttributes Include="Name" Value="$(AspNetCoreAppFrameworkBrandName)" />
+    <FrameworkListRootAttributes Include="TargetFrameworkIdentifier" Value="$(NETCoreAppFrameworkIdentifier)" />
+    <FrameworkListRootAttributes Include="TargetFrameworkVersion"
+      Value="$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))" />
+    <FrameworkListRootAttributes Include="FrameworkName" Value="$(SharedFxName)" />
+  </ItemGroup>
+
+</Project>

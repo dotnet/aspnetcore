@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -104,15 +103,11 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
                 var accessControlRequestMethod =
                         httpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
-                if (string.Equals(
-                        request.Method,
-                        CorsConstants.PreflightHttpMethod,
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+                if (HttpMethods.IsOptions(request.Method)
+                    && !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     // If this was a preflight, there is no need to run anything else.
-                    // Also the response is always 200 so that anyone after mvc can handle the pre flight request.
-                    context.Result = new StatusCodeResult(StatusCodes.Status200OK);
+                    context.Result = new StatusCodeResult(StatusCodes.Status204NoContent);
                 }
 
                 // Continue with other filters and action.

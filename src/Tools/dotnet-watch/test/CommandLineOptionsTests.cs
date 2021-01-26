@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -13,15 +13,11 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     public class CommandLineOptionsTests
     {
-        private readonly IConsole _console;
-        private readonly StringBuilder _stdout = new StringBuilder();
+        private readonly TestConsole _console;
 
         public CommandLineOptionsTests(ITestOutputHelper output)
         {
-            _console = new TestConsole(output)
-            {
-                Out = new StringWriter(_stdout),
-            };
+            _console = new TestConsole(output);
         }
 
         [Theory]
@@ -36,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             var options = CommandLineOptions.Parse(args, _console);
 
             Assert.True(options.IsHelp);
-            Assert.Contains("Usage: dotnet watch ", _stdout.ToString());
+            Assert.Contains("Usage: dotnet watch ", _console.GetOutput());
         }
 
         [Theory]
@@ -50,7 +46,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
             Assert.Equal(expected, options.RemainingArguments.ToArray());
             Assert.False(options.IsHelp);
-            Assert.Empty(_stdout.ToString());
+            Assert.Empty(_console.GetOutput());
         }
 
         [Fact]

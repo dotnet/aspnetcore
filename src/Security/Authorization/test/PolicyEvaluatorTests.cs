@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authorization.Policy.Test
@@ -120,11 +121,32 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Test
             Assert.True(result.Forbidden);
         }
 
+        [Fact]
+        public async Task AuthorizeForbidsAndFailureIsIncludedIfAuthenticationSuceeds()
+        {
+            // Arrange
+            var evaluator = BuildEvaluator();
+            var context = new DefaultHttpContext();
+            var policy = new AuthorizationPolicyBuilder()
+                .AddRequirements(new DummyRequirement())
+                .RequireAssertion(_ => false)
+                .Build();
+
+            // Act
+            var result = await evaluator.AuthorizeAsync(policy, AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "scheme")), context, resource: null);
+
+            // Assert
+            Assert.False(result.Succeeded);
+            Assert.False(result.Challenged);
+            Assert.True(result.Forbidden);
+            Assert.NotNull(result.AuthorizationFailure);
+            Assert.Contains(result.AuthorizationFailure.FailedRequirements, requirement => requirement is DummyRequirement);
+        }
+
         private IPolicyEvaluator BuildEvaluator(Action<IServiceCollection> setupServices = null)
         {
             var services = new ServiceCollection()
                 .AddAuthorization()
-                .AddAuthorizationPolicyEvaluator()
                 .AddLogging()
                 .AddOptions();
             setupServices?.Invoke(services);
@@ -205,5 +227,6 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Test
             }
         }
 
+        private class DummyRequirement : IAuthorizationRequirement {}
     }
 }

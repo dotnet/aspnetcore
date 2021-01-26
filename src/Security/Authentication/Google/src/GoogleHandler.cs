@@ -3,25 +3,34 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
+    /// <summary>
+    /// Authentication handler for Google's OAuth based authentication.
+    /// </summary>
     public class GoogleHandler : OAuthHandler<GoogleOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="GoogleHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override async Task<AuthenticationTicket> CreateTicketAsync(
             ClaimsIdentity identity,
             AuthenticationProperties properties,
@@ -34,19 +43,19 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Google+ API is enabled.");
+                throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct.");
             }
 
-            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
-
-            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload);
-            context.RunClaimActions();
-
-            await Events.CreatingTicket(context);
-            return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+            {
+                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
+                context.RunClaimActions();
+                await Events.CreatingTicket(context);
+                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+            }
         }
 
-        // TODO: Abstract this properties override pattern into the base class?
+        /// <inheritdoc />
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             // Google Identity Platform Manual:
@@ -62,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLower(), (bool?)null);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);

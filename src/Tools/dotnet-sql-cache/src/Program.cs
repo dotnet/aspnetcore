@@ -3,8 +3,8 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Reflection;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                 };
 
                 app.HelpOption();
-                app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+                app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
                 var verbose = app.VerboseOption();
 
                 app.Command("create", command =>

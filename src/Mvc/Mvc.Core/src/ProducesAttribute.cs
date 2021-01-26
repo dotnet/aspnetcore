@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -26,13 +25,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
         public ProducesAttribute(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+        {   
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             ContentTypes = new MediaTypeCollection();
         }
 
@@ -82,9 +76,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var objectResult = context.Result as ObjectResult;
-
-            if (objectResult != null)
+            if (context.Result is ObjectResult objectResult)
             {
                 // Check if there are any IFormatFilter in the pipeline, and if any of them is active. If there is one,
                 // do not override the content type value.
@@ -119,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
         {
-            var completeArgs = new List<string>();
+            var completeArgs = new List<string>(args.Length + 1);
             completeArgs.Add(firstArg);
             completeArgs.AddRange(args);
             var contentTypes = new MediaTypeCollection();

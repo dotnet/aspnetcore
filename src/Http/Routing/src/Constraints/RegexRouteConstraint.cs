@@ -8,10 +8,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
+    /// <summary>
+    /// Constrains a route parameter to match a regular expression.
+    /// </summary>
     public class RegexRouteConstraint : IRouteConstraint
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 
+        /// <summary>
+        /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regex"/>.
+        /// </summary>
+        /// <param name="regex">A <see cref="Regex"/> instance to use as a constraint.</param>
         public RegexRouteConstraint(Regex regex)
         {
             if (regex == null)
@@ -22,6 +29,10 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             Constraint = regex;
         }
 
+        /// <summary>
+        /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regexPattern"/>.
+        /// </summary>
+        /// <param name="regexPattern">A string containing the regex pattern.</param>
         public RegexRouteConstraint(string regexPattern)
         {
             if (regexPattern == null)
@@ -35,25 +46,19 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 RegexMatchTimeout);
         }
 
+        /// <summary>
+        /// Gets the regular expression used in the route constraint.
+        /// </summary>
         public Regex Constraint { get; private set; }
 
+        /// <inheritdoc />
         public bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -64,12 +69,10 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object routeValue;
-
-            if (values.TryGetValue(routeKey, out routeValue)
+            if (values.TryGetValue(routeKey, out var routeValue)
                 && routeValue != null)
             {
-                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
+                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture)!;
 
                 return Constraint.IsMatch(parameterValueString);
             }

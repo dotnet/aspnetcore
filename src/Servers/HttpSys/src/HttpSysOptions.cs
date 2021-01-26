@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,8 +7,12 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Contains the options used by HttpSys.
+    /// </summary>
     public class HttpSysOptions
     {
+        private const uint MaximumRequestQueueNameLength = 260;
         private const Http503VerbosityLevel DefaultRejectionVerbosityLevel = Http503VerbosityLevel.Basic; // Http.sys default.
         private const long DefaultRequestQueueLength = 1000; // Http.sys default.
         internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
@@ -20,17 +24,55 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private long? _maxConnections;
-        private RequestQueue _requestQueue;
-        private UrlGroup _urlGroup;
+        private RequestQueue? _requestQueue;
+        private UrlGroup? _urlGroup;
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
+        private string? _requestQueueName;
 
+        /// <summary>
+        /// Initializes a new <see cref="HttpSysOptions"/>.
+        /// </summary>
         public HttpSysOptions()
         {
         }
 
         /// <summary>
-        /// The maximum number of concurrent accepts.
+        /// The name of the Http.Sys request queue
         /// </summary>
+        public string? RequestQueueName
+        {
+            get => _requestQueueName;
+            set
+            {
+                if (value?.Length > MaximumRequestQueueNameLength)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                                                          value,
+                                                          $"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length");
+                }
+                _requestQueueName = value;
+            }
+        }
+
+        /// <summary>
+        /// Indicates if this server instance is responsible for creating and configuring the request queue,
+        /// of if it should attach to an existing queue. The default is to create.
+        /// </summary>
+        public RequestQueueMode RequestQueueMode { get; set; }
+
+        /// <summary>
+        /// Indicates how client certificates should be populated. The default is to allow a certificate without renegotiation.
+        /// This does not change the netsh 'clientcertnegotiation' binding option which will need to be enabled for
+        /// ClientCertificateMethod.AllowCertificate to resolve a certificate.
+        /// </summary>
+        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
+
+        /// <summary>
+        /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
+        /// </remarks>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
         /// <summary>
@@ -43,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// The url prefixes to register with Http.Sys. These may be modified at any time prior to disposing
         /// the listener.
+        /// When attached to an existing queue the prefixes are only used to compute PathBase for requests.
         /// </summary>
         public UrlPrefixCollection UrlPrefixes { get; } = new UrlPrefixCollection();
 
@@ -55,6 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
         /// These may be modified at any time prior to disposing the listener.
+        /// These settings do not apply when attaching to an existing queue.
         /// </summary>
         public TimeoutManager Timeouts { get; } = new TimeoutManager();
 
@@ -67,6 +111,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
         /// use the machine wide setting from the registry. The default value is null.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public long? MaxConnections
         {
@@ -75,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value.HasValue && value < -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infiniate.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infinite.");
                 }
 
                 if (value.HasValue && _urlGroup != null)
@@ -89,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         /// <summary>
         /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public long RequestQueueLimit
         {
@@ -136,14 +182,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
-        /// The default is `true`.
+        /// The default is `false`.
         /// </summary>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
         /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
         /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public Http503VerbosityLevel Http503Verbosity
         {
@@ -172,6 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        // Not called when attaching to an existing queue.
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {
             _urlGroup = urlGroup;

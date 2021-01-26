@@ -1,132 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
                                                     LocalizationFile="thm.wxl"/>
+            <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 
-        <!-- Ensure upgrades from 2.1.0 thru 2.1.23 for x64. -->
-        <?if $(var.MajorVersion)=2 and $(var.MinorVersion)=1?>
-        <?if $(var.Platform)=x64?>
-        <!--'Microsoft ASP.NET Core 2.1.23 - Shared Framework'-->
-        <RelatedBundle Id="{0712373C-EAC4-36FA-A33F-21A63858EFA7}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.22 - Shared Framework'-->
-        <RelatedBundle Id="{49A46B72-F6E0-33CF-8135-875A76045F10}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.21 - Shared Framework'-->
-        <RelatedBundle Id="{3128CBDD-47D8-345B-8416-993E028BBBE2}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.20 - Shared Framework'-->
-        <RelatedBundle Id="{DBBB894A-16EA-33DF-A1AD-17A1C07B1FE3}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.19 - Shared Framework'-->
-        <RelatedBundle Id="{27F55CDC-C188-3DB7-8020-94AF8144243A}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.18 - Shared Framework'-->
-        <RelatedBundle Id="{3589369F-8952-3A99-B102-2F40B673B7A7}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.17 - Shared Framework'-->
-        <RelatedBundle Id="{4A3B5396-5326-36CB-974C-D03F7442C9F1}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.16 - Shared Framework'-->
-        <RelatedBundle Id="{1D763AE0-563D-315B-97D9-A3026619AA1E}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.15 - Shared Framework'-->
-        <RelatedBundle Id="{E4FAADFB-4273-38A7-8E01-3E0E1FE40CFD}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.14 - Shared Framework'-->
-        <RelatedBundle Id="{E0D6C0F1-C362-3697-AD4F-BC3967BE1F68}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.13 - Shared Framework'-->
-        <RelatedBundle Id="{7683D539-563A-3F4D-9664-79FA52E7A893}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.12 - Shared Framework'-->
-        <RelatedBundle Id="{BA2E3A8D-6118-3CC3-BD81-51B0AA4A165C}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.11 - Shared Framework'-->
-        <RelatedBundle Id="{CF0DE7B0-8EFA-39EF-B413-13EE8C657BA7}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.10 - Shared Framework'-->
-        <RelatedBundle Id="{F5DA7AD4-9479-3B3F-97D4-469AD07209EF}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.9 - Shared Framework'-->
-        <RelatedBundle Id="{403E8DE6-3564-3C10-B86F-9C697A4B89ED}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.8 - Shared Framework'-->
-        <RelatedBundle Id="{38580A17-729D-376F-AC0D-B8E80E77CE20}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.7 - Shared Framework'-->
-        <RelatedBundle Id="{05D79AF1-C5B9-39AB-95B8-8BEEB5F6EE8D}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.6 - Shared Framework'-->
-        <RelatedBundle Id="{DCC2A848-E51F-3525-9AEC-6F3AD09E8E4E}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.5 - Shared Framework'-->
-        <RelatedBundle Id="{4FF26B15-D19E-33DE-B3B9-0048CB452719}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.4 - Shared Framework'-->
-        <RelatedBundle Id="{516DDC47-3178-3854-80B3-69A5924BA645}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.3 - Shared Framework'-->
-        <RelatedBundle Id="{AED22235-ACC3-38AD-8AA6-3A05CA2D3ADA}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.2 - Shared Framework'-->
-        <RelatedBundle Id="{842F7946-BF3F-30F0-9136-68B9666857CC}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.1 - Shared Framework'-->
-        <RelatedBundle Id="{54785C17-D593-3E17-B4DB-71204B69804B}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 - Shared Framework'-->
-        <RelatedBundle Id="{30CB480C-ADF0-3B81-8F50-48376E153BFA}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Release Candidate 1 - Shared Framework'-->
-        <RelatedBundle Id="{83D09AED-0BC7-3254-A011-2FDCF79D8859}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 2 - Shared Framework'-->
-        <RelatedBundle Id="{9E1909B0-7040-3B58-9F51-1862DA343256}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 1 - Shared Framework'-->
-        <RelatedBundle Id="{1434C698-C3C8-3021-BAAC-F65A5139E5D0}" Action="Upgrade" />
+        <!-- Ensure upgrades from 3.0.0 preview 1, 2, and 3. Conditioned for the 3.0.0 family. -->
+        <?if $(var.Version)=3.0.0.0?>
+        <?if $(var.Platform)=x86?>
+        <RelatedBundle Action="Upgrade" Id="{EC5CFEAE-D169-3A4A-AA09-F446BBC39AD9}"/>
+        <RelatedBundle Action="Upgrade" Id="{1D6E2BA3-B920-3C74-8F3E-F38E6097A297}"/>
+        <RelatedBundle Action="Upgrade" Id="{D73B587E-7C85-3418-9B07-6A8469CF7E94}"/>
+        <?elseif $(var.Platform)=x64?>
+        <RelatedBundle Action="Upgrade" Id="{F5C19B0F-77DF-3353-96D9-3F398FA38CF7}"/>
+        <RelatedBundle Action="Upgrade" Id="{DFC9DEC7-307D-39B5-AF9C-4E8CE923B1BA}"/>
+        <RelatedBundle Action="Upgrade" Id="{FDCA5106-C69E-34BB-A3B8-A24ADD0B4769}"/>
+        <?endif?>
         <?endif?>
 
-        <!-- Ensure upgrades from 2.1.0 thru 2.1.23 for x86. -->
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
+        <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
+        <?if $(var.Platform)=x64?>
+        <!--'Microsoft ASP.NET Core 3.1.9 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{9BD9F5C9-7DE4-3A3C-AB10-29B30D48CB39}"/>
+        <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{BA264433-7668-3F63-BA27-0B842B591B41}"/>
+        <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{E843D8AB-9AE4-3BBA-B417-E920A145D4D2}"/>
+        <!--'Microsoft ASP.NET Core 3.1.6 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{598E3E3B-DFA5-3F58-B2CF-EA59B0CD04E6}"/>
+        <!--'Microsoft ASP.NET Core 3.1.5 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{C2718AD8-4EC1-300D-A871-E98A1AC69180}"/>
+        <!--'Microsoft ASP.NET Core 3.1.4 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F6D32B6E-2736-3FCC-B0F8-CB4C5AF95B2E}"/>
+        <!--'Microsoft ASP.NET Core 3.1.3 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{33468842-C5B0-3189-96D7-8CD8D28585B9}"/>
+        <!--'Microsoft ASP.NET Core 3.1.2 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{54EE87B3-B909-37F1-85AD-EE2296ABD2F1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.1 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{90F6AF22-13B2-3D34-9CF0-C7F407DF4195}"/>
+        <!--'Microsoft ASP.NET Core 3.1.0 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{A65A6022-E10B-3AEF-802C-B9AFE0B000E2}"/>
+        <?endif?>
+
+        <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x86. -->
         <?if $(var.Platform)=x86?>
-        <!--'Microsoft ASP.NET Core 2.1.23 - Shared Framework'-->
-        <RelatedBundle Id="{09248E80-C295-3428-8EB4-3159552244EC}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.22 - Shared Framework'-->
-        <RelatedBundle Id="{5ECAAEF0-4844-306B-95BC-39F74570FB71}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.21 - Shared Framework'-->
-        <RelatedBundle Id="{5946602B-3AF7-367E-A2F6-C8D55D02765F}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.20 - Shared Framework'-->
-        <RelatedBundle Id="{B87377E1-C127-3725-9A17-E2CFB1924939}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.19 - Shared Framework'-->
-        <RelatedBundle Id="{3CE4046A-E352-3CD4-B33F-AB6975DABD48}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.18 - Shared Framework'-->
-        <RelatedBundle Id="{516B48A4-1C41-3C71-824A-EFDE2FFBE460}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.17 - Shared Framework'-->
-        <RelatedBundle Id="{502432A7-056C-36AE-A063-8C666325C085}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.16 - Shared Framework'-->
-        <RelatedBundle Id="{BE23E50E-87CB-36A0-BF02-B9454F54E485}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.15 - Shared Framework'-->
-        <RelatedBundle Id="{1974CAA5-06EF-3B2A-B1C0-642820CAE7AD}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.14 - Shared Framework'-->
-        <RelatedBundle Id="{00131A6A-FBEE-3D58-9675-D3625F20F443}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.13 - Shared Framework'-->
-        <RelatedBundle Id="{12D8AEA0-C9C1-3816-83E6-52205C27F9EF}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.12 - Shared Framework'-->
-        <RelatedBundle Id="{6B055917-6871-3F6A-9DB8-136CAAC94FC1}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.11 - Shared Framework'-->
-        <RelatedBundle Id="{54D6799C-AA5C-3FBE-8F8D-D7A1BA02E080}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.10 - Shared Framework'-->
-        <RelatedBundle Id="{20D074C5-A251-3387-8E5B-DB9840D97199}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.9 - Shared Framework'-->
-        <RelatedBundle Id="{6CA73165-99C8-3A40-A5DE-B52563E54B36}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.8 - Shared Framework'-->
-        <RelatedBundle Id="{70D80ED0-BE96-30CF-8BD8-CDEB74A1FA44}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.7 - Shared Framework'-->
-        <RelatedBundle Id="{35188EAF-50A8-36B1-89E1-65A048879A8A}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.6 - Shared Framework'-->
-        <RelatedBundle Id="{52B39EEB-6453-35C7-82C3-0A3E32D7A7E3}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.5 - Shared Framework'-->
-        <RelatedBundle Id="{2396ABF1-286C-35AC-9D73-6DA0C1488697}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.4 - Shared Framework'-->
-        <RelatedBundle Id="{C43E83C3-55D5-339B-9AEB-CCF6EF0C3E88}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.3 - Shared Framework'-->
-        <RelatedBundle Id="{D629A358-61C2-326F-A491-55E29C064E30}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.2 - Shared Framework'-->
-        <RelatedBundle Id="{649622E9-21EF-3C33-8121-3AE51E01ECD8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.1 - Shared Framework'-->
-        <RelatedBundle Id="{B71D596D-762B-343B-AA62-A49344C9C5E8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 - Shared Framework'-->
-        <RelatedBundle Id="{E880C10C-463E-3D37-AD6E-EAF52D736BCB}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Release Candidate 1 - Shared Framework'-->
-        <RelatedBundle Id="{6E0B3327-43F4-3EE3-9E64-6C395C2CFFA8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 2 - Shared Framework'-->
-        <RelatedBundle Id="{87DA165A-7B38-3BE2-8954-F4D3237E5CE5}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 1 - Shared Framework'-->
-        <RelatedBundle Id="{2F9AD35A-B7C3-3CCF-9ADA-EFBC876815F8}" Action="Upgrade" />
+        <!--'Microsoft ASP.NET Core 3.1.9 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{BE2349EF-BC78-3E42-B29C-E61D12E02FE4}"/>
+        <!--'Microsoft ASP.NET Core 3.1.8 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F9E1048A-39B9-3AE1-8AA1-6B054A204A84}"/>
+        <!--'Microsoft ASP.NET Core 3.1.7 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{48272B78-3954-3D58-AB75-27B31E0D0DBD}"/>
+        <!--'Microsoft ASP.NET Core 3.1.6 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{52FF933A-F022-3A0A-8200-4C0E8E3934C3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.5 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{F8C888A3-46C2-3306-8C90-5622C65BEBE3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.4 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{EC496CB3-526B-366D-B667-3A20354DB136}"/>
+        <!--'Microsoft ASP.NET Core 3.1.3 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{05780385-0142-3FAA-9B97-F785C4798EC1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.2 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{4EBEC6A2-DB4C-396B-BAE7-890D1D7EB9B3}"/>
+        <!--'Microsoft ASP.NET Core 3.1.1 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{5F160755-5B95-32A7-8D4F-ED1BA9F959D1}"/>
+        <!--'Microsoft ASP.NET Core 3.1.0 - Shared Framework'-->
+        <RelatedBundle Action="Upgrade" Id="{AC05AAAB-C217-3B65-95FE-11D2CB07A485}"/>
         <?endif?>
         <?endif?>
+
+        <PayloadGroup Id="PG_Resources">
+            <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
+            <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
+            <?endforeach?>
+        </PayloadGroup>
 
         <!-- Customizations of the default BA -->
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
@@ -141,6 +93,8 @@
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
             <?elseif $(var.Platform)=x64?>
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
+            <?elseif $(var.Platform)=arm64?>
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
             <?endif?>
         </Chain>
     </Bundle>

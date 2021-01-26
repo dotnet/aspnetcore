@@ -3,19 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
@@ -505,6 +506,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 
             var expectedOutput = string.Format(
+                CultureInfo.InvariantCulture,
                 "<{0} xmlns:i=\"{2}\" xmlns=\"{1}\"><SampleInt xmlns=\"\">{3}</SampleInt></{0}>",
                 SubstituteRootName,
                 SubstituteRootNamespace,
@@ -548,7 +550,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 
             var expectedOutput = string.Format(
-                    "<DummyClass xmlns:i=\"{1}\" xmlns=\"\" i:type=\"{0}\"><SampleInt>{2}</SampleInt>"
+                CultureInfo.InvariantCulture,
+                "<DummyClass xmlns:i=\"{1}\" xmlns=\"\" i:type=\"{0}\"><SampleInt>{2}</SampleInt>"
                     + "<SampleString>{3}</SampleString></DummyClass>",
                     KnownTypeName,
                     InstanceNamespace,
@@ -594,14 +597,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var SerializationNamespace = "http://schemas.microsoft.com/2003/10/Serialization/";
 
             var expectedOutput = string.Format(
-                    "<Parent xmlns:i=\"{0}\" z:Id=\"{2}\" xmlns:z=\"{1}\">" +
-                    "<Children z:Id=\"2\" z:Size=\"1\">" +
-                    "<Child z:Id=\"3\"><Id>{2}</Id><Parent z:Ref=\"1\" i:nil=\"true\" />" +
-                    "</Child></Children><Name z:Id=\"4\">{3}</Name></Parent>",
-                    InstanceNamespace,
-                    SerializationNamespace,
-                    sampleId,
-                    sampleName);
+                CultureInfo.InvariantCulture,
+                "<Parent xmlns:i=\"{0}\" z:Id=\"{2}\" xmlns:z=\"{1}\">" +
+                "<Children z:Id=\"2\" z:Size=\"1\">" +
+                "<Child z:Id=\"3\"><Id>{2}</Id><Parent z:Ref=\"1\" i:nil=\"true\" />" +
+                "</Child></Children><Name z:Id=\"4\">{3}</Name></Parent>",
+                InstanceNamespace,
+                SerializationNamespace,
+                sampleId,
+                sampleName);
 
             var child = new Child { Id = sampleId };
             var parent = new Parent { Name = sampleName, Children = new List<Child> { child } };
@@ -737,6 +741,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             request.Headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset.ToString();
             request.ContentType = contentType;
             httpContext.Response.Body = new MemoryStream();
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(Options.Create(new MvcOptions()))
+                .BuildServiceProvider();
             return httpContext;
         }
 

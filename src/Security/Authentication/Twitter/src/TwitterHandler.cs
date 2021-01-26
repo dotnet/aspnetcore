@@ -4,27 +4,33 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
+    /// <summary>
+    /// Authentication handler for Twitter's OAuth based authentication.
+    /// </summary>
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private const string RequestTokenEndpoint = "https://api.twitter.com/oauth/request_token";
-        private const string AuthenticationEndpoint = "https://api.twitter.com/oauth/authenticate?oauth_token=";
-        private const string AccessTokenEndpoint = "https://api.twitter.com/oauth/access_token";
+        private static readonly JsonSerializerOptions ErrorSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         private HttpClient Backchannel => Options.Backchannel;
 
@@ -38,12 +44,18 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TwitterHandler"/>.
+        /// </summary>
+        /// <inheritdoc />
         public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
+        /// <inheritdoc />
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new TwitterEvents());
 
+        /// <inheritdoc />
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             var query = Request.Query;
@@ -58,12 +70,16 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var properties = requestToken.Properties;
 
-            // REVIEW: see which of these are really errors
-
             var denied = query["denied"];
             if (!StringValues.IsNullOrEmpty(denied))
             {
-                return HandleRequestResult.Fail("The user denied permissions.", properties);
+                // Note: denied errors are special protocol errors indicating the user didn't
+                // approve the authorization demand requested by the remote authorization server.
+                // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                var result = await HandleAccessDeniedErrorAsync(properties);
+                return !result.None ? result
+                    : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
             }
 
             var returnedToken = query["oauth_token"];
@@ -98,25 +114,41 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             },
             ClaimsIssuer);
 
-            JObject user = null;
+            JsonDocument user;
             if (Options.RetrieveUserDetails)
             {
                 user = await RetrieveUserDetailsAsync(accessToken, identity);
             }
-
-            if (Options.SaveTokens)
+            else
             {
-                properties.StoreTokens(new [] {
-                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
-                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
-                });
+                user = JsonDocument.Parse("{}");
             }
 
-            return HandleRequestResult.Success(await CreateTicketAsync(identity, properties, accessToken, user));
+            using (user)
+            {
+                if (Options.SaveTokens)
+                {
+                    properties.StoreTokens(new[] {
+                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
+                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
+                    });
+                }
+
+                var ticket = await CreateTicketAsync(identity, properties, accessToken, user.RootElement);
+                return HandleRequestResult.Success(ticket);
+            }
         }
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticationTicket"/> from the specified <paramref name="token"/>.
+        /// </summary>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="token">The <see cref="AccessToken"/>.</param>
+        /// <param name="user">The <see cref="JsonElement"/> for the user.</param>
+        /// <returns>The <see cref="AuthenticationTicket"/>.</returns>
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(
-            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JObject user)
+            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JsonElement user)
         {
             foreach (var action in Options.ClaimActions)
             {
@@ -129,16 +161,17 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
 
             // If CallbackConfirmed is false, this will throw
             var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
-            var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
+            var twitterAuthenticationEndpoint = TwitterDefaults.AuthenticationEndpoint + requestToken.Token;
 
             var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
@@ -148,54 +181,96 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }
 
-        private async Task<RequestToken> ObtainRequestTokenAsync(string callBackUri, AuthenticationProperties properties)
+        private async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod httpMethod, RequestToken accessToken = null, Dictionary<string, string> extraOAuthPairs = null, Dictionary<string, string> queryParameters = null, Dictionary<string, string> formData = null)
         {
-            Logger.ObtainRequestToken();
-
-            var nonce = Guid.NewGuid().ToString("N");
-
-            var authorizationParts = new SortedDictionary<string, string>
+            var authorizationParts = new SortedDictionary<string, string>(extraOAuthPairs ?? new Dictionary<string, string>())
             {
-                { "oauth_callback", callBackUri },
                 { "oauth_consumer_key", Options.ConsumerKey },
-                { "oauth_nonce", nonce },
+                { "oauth_nonce", Guid.NewGuid().ToString("N") },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", GenerateTimeStamp() },
                 { "oauth_version", "1.0" }
             };
 
-            var parameterBuilder = new StringBuilder();
-            foreach (var authorizationKey in authorizationParts)
+            if (accessToken != null)
             {
-                parameterBuilder.AppendFormat("{0}={1}&", UrlEncoder.Encode(authorizationKey.Key), UrlEncoder.Encode(authorizationKey.Value));
+                authorizationParts.Add("oauth_token", accessToken.Token);
+            }
+
+            var signatureParts = new SortedDictionary<string, string>(authorizationParts);
+            if (queryParameters != null)
+            {
+                foreach (var queryParameter in queryParameters)
+                {
+                    signatureParts.Add(queryParameter.Key, queryParameter.Value);
+                }
+            }
+            if (formData != null)
+            {
+                foreach (var formItem in formData)
+                {
+                    signatureParts.Add(formItem.Key, formItem.Value);
+                }
+            }
+
+            var parameterBuilder = new StringBuilder();
+            foreach (var signaturePart in signatureParts)
+            {
+                parameterBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
             }
             parameterBuilder.Length--;
             var parameterString = parameterBuilder.ToString();
 
             var canonicalizedRequestBuilder = new StringBuilder();
-            canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
+            canonicalizedRequestBuilder.Append(httpMethod.Method);
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(RequestTokenEndpoint));
+            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(url));
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(parameterString));
+            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
-            var signature = ComputeSignature(Options.ConsumerSecret, null, canonicalizedRequestBuilder.ToString());
+            var signature = ComputeSignature(Options.ConsumerSecret, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
+
+            var queryString = "";
+            if (queryParameters != null)
+            {
+                var queryStringBuilder = new StringBuilder("?");
+                foreach (var queryParam in queryParameters)
+                {
+                    queryStringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
+                }
+                queryStringBuilder.Length--;
+                queryString = queryStringBuilder.ToString();
+            }
 
             var authorizationHeaderBuilder = new StringBuilder();
             authorizationHeaderBuilder.Append("OAuth ");
             foreach (var authorizationPart in authorizationParts)
             {
-                authorizationHeaderBuilder.AppendFormat(
-                    "{0}=\"{1}\", ", authorizationPart.Key, UrlEncoder.Encode(authorizationPart.Value));
+                authorizationHeaderBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
             }
-            authorizationHeaderBuilder.Length = authorizationHeaderBuilder.Length - 2;
+            authorizationHeaderBuilder.Length--;
 
-            var request = new HttpRequestMessage(HttpMethod.Post, RequestTokenEndpoint);
+            var request = new HttpRequestMessage(httpMethod, url + queryString);
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
-            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
-            response.EnsureSuccessStatusCode();
+            // This header is so that the error response is also JSON - without it the success response is already JSON
+            request.Headers.Add("Accept", "application/json");
+
+            if (formData != null)
+            {
+                request.Content = new FormUrlEncodedContent(formData);
+            }
+
+            return await Backchannel.SendAsync(request, Context.RequestAborted);
+        }
+
+        private async Task<RequestToken> ObtainRequestTokenAsync(string callBackUri, AuthenticationProperties properties)
+        {
+            Logger.ObtainRequestToken();
+
+            var response = await ExecuteRequestAsync(TwitterDefaults.RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
+            await EnsureTwitterRequestSuccess(response);
             var responseText = await response.Content.ReadAsStringAsync();
 
             var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
@@ -213,63 +288,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             Logger.ObtainAccessToken();
 
-            var nonce = Guid.NewGuid().ToString("N");
-
-            var authorizationParts = new SortedDictionary<string, string>
-            {
-                { "oauth_consumer_key", Options.ConsumerKey },
-                { "oauth_nonce", nonce },
-                { "oauth_signature_method", "HMAC-SHA1" },
-                { "oauth_token", token.Token },
-                { "oauth_timestamp", GenerateTimeStamp() },
-                { "oauth_verifier", verifier },
-                { "oauth_version", "1.0" },
-            };
-
-            var parameterBuilder = new StringBuilder();
-            foreach (var authorizationKey in authorizationParts)
-            {
-                parameterBuilder.AppendFormat("{0}={1}&", UrlEncoder.Encode(authorizationKey.Key), UrlEncoder.Encode(authorizationKey.Value));
-            }
-            parameterBuilder.Length--;
-            var parameterString = parameterBuilder.ToString();
-
-            var canonicalizedRequestBuilder = new StringBuilder();
-            canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
-            canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(AccessTokenEndpoint));
-            canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(parameterString));
-
-            var signature = ComputeSignature(Options.ConsumerSecret, token.TokenSecret, canonicalizedRequestBuilder.ToString());
-            authorizationParts.Add("oauth_signature", signature);
-            authorizationParts.Remove("oauth_verifier");
-
-            var authorizationHeaderBuilder = new StringBuilder();
-            authorizationHeaderBuilder.Append("OAuth ");
-            foreach (var authorizationPart in authorizationParts)
-            {
-                authorizationHeaderBuilder.AppendFormat(
-                    "{0}=\"{1}\", ", authorizationPart.Key, UrlEncoder.Encode(authorizationPart.Value));
-            }
-            authorizationHeaderBuilder.Length = authorizationHeaderBuilder.Length - 2;
-
-            var request = new HttpRequestMessage(HttpMethod.Post, AccessTokenEndpoint);
-            request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
-
-            var formPairs = new Dictionary<string, string>()
-            {
-                { "oauth_verifier", verifier },
-            };
-
-            request.Content = new FormUrlEncodedContent(formPairs);
-
-            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
+            var formPost = new Dictionary<string, string> { { "oauth_verifier", verifier } };
+            var response = await ExecuteRequestAsync(TwitterDefaults.AccessTokenEndpoint, HttpMethod.Post, token, formData: formPost);
 
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
-                response.EnsureSuccessStatusCode(); // throw
+                await EnsureTwitterRequestSuccess(response); // throw
             }
 
             var responseText = await response.Content.ReadAsStringAsync();
@@ -285,72 +310,27 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         // https://dev.twitter.com/rest/reference/get/account/verify_credentials
-        private async Task<JObject> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
+        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
         {
             Logger.RetrieveUserDetails();
 
-            var nonce = Guid.NewGuid().ToString("N");
+            var response = await ExecuteRequestAsync("https://api.twitter.com/1.1/account/verify_credentials.json", HttpMethod.Get, accessToken, queryParameters: new Dictionary<string, string>() { { "include_email", "true" } });
 
-            var authorizationParts = new SortedDictionary<string, string>
-                        {
-                            { "oauth_consumer_key", Options.ConsumerKey },
-                            { "oauth_nonce", nonce },
-                            { "oauth_signature_method", "HMAC-SHA1" },
-                            { "oauth_timestamp", GenerateTimeStamp() },
-                            { "oauth_token", accessToken.Token },
-                            { "oauth_version", "1.0" }
-                        };
-
-            var parameterBuilder = new StringBuilder();
-            foreach (var authorizationKey in authorizationParts)
-            {
-                parameterBuilder.AppendFormat("{0}={1}&", UrlEncoder.Encode(authorizationKey.Key), UrlEncoder.Encode(authorizationKey.Value));
-            }
-            parameterBuilder.Length--;
-            var parameterString = parameterBuilder.ToString();
-
-            var resource_url = "https://api.twitter.com/1.1/account/verify_credentials.json";
-            var resource_query = "include_email=true";
-            var canonicalizedRequestBuilder = new StringBuilder();
-            canonicalizedRequestBuilder.Append(HttpMethod.Get.Method);
-            canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(resource_url));
-            canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(resource_query));
-            canonicalizedRequestBuilder.Append("%26");
-            canonicalizedRequestBuilder.Append(UrlEncoder.Encode(parameterString));
-
-            var signature = ComputeSignature(Options.ConsumerSecret, accessToken.TokenSecret, canonicalizedRequestBuilder.ToString());
-            authorizationParts.Add("oauth_signature", signature);
-
-            var authorizationHeaderBuilder = new StringBuilder();
-            authorizationHeaderBuilder.Append("OAuth ");
-            foreach (var authorizationPart in authorizationParts)
-            {
-                authorizationHeaderBuilder.AppendFormat(
-                    "{0}=\"{1}\", ", authorizationPart.Key, UrlEncoder.Encode(authorizationPart.Value));
-            }
-            authorizationHeaderBuilder.Length = authorizationHeaderBuilder.Length - 2;
-
-            var request = new HttpRequestMessage(HttpMethod.Get, resource_url + "?include_email=true");
-            request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
-
-            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("Email request failed with a status code of " + response.StatusCode);
-                response.EnsureSuccessStatusCode(); // throw
+                await EnsureTwitterRequestSuccess(response); // throw
             }
             var responseText = await response.Content.ReadAsStringAsync();
 
-            var result = JObject.Parse(responseText);
+            var result = JsonDocument.Parse(responseText);
 
             return result;
         }
 
-        private static string GenerateTimeStamp()
+        private string GenerateTimeStamp()
         {
-            var secondsSinceUnixEpocStart = DateTime.UtcNow - Epoch;
+            var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
@@ -361,11 +341,54 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 algorithm.Key = Encoding.ASCII.GetBytes(
                     string.Format(CultureInfo.InvariantCulture,
                         "{0}&{1}",
-                        UrlEncoder.Encode(consumerSecret),
-                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : UrlEncoder.Encode(tokenSecret)));
+                        Uri.EscapeDataString(consumerSecret),
+                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
                 var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
                 return Convert.ToBase64String(hash);
             }
+        }
+
+        // https://developer.twitter.com/en/docs/apps/callback-urls
+        private async Task EnsureTwitterRequestSuccess(HttpResponseMessage response)
+        {
+            var contentTypeIsJson = string.Equals(response.Content.Headers.ContentType?.MediaType ?? "", "application/json", StringComparison.OrdinalIgnoreCase);
+            if (response.IsSuccessStatusCode || !contentTypeIsJson)
+            {
+                // Not an error or not JSON, ensure success as usual
+                response.EnsureSuccessStatusCode();
+                return;
+            }
+
+            TwitterErrorResponse errorResponse;
+            try
+            {
+                // Failure, attempt to parse Twitters error message
+                var errorContentStream = await response.Content.ReadAsStreamAsync();
+                errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
+            }
+            catch
+            {
+                // No valid Twitter error response, throw as normal
+                response.EnsureSuccessStatusCode();
+                return;
+            }
+
+            if (errorResponse == null)
+            {
+                // No error message body
+                response.EnsureSuccessStatusCode();
+                return;
+            }
+
+            var errorMessageStringBuilder = new StringBuilder("An error has occurred while calling the Twitter API, error's returned:");
+
+            foreach (var error in errorResponse.Errors)
+            {
+                errorMessageStringBuilder.Append(Environment.NewLine);
+                errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+            }
+
+            throw new InvalidOperationException(errorMessageStringBuilder.ToString());
         }
     }
 }

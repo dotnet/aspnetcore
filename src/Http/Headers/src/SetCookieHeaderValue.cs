@@ -3,13 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
-    // http://tools.ietf.org/html/rfc6265
+    /// <summary>
+    /// Represents the <c>Set-Cookie</c> header.
+    /// <para>
+    /// See http://tools.ietf.org/html/rfc6265 for the Set-Cookie header specification.
+    /// </para>
+    /// </summary>
     public class SetCookieHeaderValue
     {
         private const string ExpiresToken = "expires";
@@ -19,18 +27,15 @@ namespace Microsoft.Net.Http.Headers
         private const string SecureToken = "secure";
         // RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
         private const string SameSiteToken = "samesite";
-        private static readonly string SameSiteNoneToken = SameSiteMode.None.ToString().ToLower();
-        private static readonly string SameSiteLaxToken = SameSiteMode.Lax.ToString().ToLower();
-        private static readonly string SameSiteStrictToken = SameSiteMode.Strict.ToString().ToLower();
-
-        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
-        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
-        internal static bool SuppressSameSiteNone;
+        private static readonly string SameSiteNoneToken = SameSiteMode.None.ToString().ToLowerInvariant();
+        private static readonly string SameSiteLaxToken = SameSiteMode.Lax.ToString().ToLowerInvariant();
+        private static readonly string SameSiteStrictToken = SameSiteMode.Strict.ToString().ToLowerInvariant();
 
         private const string HttpOnlyToken = "httponly";
         private const string SeparatorToken = "; ";
         private const string EqualsToken = "=";
-        private const string DefaultPath = "/"; // TODO: Used?
+        private const int ExpiresDateLength = 29;
+        private const string ExpiresDateFormat = "r";
 
         private static readonly HttpHeaderParser<SetCookieHeaderValue> SingleValueParser
             = new GenericHeaderParser<SetCookieHeaderValue>(false, GetSetCookieLength);
@@ -40,24 +45,25 @@ namespace Microsoft.Net.Http.Headers
         private StringSegment _name;
         private StringSegment _value;
 
-        static SetCookieHeaderValue()
-        {
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
-            {
-                SuppressSameSiteNone = enabled;
-            }
-        }
-
         private SetCookieHeaderValue()
         {
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SetCookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="name">The cookie name.</param>
         public SetCookieHeaderValue(StringSegment name)
             : this(name, StringSegment.Empty)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SetCookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="name">The cookie name.</param>
+        /// <param name="value">The cookie value.</param>
         public SetCookieHeaderValue(StringSegment name, StringSegment value)
         {
             if (name == null)
@@ -74,6 +80,9 @@ namespace Microsoft.Net.Http.Headers
             Value = value;
         }
 
+        /// <summary>
+        /// Gets or sets the cookie name.
+        /// </summary>
         public StringSegment Name
         {
             get { return _name; }
@@ -84,6 +93,9 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the cookie value.
+        /// </summary>
         public StringSegment Value
         {
             get { return _value; }
@@ -94,38 +106,99 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>Expires</c> cookie attribute.
+        /// <para>
+        /// The Expires attribute indicates the maximum lifetime of the cookie,
+        /// represented as the date and time at which the cookie expires.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.1</remarks>
         public DateTimeOffset? Expires { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>Max-Age</c> cookie attribute.
+        /// <para>
+        /// The Max-Age attribute indicates the maximum lifetime of the cookie,
+        /// represented as the number of seconds until the cookie expires.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.2</remarks>
         public TimeSpan? MaxAge { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>Domain</c> cookie attribute.
+        /// <para>
+        /// The Domain attribute specifies those hosts to which the cookie will
+        /// be sent.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.3</remarks>
         public StringSegment Domain { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>Path</c> cookie attribute.
+        /// <para>
+        /// The path attribute specifies those hosts to which the cookie will
+        /// be sent.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.4</remarks>
         public StringSegment Path { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value for the <c>Secure</c> cookie attribute.
+        /// <para>
+        /// The Secure attribute limits the scope of the cookie to "secure"
+        /// channels.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.5</remarks>
         public bool Secure { get; set; }
 
-        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : (SameSiteMode)(-1); // Unspecified
+        /// <summary>
+        /// Gets or sets a value for the <c>SameSite</c> cookie attribute.
+        /// <para>
+        /// "SameSite" cookies offer a robust defense against CSRF attack when
+        /// deployed in strict mode, and when supported by the client.
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-8.8</remarks>
+        public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
+        /// <summary>
+        /// Gets or sets a value for the <c>HttpOnly</c> cookie attribute.
+        /// <para>
+        /// HttpOnly instructs the user agent to
+        /// omit the cookie when providing access to cookies via "non-HTTP" APIs
+        /// (such as a web browser API that exposes cookies to scripts).
+        /// </para>
+        /// </summary>
+        /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.6</remarks>
         public bool HttpOnly { get; set; }
 
+        /// <summary>
+        /// Gets a collection of additional values to append to the cookie.
+        /// </summary>
+        public IList<StringSegment> Extensions { get; } = new List<StringSegment>();
+
         // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
+        /// <inheritdoc />
         public override string ToString()
         {
             var length = _name.Length + EqualsToken.Length + _value.Length;
 
-            string expires = null;
-            string maxAge = null;
-            string sameSite = null;
+            string? maxAge = null;
+            string? sameSite = null;
 
             if (Expires.HasValue)
             {
-                expires = HeaderUtilities.FormatDate(Expires.Value);
-                length += SeparatorToken.Length + ExpiresToken.Length + EqualsToken.Length + expires.Length;
+                length += SeparatorToken.Length + ExpiresToken.Length + EqualsToken.Length + ExpiresDateLength;
             }
 
             if (MaxAge.HasValue)
             {
-                maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds);
+                maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
                 length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
             }
 
@@ -145,7 +218,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Allow for Unspecified (-1) to skip SameSite
-            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
+            if (SameSite == SameSiteMode.None)
             {
                 sameSite = SameSiteNoneToken;
                 length += SeparatorToken.Length + SameSiteToken.Length + EqualsToken.Length + sameSite.Length;
@@ -166,59 +239,83 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            var sb = new InplaceStringBuilder(length);
-
-            sb.Append(_name);
-            sb.Append(EqualsToken);
-            sb.Append(_value);
-
-            if (expires != null)
+            foreach (var extension in Extensions)
             {
-                AppendSegment(ref sb, ExpiresToken, expires);
+                length += SeparatorToken.Length + extension.Length;
             }
 
-            if (maxAge != null)
+            return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
             {
-                AppendSegment(ref sb, MaxAgeToken, maxAge);
-            }
+                var (headerValue, maxAgeValue, sameSite) = tuple;
 
-            if (Domain != null)
-            {
-                AppendSegment(ref sb, DomainToken, Domain);
-            }
+                Append(ref span, headerValue._name);
+                Append(ref span, EqualsToken);
+                Append(ref span, headerValue._value);
 
-            if (Path != null)
-            {
-                AppendSegment(ref sb, PathToken, Path);
-            }
+                if (headerValue.Expires is DateTimeOffset expiresValue)
+                {
+                    Append(ref span, SeparatorToken);
+                    Append(ref span, ExpiresToken);
+                    Append(ref span, EqualsToken);
 
-            if (Secure)
-            {
-                AppendSegment(ref sb, SecureToken, null);
-            }
+                    var formatted = expiresValue.TryFormat(span, out var charsWritten, ExpiresDateFormat);
+                    span = span.Slice(charsWritten);
 
-            if (sameSite != null)
-            {
-                AppendSegment(ref sb, SameSiteToken, sameSite);
-            }
+                    Debug.Assert(formatted);
+                }
 
-            if (HttpOnly)
-            {
-                AppendSegment(ref sb, HttpOnlyToken, null);
-            }
+                if (maxAgeValue != null)
+                {
+                    AppendSegment(ref span, MaxAgeToken, maxAgeValue);
+                }
 
-            return sb.ToString();
+                if (headerValue.Domain != null)
+                {
+                    AppendSegment(ref span, DomainToken, headerValue.Domain);
+                }
+
+                if (headerValue.Path != null)
+                {
+                    AppendSegment(ref span, PathToken, headerValue.Path);
+                }
+
+                if (headerValue.Secure)
+                {
+                    AppendSegment(ref span, SecureToken, null);
+                }
+
+                if (sameSite != null)
+                {
+                    AppendSegment(ref span, SameSiteToken, sameSite);
+                }
+
+                if (headerValue.HttpOnly)
+                {
+                    AppendSegment(ref span, HttpOnlyToken, null);
+                }
+
+                foreach (var extension in Extensions)
+                {
+                    AppendSegment(ref span, extension, null);
+                }
+            });
         }
 
-        private static void AppendSegment(ref InplaceStringBuilder builder, StringSegment name, StringSegment value)
+        private static void AppendSegment(ref Span<char> span, StringSegment name, StringSegment value)
         {
-            builder.Append(SeparatorToken);
-            builder.Append(name);
+            Append(ref span, SeparatorToken);
+            Append(ref span, name.AsSpan());
             if (value != null)
             {
-                builder.Append(EqualsToken);
-                builder.Append(value);
+                Append(ref span, EqualsToken);
+                Append(ref span, value.AsSpan());
             }
+        }
+
+        private static void Append(ref Span<char> span, ReadOnlySpan<char> other)
+        {
+            other.CopyTo(span);
+            span = span.Slice(other.Length);
         }
 
         /// <summary>
@@ -231,18 +328,18 @@ namespace Microsoft.Net.Http.Headers
         /// </param>
         public void AppendToStringBuilder(StringBuilder builder)
         {
-            builder.Append(_name);
+            builder.Append(_name.AsSpan());
             builder.Append("=");
-            builder.Append(_value);
+            builder.Append(_value.AsSpan());
 
             if (Expires.HasValue)
             {
-                AppendSegment(builder, ExpiresToken, HeaderUtilities.FormatDate(Expires.Value));
+                AppendSegment(builder, ExpiresToken, HeaderUtilities.FormatDate(Expires.GetValueOrDefault()));
             }
 
             if (MaxAge.HasValue)
             {
-                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds));
+                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
             }
 
             if (Domain != null)
@@ -261,7 +358,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Allow for Unspecified (-1) to skip SameSite
-            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
+            if (SameSite == SameSiteMode.None)
             {
                 AppendSegment(builder, SameSiteToken, SameSiteNoneToken);
             }
@@ -278,53 +375,91 @@ namespace Microsoft.Net.Http.Headers
             {
                 AppendSegment(builder, HttpOnlyToken, null);
             }
+
+            foreach (var extension in Extensions)
+            {
+                AppendSegment(builder, extension, null);
+            }
         }
 
         private static void AppendSegment(StringBuilder builder, StringSegment name, StringSegment value)
         {
             builder.Append("; ");
-            builder.Append(name);
+            builder.Append(name.AsSpan());
             if (value != null)
             {
                 builder.Append("=");
-                builder.Append(value);
+                builder.Append(value.AsSpan());
             }
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="SetCookieHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static SetCookieHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out SetCookieHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="SetCookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="SetCookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out SetCookieHeaderValue? parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<SetCookieHeaderValue> ParseList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="SetCookieHeaderValue"/> values.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<SetCookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="SetCookieHeaderValue"/> values using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="SetCookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="SetCookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="SetCookieHeaderValue"/> using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         // name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={Strict|Lax|None}; httponly
-        private static int GetSetCookieLength(StringSegment input, int startIndex, out SetCookieHeaderValue parsedValue)
+        private static int GetSetCookieLength(StringSegment input, int startIndex, out SetCookieHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
             var offset = startIndex;
@@ -396,7 +531,8 @@ namespace Microsoft.Net.Http.Headers
                     {
                         return 0;
                     }
-                    var dateString = ReadToSemicolonOrEnd(input, ref offset);
+                    // We don't want to include comma, becouse date may contain it (eg. Sun, 06 Nov...)
+                    var dateString = ReadToSemicolonOrEnd(input, ref offset, includeComma: false);
                     DateTimeOffset expirationDate;
                     if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))
                     {
@@ -464,7 +600,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     if (!ReadEqualsSign(input, ref offset))
                     {
-                        result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                        result.SameSite = SameSiteMode.Unspecified;
                     }
                     else
                     {
@@ -478,14 +614,13 @@ namespace Microsoft.Net.Http.Headers
                         {
                             result.SameSite = SameSiteMode.Lax;
                         }
-                        else if (!SuppressSameSiteNone
-                            && StringSegment.Equals(enforcementMode, SameSiteNoneToken, StringComparison.OrdinalIgnoreCase))
+                        else if (StringSegment.Equals(enforcementMode, SameSiteNoneToken, StringComparison.OrdinalIgnoreCase))
                         {
                             result.SameSite = SameSiteMode.None;
                         }
                         else
                         {
-                            result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                            result.SameSite = SameSiteMode.Unspecified;
                         }
                     }
                 }
@@ -497,7 +632,9 @@ namespace Microsoft.Net.Http.Headers
                 // extension-av = <any CHAR except CTLs or ";">
                 else
                 {
-                    // TODO: skip it? Store it in a list?
+                    var tokenStart = offset - itemLength;
+                    ReadToSemicolonOrEnd(input, ref offset, includeComma: true);
+                    result.Extensions.Add(input.Subsegment(tokenStart, offset - tokenStart));
                 }
             }
 
@@ -516,21 +653,40 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset)
+        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset, bool includeComma = true)
         {
             var end = input.IndexOf(';', offset);
+            if (end < 0)
+            {
+                // Also valid end of cookie
+                if (includeComma)
+                {
+                    end = input.IndexOf(',', offset);
+                }
+            }
+            else if (includeComma)
+            {
+                var commaPosition = input.IndexOf(',', offset);
+                if (commaPosition >= 0 && commaPosition < end)
+                {
+                    end = commaPosition;
+                }
+            }
+
             if (end < 0)
             {
                 // Remainder of the string
                 end = input.Length;
             }
+
             var itemLength = end - offset;
             var result = input.Subsegment(offset, itemLength);
             offset += itemLength;
             return result;
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
             var other = obj as SetCookieHeaderValue;
 
@@ -547,12 +703,14 @@ namespace Microsoft.Net.Http.Headers
                 && StringSegment.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase)
                 && Secure == other.Secure
                 && SameSite == other.SameSite
-                && HttpOnly == other.HttpOnly;
+                && HttpOnly == other.HttpOnly
+                && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
-            return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
+            var hash = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
                 ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value)
                 ^ (Expires.HasValue ? Expires.GetHashCode() : 0)
                 ^ (MaxAge.HasValue ? MaxAge.GetHashCode() : 0)
@@ -561,6 +719,13 @@ namespace Microsoft.Net.Http.Headers
                 ^ Secure.GetHashCode()
                 ^ SameSite.GetHashCode()
                 ^ HttpOnly.GetHashCode();
+
+            foreach (var extension in Extensions)
+            {
+                hash ^= extension.GetHashCode();
+            }
+
+            return hash;
         }
     }
 }

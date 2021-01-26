@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewBag.Title = "Home Page";
 }
 
@@ -19,7 +19,7 @@
         <a asp-action="Index">Default Controller</a>
     </div>
     <div>
-        <a asp-fragment="fragment" asp-controller="Product">Product Index Fragment</a>
+        <a asp-fragment="fragment" asp-controller="HtmlGeneration_Product">Product Index Fragment</a>
     </div>
     <div>
         <a asp-controller="HtmlGeneration_Product" asp-action="Submit" asp-fragment="fragment">Product Submit Fragment</a>
@@ -46,7 +46,7 @@
     </div>
     <div>
         <a asp-route="areaRoute" asp-route-area="Customer"
-           asp-route-controller="Customer"
+           asp-route-controller="HtmlGeneration_Customer"
            asp-route-action="Index"
            asp-fragment="fragment">Customer Area Customer Index</a>
     </div>

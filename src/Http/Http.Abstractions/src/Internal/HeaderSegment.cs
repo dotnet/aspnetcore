@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public struct HeaderSegment : IEquatable<HeaderSegment>
+    internal readonly struct HeaderSegment : IEquatable<HeaderSegment>
     {
         private readonly StringSegment _formatting;
         private readonly StringSegment _data;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             return _formatting.Equals(other._formatting) && _data.Equals(other._data);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {

@@ -3,8 +3,9 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
@@ -201,6 +202,22 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             activatorMock.Verify();
         }
 
+        [Fact]
+        public async Task DefaultControllerFactory_DelegatesAsyncDisposalToControllerActivatorAsync()
+        {
+            // Arrange
+            var activatorMock = new Mock<IControllerActivator>();
+            activatorMock.Setup(s => s.Release(It.IsAny<ControllerContext>(), It.IsAny<object>()));
+
+            var factory = CreateControllerFactory(activatorMock.Object);
+            var controller = new MyAsyncDisposableController();
+
+            // Act + Assert
+            await factory.ReleaseControllerAsync(new ControllerContext(), controller);
+
+            activatorMock.Verify();
+        }
+
         private IServiceProvider GetServices()
         {
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -215,7 +232,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 .Setup(s => s.GetService(typeof(IObjectModelValidator)))
                 .Returns(new DefaultObjectValidator(
                     metadataProvider,
-                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders));
+                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders,
+                    new MvcOptions()));
             return services.Object;
         }
 
@@ -262,6 +280,17 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             public void Dispose()
             {
                 Disposed = true;
+            }
+        }
+
+        private class MyAsyncDisposableController : IAsyncDisposable
+        {
+            public bool Disposed { get; set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return default;
             }
         }
 

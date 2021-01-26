@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public abstract class UvStreamHandle : UvHandle
+    internal abstract class UvStreamHandle : UvHandle
     {
         private readonly static LibuvFunctions.uv_connection_cb _uv_connection_cb = (handle, status) => UvConnectionCb(handle, status);
         // Ref and out lamda params must be explicitly typed

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -15,7 +16,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     public class UserOnlyCustomContextTest : IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ApplicationBuilder _builder;
-        private const string DatabaseName = nameof(UserOnlyCustomContextTest);
 
         public class CustomContext : DbContext
         {
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 builder.Entity<IdentityUser>(b =>
                 {
                     b.HasKey(u => u.Id);
-                    b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
-                    b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
+                    b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("UserNameIndex").IsUnique();
+                    b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex");
                     b.ToTable("AspNetUsers");
                     b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -67,7 +67,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .AddDbContext<CustomContext>(o => o.UseSqlServer(fixture.ConnectionString))
+                .AddDbContext<CustomContext>(o =>
+                    o.UseSqlite(fixture.Connection)
+                        .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentityCore<IdentityUser>(o => { })
                 .AddEntityFrameworkStores<CustomContext>();
 
@@ -84,9 +86,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task EnsureStartupUsageWorks()
         {
             var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

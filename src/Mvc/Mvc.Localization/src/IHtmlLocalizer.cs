@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
@@ -52,12 +53,5 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// </param>
         /// <returns>The strings.</returns>
         IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
-
-        /// <summary>
-        /// Creates a new <see cref="IHtmlLocalizer"/> for a specific <see cref="CultureInfo"/>.
-        /// </summary>
-        /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
-        /// <returns>A culture-specific <see cref="IHtmlLocalizer"/>.</returns>
-        IHtmlLocalizer WithCulture(CultureInfo culture);
     }
 }

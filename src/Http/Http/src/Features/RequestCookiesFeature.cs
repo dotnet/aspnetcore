@@ -3,21 +3,27 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IRequestCookiesFeature"/>.
+    /// </summary>
     public class RequestCookiesFeature : IRequestCookiesFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
 
         private FeatureReferences<IHttpRequestFeature> _features;
         private StringValues _original;
-        private IRequestCookieCollection _parsedValues;
+        private IRequestCookieCollection? _parsedValues;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestCookiesFeature"/>.
+        /// </summary>
+        /// <param name="cookies">The <see cref="IRequestCookieCollection"/> to use as backing store.</param>
         public RequestCookiesFeature(IRequestCookieCollection cookies)
         {
             if (cookies == null)
@@ -28,6 +34,10 @@ namespace Microsoft.AspNetCore.Http.Features
             _parsedValues = cookies;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestCookiesFeature"/>.
+        /// </summary>
+        /// <param name="features">The <see cref="IFeatureCollection"/> to initialize.</param>
         public RequestCookiesFeature(IFeatureCollection features)
         {
             if (features == null)
@@ -35,12 +45,13 @@ namespace Microsoft.AspNetCore.Http.Features
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = new FeatureReferences<IHttpRequestFeature>(features);
+            _features.Initalize(features);
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache, _nullRequestFeature);
+            _features.Fetch(ref _features.Cache, _nullRequestFeature)!;
 
+        /// <inheritdoc />
         public IRequestCookieCollection Cookies
         {
             get
@@ -81,7 +92,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     }
                     else
                     {
-                        var headers = new List<string>();
+                        var headers = new List<string>(_parsedValues.Count);
                         foreach (var pair in _parsedValues)
                         {
                             headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());

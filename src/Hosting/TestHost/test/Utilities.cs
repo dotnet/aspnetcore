@@ -3,6 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -10,20 +13,13 @@ namespace Microsoft.AspNetCore.TestHost
     {
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
-        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.WithTimeout(DefaultTimeout);
+        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.TimeoutAfter(DefaultTimeout);
 
-        internal static async Task<T> WithTimeout<T>(this Task<T> task, TimeSpan timeout)
+        internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
+
+        internal static bool? CanHaveBody(this HttpRequest request)
         {
-            var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
-
-            if (completedTask == task)
-            {
-                return await task;
-            }
-            else
-            {
-                throw new TimeoutException("The task has timed out.");
-            }
+            return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
         }
     }
 }

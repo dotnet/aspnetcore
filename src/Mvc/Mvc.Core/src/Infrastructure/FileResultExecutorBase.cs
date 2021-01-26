@@ -1,27 +1,37 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// Base class for a file result.
+    /// </summary>
     public class FileResultExecutorBase
     {
         private const string AcceptRangeHeaderValue = "bytes";
 
+        /// <summary>
+        /// The buffer size: 64 * 1024.
+        /// </summary>
         protected const int BufferSize = 64 * 1024;
 
+        /// <summary>
+        /// Intializes a new <see cref="FileResultExecutorBase"/>.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         public FileResultExecutorBase(ILogger logger)
         {
             Logger = logger;
@@ -35,15 +45,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             PreconditionFailed
         }
 
+        /// <summary>
+        /// The logger to use.
+        /// </summary>
         protected ILogger Logger { get; }
 
-        protected virtual (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetHeadersAndLog(
+        /// <summary>
+        /// Sets etag and last modified headers.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionContext"/>.</param>
+        /// <param name="result">The <see cref="FileResult"/>.</param>
+        /// <param name="fileLength">The nullable file length.</param>
+        /// <param name="enableRangeProcessing">Whether range processing is enabled.</param>
+        /// <param name="lastModified">The nullable lastModified date.</param>
+        /// <param name="etag">The <see cref="EntityTagHeaderValue"/>.</param>
+        /// <returns>A tuple with the <see cref="RangeItemHeaderValue"/> range, length, and whether the body was served.</returns>
+        protected virtual (RangeItemHeaderValue? range, long rangeLength, bool serveBody) SetHeadersAndLog(
             ActionContext context,
             FileResult result,
             long? fileLength,
             bool enableRangeProcessing,
             DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            EntityTagHeaderValue? etag = null)
         {
             if (context == null)
             {
@@ -53,10 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
-            SetContentType(context, result);
-            SetContentDispositionHeader(context, result);
-
+            
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
 
@@ -83,6 +103,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 response.StatusCode = StatusCodes.Status412PreconditionFailed;
                 return (range: null, rangeLength: 0, serveBody: false);
             }
+
+            SetContentType(context, result);
+            SetContentDispositionHeader(context, result);
 
             if (fileLength.HasValue)
             {
@@ -137,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void SetLastModifiedAndEtagHeaders(HttpResponse response, DateTimeOffset? lastModified, EntityTagHeaderValue etag)
+        private static void SetLastModifiedAndEtagHeaders(HttpResponse response, DateTimeOffset? lastModified, EntityTagHeaderValue? etag)
         {
             var httpResponseHeaders = response.GetTypedHeaders();
             if (lastModified.HasValue)
@@ -157,8 +180,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         internal bool IfRangeValid(
             RequestHeaders httpRequestHeaders,
-            DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            DateTimeOffset? lastModified,
+            EntityTagHeaderValue? etag)
         {
             // 14.27 If-Range
             var ifRange = httpRequestHeaders.IfRange;
@@ -190,8 +213,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         // Internal for testing
         internal PreconditionState GetPreconditionState(
             RequestHeaders httpRequestHeaders,
-            DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            DateTimeOffset? lastModified,
+            EntityTagHeaderValue? etag)
         {
             var ifMatchState = PreconditionState.Unspecified;
             var ifNoneMatchState = PreconditionState.Unspecified;
@@ -261,7 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             PreconditionState matchFoundState,
             PreconditionState matchNotFoundState)
         {
-            if (etagHeader != null && etagHeader.Any())
+            if (etagHeader?.Count > 0)
             {
                 var state = matchNotFoundState;
                 foreach (var entityTag in etagHeader)
@@ -293,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return max;
         }
 
-        private (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
+        private (RangeItemHeaderValue? range, long rangeLength, bool serveBody) SetRangeHeaders(
             ActionContext context,
             RequestHeaders httpRequestHeaders,
             long fileLength)
@@ -323,14 +346,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // the current length of the selected resource.  e.g. */length
                 response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
                 httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(fileLength);
+                response.ContentLength = 0;
 
                 return (range: null, rangeLength: 0, serveBody: false);
             }
 
             response.StatusCode = StatusCodes.Status206PartialContent;
             httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(
-                range.From.Value,
-                range.To.Value,
+                range.From!.Value,
+                range.To!.Value,
                 fileLength);
 
             // Overwrite the Content-Length header for valid range requests with the range length.
@@ -341,13 +365,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static long SetContentLength(HttpResponse response, RangeItemHeaderValue range)
         {
-            var start = range.From.Value;
-            var end = range.To.Value;
+            var start = range.From!.Value;
+            var end = range.To!.Value;
             var length = end - start + 1;
             response.ContentLength = length;
             return length;
         }
 
+        /// <summary>
+        /// Creates a logger using the factory.
+        /// </summary>
+        /// <typeparam name="T">The type being logged.</typeparam>
+        /// <param name="factory">The <see cref="ILoggerFactory"/>.</param>
+        /// <returns>An <see cref="ILogger"/>.</returns>
         protected static ILogger CreateLogger<T>(ILoggerFactory factory)
         {
             if (factory == null)
@@ -358,7 +388,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return factory.CreateLogger<T>();
         }
 
-        protected static async Task WriteFileAsync(HttpContext context, Stream fileStream, RangeItemHeaderValue range, long rangeLength)
+        /// <summary>
+        /// Write the contents of the fileStream to the response body.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="fileStream">The fileStream to write.</param>
+        /// <param name="range">The <see cref="RangeItemHeaderValue"/>.</param>
+        /// <param name="rangeLength">The range length.</param>
+        /// <returns>The async task.</returns>
+        protected static async Task WriteFileAsync(HttpContext context, Stream fileStream, RangeItemHeaderValue? range, long rangeLength)
         {
             var outputStream = context.Response.Body;
             using (fileStream)
@@ -371,7 +409,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     }
                     else
                     {
-                        fileStream.Seek(range.From.Value, SeekOrigin.Begin);
+                        fileStream.Seek(range.From!.Value, SeekOrigin.Begin);
                         await StreamCopyOperation.CopyToAsync(fileStream, outputStream, rangeLength, BufferSize, context.RequestAborted);
                     }
                 }

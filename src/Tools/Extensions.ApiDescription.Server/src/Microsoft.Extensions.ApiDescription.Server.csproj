@@ -1,0 +1,40 @@
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- Included primarily to ensure dotnet-getdocument and GetDocument.Insider can be referenced. -->
+    <TargetFrameworks>netcoreapp2.1;$(DefaultNetFxTargetFramework)</TargetFrameworks>
+
+    <Description>MSBuild tasks and targets for build-time Swagger and OpenApi document generation</Description>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageTags>MSBuild;Swagger;OpenAPI;code generation;Web API;service reference;document generation</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Publish the referenced projects when building .NET Core bits. This is not needed for full framework builds
+      because publish output matches what was built.
+    -->
+    <Reference Include="dotnet-getdocument"
+        Targets="Publish"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+    <Reference Include="GetDocument.Insider" ReferenceOutputAssembly="false">
+      <Targets Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Publish</Targets>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="artifactsBinDir=$(ArtifactsBinDir)" />
+    <NuspecProperty Include="configuration=$(Configuration)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="Compile" />
+  <Target Name="CopyFilesToOutputDirectory" />
+</Project>

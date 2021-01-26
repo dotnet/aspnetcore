@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Http
     /// Represents the host portion of a URI can be used to construct URI's properly formatted and encoded for use in
     /// HTTP headers.
     /// </summary>
-    public struct HostString : IEquatable<HostString>
+    public readonly struct HostString : IEquatable<HostString>
     {
         private readonly string _value;
 
@@ -35,7 +34,12 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
         public HostString(string host, int port)
         {
-            if(port <= 0)
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
+            if (port <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), Resources.Exception_PortMustBeGreaterThanZero);
             }
@@ -47,7 +51,7 @@ namespace Microsoft.AspNetCore.Http
                 && host.IndexOf(':', index + 1) >= 0)
             {
                 // IPv6 without brackets ::1 is the only type of host with 2 or more colons
-                host =  $"[{host}]";
+                host = $"[{host}]";
             }
 
             _value = host + ":" + port.ToString(CultureInfo.InvariantCulture);
@@ -61,6 +65,9 @@ namespace Microsoft.AspNetCore.Http
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns true if the host is set.
+        /// </summary>
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }
@@ -70,7 +77,7 @@ namespace Microsoft.AspNetCore.Http
         /// Returns the value of the host part of the value. The port is removed if it was present.
         /// IPv6 addresses will have brackets added if they are missing.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The host portion of the value.</returns>
         public string Host
         {
             get
@@ -84,7 +91,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns the value of the port part of the host, or <value>null</value> if none is found.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The port portion of the value.</returns>
         public int? Port
         {
             get
@@ -92,7 +99,7 @@ namespace Microsoft.AspNetCore.Http
                 GetParts(_value, out var host, out var port);
 
                 if (!StringSegment.IsNullOrEmpty(port)
-                    && int.TryParse(port.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))
+                    && int.TryParse(port.AsSpan(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))
                 {
                     return p;
                 }
@@ -104,7 +111,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns the value as normalized by ToUriComponent().
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The value as normalized by <see cref="ToUriComponent"/>.</returns>
         public override string ToString()
         {
             return ToUriComponent();
@@ -114,7 +121,7 @@ namespace Microsoft.AspNetCore.Http
         /// Returns the value properly formatted and encoded for use in a URI in a HTTP header.
         /// Any Unicode is converted to punycode. IPv6 addresses will have brackets added if they are missing.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="HostString"/> value formated for use in a URI or HTTP header.</returns>
         public string ToUriComponent()
         {
             if (string.IsNullOrEmpty(_value))
@@ -150,8 +157,8 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a new HostString from the given URI component.
         /// Any punycode will be converted to Unicode.
         /// </summary>
-        /// <param name="uriComponent"></param>
-        /// <returns></returns>
+        /// <param name="uriComponent">The URI component string to create a <see cref="HostString"/> from.</param>
+        /// <returns>The <see cref="HostString"/> that was created.</returns>
         public static HostString FromUriComponent(string uriComponent)
         {
             if (!string.IsNullOrEmpty(uriComponent))
@@ -191,8 +198,8 @@ namespace Microsoft.AspNetCore.Http
         /// Creates a new HostString from the host and port of the give Uri instance.
         /// Punycode will be converted to Unicode.
         /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
+        /// <param name="uri">The <see cref="Uri"/> to create a <see cref="HostString"/> from.</param>
+        /// <returns>The <see cref="HostString"/> that was created.</returns>
         public static HostString FromUriComponent(Uri uri)
         {
             if (uri == null)
@@ -219,7 +226,7 @@ namespace Microsoft.AspNetCore.Http
         /// "abc.example.com:443" but not "example.com:443".
         /// Matching is case insensitive.
         /// </remarks>
-        /// <returns></returns>
+        /// <returns><see langword="true" /> if <paramref name="value"/> matches any of the patterns.</returns>
         public static bool MatchesAny(StringSegment value, IList<StringSegment> patterns)
         {
             if (value == null)
@@ -242,7 +249,8 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            for (int i = 0; i < patterns.Count; i++)
+            var count = patterns.Count;
+            for (int i = 0; i < count; i++)
             {
                 var pattern = patterns[i];
 
@@ -276,8 +284,8 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Compares the equality of the Value property, ignoring case.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <param name="other">The <see cref="HostString"/> to compare against.</param>
+        /// <returns><see langword="true" /> if they have the same value.</returns>
         public bool Equals(HostString other)
         {
             if (!HasValue && !other.HasValue)
@@ -290,9 +298,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Compares against the given object only if it is a HostString.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
+        /// <param name="obj">The <see cref="object"/> to compare against.</param>
+        /// <returns><see langword="true" /> if they have the same value.</returns>
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -304,7 +312,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets a hash code for the value.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The hash code as an <see cref="int"/>.</returns>
         public override int GetHashCode()
         {
             return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
@@ -313,9 +321,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Compares the two instances for equality.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        /// <returns></returns>
+        /// <param name="left">The left parameter.</param>
+        /// <param name="right">The right parameter.</param>
+        /// <returns><see langword="true" /> if both <see cref="HostString"/>'s have the same value.</returns>
         public static bool operator ==(HostString left, HostString right)
         {
             return left.Equals(right);
@@ -324,9 +332,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Compares the two instances for inequality.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        /// <returns></returns>
+        /// <param name="left">The left parameter.</param>
+        /// <param name="right">The right parameter.</param>
+        /// <returns><see langword="true" /> if both <see cref="HostString"/>'s values are not equal.</returns>
         public static bool operator !=(HostString left, HostString right)
         {
             return !left.Equals(right);
@@ -335,6 +343,9 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Parses the current value. IPv6 addresses will have brackets added if they are missing.
         /// </summary>
+        /// <param name="value">The value to get the parts of.</param>
+        /// <param name="host">The portion of the <paramref name="value"/> which represents the host.</param>
+        /// <param name="port">The portion of the <paramref name="value"/> which represents the port.</param>
         private static void GetParts(StringSegment value, out StringSegment host, out StringSegment port)
         {
             int index;

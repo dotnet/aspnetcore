@@ -1,0 +1,17 @@
+#nullable enable
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.DataProtectionKey() -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.FriendlyName.get -> string?
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.FriendlyName.set -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.Id.get -> int
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.Id.set -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.Xml.get -> string?
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.Xml.set -> void
+~Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.EntityFrameworkCoreXmlRepository(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.IDataProtectionKeyContext
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCoreDataProtectionExtensions
+static Microsoft.AspNetCore.DataProtection.EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext<TContext>(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
+~Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.IDataProtectionKeyContext.DataProtectionKeys.get -> Microsoft.EntityFrameworkCore.DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey!>!

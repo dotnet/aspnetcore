@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class ServerSentEventsTransport : ITransport
+    internal partial class ServerSentEventsTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         // Volatile so that the SSE loop sees the updated value set from a different thread
         private volatile Exception _error;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _inputCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
         private IDuplexPipe _transport;
         private IDuplexPipe _application;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Text)
             {
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             try
             {
-                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None);
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
             }
             catch
@@ -81,14 +82,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _transport = pair.Transport;
             _application = pair.Application;
 
+            // Cancellation token will be triggered when the pipe is stopped on the client.
+            // This is to avoid the client throwing from a 404 response caused by the
+            // server stopping the connection while the send message request is in progress.
+            // _application.Input.OnWriterCompleted((exception, state) => ((CancellationTokenSource)state).Cancel(), inputCts);
+
             Running = ProcessAsync(url, response);
         }
 
         private async Task ProcessAsync(Uri url, HttpResponseMessage response)
         {
             // Start sending and polling (ask for binary if the server supports it)
-            var receiving = ProcessEventStream(_application, response, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
+            var receiving = ProcessEventStream(response, _transportCts.Token);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -98,6 +104,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // We're waiting for the application to finish and there are 2 things it could be doing
                 // 1. Waiting for application data
                 // 2. Waiting for an outgoing send (this should be instantaneous)
+
+                _inputCts.Cancel();
 
                 // Cancel the application so that ReadAsync yields
                 _application.Input.CancelPendingRead();
@@ -118,15 +126,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
         }
 
-        private async Task ProcessEventStream(IDuplexPipe application, HttpResponseMessage response, CancellationToken cancellationToken)
+        private async Task ProcessEventStream(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             Log.StartReceive(_logger);
+            
+            static void CancelReader(object state) => ((PipeReader)state).CancelPendingRead();
 
             using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                var options = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
-                var reader = PipeReaderFactory.CreateFromStream(options, stream, cancellationToken);
+                var reader = PipeReader.Create(stream);
+
+                using var registration = cancellationToken.Register(CancelReader, reader);
 
                 try
                 {

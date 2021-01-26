@@ -1,0 +1,25 @@
+{
+  "solution": {
+    "path": "..\\..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
+      "src\\http\\http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "src\\Middleware\\ConcurrencyLimiter\\perf\\Microbenchmarks\\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj",
+      "src\\Middleware\\ConcurrencyLimiter\\sample\\ConcurrencyLimiterSample.csproj",
+      "src\\Middleware\\ConcurrencyLimiter\\src\\Microsoft.AspNetCore.ConcurrencyLimiter.csproj",
+      "src\\Middleware\\ConcurrencyLimiter\\test\\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj",
+      "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj"
+    ]
+  }
+}

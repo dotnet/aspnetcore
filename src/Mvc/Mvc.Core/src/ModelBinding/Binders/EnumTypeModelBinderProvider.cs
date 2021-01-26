@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,19 +14,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class EnumTypeModelBinderProvider : IModelBinderProvider
     {
-        private readonly MvcOptions _options;
-
         /// <summary>
         /// Initializes a new instance of <see cref="EnumTypeModelBinderProvider"/>.
         /// </summary>
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        /// <remarks>The <paramref name="options"/> parameter is currently ignored.</remarks>
         public EnumTypeModelBinderProvider(MvcOptions options)
         {
-            _options = options;
         }
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
                 return new EnumTypeModelBinder(
-                    _options.SuppressBindingUndefinedValueToEnumType,
+                    suppressBindingUndefinedValueToEnumType: true,
                     context.Metadata.UnderlyingOrModelType,
                     loggerFactory);
             }

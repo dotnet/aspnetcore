@@ -1,7 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8247 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\test\testassets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj" ReferenceOutputAssemblies="false" />
+
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Do not complain about lack of lib folder. -->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <Description>MSBuild tasks and targets for code generation</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageTags>Build Tasks;MSBuild;Swagger;OpenAPI;code generation;Web API client;service reference</PackageTags>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="baseOutputPath=$(BaseOutputPath)" />
+    <NuspecProperty Include="configuration=$(Configuration)" />
+  </ItemGroup>
+</Project>

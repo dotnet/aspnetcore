@@ -4,34 +4,42 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net;
 using System.Security.Claims;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
+    /// <summary>
+    /// The default implementation for the <see cref="ConnectionContext"/>.
+    /// </summary>
     public class DefaultConnectionContext : ConnectionContext,
-                                            IDisposable,
                                             IConnectionIdFeature,
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
-                                            IConnectionLifetimeFeature
+                                            IConnectionLifetimeFeature,
+                                            IConnectionEndPointFeature
     {
         private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        /// <summary>
+        /// Creates the <see cref="DefaultConnectionContext"/> without Pipes to avoid upfront allocations.
+        /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
+        /// </summary>
         public DefaultConnectionContext() :
             this(Guid.NewGuid().ToString())
         {
-            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         /// <summary>
-        /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
+        /// Creates the <see cref="DefaultConnectionContext"/> without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The <see cref="ConnectionId"/>.</param>
         public DefaultConnectionContext(string id)
         {
             ConnectionId = id;
@@ -42,8 +50,18 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionEndPointFeature>(this);
+
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
+
+        /// <summary>
+        /// Creates the DefaultConnectionContext with the given <paramref name="transport"/> and <paramref name="application"/> pipes.
+        /// </summary>
+        /// <param name="id">The <see cref="ConnectionId"/>.</param>
+        /// <param name="transport">The <see cref="Transport"/>.</param>
+        /// <param name="application">The <see cref="Application"/>.</param>
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
             : this(id)
         {
@@ -51,28 +69,44 @@ namespace Microsoft.AspNetCore.Connections
             Application = application;
         }
 
+        /// <inheritdoc />
         public override string ConnectionId { get; set; }
 
+        /// <inheritdoc />
         public override IFeatureCollection Features { get; }
 
-        public ClaimsPrincipal User { get; set; }
+        /// <inheritdoc />
+        public ClaimsPrincipal? User { get; set; }
 
-        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+        /// <inheritdoc />
+        public override IDictionary<object, object?> Items { get; set; } = new ConnectionItems();
 
-        public IDuplexPipe Application { get; set; }
+        /// <inheritdoc />
+        public IDuplexPipe? Application { get; set; }
 
-        public override IDuplexPipe Transport { get; set; }
+        /// <inheritdoc />
+        public override IDuplexPipe Transport { get; set; } = default!;
 
-        public CancellationToken ConnectionClosed { get; set; }
+        /// <inheritdoc />
+        public override CancellationToken ConnectionClosed { get; set; }
 
+        /// <inheritdoc />
+        public override EndPoint? LocalEndPoint { get; set; }
+
+        /// <inheritdoc />
+        public override EndPoint? RemoteEndPoint { get; set; }
+
+        /// <inheritdoc />
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            ThreadPool.QueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
         }
 
-        public void Dispose()
+        /// <inheritdoc />
+        public override ValueTask DisposeAsync()
         {
             _connectionClosedTokenSource.Dispose();
+            return base.DisposeAsync();
         }
     }
 }

@@ -9,21 +9,20 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public partial class LibuvConnection : TransportConnection
+    internal partial class LibuvConnection : TransportConnection
     {
-        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
+        private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
 
         private static readonly Action<UvStreamHandle, int, object> _readCallback =
             (handle, status, state) => ReadCallback(handle, status, state);
 
         private static readonly Func<UvStreamHandle, int, object, LibuvFunctions.uv_buf_t> _allocCallback =
-            (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
+            (handle, suggestedSize, state) => AllocCallback(handle, suggestedSize, state);
 
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
@@ -31,32 +30,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private volatile ConnectionAbortedException _abortReason;
 
         private MemoryHandle _bufferHandle;
+        private Task _processingTask;
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _connectionClosed;
 
-        public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
+        public LibuvConnection(UvStreamHandle socket,
+                               ILibuvTrace log,
+                               LibuvThread thread,
+                               IPEndPoint remoteEndPoint,
+                               IPEndPoint localEndPoint,
+                               PipeOptions inputOptions = null,
+                               PipeOptions outputOptions = null,
+                               long? maxReadBufferSize = null,
+                               long? maxWriteBufferSize = null)
         {
             _socket = socket;
 
-            RemoteAddress = remoteEndPoint?.Address;
-            RemotePort = remoteEndPoint?.Port ?? 0;
-
-            LocalAddress = localEndPoint?.Address;
-            LocalPort = localEndPoint?.Port ?? 0;
+            LocalEndPoint = localEndPoint;
+            RemoteEndPoint = remoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
             Log = log;
             Thread = thread;
+
+            maxReadBufferSize ??= 0;
+            maxWriteBufferSize ??= 0;
+
+            inputOptions ??= new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            outputOptions ??= new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
+
+            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+            // Set the transport and connection id
+            Transport = pair.Transport;
+            Application = pair.Application;
         }
+
+        public PipeWriter Input => Application.Output;
+
+        public PipeReader Output => Application.Input;
 
         public LibuvOutputConsumer OutputConsumer { get; set; }
         private ILibuvTrace Log { get; }
         private LibuvThread Thread { get; }
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
-        public override PipeScheduler InputWriterScheduler => Thread;
-        public override PipeScheduler OutputReaderScheduler => Thread;
 
-        public override long TotalBytesWritten => OutputConsumer?.TotalBytesWritten ?? 0;
+        public void Start()
+        {
+            _processingTask = StartCore();
+        }
 
-        public async Task Start()
+        private async Task StartCore()
         {
             try
             {
@@ -88,14 +112,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     else
                     {
+                        // This is unexpected.
+                        Log.ConnectionError(ConnectionId, ex);
+
                         inputError = ex;
                         outputError = ex;
                     }
                 }
                 finally
                 {
+                    inputError ??= _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
+
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
+                    Input.Complete(inputError);
                     Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
@@ -103,11 +132,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.CancelPendingFlush();
 
                     // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId);
+                    Log.ConnectionWriteFin(ConnectionId, inputError.Message);
 
                     // We're done with the socket now
                     _socket.Dispose();
-                    ThreadPool.QueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
+
+                    // Ensure this always fires
+                    FireConnectionClosed();
+
+                    await _waitForConnectionClosedTcs.Task;
                 }
             }
             catch (Exception e)
@@ -119,10 +152,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
+
+            // Cancel WriteOutputAsync loop after setting _abortReason.
             Output.CancelPendingRead();
-            
+
             // This cancels any pending I/O.
             Thread.Post(s => s.Dispose(), _socket);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            Transport.Input.Complete();
+            Transport.Output.Complete();
+
+            if (_processingTask != null)
+            {
+                await _processingTask;
+            }
+
+            _connectionClosedTokenSource.Dispose();
         }
 
         // Called on Libuv thread
@@ -184,9 +232,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     error = LogAndWrapReadError(uvError);
                 }
 
+                FireConnectionClosed();
+
                 // Complete after aborting the connection
                 Input.Complete(error);
             }
+        }
+
+        private void FireConnectionClosed()
+        {
+            // Guard against scheduling this multiple times
+            if (_connectionClosed)
+            {
+                return;
+            }
+
+            _connectionClosed = true;
+
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            {
+                state.CancelConnectionClosedToken();
+
+                state._waitForConnectionClosedTcs.TrySetResult();
+            },
+            this,
+            preferLocal: false);
         }
 
         private async Task ApplyBackpressureAsync(ValueTask<FlushResult> flushTask)
@@ -233,6 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             else
             {
+                // This is unexpected.
                 Log.ConnectionError(ConnectionId, uvError);
                 return new IOException(uvError.Message, uvError);
             }

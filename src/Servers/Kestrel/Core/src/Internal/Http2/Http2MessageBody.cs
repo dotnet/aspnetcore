@@ -1,19 +1,33 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public abstract class Http2MessageBody : MessageBody
+    internal sealed class Http2MessageBody : MessageBody
     {
         private readonly Http2Stream _context;
+        private ReadResult _readResult;
 
-        protected Http2MessageBody(Http2Stream context)
+        public Http2MessageBody(Http2Stream context)
             : base(context)
         {
             _context = context;
+        }
+
+        protected override void OnReadStarting()
+        {
+            // Note ContentLength or MaxRequestBodySize may be null
+            if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
         }
 
         protected override void OnReadStarted()
@@ -25,33 +39,97 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override Task OnConsumeAsync() => Task.CompletedTask;
-
-        public override Task StopAsync()
+        public override void Reset()
         {
+            base.Reset();
+            _readResult = default;
+        }
+
+        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        {
+            var newlyExaminedBytes = TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
+
+            // Ensure we consume data from the RequestBodyPipe before sending WINDOW_UPDATES to the client.
+            _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+
+            // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
+            _context.OnDataRead((int)newlyExaminedBytes);
+            AddAndCheckObservedBytes(newlyExaminedBytes);
+        }
+
+        public override bool TryRead(out ReadResult readResult)
+        {
+            TryStart();
+
+            var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
+
+            if (hasResult)
+            {
+                _readResult = readResult;
+
+                CountBytesRead(readResult.Buffer.Length);
+
+                if (readResult.IsCompleted)
+                {
+                    TryStop();
+                }
+            }
+
+            return hasResult;
+        }
+
+        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            TryStart();
+
+            try
+            {
+                var readAwaitable = _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
+
+                _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
+
+            StopTimingRead(_readResult.Buffer.Length);
+
+            if (_readResult.IsCompleted)
+            {
+                TryStop();
+            }
+
+            return _readResult;
+        }
+
+        public override void Complete(Exception? exception)
+        {
+            _context.ReportApplicationError(exception);
             _context.RequestBodyPipe.Reader.Complete();
-            _context.RequestBodyPipe.Writer.Complete();
-            return Task.CompletedTask;
         }
 
-        public static MessageBody For(
-            HttpRequestHeaders headers,
-            Http2Stream context)
+        public override ValueTask CompleteAsync(Exception? exception)
         {
-            if (context.EndStreamReceived)
-            {
-                return ZeroContentLengthClose;
-            }
-
-            return new ForHttp2(context);
+            _context.ReportApplicationError(exception);
+            return _context.RequestBodyPipe.Reader.CompleteAsync();
         }
 
-        private class ForHttp2 : Http2MessageBody
+        public override void CancelPendingRead()
         {
-            public ForHttp2(Http2Stream context)
-                : base(context)
+            _context.RequestBodyPipe.Reader.CancelPendingRead();
+        }
+
+        protected override ValueTask OnStopAsync()
+        {
+            if (!_context.HasStartedConsumingRequestBody)
             {
+                return default;
             }
+
+            _context.RequestBodyPipe.Reader.Complete();
+
+            return default;
         }
     }
 }

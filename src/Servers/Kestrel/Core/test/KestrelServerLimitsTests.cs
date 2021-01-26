@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -306,6 +306,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(new KestrelServerLimits().MinResponseDataRate);
             Assert.Equal(240, new KestrelServerLimits().MinResponseDataRate.BytesPerSecond);
             Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinResponseDataRate.GracePeriod);
+        }
+
+        [Fact]
+        public void Http2MaxFrameSizeDefault()
+        {
+            Assert.Equal(1 << 14, new KestrelServerLimits().Http2.MaxFrameSize);
+        }
+
+        [Theory]
+        [InlineData((1 << 14) - 1)]
+        [InlineData(1 << 24)]
+        [InlineData(-1)]
+        public void Http2MaxFrameSizeInvalid(int value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().Http2.MaxFrameSize = value);
+            Assert.Contains("A value between", ex.Message);
+        }
+
+        [Fact]
+        public void Http2HeaderTableSizeDefault()
+        {
+            Assert.Equal(4096, new KestrelServerLimits().Http2.HeaderTableSize);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue)]
+        [InlineData(-1)]
+        public void Http2HeaderTableSizeInvalid(int value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().Http2.HeaderTableSize = value);
+            Assert.StartsWith(CoreStrings.GreaterThanOrEqualToZeroRequired, ex.Message);
+        }
+
+        [Fact]
+        public void Http2MaxRequestHeaderFieldSizeDefault()
+        {
+            Assert.Equal(16 * 1024, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue)]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void Http2MaxRequestHeaderFieldSizeInvalid(int value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize = value);
+            Assert.StartsWith(CoreStrings.GreaterThanZeroRequired, ex.Message);
         }
 
         public static TheoryData<TimeSpan> TimeoutValidData => new TheoryData<TimeSpan>

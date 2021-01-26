@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -45,9 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model)
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -74,10 +75,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model,
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model,
             ModelMetadata metadata)
+            => Validate(actionContext, validationState, prefix, model, metadata, container: null);
+
+        /// <summary>
+        /// Validates the provided object model.
+        /// If <paramref name="model"/> is <see langword="null"/> and the <paramref name="metadata"/>'s
+        /// <see cref="ModelMetadata.IsRequired"/> is <see langword="true"/>, will add one or more
+        /// model state errors that <see cref="Validate(ActionContext, ValidationStateDictionary, string, object)"/>
+        /// would not.
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
+        /// <param name="validationState">The <see cref="ValidationStateDictionary"/>.</param>
+        /// <param name="prefix">The model prefix key.</param>
+        /// <param name="model">The model object.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="container">The model container</param>
+        public virtual void Validate(
+            ActionContext actionContext,
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model,
+            ModelMetadata metadata,
+            object? container)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -86,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _modelMetadataProvider,
                 validationState);
 
-            visitor.Validate(metadata, prefix, model, alwaysValidateAtTopLevel: metadata.IsRequired);
+            visitor.Validate(metadata, prefix, model, alwaysValidateAtTopLevel: metadata.IsRequired, container);
         }
 
         /// <summary>
@@ -103,6 +126,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState);
+            ValidationStateDictionary? validationState);
     }
 }

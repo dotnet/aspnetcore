@@ -3,9 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -86,6 +92,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return 43;
         }
 
+        public ValueTask ValueTaskMethod()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        public ValueTask<int> ValueTaskValueMethod()
+        {
+            return new ValueTask<int>(43);
+        }
+
         [HubMethodName("RenamedMethod")]
         public int ATestMethodThatIsRenamedByTheAttribute()
         {
@@ -121,6 +137,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             throw new InvalidOperationException("BOOM!");
         }
 
+        public void ThrowHubException()
+        {
+            throw new HubException("This is a hub exception");
+        }
+
         public Task MethodThatYieldsFailedTask()
         {
             return Task.FromException(new InvalidOperationException("BOOM!"));
@@ -132,6 +153,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [Authorize("test")]
         public void AuthMethod()
+        {
+        }
+
+        [Authorize("test")]
+        public void MultiParamAuthMethod(string s1, string s2)
         {
         }
 
@@ -154,6 +180,172 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return Clients.Caller.SendAsync("Send", message);
         }
+
+        public Task ProtocolError()
+        {
+            return Clients.Caller.SendAsync("Send",  new SelfRef());
+        }
+
+        public void InvalidArgument(CancellationToken token)
+        {
+        }
+
+        public async Task<string> StreamingConcat(ChannelReader<string> source)
+        {
+            var sb = new StringBuilder();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    sb.Append(item);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public async Task StreamDontRead(ChannelReader<string> source)
+        {
+            while (await source.WaitToReadAsync())
+            {
+            }
+        }
+
+        public async Task<int> StreamingSum(ChannelReader<int> source)
+        {
+            var total = 0;
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    total += item;
+                }
+            }
+            return total;
+        }
+
+        public async Task<List<object>> UploadArray(ChannelReader<object> source)
+        {
+            var results = new List<object>();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        [Authorize("test")]
+        public async Task<List<object>> UploadArrayAuth(ChannelReader<object> source)
+        {
+            var results = new List<object>();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        public async Task<string> TestTypeCastingErrors(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception)
+            {
+                return "error identified and caught";
+            }
+
+            return "wrong type accepted, this is bad";
+        }
+
+        public async Task<bool> TestCustomErrorPassing(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message == HubConnectionHandlerTests.CustomErrorMessage;
+            }
+
+            return false;
+        }
+
+        public Task UploadIgnoreItems(ChannelReader<string> source)
+        {
+            // Wait for an item to appear first then return from the hub method to end the invocation
+            return source.WaitToReadAsync().AsTask();
+        }
+
+        public ChannelReader<string> StreamAndUploadIgnoreItems(ChannelReader<string> source)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            _ = ChannelFunc(channel.Writer, source);
+
+            return channel.Reader;
+
+            async Task ChannelFunc(ChannelWriter<string> output, ChannelReader<string> input)
+            {
+                // Wait for an item to appear first then return from the hub method to end the invocation
+                await input.WaitToReadAsync();
+                output.Complete();
+            }
+        }
+
+        public async Task UploadDoesWorkOnComplete(ChannelReader<string> source)
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Context.Items[nameof(UploadDoesWorkOnComplete)] = tcs.Task;
+
+            try
+            {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out var item))
+                    {
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+            finally
+            {
+                tcs.TrySetResult(42);
+            }
+        }
+
+        public async Task BlockingMethod()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Context.ConnectionAborted.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+
+            await tcs.Task;
+        }
+    }
+
+    internal class SelfRef
+    {
+        public SelfRef()
+        {
+            Self = this;
+        }
+
+        public SelfRef Self { get; set; }
     }
 
     public abstract class TestHub : Hub
@@ -185,7 +377,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }
@@ -265,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }
@@ -342,7 +534,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
             return tcs.Task;
         }
@@ -352,7 +544,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
             return tcs.Task;
         }
@@ -401,6 +593,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class GenericMethodHub : Hub
+    {
+        public void GenericMethod<T>()
+        {
+        }
+    }
+
     public class DisposeTrackingHub : TestHub
     {
         private readonly TrackDispose _trackDispose;
@@ -416,6 +615,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 _trackDispose.DisposeCount++;
             }
+        }
+    }
+
+    public class HubWithAsyncDisposable : TestHub
+    {
+        private AsyncDisposable _disposable;
+
+        public HubWithAsyncDisposable(AsyncDisposable disposable)
+        {
+            _disposable = disposable;
+        }
+
+        public void Test()
+        {
+
         }
     }
 
@@ -437,7 +651,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 for (int i = 0; i < count; i++)
                 {
-                    await channel.Writer.WriteAsync(i.ToString());
+                    await channel.Writer.WriteAsync(i.ToString(CultureInfo.InvariantCulture));
                 }
                 channel.Writer.Complete();
             });
@@ -457,21 +671,224 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return CounterChannel(count);
         }
 
+        public async IAsyncEnumerable<string> CounterAsyncEnumerable(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
+        {
+            await Task.Yield();
+            return CounterAsyncEnumerable(count);
+        }
+
+        public AsyncEnumerableImpl<string> CounterAsyncEnumerableImpl(int count)
+        {
+            return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
+        }
+
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferredOverChannelReader(int count)
+        {
+            return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
+        }
+
         public ChannelReader<string> BlockingStream()
         {
             return Channel.CreateUnbounded<string>().Reader;
         }
 
-        public ChannelReader<int> ThrowStream()
+        public ChannelReader<int> ExceptionStream()
         {
             var channel = Channel.CreateUnbounded<int>();
             channel.Writer.TryComplete(new Exception("Exception from channel"));
             return channel.Reader;
         }
 
+        public ChannelReader<int> ThrowStream()
+        {
+            throw new Exception("Throw from hub method");
+        }
+
+        public ChannelReader<int> NullStream()
+        {
+            return null;
+        }
+
         public int NonStream()
         {
             return 42;
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            Channel<string> output = Channel.CreateUnbounded<string>();
+
+            _ = Task.Run(async () =>
+            {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out string item))
+                    {
+                        await output.Writer.WriteAsync("echo:" + item);
+                    }
+                }
+
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerable(IDerivedParameterTestObject param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerable(DerivedParameterTestObjectBase param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerableWithCancellation(IDerivedParameterTestObject param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerableWithCancellation(DerivedParameterTestObjectBase param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public class AsyncEnumerableImpl<T> : IAsyncEnumerable<T>
+        {
+            private readonly IAsyncEnumerable<T> _inner;
+
+            public AsyncEnumerableImpl(IAsyncEnumerable<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return _inner.GetAsyncEnumerator(cancellationToken);
+            }
+        }
+
+        public class AsyncEnumerableImplChannelThrows<T> : ChannelReader<T>, IAsyncEnumerable<T>
+        {
+            private ChannelReader<T> _inner;
+
+            public AsyncEnumerableImplChannelThrows(ChannelReader<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool TryRead(out T item)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public override ValueTask<bool> WaitToReadAsync(CancellationToken cancellationToken = default)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new ChannelAsyncEnumerator(_inner, cancellationToken);
+            }
+
+            // Copied from AsyncEnumeratorAdapters
+            private class ChannelAsyncEnumerator : IAsyncEnumerator<T>
+            {
+                /// <summary>The channel being enumerated.</summary>
+                private readonly ChannelReader<T> _channel;
+                /// <summary>Cancellation token used to cancel the enumeration.</summary>
+                private readonly CancellationToken _cancellationToken;
+                /// <summary>The current element of the enumeration.</summary>
+                private T _current;
+
+                public ChannelAsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
+                {
+                    _channel = channel;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public T Current => _current;
+
+                public ValueTask<bool> MoveNextAsync()
+                {
+                    var result = _channel.ReadAsync(_cancellationToken);
+
+                    if (result.IsCompletedSuccessfully)
+                    {
+                        _current = result.Result;
+                        return new ValueTask<bool>(true);
+                    }
+
+                    return new ValueTask<bool>(MoveNextAsyncAwaited(result));
+                }
+
+                private async Task<bool> MoveNextAsyncAwaited(ValueTask<T> channelReadTask)
+                {
+                    try
+                    {
+                        _current = await channelReadTask;
+                    }
+                    catch (ChannelClosedException ex) when (ex.InnerException == null)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
+            }
+        }
+
+        public interface IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public abstract class DerivedParameterTestObjectBase : IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public class DerivedParameterTestObject : DerivedParameterTestObjectBase { }
+
+        public class DerivedParameterKnownTypesBinder : ISerializationBinder
+        {
+            private static readonly IEnumerable<Type> _knownTypes = new List<Type>()
+            {
+                typeof(DerivedParameterTestObject)
+            };
+
+            public static ISerializationBinder Instance { get; } = new DerivedParameterKnownTypesBinder();
+
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                assemblyName = null;
+                typeName = serializedType.Name;
+            }
+
+            public Type BindToType(string assemblyName, string typeName) =>
+                _knownTypes.Single(type => type.Name == typeName);
         }
     }
 
@@ -527,16 +944,164 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
+        public ChannelReader<int> CancelableStreamSingleParameter(CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamMultiParameter(int ignore, int ignore2, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamNullableParameter(int x, string y, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(x);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(y);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> StreamNullableParameter(int x, int? input)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(() =>
+            {
+                _tcsService.StartedMethod.SetResult(x);
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(input);
+                return Task.CompletedTask;
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamMiddleParameter(int ignore, CancellationToken token, int ignore2)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable([EnumeratorCancellation] CancellationToken token)
+        {
+            _tcsService.StartedMethod.SetResult(null);
+            await token.WaitForCancellationAsync();
+            _tcsService.EndMethod.SetResult(null);
+            yield break;
+        }
+
+        public IAsyncEnumerable<int> CancelableStreamCustomAsyncEnumerable()
+        {
+            return new CustomAsyncEnumerable(_tcsService);
+        }
+
         public int SimpleMethod()
         {
             return 21;
+        }
+
+        public async Task Upload(ChannelReader<string> stream)
+        {
+            _tcsService.StartedMethod.SetResult(null);
+            _ = await stream.ReadAndCollectAllAsync();
+            _tcsService.EndMethod.SetResult(null);
+        }
+
+        private class CustomAsyncEnumerable : IAsyncEnumerable<int>
+        {
+            private readonly TcsService _tcsService;
+
+            public CustomAsyncEnumerable(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new CustomAsyncEnumerator(_tcsService, cancellationToken);
+            }
+
+            private class CustomAsyncEnumerator : IAsyncEnumerator<int>
+            {
+                private readonly TcsService _tcsService;
+                private readonly CancellationToken _cancellationToken;
+
+                public CustomAsyncEnumerator(TcsService tcsService, CancellationToken cancellationToken)
+                {
+                    _tcsService = tcsService;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public int Current => throw new NotImplementedException();
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
+
+                public async ValueTask<bool> MoveNextAsync()
+                {
+                    _tcsService.StartedMethod.SetResult(null);
+                    await _cancellationToken.WaitForCancellationAsync();
+                    _tcsService.EndMethod.SetResult(null);
+                    return false;
+                }
+            }
         }
     }
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>();
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>();
+        public TaskCompletionSource<object> StartedMethod;
+        public TaskCompletionSource<object> EndMethod;
+
+        public TcsService()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 
     public interface ITypedHubClient
@@ -547,6 +1112,28 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public interface IVoidReturningTypedHubClient
     {
         void Send(string message);
+    }
+
+    public class ErrorInAbortedTokenHub : Hub
+    {
+        public override Task OnConnectedAsync()
+        {
+            Context.Items[nameof(OnConnectedAsync)] = true;
+
+            Context.ConnectionAborted.Register(() =>
+            {
+                throw new InvalidOperationException("BOOM");
+            });
+
+            return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            Context.Items[nameof(OnDisconnectedAsync)] = true;
+
+            return base.OnDisconnectedAsync(exception);
+        }
     }
 
     public class ConnectionLifetimeHub : Hub
@@ -570,9 +1157,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return base.OnConnectedAsync();
         }
 
+        public Task ProtocolErrorSelf()
+        {
+            return Clients.Caller.SendAsync("Send", new SelfRef());
+        }
+
+        public Task ProtocolErrorAll()
+        {
+            return Clients.All.SendAsync("Send", new SelfRef());
+        }
+
         public override Task OnDisconnectedAsync(Exception exception)
         {
             _state.TokenStateInDisconnected = Context.ConnectionAborted.IsCancellationRequested;
+            _state.DisconnectedException = exception;
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -585,5 +1183,35 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public bool TokenStateInConnected { get; set; }
 
         public bool TokenStateInDisconnected { get; set; }
+
+        public Exception DisconnectedException { get; set; }
+    }
+
+    public class CallerServiceHub : Hub
+    {
+        private readonly CallerService _service;
+
+        public CallerServiceHub(CallerService service)
+        {
+            _service = service;
+        }
+
+        public override Task OnConnectedAsync()
+        {
+            _service.SetCaller(Clients.Caller);
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
+            tcs?.TrySetResult(true);
+            return base.OnConnectedAsync();
+        }
+    }
+
+    public class CallerService
+    {
+        public IClientProxy Caller { get; private set; }
+
+        public void SetCaller(IClientProxy caller)
+        {
+            Caller = caller;
+        }
     }
 }

@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -11,12 +12,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     /// <summary>
     /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
     /// </summary>
-    public class DefaultPageActivatorProvider : IPageActivatorProvider
+    internal class DefaultPageActivatorProvider : IPageActivatorProvider
     {
         private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
+        private readonly Func<PageContext, ViewContext, object, ValueTask> _asyncDisposer = AsyncDispose;
+        private readonly Func<PageContext, ViewContext, object, ValueTask> _syncAsyncDisposer = SyncAsyncDispose;
 
         /// <inheritdoc />
-        public virtual Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        public Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return CreatePageFactory(pageTypeInfo);
         }
 
-        public virtual Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -45,6 +48,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
             {
                 return _disposer;
+            }
+
+            return null;
+        }
+
+        public Func<PageContext, ViewContext, object, ValueTask> CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+        {
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
+            {
+                return _asyncDisposer;
+            }
+
+            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
+            {
+                return _syncAsyncDisposer;
             }
 
             return null;
@@ -83,6 +106,32 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             ((IDisposable)page).Dispose();
+        }
+
+        private static ValueTask SyncAsyncDispose(PageContext context, ViewContext viewContext, object page)
+        {
+            Dispose(context, viewContext, page);
+            return default;
+        }
+
+        private static ValueTask AsyncDispose(PageContext context, ViewContext viewContext, object page)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (page == null)
+            {
+                throw new ArgumentNullException(nameof(page));
+            }
+
+            return ((IAsyncDisposable)page).DisposeAsync();
         }
     }
 }

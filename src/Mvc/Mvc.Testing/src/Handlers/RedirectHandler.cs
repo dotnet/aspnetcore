@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET  Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         /// <summary>
         /// Creates a new instance of <see cref="RedirectHandler"/>.
         /// </summary>
-        /// <param name="maxRedirects">The maximun number of redirect responses to follow. It must be
+        /// <param name="maxRedirects">The maximum number of redirect responses to follow. It must be
         /// equal or greater than 0.</param>
         public RedirectHandler(int maxRedirects)
         {
@@ -49,13 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var remainingRedirects = MaxRedirects;
-
+            var redirectRequest = new HttpRequestMessage();
             var originalRequestContent = HasBody(request) ? await DuplicateRequestContent(request) : null;
+            CopyRequestHeaders(request.Headers, redirectRequest.Headers);
             var response = await base.SendAsync(request, cancellationToken);
-            while (IsRedirect(response) && remainingRedirects >= 0)
+            while (IsRedirect(response) && remainingRedirects > 0)
             {
                 remainingRedirects--;
-                var redirectRequest = GetRedirectRequest(response, originalRequestContent);
+                UpdateRedirectRequest(response, redirectRequest, originalRequestContent);
                 originalRequestContent = HasBody(redirectRequest) ? await DuplicateRequestContent(redirectRequest) : null;
                 response = await base.SendAsync(redirectRequest, cancellationToken);
             }
@@ -90,8 +92,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         {
             foreach (var header in originalRequestContent.Headers)
             {
-                contentCopy.Headers.Add(header.Key, header.Value);
-                newRequestContent.Headers.Add(header.Key, header.Value);
+                contentCopy.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                newRequestContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+
+        private static void CopyRequestHeaders(
+            HttpRequestHeaders originalRequestHeaders,
+            HttpRequestHeaders newRequestHeaders)
+        {
+            foreach (var header in originalRequestHeaders)
+            {
+                newRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
 
@@ -116,43 +128,46 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             return (originalBody, bodyCopy);
         }
 
-        private static HttpRequestMessage GetRedirectRequest(
+        private static void UpdateRedirectRequest(
             HttpResponseMessage response,
+            HttpRequestMessage redirect,
             HttpContent originalContent)
         {
             var location = response.Headers.Location;
-            if (!location.IsAbsoluteUri)
+            if (location != null)
             {
-                location = new Uri(
-                    new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
-            }
-
-            var redirect = !ShouldKeepVerb(response) ?
-                new HttpRequestMessage(HttpMethod.Get, location) :
-                new HttpRequestMessage(response.RequestMessage.Method, location)
+                if (!location.IsAbsoluteUri)
                 {
-                    Content = originalContent
-                };
+                    location = new Uri(
+                        new Uri(response.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority)),
+                        location);
+                }
 
-            foreach (var header in response.RequestMessage.Headers)
-            {
-                redirect.Headers.Add(header.Key, header.Value);
+                redirect.RequestUri = location;
             }
 
-            foreach (var property in response.RequestMessage.Properties)
+            if (!ShouldKeepVerb(response))
             {
-                redirect.Properties.Add(property.Key, property.Value);
+                redirect.Method = HttpMethod.Get;
+            }
+            else
+            {
+                redirect.Method = response.RequestMessage.Method;
+                redirect.Content = originalContent;
             }
 
-            return redirect;
+            foreach (var property in response.RequestMessage.Options)
+            {
+                var key = new HttpRequestOptionsKey<object>(property.Key);
+                redirect.Options.Set(key, property.Value);
+            }
         }
 
         private static bool ShouldKeepVerb(HttpResponseMessage response) =>
             response.StatusCode == HttpStatusCode.RedirectKeepVerb ||
                 (int)response.StatusCode == 308;
 
-        private bool IsRedirect(HttpResponseMessage response) => 
+        private bool IsRedirect(HttpResponseMessage response) =>
             response.StatusCode == HttpStatusCode.MovedPermanently ||
                 response.StatusCode == HttpStatusCode.Redirect ||
                 response.StatusCode == HttpStatusCode.RedirectKeepVerb ||

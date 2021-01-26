@@ -1,0 +1,34 @@
+﻿@page "/timer"
+@inject IJSRuntime JSRuntime
+@using System.Threading
+@implements IDisposable
+
+<h1 style="background-color: rgb(@red, @green, @blue)">Timer component</h1>
+
+@code
+{
+    Random random = new Random();
+    Timer timer;
+    int red = 128;
+    int green = 128;
+    int blue = 128;
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(UpdateColor, null, 0, 100);
+    }
+
+    void UpdateColor(object state)
+    {
+        InvokeAsync(() =>
+        {
+            red = random.Next(0, 256);
+            green = random.Next(0, 256);
+            blue = random.Next(0, 256);
+            StateHasChanged();
+            BenchmarkEvent.Send(JSRuntime, "Finished updating color");
+        });
+    }
+
+    public void Dispose() => timer.Dispose();
+}

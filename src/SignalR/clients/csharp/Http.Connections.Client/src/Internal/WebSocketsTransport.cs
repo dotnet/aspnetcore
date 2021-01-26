@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class WebSocketsTransport : ITransport
+    internal partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
         private readonly Func<Task<string>> _accessTokenProvider;
@@ -35,53 +36,72 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
+            var isBrowser = OperatingSystem.IsBrowser();
+            if (!isBrowser)
+            {
+                // Full Framework will throw when trying to set the User-Agent header
+                // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
+#if !NETSTANDARD2_0 && !NET461
+                _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+#else
+                // Set an alternative user agent header on Full framework
+                _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
+#endif
 
-            // Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627
-            //_webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+                // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
+                // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
+                _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
+            }
 
             if (httpConnectionOptions != null)
             {
-                if (httpConnectionOptions.Headers != null)
+                if (httpConnectionOptions.Headers.Count > 0)
                 {
-                    foreach (var header in httpConnectionOptions.Headers)
+                    if (isBrowser)
                     {
-                        _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        Log.HeadersNotSupported(_logger);
+                    }
+                    else
+                    {
+                        foreach (var header in httpConnectionOptions.Headers)
+                        {
+                            _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                        }
                     }
                 }
 
-                if (httpConnectionOptions.Cookies != null)
+                if (!isBrowser)
                 {
-                    _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
+                    if (httpConnectionOptions.Cookies != null)
+                    {
+                        _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
+                    }
+
+                    if (httpConnectionOptions.ClientCertificates != null)
+                    {
+                        _webSocket.Options.ClientCertificates.AddRange(httpConnectionOptions.ClientCertificates);
+                    }
+
+                    if (httpConnectionOptions.Credentials != null)
+                    {
+                        _webSocket.Options.Credentials = httpConnectionOptions.Credentials;
+                    }
+
+                    if (httpConnectionOptions.Proxy != null)
+                    {
+                        _webSocket.Options.Proxy = httpConnectionOptions.Proxy;
+                    }
+
+                    if (httpConnectionOptions.UseDefaultCredentials != null)
+                    {
+                        _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
+                    }
+
+                    httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
                 }
-
-                if (httpConnectionOptions.ClientCertificates != null)
-                {
-                    _webSocket.Options.ClientCertificates.AddRange(httpConnectionOptions.ClientCertificates);
-                }
-
-                if (httpConnectionOptions.Credentials != null)
-                {
-                    _webSocket.Options.Credentials = httpConnectionOptions.Credentials;
-                }
-
-                if (httpConnectionOptions.Proxy != null)
-                {
-                    _webSocket.Options.Proxy = httpConnectionOptions.Proxy;
-                }
-
-                if (httpConnectionOptions.UseDefaultCredentials != null)
-                {
-                    _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
-                }
-
-                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
-
-                _closeTimeout = httpConnectionOptions.CloseTimeout;
             }
 
-            // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
-            // See: https://github.com/aspnet/Security/blob/ff9f145a8e89c9756ea12ff10c6d47f2f7eb345f/src/Microsoft.AspNetCore.Authentication.Cookies/Events/CookieAuthenticationEvents.cs#L42
-            _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
+            _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
 
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
 
@@ -89,7 +109,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _accessTokenProvider = accessTokenProvider;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (url == null)
             {
@@ -107,19 +127,41 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             var resolvedUrl = ResolveWebSocketsUrl(url);
 
-            Log.StartTransport(_logger, transferFormat, resolvedUrl);
-
             // We don't need to capture to a local because we never change this delegate.
             if (_accessTokenProvider != null)
             {
                 var accessToken = await _accessTokenProvider();
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    // We can't use request headers in the browser, so instead append the token as a query string in that case
+                    if (OperatingSystem.IsBrowser())
+                    {
+                        var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
+                        accessTokenEncoded = "access_token=" + accessTokenEncoded;
+                        resolvedUrl = Utils.AppendQueryString(resolvedUrl, accessTokenEncoded);
+                    }
+                    else
+                    {
+#pragma warning disable CA1416 // Analyzer bug
+                        _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+#pragma warning restore CA1416 // Analyzer bug
+                    }
                 }
             }
 
-            await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+            Log.StartTransport(_logger, transferFormat, resolvedUrl);
+
+            try
+            {
+                await _webSocket.ConnectAsync(resolvedUrl, cancellationToken);
+            }
+            catch
+            {
+                _webSocket.Dispose();
+                throw;
+            }
+
+            Log.StartedTransport(_logger);
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             var options = ClientPipeOptions.DefaultOptions;
@@ -194,7 +236,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETCOREAPP2_1
+#if NETSTANDARD2_1 || NETCOREAPP
+                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -210,17 +253,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETCOREAPP2_1
+#if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#else
+#elif NETSTANDARD2_0 || NET461
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+#else
+#error TFMs need to be updated
 #endif
-                    // Need to check again for NetCoreApp2.1 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
@@ -256,10 +301,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!_aborted)
                 {
                     _application.Output.Complete(ex);
-
-                    // We re-throw here so we can communicate that there was an error when sending
-                    // the close frame
-                    throw;
                 }
             }
             finally
@@ -334,8 +375,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (WebSocketCanSend(socket))
                 {
-                    // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    try
+                    {
+                        // We're done sending, send the close frame to the client if the websocket is still open
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.ClosingWebSocketFailed(_logger, ex);
+                    }
                 }
 
                 _application.Input.Complete();

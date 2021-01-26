@@ -1,14 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Libuv <see cref="IWebHostBuilder"/> extensions.
+    /// </summary>
+    [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
     public static class WebHostBuilderLibuvExtensions
     {
         /// <summary>
@@ -20,11 +24,12 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
         /// </returns>
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder)
         {
             return hostBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton<ITransportFactory, LibuvTransportFactory>();
+                services.AddSingleton<IConnectionListenerFactory, LibuvTransportFactory>();
             });
         }
 
@@ -40,6 +45,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
         /// </returns>
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder, Action<LibuvTransportOptions> configureOptions)
         {
             return hostBuilder.UseLibuv().ConfigureServices(services =>

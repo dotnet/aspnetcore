@@ -14,8 +14,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
 
@@ -26,9 +27,17 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app => app.UseStaticFiles());
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.UseStaticFiles());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("/ranges.txt");
 
@@ -47,10 +56,18 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             try
             {
-                var builder = new WebHostBuilder()
+                using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
                     .Configure(app => app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true }))
                     .UseWebRoot(AppContext.BaseDirectory);
-                var server = new TestServer(builder);
+                }).Build();
+
+                await host.StartAsync();
+
+                var server = host.GetTestServer();
 
                 var response = await server.CreateClient().GetAsync(Path.GetFileName(badLink));
 
@@ -66,21 +83,30 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundIfSendFileThrows()
         {
-            var mockSendFile = new Mock<IHttpSendFileFeature>();
+            var mockSendFile = new Mock<IHttpResponseBodyFeature>();
             mockSendFile.Setup(m => m.SendFileAsync(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new FileNotFoundException());
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Use(async (ctx, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ctx.Features.Set(mockSendFile.Object);
-                        await next();
-                    });
-                    app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
-                })
-                .UseWebRoot(AppContext.BaseDirectory);
-            var server = new TestServer(builder);
+                        app.Use(async (ctx, next) =>
+                        {
+                            ctx.Features.Set(mockSendFile.Object);
+                            await next();
+                        });
+                        app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+                    })
+                    .UseWebRoot(AppContext.BaseDirectory);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("TestDocument.txt");
 
@@ -93,17 +119,18 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(AppContext.BaseDirectory))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+                using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = fileProvider
                 }));
+                using var server = host.GetTestServer();
                 var fileInfo = fileProvider.GetFileInfo("TestDocument.txt");
                 var response = await server.CreateRequest("TestDocument.txt").GetAsync();
 
                 var last = fileInfo.LastModified;
-                var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
+                var trimmed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
 
-                Assert.Equal(response.Content.Headers.LastModified.Value, trimed);
+                Assert.Equal(response.Content.Headers.LastModified.Value, trimmed);
             }
         }
 
@@ -111,13 +138,16 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task NullArguments()
         {
             // No exception, default provided
-            StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = null }));
+            using (await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = null })))
+            { }
 
             // No exception, default provided
-            StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { FileProvider = null }));
+            using (await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { FileProvider = null })))
+            { }
 
             // PathString(null) is OK.
-            var server = StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
+            using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -145,11 +175,12 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+                using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     RequestPath = new PathString(baseUrl),
                     FileProvider = fileProvider
                 }));
+                using var server = host.GetTestServer();
                 var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
                 var responseContent = await response.Content.ReadAsByteArrayAsync();
@@ -175,11 +206,12 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+                using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     RequestPath = new PathString(baseUrl),
                     FileProvider = fileProvider
                 }));
+                using var server = host.GetTestServer();
                 var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                 var response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 
@@ -234,11 +266,12 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+                using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
                     RequestPath = new PathString(baseUrl),
                     FileProvider = fileProvider
                 }));
+                using var server = host.GetTestServer();
                 var response = await server.CreateRequest(requestUrl).SendAsync(method);
                 Assert.Null(response.Content.Headers.LastModified);
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

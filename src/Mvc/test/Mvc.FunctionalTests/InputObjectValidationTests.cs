@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using FormatterWebSite;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -91,12 +93,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             // Mono issue - https://github.com/aspnet/External/issues/29
-            Assert.Equal(PlatformNormalizer.NormalizeContent(
+            Assert.Equal(
                 "The field Id must be between 1 and 2000.," +
                 "The field Name must be a string or array type with a minimum length of '5'.," +
                 "The field Alias must be a string with a minimum length of 3 and a maximum length of 15.," +
                 "The field Designation must match the regular expression " +
-                (TestPlatformHelper.IsMono ? "[0-9a-zA-Z]*." : "'[0-9a-zA-Z]*'.")),
+                "'[0-9a-zA-Z]*'.",
                 await response.Content.ReadAsStringAsync());
         }
 
@@ -171,8 +173,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsNotValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var kvps = new List<KeyValuePair<string, string>>();
-            kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
+            var kvps = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Alias", "xyz"),
+            };
             var content = new FormUrlEncodedContent(kvps);
 
             // Act
@@ -181,6 +185,179 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("xyz", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_WillValidateObject()
+        {
+            // Arrange
+            var invalidRequestData = "{\"FirstName\":\"TestName123\", \"LastName\": \"Test\"}";
+            var content = new StringContent(invalidRequestData, Encoding.UTF8, "application/json");
+            var expectedErrorMessage =
+                "{\"FirstName\":[\"The field FirstName must match the regular expression '[A-Za-z]*'.\"," +
+                "\"The field FirstName must be a string with a maximum length of 5.\"]}";
+
+            // Act
+            var response = await Client.PostAsync(
+                "http://localhost/Validation/ValidationProviderAttribute", content);
+
+            // Assert
+            Assert.Equal(expected: StatusCodes.Status400BadRequest, actual: (int)response.StatusCode);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedErrorMessage, actual: responseContent);
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_DoesNotInterfere_WithOtherValidationAttributes()
+        {
+            // Arrange
+            var invalidRequestData = "{\"FirstName\":\"Test\", \"LastName\": \"Testsson\"}";
+            var content = new StringContent(invalidRequestData, Encoding.UTF8, "application/json");
+            var expectedErrorMessage =
+                "{\"LastName\":[\"The field LastName must be a string with a maximum length of 5.\"]}";
+
+            // Act
+            var response = await Client.PostAsync(
+                "http://localhost/Validation/ValidationProviderAttribute", content);
+
+            // Assert
+            Assert.Equal(expected: StatusCodes.Status400BadRequest, actual: (int)response.StatusCode);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedErrorMessage, actual: responseContent);
+        }
+
+        [Fact]
+        public async Task ValidationProviderAttribute_RequiredAttributeErrorMessage_WillComeFirst()
+        {
+            // Arrange
+            var invalidRequestData = "{\"FirstName\":\"Testname\", \"LastName\": \"\"}";
+            var content = new StringContent(invalidRequestData, Encoding.UTF8, "application/json");
+            var expectedError =
+                "{\"LastName\":[\"The LastName field is required.\"]," +
+                "\"FirstName\":[\"The field FirstName must be a string with a maximum length of 5.\"]}";
+
+            // Act
+            var response = await Client.PostAsync(
+                "http://localhost/Validation/ValidationProviderAttribute", content);
+
+            // Assert
+            Assert.Equal(expected: StatusCodes.Status400BadRequest, actual: (int)response.StatusCode);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedError, actual: responseContent);
+        }
+
+        // Test for https://github.com/aspnet/Mvc/issues/7357
+        [Fact]
+        public async Task ValidationThrowsError_WhenValidationExceedsMaxValidationDepth()
+        {
+            // Arrange
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '32' when validating property 'Value' on type '{typeof(RecursiveIdentifier)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider modifying 'MvcOptions.MaxValidationDepth' or suppressing validation on the model type.";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "Validation/ValidationThrowsError_WhenValidationExceedsMaxValidationDepth")
+            {
+                Content = new StringContent(@"{ ""Id"": ""S-1-5-21-1004336348-1177238915-682003330-512"" }", Encoding.UTF8, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.InternalServerError);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(expected, content);
+        }
+
+        [Fact]
+        public async Task ErrorsDeserializingMalformedJson_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "{Id = \"This string is incomplete";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Empty(error.Key);
+                    Assert.Equal(new[] { "Invalid character after parsing property name. Expected ':' but got: =. Path '', line 1, position 4." }, error.Value);
+                });
+        }
+
+        [Fact]
+        public async Task JsonValidationErrors_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "{Id: \"0c92bb85-cfaf-4344-8a9d-f92e88716861\"}";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("isbn", error.Key);
+                    Assert.Equal(new[] { "Required property 'isbn' not found in JSON. Path '', line 1, position 44." }, error.Value);
+                });
+        }
+
+        [Fact]
+        public async Task ErrorsDeserializingMalformedXml_AreReportedForModelsWithoutAnyValidationAttributes()
+        {
+            // This test verifies that for a model with ModelMetadata.HasValidators = false, we continue to get an invalid ModelState + validation
+            // errors from json serialization errors
+            // Arrange
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<BookModelWithNoValidation xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Models\">" +
+                "<Id>Incomplete element" +
+                "</BookModelWithNoValidation>";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "TestApi/PostBookWithNoValidation")
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/xml"),
+            };
+
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(responseContent);
+
+            Assert.Collection(
+                validationProblemDetails.Errors,
+                error =>
+                {
+                    Assert.Empty(error.Key);
+                    Assert.Equal(new[] { "An error occurred while deserializing input data." }, error.Value);
+                });
         }
     }
 }

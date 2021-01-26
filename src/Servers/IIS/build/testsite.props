@@ -1,13 +1,19 @@
 <Project>
 
   <PropertyGroup>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);win7-x64;win7-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64;win-x86</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
-    <NativePlatform Condition="'$(Platform)' == 'AnyCPU'">x64</NativePlatform>
-    <NativePlatform Condition="'$(NativePlatform)' == ''">$(Platform)</NativePlatform>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <!-- Work around until we get a new WebSdk -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
+    <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
+
+  <Import Project="assets.props" />
 
   <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
     <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
@@ -22,23 +28,98 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- For standalone publish, all dlls are flattened to the same folder.
-         Set the base path to the request handler
-    -->
-    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
-
-  </PropertyGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <None Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)"</IISExpressArguments>
+    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
-    <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>
-    <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+    <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
+    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/dotnet/aspnetcore/issues/7196 -->
+    <DotNetPath>$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
+  <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
+    <!-- This would always override launch settings files in test projects by the default one -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Deps file injection-->
+  <ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\TestTasks.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
+    <PropertyGroup>
+      <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+      <InjectDepsApp>dotnet $(InjectDepsAssembly).dll</InjectDepsApp>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    GenerateBuildDependencyFile creates the .deps file used here. BuildDepsJson and CoreBuild are empty targets marking
+    the end of processes using the GenerateBuildDependencyFile target.
+  -->
+  <Target Name="InjectRequestHandler"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          BeforeTargets="BuildDepsJson;CoreBuild"
+          DependsOnTargets="GenerateBuildDependencyFile;PrepareInjectionApp">
+    <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
+  </Target>
+
+  <!--
+    GeneratePublishDependencyFile creates an intermediate .deps file copied soon after into the publish folder.
+    CopyFilesToPublishDirectory is an empty target marking the end of all copies into the publish folder, including the
+    .deps file and native assets. Publish is an empty target marking the end of the entire process.
+    (GenerateSingleFileBundle also uses the intermediate .desp file but only in single-file publish cases ignored here.)
+  -->
+  <Target Name="InjectRequestHandlerOnPublish"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          BeforeTargets="Publish"
+          DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
+  </Target>
+
+  <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup>
+      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'true'">false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
+      <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
+      <IsPublishable>false</IsPublishable>
+      <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishTestsAsset" DependsOnTargets="Publish" Returns="@(PublishedTestAsset)">
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <ItemGroup>
+      <PublishedTestAsset Include="$(TestAssetOutputName)-$(TestAssetProfile)" Path="$(PublishAbsoluteDir)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'" Returns="@(PublishedTestAsset)">
+
+    <!--
+      _InsidePublishTestsAssets is to avoid invoking this target recursively
+      Platform;PlatformTarget removal is fix builds inside VS -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PublishTestsAsset"
+             RemoveProperties="Platform;PlatformTarget"
+             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
+  </Target>
 </Project>

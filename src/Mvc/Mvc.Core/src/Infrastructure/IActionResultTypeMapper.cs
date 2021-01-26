@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -43,6 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Prior to calling this method, the infrastructure will unwrap <see cref="Task{TResult}"/> or
         /// other task-like types.
         /// </remarks>
-        IActionResult Convert(object value, Type returnType);
+        IActionResult Convert(object? value, Type returnType);
     }
 }

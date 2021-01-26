@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Microsoft.AspNetCore.Http.Authentication;
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -16,13 +14,16 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     /// </summary>
     public class OAuthOptions : RemoteAuthenticationOptions
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="OAuthOptions"/>.
+        /// </summary>
         public OAuthOptions()
         {
             Events = new OAuthEvents();
         }
 
         /// <summary>
-        /// Check that the options are valid.  Should throw an exception if things are not ok.
+        /// Check that the options are valid. Should throw an exception if things are not ok.
         /// </summary>
         public override void Validate()
         {
@@ -57,29 +58,29 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets or sets the provider-assigned client id.
         /// </summary>
-        public string ClientId { get; set; }
+        public string ClientId { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the provider-assigned client secret.
         /// </summary>
-        public string ClientSecret { get; set; }
+        public string ClientSecret { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the URI where the client will be redirected to authenticate.
         /// </summary>
-        public string AuthorizationEndpoint { get; set; }
+        public string AuthorizationEndpoint { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the URI the middleware will access to exchange the OAuth token.
         /// </summary>
-        public string TokenEndpoint { get; set; }
+        public string TokenEndpoint { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the URI the middleware will access to obtain the user information.
         /// This value is not used in the default implementation, it is for use in custom implementations of
-        /// IOAuthAuthenticationEvents.Authenticated or OAuthAuthenticationHandler.CreateTicketAsync.
+        /// <see cref="OAuthEvents.OnCreatingTicket" />.
         /// </summary>
-        public string UserInformationEndpoint { get; set; }
+        public string UserInformationEndpoint { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="OAuthEvents"/> used to handle authentication events.
@@ -103,6 +104,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
-        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
+
+        /// <summary>
+        /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See https://tools.ietf.org/html/rfc7636.
+        /// The default value is `false` but derived handlers should enable this if their provider supports it.
+        /// </summary>
+        public bool UsePkce { get; set; } = false;
     }
 }

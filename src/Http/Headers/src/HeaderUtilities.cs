@@ -4,12 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Provides utilities to parse and modify HTTP header valeus.
+    /// </summary>
     public static class HeaderUtilities
     {
         private static readonly int _int64MaxStringLength = 19;
@@ -19,14 +23,12 @@ namespace Microsoft.Net.Http.Headers
 
         internal static void SetQuality(IList<NameValueHeaderValue> parameters, double? value)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (value.HasValue)
             {
                 // Note that even if we check the value here, we can't prevent a user from adding an invalid quality
                 // value using Parameters.Add(). Even if we would prevent the user from adding an invalid value
-                // using Parameters.Add() he could always add invalid values using HttpHeaders.AddWithoutValidation().
+                // using Parameters.Add() they could always add invalid values using HttpHeaders.AddWithoutValidation().
                 // So this check is really for convenience to show users that they're trying to add an invalid
                 // value.
                 if ((value < 0) || (value > 1))
@@ -54,17 +56,14 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
+        internal static double? GetQuality(IList<NameValueHeaderValue>? parameters)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (qualityParameter != null)
             {
                 // Note that the RFC requires decimal '.' regardless of the culture. I.e. using ',' as decimal
                 // separator is considered invalid (even if the current culture would allow it).
-                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out var length))
-
+                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out _))
                 {
                     return qualityValue;
                 }
@@ -81,16 +80,16 @@ namespace Microsoft.Net.Http.Headers
 
             if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}.", value));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}'.", value));
             }
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y)
         {
             return AreEqualCollections(x, y, null);
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y, IEqualityComparer<T> comparer)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y, IEqualityComparer<T>? comparer)
         {
             if (x == null)
             {
@@ -143,7 +142,7 @@ namespace Microsoft.Net.Http.Headers
                 }
             }
 
-            // Since we never re-use a "found" value in 'y', we expecte 'alreadyFound' to have all fields set to 'true'.
+            // Since we never re-use a "found" value in 'y', we expected 'alreadyFound' to have all fields set to 'true'.
             // Otherwise the two collections can't be equal and we should not get here.
             Contract.Assert(Contract.ForAll(alreadyFound, value => { return value; }),
                 "Expected all values in 'alreadyFound' to be true since collections are considered equal.");
@@ -157,7 +156,6 @@ namespace Microsoft.Net.Http.Headers
             bool skipEmptyValues,
             out bool separatorFound)
         {
-            Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.
 
             separatorFound = false;
@@ -230,11 +228,11 @@ namespace Microsoft.Net.Http.Headers
         /// any value originally supplied in result will be overwritten.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
-        /// <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
+        /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
-        public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
+        public static bool TryParseSeconds(StringValues headerValues, string targetValue, [NotNullWhen(true)] out TimeSpan? value)
         {
             if (StringValues.IsNullOrEmpty(headerValues) || string.IsNullOrEmpty(targetValue))
             {
@@ -286,8 +284,8 @@ namespace Microsoft.Net.Http.Headers
         /// The target cache control directives to look for.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
-        /// otherwise, <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
+        /// otherwise, <see langword="false" />.
         /// </returns>
         public static bool ContainsCacheDirective(StringValues cacheControlDirectives, string targetDirectives)
         {
@@ -367,7 +365,7 @@ namespace Microsoft.Net.Http.Headers
         /// greater than Int64.MaxValue. This parameter is passed uninitialized; any value originally supplied in
         /// result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
@@ -418,7 +416,7 @@ namespace Microsoft.Net.Http.Headers
         /// represents a number greater than Int64.MaxValue. This parameter is passed uninitialized; any value
         /// originally supplied in result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
@@ -562,6 +560,11 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value to be formatted must be non-negative.");
             }
 
+            if (value == 0)
+            {
+                return "0";
+            }
+
             var position = _int64MaxStringLength;
             char* charBuffer = stackalloc char[_int64MaxStringLength];
 
@@ -577,21 +580,54 @@ namespace Microsoft.Net.Http.Headers
             return new string(charBuffer, position, _int64MaxStringLength - position);
         }
 
+        /// <summary>
+        ///Attempts to parse the specified <paramref name="input"/> as a <see cref="DateTimeOffset"/> value.
+        /// </summary>
+        /// <param name="input">The input value.</param>
+        /// <param name="result">The parsed value.</param>
+        /// <returns>
+        /// <see langword="true" /> if <paramref name="input"/> can be parsed as a date, otherwise <see langword="false" />.
+        /// </returns>
         public static bool TryParseDate(StringSegment input, out DateTimeOffset result)
         {
             return HttpRuleParser.TryStringToDate(input, out result);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime)
         {
-            return FormatDate(dateTime, false);
+            return FormatDate(dateTime, quoted: false);
         }
 
+        /// <summary>
+        /// Formats the <paramref name="dateTime"/> using the RFC1123 format specifier and optionally quotes it.
+        /// </summary>
+        /// <param name="dateTime">The date to format.</param>
+        /// <param name="quoted">Determines if the formatted date should be quoted.</param>
+        /// <returns>The formatted date.</returns>
         public static string FormatDate(DateTimeOffset dateTime, bool quoted)
         {
-            return dateTime.ToRfc1123String(quoted);
+            if (quoted)
+            {
+                return string.Create(31, dateTime, (span, dt) =>
+                {
+                    span[0] = span[30] = '"';
+                    dt.TryFormat(span.Slice(1), out _, "r");
+                });
+            }
+
+            return dateTime.ToString("r", CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Removes quotes from the specified <paramref name="input"/> if quoted.
+        /// </summary>
+        /// <param name="input">The input to remove quotes from.</param>
+        /// <returns>The value without quotes.</returns>
         public static StringSegment RemoveQuotes(StringSegment input)
         {
             if (IsQuoted(input))
@@ -601,6 +637,11 @@ namespace Microsoft.Net.Http.Headers
             return input;
         }
 
+        /// <summary>
+        /// Determines if the specified <paramref name="input"/> is quoted.
+        /// </summary>
+        /// <param name="input">The value to inspect.</param>
+        /// <returns><see langword="true"/> if the value is quoted, otherwise <see langword="false"/>.</returns>
         public static bool IsQuoted(StringSegment input)
         {
             return !StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"';
@@ -616,7 +657,7 @@ namespace Microsoft.Net.Http.Headers
         {
             input = RemoveQuotes(input);
 
-            // First pass to calculate the size of the InplaceStringBuilder
+            // First pass to calculate the size of the string
             var backSlashCount = CountBackslashesForDecodingQuotedString(input);
 
             if (backSlashCount == 0)
@@ -624,26 +665,32 @@ namespace Microsoft.Net.Http.Headers
                 return input;
             }
 
-            var stringBuilder = new InplaceStringBuilder(input.Length - backSlashCount);
-
-            for (var i = 0; i < input.Length; i++)
+            return string.Create(input.Length - backSlashCount, input, (span, segment) =>
             {
-                if (i < input.Length - 1 && input[i] == '\\')
+                var spanIndex = 0;
+                var spanLength = span.Length;
+                for (var i = 0; i < segment.Length && (uint)spanIndex < (uint)spanLength; i++)
                 {
-                    // If there is an backslash character as the last character in the string,
-                    // we will assume that it should be included literally in the unescaped string
-                    // Ex: "hello\\" => "hello\\"
-                    // Also, if a sender adds a quoted pair like '\\''n',
-                    // we will assume it is over escaping and just add a n to the string.
-                    // Ex: "he\\llo" => "hello"
-                    stringBuilder.Append(input[i + 1]);
-                    i++;
-                    continue;
-                }
-                stringBuilder.Append(input[i]);
-            }
+                    int nextIndex = i + 1;
+                    if ((uint)nextIndex < (uint)segment.Length && segment[i] == '\\')
+                    {
+                        // If there is an backslash character as the last character in the string,
+                        // we will assume that it should be included literally in the unescaped string
+                        // Ex: "hello\\" => "hello\\"
+                        // Also, if a sender adds a quoted pair like '\\''n',
+                        // we will assume it is over escaping and just add a n to the string.
+                        // Ex: "he\\llo" => "hello"
+                        span[spanIndex] = segment[nextIndex];
+                        i++;
+                    }
+                    else
+                    {
+                        span[spanIndex] = segment[i];
+                    }
 
-            return stringBuilder.ToString();
+                    spanIndex++;
+                }
+            });
         }
 
         private static int CountBackslashesForDecodingQuotedString(StringSegment input)
@@ -687,25 +734,28 @@ namespace Microsoft.Net.Http.Headers
             // By calling this, we know that the string requires quotes around it to be a valid token.
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
-            var stringBuilder = new InplaceStringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
-            stringBuilder.Append('\"');
-
-            for (var i = 0; i < input.Length; i++)
+            // 2 for quotes
+            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
             {
-                if (input[i] == '\\' || input[i] == '\"')
+                // Helps to elide the bounds check for span[0]
+                span[span.Length - 1] = span[0] = '\"';
+
+                var spanIndex = 1;
+                for (var i = 0; i < segment.Length; i++)
                 {
-                    stringBuilder.Append('\\');
+                    if (segment[i] == '\\' || segment[i] == '\"')
+                    {
+                        span[spanIndex++] = '\\';
+                    }
+                    else if ((segment[i] <= 0x1F || segment[i] == 0x7F) && segment[i] != 0x09)
+                    {
+                        // Control characters are not allowed in a quoted-string, which include all characters
+                        // below 0x1F (except for 0x09 (TAB)) and 0x7F.
+                        throw new FormatException($"Invalid control character '{segment[i]}' in input.");
+                    }
+                    span[spanIndex++] = segment[i];
                 }
-                else if ((input[i] <= 0x1F || input[i] == 0x7F) && input[i] != 0x09)
-                {
-                    // Control characters are not allowed in a quoted-string, which include all characters
-                    // below 0x1F (except for 0x09 (TAB)) and 0x7F.
-                    throw new FormatException($"Invalid control character '{input[i]}' in input.");
-                }
-                stringBuilder.Append(input[i]);
-            }
-            stringBuilder.Append('\"');
-            return stringBuilder.ToString();
+            });
         }
 
         private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)

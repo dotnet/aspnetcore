@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.SignOutAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignOutAsync"/>.
     /// </summary>
     public class SignOutResult : ActionResult
     {
@@ -22,6 +21,16 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public SignOutResult()
             : this(Array.Empty<string>())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
+        /// specified authentication scheme and <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        public SignOutResult(AuthenticationProperties properties)
+            : this(Array.Empty<string>(), properties)
         {
         }
 
@@ -64,12 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
         public SignOutResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
         {
-            if (authenticationSchemes == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationSchemes));
-            }
-
-            AuthenticationSchemes = authenticationSchemes;
+            AuthenticationSchemes = authenticationSchemes ?? throw new ArgumentNullException(nameof(authenticationSchemes));
             Properties = properties;
         }
 

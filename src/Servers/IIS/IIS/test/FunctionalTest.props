@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup>
+    <HelixTimeout>00:45:00</HelixTimeout>
+    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">01:00:00</HelixTimeout>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="BuildAssets" AfterTargets="Build" Condition="'$(ExcludeFromBuild)' != 'true'">
+    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CopyAssets" AfterTargets="Publish" Condition="'@(PublishedTestAsset->Count())' != '0'">
+
+    <ItemGroup>
+     <_FilesToCopy Include="%(PublishedTestAsset.Path)\**\*">
+        <DestinationDir>$(PublishDir)\%(PublishedTestAsset.Identity)\</DestinationDir>
+      </_FilesToCopy>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFiles="@(_FilesToCopy->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+
+  </Target>
+
+</Project>

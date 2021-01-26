@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
@@ -11,7 +12,7 @@ namespace SampleStartups
 {
     public class StartupExternallyControlled : StartupBase
     {
-        private IWebHost _host;
+        private IHost _host;
         private readonly List<string> _urls = new List<string>();
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -29,17 +30,23 @@ namespace SampleStartups
 
         public void Start()
         {
-            _host = new WebHostBuilder()
-                //.UseKestrel()
-                .UseFakeServer()
-                .UseStartup<StartupExternallyControlled>()
-                .Start(_urls.ToArray());
+            _host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseStartup<StartupExternallyControlled>()
+                        .UseUrls(_urls.ToArray());
+                })
+                .Start();
         }
 
         public async Task StopAsync()
         {
-            await _host.StopAsync(TimeSpan.FromSeconds(5));
-            _host.Dispose();
+            using (_host)
+            {
+                await _host.StopAsync(TimeSpan.FromSeconds(5));
+            }
         }
 
         public void AddUrl(string url)

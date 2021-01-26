@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Connections
     public static class HttpTransports
     {
         /// <summary>
-        /// A bitmask comprised of all available <see cref="HttpTransportType"/> values.
+        /// A bitmask combining all available <see cref="HttpTransportType"/> values.
         /// </summary>
         public static readonly HttpTransportType All = HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling;
     }

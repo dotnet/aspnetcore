@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -12,27 +15,36 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    /// <summary>
+    /// A <see cref="IRouteConstraint"/> that represents a known route value.
+    /// </summary>
     public class KnownRouteValueConstraint : IRouteConstraint
     {
-        private RouteValuesCollection _cachedValuesCollection;
+        private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
+        private RouteValuesCollection? _cachedValuesCollection;
 
+        /// <summary>
+        /// Initializes an instance of <see cref="KnownRouteValueConstraint"/>.
+        /// </summary>
+        /// <param name="actionDescriptorCollectionProvider">The <see cref="IActionDescriptorCollectionProvider"/>.</param>
+        public KnownRouteValueConstraint(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
+        {
+            if (actionDescriptorCollectionProvider == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptorCollectionProvider));
+            }
+
+            _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
+        }
+
+        /// <inheritdoc/>
         public bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -43,13 +55,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object obj;
-            if (values.TryGetValue(routeKey, out obj))
+            if (values.TryGetValue(routeKey, out var obj))
             {
-                var value = obj as string;
+                var value = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 if (value != null)
                 {
-                    var allValues = GetAndCacheAllMatchingValues(routeKey, httpContext);
+                    var actionDescriptors = GetAndValidateActionDescriptors(httpContext);
+
+                    var allValues = GetAndCacheAllMatchingValues(routeKey, actionDescriptors);
                     foreach (var existingValue in allValues)
                     {
                         if (string.Equals(value, existingValue, StringComparison.OrdinalIgnoreCase))
@@ -63,9 +76,36 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return false;
         }
 
-        private string[] GetAndCacheAllMatchingValues(string routeKey, HttpContext httpContext)
+        private ActionDescriptorCollection GetAndValidateActionDescriptors(HttpContext? httpContext)
         {
-            var actionDescriptors = GetAndValidateActionDescriptorCollection(httpContext);
+            var actionDescriptorsProvider = _actionDescriptorCollectionProvider;
+
+            if (actionDescriptorsProvider == null)
+            {
+                // Only validate that HttpContext was passed to constraint if it is needed
+                if (httpContext == null)
+                {
+                    throw new ArgumentNullException(nameof(httpContext));
+                }
+
+                var services = httpContext.RequestServices;
+                actionDescriptorsProvider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
+            }
+
+            var actionDescriptors = actionDescriptorsProvider.ActionDescriptors;
+            if (actionDescriptors == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(IActionDescriptorCollectionProvider.ActionDescriptors),
+                        actionDescriptorsProvider.GetType()));
+            }
+
+            return actionDescriptors;
+        }
+
+        private string[] GetAndCacheAllMatchingValues(string routeKey, ActionDescriptorCollection actionDescriptors)
+        {
             var version = actionDescriptors.Version;
             var valuesCollection = _cachedValuesCollection;
 
@@ -77,8 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     var action = actionDescriptors.Items[i];
 
-                    string value;
-                    if (action.RouteValues.TryGetValue(routeKey, out value) &&
+                    if (action.RouteValues.TryGetValue(routeKey, out var value) &&
                         !string.IsNullOrEmpty(value))
                     {
                         values.Add(value);
@@ -89,23 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 _cachedValuesCollection = valuesCollection;
             }
 
-            return _cachedValuesCollection.Items;
-        }
-
-        private static ActionDescriptorCollection GetAndValidateActionDescriptorCollection(HttpContext httpContext)
-        {
-            var services = httpContext.RequestServices;
-            var provider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
-            var descriptors = provider.ActionDescriptors;
-
-            if (descriptors == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatPropertyOfTypeCannotBeNull("ActionDescriptors",
-                                                               provider.GetType()));
-            }
-
-            return descriptors;
+            return valuesCollection.Items;
         }
 
         private class RouteValuesCollection

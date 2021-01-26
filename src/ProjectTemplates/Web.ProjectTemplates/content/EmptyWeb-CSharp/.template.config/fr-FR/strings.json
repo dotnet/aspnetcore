@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Vide",
+    "description": "Modèle de projet vide pour la création d'une application ASP.NET Core. Ce modèle n'a aucun contenu."
+  }
+}

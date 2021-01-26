@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class AntiforgerySerializationContext
+    internal class AntiforgerySerializationContext
     {
         // Avoid allocating 256 bytes (the default) and using 18 (the AntiforgeryToken minimum). 64 bytes is enough for
         // a short username or claim UID and some additional data. MemoryStream bumps capacity to 256 if exceeded.
@@ -23,11 +23,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         // Don't let _chars grow beyond 512k characters.
         private const int MaximumCharsLength = 0x80000;
 
-        private char[] _chars;
-        private MemoryStream _stream;
-        private BinaryReader _reader;
-        private BinaryWriter _writer;
-        private SHA256 _sha256;
+        private char[]? _chars;
+        private MemoryStream? _stream;
+        private BinaryReader? _reader;
+        private BinaryWriter? _writer;
 
         public MemoryStream Stream
         {
@@ -82,23 +81,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
         }
 
-        public SHA256 Sha256
-        {
-            get
-            {
-                if (_sha256 == null)
-                {
-                    _sha256 = CryptographyAlgorithms.CreateSHA256();
-                }
-
-                return _sha256;
-            }
-            private set
-            {
-                _sha256 = value;
-            }
-        }
-
         public char[] GetChars(int count)
         {
             if (_chars == null || _chars.Length < count)
@@ -126,9 +108,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 if (Stream.Capacity > MaximumStreamSize)
                 {
-                    Stream = null;
-                    Reader = null;
-                    Writer = null;
+                    _stream = null;
+                    _reader = null;
+                    _writer = null;
                 }
                 else
                 {

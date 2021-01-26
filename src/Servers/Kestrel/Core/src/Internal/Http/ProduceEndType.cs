@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public enum ProduceEndType
+    internal enum ProduceEndType
     {
         SocketShutdown,
         SocketDisconnect,

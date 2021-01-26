@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -18,30 +18,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         public ReadOnlySequence<byte> _buffer;
-        public Http1Connection _http1Connection;
+        private Http1Connection _http1Connection;
 
         [IterationSetup]
         public void Setup()
         {
-            var memoryPool = KestrelMemoryPool.Create();
+            var memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-            var serviceContext = new ServiceContext
-            {
-                ServerOptions = new KestrelServerOptions(),
-                HttpParser = NullParser<Http1ParsingHandler>.Instance
-            };
+            var serviceContext = TestContextFactory.CreateServiceContext(
+                serverOptions: new KestrelServerOptions(),
+                httpParser: new HttpParser<Http1ParsingHandler>());
 
-            var http1Connection = new Http1Connection(new Http1ConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = memoryPool,
-                TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
-                Transport = pair.Transport
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: null,
+                transport: pair.Transport,
+                timeoutControl: new TimeoutControl(timeoutHandler: null),
+                memoryPool: memoryPool,
+                connectionFeatures: new FeatureCollection());
+
+            var http1Connection = new Http1Connection(connectionContext);
 
             http1Connection.Reset();
 
@@ -79,12 +77,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
 
-            if (!_http1Connection.TakeStartLine(_buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_http1Connection.TakeStartLine(ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out consumed, out examined))
+            if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -94,7 +93,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
 
-            if (!_http1Connection.TakeStartLine(_buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_http1Connection.TakeStartLine(ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
@@ -104,7 +104,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }

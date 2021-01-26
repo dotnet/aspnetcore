@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Project supports more than one language -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Microsoft.AspNetCore.Testing.BasicTestApp.ContentRoot</_Parameter1>
+      <_Parameter2>$([MSBuild]::NormalizeDirectory('$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\BasicTestApp'))'))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

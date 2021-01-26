@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public IList<IAuthorizeData> AuthorizationData { get; }
 
         /// <summary>
-        /// Gets or sets a bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the server should use to receive HTTP requests.
+        /// Gets or sets a bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the server should use to receive HTTP requests.
         /// </summary>
         public HttpTransportType Transports { get; set; }
 
@@ -57,5 +57,11 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// Gets or sets the maximum buffer size of the application writer.
         /// </summary>
         public long ApplicationMaxBufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum protocol verison supported by the server.
+        /// The default value is 0, the lowest possible protocol version.
+        /// </summary>
+        public int MinimumProtocolVersion { get; set; } = 0;
     }
 }

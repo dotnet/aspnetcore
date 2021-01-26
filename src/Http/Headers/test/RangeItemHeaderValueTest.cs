@@ -83,7 +83,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(rangeItem1.Equals(rangeItem2), "1-2 vs. 1-.");
             Assert.False(rangeItem2.Equals(rangeItem1), "1- vs. 1-2.");
             Assert.False(rangeItem1.Equals(null), "1-2 vs. null.");
-            Assert.False(rangeItem1.Equals(rangeItem3), "1-2 vs. -2.");
+            Assert.False(rangeItem1!.Equals(rangeItem3), "1-2 vs. -2.");
             Assert.False(rangeItem3.Equals(rangeItem1), "-2 vs. 1-2.");
             Assert.False(rangeItem1.Equals(rangeItem4), "1-2 vs. 2-2.");
             Assert.True(rangeItem1.Equals(rangeItem5), "1-2 vs. 1-2.");

@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Routing
         private RouteData _routeData;
 
         /// <summary>
-        /// Creates a new <see cref="RouteContext"/> for the provided <paramref name="httpContext"/>.
+        /// Creates a new instance of <see cref="RouteContext"/> for the provided <paramref name="httpContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
         public RouteContext(HttpContext httpContext)
         {
-            HttpContext = httpContext;
+            HttpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
 
             RouteData = new RouteData();
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets or sets the handler for the request. An <see cref="IRouter"/> should set <see cref="Handler"/>
         /// when it matches.
         /// </summary>
-        public RequestDelegate Handler { get; set; }
+        public RequestDelegate? Handler { get; set; }
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> associated with the current request.

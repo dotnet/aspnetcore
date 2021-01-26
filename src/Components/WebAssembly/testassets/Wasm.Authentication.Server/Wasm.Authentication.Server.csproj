@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+
+    <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.CookiePolicy" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Design" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <Reference Include="Microsoft.EntityFrameworkCore.SQLite" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Wasm.Authentication.Client\Wasm.Authentication.Client.csproj" />
+    <ProjectReference Include="..\Wasm.Authentication.Shared\Wasm.Authentication.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

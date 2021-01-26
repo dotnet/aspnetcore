@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -29,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
+            services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
@@ -47,6 +53,50 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 
+            // Setup global collection of endpoint data sources
+            var dataSources = new ObservableCollection<EndpointDataSource>();
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, ConfigureRouteOptions>(
+                serviceProvider => new ConfigureRouteOptions(dataSources)));
+
+            // Allow global access to the list of endpoints.
+            services.TryAddSingleton<EndpointDataSource>(s =>
+            {
+                // Call internal ctor and pass global collection
+                return new CompositeEndpointDataSource(dataSources);
+            });
+
+            //
+            // Default matcher implementation
+            //
+            services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
+            services.TryAddTransient<DfaMatcherBuilder>();
+            services.TryAddSingleton<DfaGraphWriter>();
+            services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
+            services.TryAddSingleton<EndpointMetadataComparer>(services =>
+            {
+                // This has no public constructor. 
+                return new EndpointMetadataComparer(services);
+            });
+
+            // Link generation related services
+            services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+            services.TryAddSingleton<IEndpointAddressScheme<string>, EndpointNameAddressScheme>();
+            services.TryAddSingleton<IEndpointAddressScheme<RouteValuesAddress>, RouteValuesAddressScheme>();
+            services.TryAddSingleton<LinkParser, DefaultLinkParser>();
+
+            //
+            // Endpoint Selection
+            //
+            services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
+
+            //
+            // Misc infrastructure
+            //
+            services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
+            services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
             return services;
         }
 

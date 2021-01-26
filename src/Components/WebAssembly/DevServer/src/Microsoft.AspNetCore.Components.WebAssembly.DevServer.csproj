@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>blazor-devserver</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DevServer</PackageId>
+    <IsShippingPackage>true</IsShippingPackage>
+    <StartupObject>Microsoft.AspNetCore.Components.WebAssembly.DevServer.Program</StartupObject>
+    <Description>Development server for use when building Blazor applications.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Components.WebAssembly.DevServer.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
+  </ItemGroup>
+
+</Project>

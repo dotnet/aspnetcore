@@ -26,26 +26,19 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Scope.Add("email");
 
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-            if (GoogleDefaults.UseGooglePlus)
-            {
-                ClaimActions.MapJsonKey(ClaimTypes.Name, "displayName");
-                ClaimActions.MapJsonSubKey(ClaimTypes.GivenName, "name", "givenName");
-                ClaimActions.MapJsonSubKey(ClaimTypes.Surname, "name", "familyName");
-                ClaimActions.MapJsonKey("urn:google:profile", "url");
-                ClaimActions.MapCustomJson(ClaimTypes.Email, GoogleHelper.GetEmail);
-            }
-            else
-            {
-                ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
-                ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
-                ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
-                ClaimActions.MapJsonKey("urn:google:profile", "link");
-                ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
-            }
+            ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+            ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+            ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+            ClaimActions.MapJsonKey("urn:google:profile", "link");
+            ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
         }
 
         /// <summary>
-        /// access_type. Set to 'offline' to request a refresh token.
+        /// Indicates whether your application can refresh access tokens when the user is not present at the browser.
+        /// Valid values are <c>online</c>, which is the default value, and <c>offline</c>.
+        /// <para>
+        /// Set the value to offline if your application needs to refresh access tokens when the user is not present at the browser.
+        /// </para>
         /// </summary>
         public string AccessType { get; set; }
     }

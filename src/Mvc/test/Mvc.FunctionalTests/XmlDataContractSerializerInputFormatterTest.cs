@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTestFixture<Startup>>
     {
         private readonly string errorMessageFormat = string.Format(
+            CultureInfo.CurrentCulture,
             "{{1}}:{0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value " +
             "type property '{{0}}' on type '{{1}}'.",
             typeof(DataContractSerializer).FullName,
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // Verifies that the model state has errors related to body model validation.
         [Fact]
-        public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
+        public async Task DataMissingForReferenceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange
             var input = "<Store xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\"" +

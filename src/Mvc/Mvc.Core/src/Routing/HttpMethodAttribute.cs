@@ -1,13 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
-    /// Identifies an action that only supports a given set of HTTP methods.
+    /// Identifies an action that supports a given set of HTTP methods.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
@@ -17,24 +20,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// Creates a new <see cref="HttpMethodAttribute"/> with the given
         /// set of HTTP methods.
-        /// <param name="httpMethods">The set of supported HTTP methods.</param>
+        /// <param name="httpMethods">The set of supported HTTP methods. May not be null.</param>
         /// </summary>
         public HttpMethodAttribute(IEnumerable<string> httpMethods)
             : this(httpMethods, null)
         {
-            if (httpMethods == null)
-            {
-                throw new ArgumentNullException(nameof(httpMethods));
-            }
         }
 
         /// <summary>
         /// Creates a new <see cref="HttpMethodAttribute"/> with the given
         /// set of HTTP methods an the given route template.
         /// </summary>
-        /// <param name="httpMethods">The set of supported methods.</param>
-        /// <param name="template">The route template. May not be null.</param>
-        public HttpMethodAttribute(IEnumerable<string> httpMethods, string template)
+        /// <param name="httpMethods">The set of supported methods. May not be null.</param>
+        /// <param name="template">The route template.</param>
+        public HttpMethodAttribute(IEnumerable<string> httpMethods, string? template)
         {
             if (httpMethods == null)
             {
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public IEnumerable<string> HttpMethods { get; }
 
         /// <inheritdoc />
-        public string Template { get; }
+        public string? Template { get; }
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower
@@ -67,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        [DisallowNull]
+        public string? Name { get; set; }
     }
 }

@@ -33,7 +33,7 @@
         @foreach (var errorDetail in Model.ErrorDetails)
         {
             <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
-            
+
             var firstFrame = errorDetail.StackFrames.FirstOrDefault();
             if (firstFrame != null)
             {
@@ -80,6 +80,9 @@
             <li id="headers" tabindex="4">
                 @Resources.ErrorPageHtml_HeadersButton
             </li>
+            <li id="routing" tabindex="5">
+                @Resources.ErrorPageHtml_RoutingButton
+            </li>
         </ul>
 
         <div id="stackpage" class="page">
@@ -98,59 +101,59 @@
                     <li>
                         <h2 class="stackerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
                         <ul>
-                        @foreach (var frame in errorDetail.StackFrames)
-                        {
-                            stackFrameCount++;
-                            frameId = "frame" + stackFrameCount;
+                            @foreach (var frame in errorDetail.StackFrames)
+                            {
+                                stackFrameCount++;
+                                frameId = "frame" + stackFrameCount;
 
-                            <li class="frame" id="@frameId">
-                                @if (string.IsNullOrEmpty(frame.File))
-                                {
-                                    <h3>@frame.Function</h3>
-                                }
-                                else
-                                {
-                                    <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
-                                }
+                                <li class="frame" id="@frameId">
+                                    @if (string.IsNullOrEmpty(frame.File))
+                                    {
+                                        <h3>@frame.Function</h3>
+                                    }
+                                    else
+                                    {
+                                        <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
+                                    }
 
-                                @if (frame.Line != 0 && frame.ContextCode.Any())
-                                {
-                                    <button class="expandCollapseButton" data-frameId="@frameId">+</button>
-                                    <div class="source">
-                                        @if (frame.PreContextCode.Any())
-                                        {
-                                            <ol start="@frame.PreContextLine" class="collapsible">
-                                                @foreach (var line in frame.PreContextCode)
-                                                {
-                                                    <li><span>@line</span></li>
-                                                }
-                                            </ol>
-                                        }
-
-                                        <ol start="@frame.Line" class="highlight">
-                                            @foreach (var line in frame.ContextCode)
+                                    @if (frame.Line != 0 && frame.ContextCode.Any())
+                                    {
+                                        <button class="expandCollapseButton" data-frameId="@frameId">+</button>
+                                        <div class="source">
+                                            @if (frame.PreContextCode.Any())
                                             {
-                                                <li><span>@line</span></li>
+                                                <ol start="@frame.PreContextLine" class="collapsible">
+                                                    @foreach (var line in frame.PreContextCode)
+                                                    {
+                                                        <li><span>@line</span></li>
+                                                    }
+                                                </ol>
                                             }
-                                        </ol>
 
-                                        @if (frame.PostContextCode.Any())
-                                        {
-                                            <ol start='@(frame.Line + 1)' class="collapsible">
-                                                @foreach (var line in frame.PostContextCode)
+                                            <ol start="@frame.Line" class="highlight">
+                                                @foreach (var line in frame.ContextCode)
                                                 {
                                                     <li><span>@line</span></li>
                                                 }
                                             </ol>
-                                        }
-                                    </div>
-                                }
-                            </li>
-                        }
+
+                                            @if (frame.PostContextCode.Any())
+                                            {
+                                                <ol start='@(frame.Line + 1)' class="collapsible">
+                                                    @foreach (var line in frame.PostContextCode)
+                                                    {
+                                                        <li><span>@line</span></li>
+                                                    }
+                                                </ol>
+                                            }
+                                        </div>
+                                    }
+                                </li>
+                            }
                         </ul>
                     </li>
                     <li>
-                        <br/>
+                        <br />
                         <div class="rawExceptionBlock">
                             <div class="showRawExceptionContainer">
                                 <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show raw exception details</button>
@@ -220,6 +223,7 @@
                 <p>@Resources.ErrorPageHtml_NoCookieData</p>
             }
         </div>
+
         <div id="headerspage" class="page">
             @if (Model.Headers.Any())
             {
@@ -249,6 +253,78 @@
                 <p>@Resources.ErrorPageHtml_NoHeaderData</p>
             }
         </div>
+
+        <div id="routingpage" class="page">
+            <h2 class="subheader">@Resources.ErrorPageHtml_Endpoint</h2>
+            @if (Model.Endpoint != null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>@Resources.ErrorPageHtml_NameColumn</th>
+                            <th>@Resources.ErrorPageHtml_ValueColumn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Resources.ErrorPageHtml_EndpointDisplayName</td>
+                            <td>@Model.Endpoint.DisplayName</td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(Model.Endpoint.RoutePattern))
+                        {
+                            <tr>
+                                <td>@Resources.ErrorPageHtml_EndpointRoutePattern</td>
+                                <td>@Model.Endpoint.RoutePattern</td>
+                            </tr>
+                        }
+                        @if (Model.Endpoint.Order != null)
+                        {
+                            <tr>
+                                <td>@Resources.ErrorPageHtml_EndpointRouteOrder</td>
+                                <td>@Model.Endpoint.Order</td>
+                            </tr>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Endpoint.HttpMethods))
+                        {
+                            <tr>
+                                <td>@Resources.ErrorPageHtml_EndpointRouteHttpMethod</td>
+                                <td>@Model.Endpoint.HttpMethods</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>@Resources.ErrorPageHtml_NoEndpoint</p>
+            }
+            <h2 class="subheader">@Resources.ErrorPageHtml_RouteValues</h2>
+            @if (Model.RouteValues != null && Model.RouteValues.Any())
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>@Resources.ErrorPageHtml_VariableColumn</th>
+                            <th>@Resources.ErrorPageHtml_ValueColumn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var kv in Model.RouteValues.OrderBy(kv => kv.Key))
+                        {
+                            <tr>
+                                <td>@kv.Key</td>
+                                <td>@kv.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>@Resources.ErrorPageHtml_NoRouteValues</p>
+            }
+        </div>
+
         <script>
             //<!--
             <%$ include: ErrorPage.js %>

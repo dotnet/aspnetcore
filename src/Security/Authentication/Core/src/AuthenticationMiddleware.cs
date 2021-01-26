@@ -8,10 +8,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Middleware that performs authentication.
+    /// </summary>
     public class AuthenticationMiddleware
     {
         private readonly RequestDelegate _next;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthenticationMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next item in the middleware pipeline.</param>
+        /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
         public AuthenticationMiddleware(RequestDelegate next, IAuthenticationSchemeProvider schemes)
         {
             if (next == null)
@@ -27,8 +35,15 @@ namespace Microsoft.AspNetCore.Authentication
             Schemes = schemes;
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IAuthenticationSchemeProvider"/>.
+        /// </summary>
         public IAuthenticationSchemeProvider Schemes { get; set; }
 
+        /// <summary>
+        /// Invokes the middleware performing authentication.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         public async Task Invoke(HttpContext context)
         {
             context.Features.Set<IAuthenticationFeature>(new AuthenticationFeature

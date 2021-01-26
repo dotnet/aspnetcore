@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable disable
 
 using System;
 using System.Buffers;
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 reader = new Utf8BufferTextReader();
             }
 
-            // Taken off the the thread static
+            // Taken off the thread static
             _cachedInstance = null;
 #if DEBUG
             if (reader._inUse)
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var source = _utf8Buffer.First.Span;
             var bytesUsed = 0;
             var charsUsed = 0;
-#if NETCOREAPP2_1
+#if NETCOREAPP
             var destination = new Span<char>(buffer, index, count);
             _decoder.Convert(source, destination, false, out bytesUsed, out charsUsed, out var completed);
 #else

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Xunit;
 
@@ -15,11 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
         // and expected tag helper output.
-        public static TheoryData<string, string, string, CurrentValues, TagHelperOutput> GeneratesExpectedDataSet
+        public static TheoryData<string, string, string, ICollection<string>, TagHelperOutput> GeneratesExpectedDataSet
         {
             get
             {
-                return new TheoryData<string, string, string, CurrentValues, TagHelperOutput>
+                return new TheoryData<string, string, string, ICollection<string>, TagHelperOutput>
                 {
                     // original content, selected, value, selected values,
                     // expected tag helper output - attributes, content
@@ -54,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        null, null, "value", new CurrentValues(new HashSet<string>()),
+                        null, null, "value", new HashSet<string>(),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        null, null, "value", new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        null, null, "value", new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        null, string.Empty, "value", new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        null, string.Empty, "value", new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        null, null, "value", new CurrentValues(new HashSet<string>(new [] { "value", })),
+                        null, null, "value", new HashSet<string>(new [] { "value", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        null, null, "value", new CurrentValues(new HashSet<string>(new [] { string.Empty, "value", })),
+                        null, null, "value", new HashSet<string>(new [] { string.Empty, "value", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -134,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        string.Empty, null, null, new CurrentValues(new HashSet<string>()),
+                        string.Empty, null, null, new HashSet<string>(),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        string.Empty, null, null, new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        string.Empty, null, null, new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -155,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     },
                     {
                         string.Empty, string.Empty, null,
-                        new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "")
                     },
                     {
-                        string.Empty, null, null, new CurrentValues(new HashSet<string>(new [] { "text", })),
+                        string.Empty, null, null, new HashSet<string>(new [] { "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -176,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     },
                     {
                         string.Empty, null, null,
-                        new CurrentValues(new HashSet<string>(new [] { string.Empty, "text", })),
+                        new HashSet<string>(new [] { string.Empty, "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -216,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, null, new CurrentValues(new HashSet<string>()),
+                        "text", null, null, new HashSet<string>(),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, null, new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        "text", null, null, new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -236,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "HtmlEncode[[text]]", null, null, new CurrentValues(new HashSet<string>(new [] { "text", })),
+                        "HtmlEncode[[text]]", null, null, new HashSet<string>(new [] { "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -246,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "HtmlEncode[[text]]")
                     },
                     {
-                        "text", string.Empty, null, new CurrentValues(new HashSet<string>(new [] { "text", })),
+                        "text", string.Empty, null, new HashSet<string>(new [] { "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -257,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     },
                     {
                         "HtmlEncode[[text]]", null, null,
-                        new CurrentValues(new HashSet<string>(new [] { string.Empty, "text", })),
+                        new HashSet<string>(new [] { string.Empty, "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -287,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, "value", new CurrentValues(new HashSet<string>()),
+                        "text", null, "value", new HashSet<string>(),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -297,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, "value", new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        "text", null, "value", new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -308,7 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     },
                     {
                         "text", string.Empty, "value",
-                        new CurrentValues(new HashSet<string>(new [] { string.Empty, })),
+                        new HashSet<string>(new [] { string.Empty, }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -318,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, "value", new CurrentValues(new HashSet<string>(new [] { "text", })),
+                        "text", null, "value", new HashSet<string>(new [] { "text", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -328,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, "value", new CurrentValues(new HashSet<string>(new [] { "value", })),
+                        "text", null, "value", new HashSet<string>(new [] { "value", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -339,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     },
                     {
                         "text", null, "value",
-                        new CurrentValues(new HashSet<string>(new [] { string.Empty, "value", })),
+                        new HashSet<string>(new [] { string.Empty, "value", }),
                         GetTagHelperOutput(
                             "not-option",
                             new TagHelperAttributeList
@@ -360,7 +359,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             get
             {
                 return GeneratesExpectedDataSet.Where(
-                    entry => (entry[1] != null || entry[3] == null || ((CurrentValues)(entry[3])).Values.Count == 0));
+                    entry => (entry[1] != null || entry[3] == null || ((ICollection<string>)(entry[3])).Count == 0));
             }
         }
 
@@ -381,7 +380,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             string originalContent,
             string selected,
             string value,
-            CurrentValues currentValues,
+            ICollection<string> currentValues,
             TagHelperOutput expectedTagHelperOutput)
         {
             // Arrange
@@ -427,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model: null,
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
-            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues;
+            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
             var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,
@@ -453,8 +452,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             string originalContent,
             string selected,
             string value,
-            CurrentValues currentValues,
-            TagHelperOutput ignored)
+            ICollection<string> currentValues,
+            TagHelperOutput _)
         {
             // Arrange
             var originalAttributes = new TagHelperAttributeList
@@ -499,7 +498,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model: null,
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
-            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues;
+            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
             var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,
@@ -517,8 +516,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             string originalContent,
             string selected,
             string value,
-            CurrentValues ignoredValues,
-            TagHelperOutput ignoredOutput)
+            ICollection<string> _,
+            TagHelperOutput __)
         {
             // Arrange
             var originalAttributes = new TagHelperAttributeList

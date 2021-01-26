@@ -4,11 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpResponseTests
     {
@@ -59,6 +64,185 @@ namespace Microsoft.AspNetCore.Http.Internal
             Assert.Null(response.ContentType);
         }
 
+        [Fact]
+        public void BodyWriter_CanGet()
+        {
+            var response = new DefaultHttpContext();
+            var bodyPipe = response.Response.BodyWriter;
+
+            Assert.NotNull(bodyPipe);
+        }
+
+        [Fact]
+        public void ReplacingResponseBody_DoesNotCreateOnCompletedRegistration()
+        {
+            var features = new FeatureCollection();
+
+            var originalStream = new FlushAsyncCheckStream();
+            var replacementStream = new FlushAsyncCheckStream();
+
+            var responseBodyMock = new Mock<IHttpResponseBodyFeature>();
+            responseBodyMock.Setup(o => o.Stream).Returns(originalStream);
+            features.Set(responseBodyMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+
+            Assert.Same(originalStream, context.Response.Body);
+            Assert.Same(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            context.Response.Body = replacementStream;
+
+            Assert.Same(replacementStream, context.Response.Body);
+            Assert.NotSame(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            context.Response.Body = originalStream;
+
+            Assert.Same(originalStream, context.Response.Body);
+            Assert.Same(responseBodyMock.Object, context.Features.Get<IHttpResponseBodyFeature>());
+
+            // The real issue was not that an OnCompleted registration existed, but that it would previously flush
+            // the original response body in the OnCompleted callback after the response body was disposed.
+            // However, since now there's no longer an OnCompleted registration at all, it's easier to verify that.
+            // https://github.com/dotnet/aspnetcore/issues/25342
+            responseMock.Verify(m => m.OnCompleted(It.IsAny<Func<object, Task>>(), It.IsAny<object>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSet()
+        {
+            var features = new FeatureCollection();
+            var mock = new Mock<IHttpResponseBodyFeature>();
+            mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSetWithProvidedCancellationToken()
+        {
+            var features = new FeatureCollection();
+
+            var mock = new Mock<IHttpResponseBodyFeature>();
+            var ct = new CancellationToken();
+            mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync(ct);
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_DoesNotCallStartIfHasStartedIsTrue()
+        {
+            var features = new FeatureCollection();
+
+            var startMock = new Mock<IHttpResponseBodyFeature>();
+            startMock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(startMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(true);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            startMock.Verify(m => m.StartAsync(default), Times.Never());
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
+        {
+            var context = new DefaultHttpContext();
+            var mock = new FlushAsyncCheckStream();
+            context.Response.Body = mock;
+
+            await context.Response.StartAsync(default);
+
+            Assert.True(mock.IsCalled);
+        }
+
+        [Fact]
+        public async Task RegisterForDisposeHandlesDisposeAsyncIfObjectImplementsIAsyncDisposable()
+        {
+            var features = new FeatureCollection();
+            var response = new ResponseFeature();
+            features.Set<IHttpResponseFeature>(response);
+
+            var context = new DefaultHttpContext(features);
+            var instance = new DisposableClass();
+            context.Response.RegisterForDispose(instance);
+
+            await response.ExecuteOnCompletedCallbacks();
+
+            Assert.True(instance.DisposeAsyncCalled);
+            Assert.False(instance.DisposeCalled);
+        }
+
+        public class ResponseFeature : IHttpResponseFeature
+        {
+            private List<(Func<object, Task>, object)> _callbacks = new();
+            public int StatusCode { get; set; }
+            public string ReasonPhrase { get; set; }
+            public IHeaderDictionary Headers { get; set; }
+            public Stream Body { get; set; }
+
+            public bool HasStarted => false;
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                _callbacks.Add((callback, state));
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public async Task ExecuteOnCompletedCallbacks()
+            {
+                foreach (var (callback, state) in _callbacks)
+                {
+                    await callback(state);
+                }
+            }
+        }
+
+        public class DisposableClass : IDisposable, IAsyncDisposable
+        {
+            public bool DisposeCalled { get; set; }
+
+            public bool DisposeAsyncCalled { get; set; }
+
+            public void Dispose()
+            {
+                DisposeCalled = true;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                DisposeAsyncCalled = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+
         private static HttpResponse CreateResponse(IHeaderDictionary headers)
         {
             var context = new DefaultHttpContext();
@@ -85,6 +269,17 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             return CreateResponse(headers);
+        }
+
+        private class FlushAsyncCheckStream : MemoryStream
+        {
+            public bool IsCalled { get; private set; }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                IsCalled = true;
+                return base.FlushAsync(cancellationToken);
+            }
         }
     }
 }

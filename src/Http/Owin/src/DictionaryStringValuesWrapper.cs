@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Owin
             {
                 if (value.HasValue)
                 {
-                    Inner[HeaderNames.ContentLength] = (StringValues)HeaderUtilities.FormatNonNegativeInt64(value.Value);
+                    Inner[HeaderNames.ContentLength] = (StringValues)HeaderUtilities.FormatNonNegativeInt64(value.GetValueOrDefault());
                 }
                 else
                 {

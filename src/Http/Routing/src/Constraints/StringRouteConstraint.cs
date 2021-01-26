@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
-    /// Constrains a route parameter to contain only a specified strign.
+    /// Constrains a route parameter to contain only a specified string.
     /// </summary>
     public class StringRouteConstraint : IRouteConstraint
     {
@@ -29,18 +29,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints
         }
 
         /// <inheritdoc />
-        public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+        public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -51,12 +41,10 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object routeValue;
-
-            if (values.TryGetValue(routeKey, out routeValue)
+            if (values.TryGetValue(routeKey, out var routeValue)
                 && routeValue != null)
             {
-                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
+                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture)!;
 
                 return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
             }

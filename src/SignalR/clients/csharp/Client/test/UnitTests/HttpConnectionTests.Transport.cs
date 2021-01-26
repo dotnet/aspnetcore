@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -14,8 +16,8 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Net.Http.Headers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -23,10 +25,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         public class Transport : VerifiableLoggedTest
         {
-            public Transport(ITestOutputHelper output) : base(output)
-            {
-            }
-
             [Theory]
             [InlineData(HttpTransportType.LongPolling)]
             [InlineData(HttpTransportType.ServerSentEvents)]
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
 
                     // Call count increments with each call and is used as the access token
-                    Assert.Equal(callCount.ToString(), request.Headers.Authorization.Parameter);
+                    Assert.Equal(callCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
 
                     requestsExecuted = true;
 
@@ -61,14 +59,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Task<string> AccessTokenProvider()
                 {
                     callCount++;
-                    return Task.FromResult(callCount.ToString());
+                    return Task.FromResult(callCount.ToString(CultureInfo.InvariantCulture));
                 }
 
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
                     });
@@ -81,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [InlineData(HttpTransportType.ServerSentEvents, false)]
             public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
             {
-                using (StartVerifiableLog(out var loggerFactory, testName: $"HttpConnectionSetsInherentKeepAliveFeature_{transportType}_{expectedValue}"))
+                using (StartVerifiableLog())
                 {
                     var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
 
@@ -90,10 +88,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testHttpHandler.OnRequest((request, next, token) => Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
 
                     await WithConnectionAsync(
-                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: loggerFactory),
+                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
 
                             var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
                             Assert.NotNull(feature);
@@ -118,16 +116,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var userAgentHeaderCollection = request.Headers.UserAgent;
-                    var userAgentHeader = Assert.Single(userAgentHeaderCollection);
-                    Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
+                    var userAgentHeader = request.Headers.UserAgent.ToString();
+
+                    Assert.NotNull(userAgentHeader);
+                    Assert.StartsWith("Microsoft SignalR/", userAgentHeader);
 
                     // user agent version should come from version embedded in assembly metadata
                     var assemblyVersion = typeof(Constants)
                             .Assembly
                             .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                    Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
+                    Assert.Contains(assemblyVersion.InformationalVersion, userAgentHeader);
 
                     requestsExecuted = true;
 
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var requestedWithHeader = request.Headers.GetValues("X-Requested-With");
+                    var requestedWithHeader = request.Headers.GetValues(HeaderNames.XRequestedWith);
                     var requestedWithValue = Assert.Single(requestedWithHeader);
                     Assert.Equal("XMLHttpRequest", requestedWithValue);
 
@@ -183,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -215,7 +214,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         Assert.Contains("This is a test", Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
                     });
             }
@@ -242,7 +241,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
 
                         await connection.Transport.Output.WriteAsync(data).OrTimeout();
 
@@ -272,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
                         var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
@@ -289,12 +288,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(transport: transport),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
                         // This will throw OperationCanceledException if it's forcibly terminated
                         // which we don't want
                         await transport.Receiving.OrTimeout();
+                    });
+            }
+
+            [Fact]
+            public Task StartAsyncTransferFormatOverridesOptions()
+            {
+                var transport = new TestTransport();
+
+                return WithConnectionAsync(
+                    CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+
+                        Assert.Equal(TransferFormat.Text, transport.Format);
                     });
             }
         }

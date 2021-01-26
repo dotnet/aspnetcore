@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         string Name { get; }
 
         /// <summary>
-        /// Gets the version of the protocol.
+        /// Gets the major version of the protocol.
         /// </summary>
         int Version { get; }
 
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="binder">The binder used to parse the message.</param>
         /// <param name="message">When this method returns <c>true</c>, contains the parsed message.</param>
         /// <returns>A value that is <c>true</c> if the <see cref="HubMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message);
+        bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, [NotNullWhen(true)] out HubMessage message);
 
         /// <summary>
         /// Writes the specified <see cref="HubMessage"/> to a writer.

@@ -6,8 +6,15 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
+    /// <summary>
+    /// A context for <see cref="OpenIdConnectEvents.OnMessageReceived"/>.
+    /// </summary>
     public class MessageReceivedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="MessageReceivedContext"/>.
+        /// </summary>
+        /// <inheritdoc />
         public MessageReceivedContext(
             HttpContext context,
             AuthenticationScheme scheme,
@@ -15,6 +22,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             AuthenticationProperties properties)
             : base(context, scheme, options, properties) { }
 
+        /// <summary>
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
         public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>

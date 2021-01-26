@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+#nullable disable
+
 using System.Buffers;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,7 +60,7 @@ namespace System.IO.Pipelines
             return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return WriteCoreAsync(source, cancellationToken);
@@ -84,7 +84,7 @@ namespace System.IO.Pipelines
                     throw new OperationCanceledException();
                 }
             }
-            else if (!task.IsCompletedSuccessfully)
+            else
             {
                 return WriteSlowAsync(task);
             }

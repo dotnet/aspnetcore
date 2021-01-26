@@ -1,21 +1,26 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTransportFactory : ITransportFactory
+    internal class LibuvTransportFactory : IConnectionListenerFactory
     {
         private readonly LibuvTransportContext _baseTransportContext;
 
         public LibuvTransportFactory(
+#pragma warning disable CS0618
             IOptions<LibuvTransportOptions> options,
-            IApplicationLifetime applicationLifetime,
+#pragma warning restore CS0618
+            IHostApplicationLifetime applicationLifetime,
             ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -31,10 +36,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
             var trace = new LibuvTrace(logger);
 
+#pragma warning disable CS0618
             var threadCount = options.Value.ThreadCount;
+#pragma warning restore CS0618
 
             if (threadCount <= 0)
             {
@@ -61,17 +68,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             };
         }
 
-        public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
+        public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             var transportContext = new LibuvTransportContext
             {
                 Options = _baseTransportContext.Options,
                 AppLifetime = _baseTransportContext.AppLifetime,
-                Log = _baseTransportContext.Log,
-                ConnectionDispatcher = dispatcher
+                Log = _baseTransportContext.Log
             };
 
-            return new LibuvTransport(transportContext, endPointInformation);
+            var transport = new LibuvConnectionListener(transportContext, endpoint);
+            await transport.BindAsync();
+            return transport;
         }
     }
 }

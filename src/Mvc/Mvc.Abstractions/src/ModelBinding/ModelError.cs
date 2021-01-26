@@ -5,35 +5,49 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
+    /// <summary>
+    /// An error that occurred during model binding and validation.
+    /// </summary>
     public class ModelError
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>.
+        /// </summary>
+        /// <param name="exception">The <see cref="System.Exception"/>.</param>
         public ModelError(Exception exception)
             : this(exception, errorMessage: null)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
         }
 
-        public ModelError(Exception exception, string errorMessage)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>
+        /// and specified <paramref name="errorMessage"/>.
+        /// </summary>
+        /// <param name="exception">The <see cref="System.Exception"/>.</param>
+        /// <param name="errorMessage">The error message.</param>
+        public ModelError(Exception exception, string? errorMessage)
             : this(errorMessage)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            Exception = exception;
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
         }
 
-        public ModelError(string errorMessage)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="errorMessage"/>.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public ModelError(string? errorMessage)
         {
             ErrorMessage = errorMessage ?? string.Empty;
         }
 
-        public Exception Exception { get; }
+        /// <summary>
+        /// Gets the <see cref="System.Exception"/> associated with this <see cref="ModelError"/> instance.
+        /// </summary>
+        public Exception? Exception { get; }
 
+        /// <summary>
+        /// Gets the error message associated with this <see cref="ModelError"/> instance.
+        /// </summary>
         public string ErrorMessage { get; }
     }
 }

@@ -1,25 +1,33 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{VirtualFileResult}"/> for <see cref="VirtualFileResult"/>.
+    /// </summary>
     public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
+        /// <summary>
+        /// Initializes a new instance of <see cref="VirtualFileResultExecutor"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
+        /// <param name="hostingEnvironment">The hosting enviornment</param>
+        public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
             : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
         {
             if (hostingEnvironment == null)
@@ -69,7 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return Task.CompletedTask;
         }
 
-        protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue range, long rangeLength)
+        /// <inheritdoc/>
+        protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {
@@ -87,33 +96,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             var response = context.HttpContext.Response;
-            var physicalPath = fileInfo.PhysicalPath;
 
             if (range != null)
             {
                 Logger.WritingRangeToBody();
             }
 
-            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
+            if (range != null)
             {
-                if (range != null)
-                {
-                    return sendFile.SendFileAsync(
-                        physicalPath,
-                        offset: range.From ?? 0L,
-                        count: rangeLength,
-                        cancellation: default(CancellationToken));
-                }
-
-                return sendFile.SendFileAsync(
-                    physicalPath,
-                    offset: 0,
-                    count: null,
-                    cancellation: default(CancellationToken));
+                return response.SendFileAsync(fileInfo,
+                    offset: range.From ?? 0L,
+                    count: rangeLength);
             }
 
-            return WriteFileAsync(context.HttpContext, GetFileStream(fileInfo), range, rangeLength);
+            return response.SendFileAsync(fileInfo,
+                offset: 0,
+                count: null);
         }
 
         private IFileInfo GetFileInformation(VirtualFileResult result)
@@ -145,6 +143,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return result.FileProvider;
         }
 
+        /// <summary>
+        /// Obsolete, this API is no longer called.
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
+        [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(IFileInfo fileInfo)
         {
             return fileInfo.CreateReadStream();

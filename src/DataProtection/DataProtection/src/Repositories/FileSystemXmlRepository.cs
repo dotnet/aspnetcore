@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.Logging;
@@ -18,8 +16,6 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     /// </summary>
     public class FileSystemXmlRepository : IXmlRepository
     {
-        private static readonly Lazy<DirectoryInfo> _defaultDirectoryLazy = new Lazy<DirectoryInfo>(GetDefaultKeyStorageDirectory);
-
         private readonly ILogger _logger;
 
         /// <summary>
@@ -29,17 +25,13 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public FileSystemXmlRepository(DirectoryInfo directory, ILoggerFactory loggerFactory)
         {
-            if (directory == null)
-            {
-                throw new ArgumentNullException(nameof(directory));
-            }
+            Directory = directory ?? throw new ArgumentNullException(nameof(directory));
 
-            Directory = directory;
             _logger = loggerFactory.CreateLogger<FileSystemXmlRepository>();
 
             try
             {
-                if (DockerUtils.IsDocker && !DockerUtils.IsVolumeMountedFolder(Directory))
+                if (ContainerUtils.IsContainer && !ContainerUtils.IsVolumeMountedFolder(Directory))
                 {
                     // warn users that keys may be lost when running in docker without a volume mounted folder
                     _logger.UsingEphemeralFileSystemLocationInContainer(Directory.FullName);
@@ -47,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
             catch (Exception ex)
             {
-                // Treat exceptions as non-fatal when attempting to detect docker. 
+                // Treat exceptions as non-fatal when attempting to detect docker.
                 // These might occur if fstab is an unrecognized format, or if there are other unusual
                 // file IO errors.
                 _logger.LogTrace(ex, "Failure occurred while attempting to detect docker.");
@@ -63,20 +55,14 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// This property can return null if no suitable default key storage directory can
         /// be found, such as the case when the user profile is unavailable.
         /// </remarks>
-        public static DirectoryInfo DefaultKeyStorageDirectory => _defaultDirectoryLazy.Value;
+        public static DirectoryInfo? DefaultKeyStorageDirectory => DefaultKeyStorageDirectories.Instance.GetKeyStorageDirectory();
 
         /// <summary>
         /// The directory into which key material will be written.
         /// </summary>
         public DirectoryInfo Directory { get; }
 
-        private const string DataProtectionKeysFolderName = "DataProtection-Keys";
-
-        private static DirectoryInfo GetKeyStorageDirectoryFromBaseAppDataPath(string basePath)
-        {
-            return new DirectoryInfo(Path.Combine(basePath, "ASP.NET", DataProtectionKeysFolderName));
-        }
-
+        /// <inheritdoc/>
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
@@ -97,79 +83,6 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 yield return ReadElementFromFile(fileSystemInfo.FullName);
             }
-        }
-
-        private static DirectoryInfo GetDefaultKeyStorageDirectory()
-        {
-            DirectoryInfo retVal;
-
-            // Environment.GetFolderPath returns null if the user profile isn't loaded.
-            var localAppDataFromSystemPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var localAppDataFromEnvPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
-            var userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-            var homePath = Environment.GetEnvironmentVariable("HOME");
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !string.IsNullOrEmpty(localAppDataFromSystemPath))
-            {
-                // To preserve backwards-compatibility with 1.x, Environment.SpecialFolder.LocalApplicationData
-                // cannot take precedence over $LOCALAPPDATA and $HOME/.aspnet on non-Windows platforms
-                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromSystemPath);
-            }
-            else if (localAppDataFromEnvPath != null)
-            {
-                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromEnvPath);
-            }
-            else if (userProfilePath != null)
-            {
-                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(Path.Combine(userProfilePath, "AppData", "Local"));
-            }
-            else if (homePath != null)
-            {
-                // If LOCALAPPDATA and USERPROFILE are not present but HOME is,
-                // it's a good guess that this is a *NIX machine.  Use *NIX conventions for a folder name.
-                retVal = new DirectoryInfo(Path.Combine(homePath, ".aspnet", DataProtectionKeysFolderName));
-            }
-            else if (!string.IsNullOrEmpty(localAppDataFromSystemPath))
-            {
-                // Starting in 2.x, non-Windows platforms may use Environment.SpecialFolder.LocalApplicationData
-                // but only after checking for $LOCALAPPDATA, $USERPROFILE, and $HOME.
-                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromSystemPath);
-            }
-            else
-            {
-                return null;
-            }
-
-            Debug.Assert(retVal != null);
-
-            try
-            {
-                retVal.Create(); // throws if we don't have access, e.g., user profile not loaded
-                return retVal;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        internal static DirectoryInfo GetKeyStorageDirectoryForAzureWebSites()
-        {
-            // Azure Web Sites needs to be treated specially, as we need to store the keys in a
-            // correct persisted location. We use the existence of the %WEBSITE_INSTANCE_ID% env
-            // variable to determine if we're running in this environment, and if so we then use
-            // the %HOME% variable to build up our base key storage path.
-            if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID")))
-            {
-                var homeEnvVar = Environment.GetEnvironmentVariable("HOME");
-                if (!String.IsNullOrEmpty(homeEnvVar))
-                {
-                    return GetKeyStorageDirectoryFromBaseAppDataPath(homeEnvVar);
-                }
-            }
-
-            // nope
-            return null;
         }
 
         private static bool IsSafeFilename(string filename)
@@ -193,6 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
         }
 
+        /// <inheritdoc/>
         public virtual void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)
@@ -231,8 +145,17 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // Renames are atomic operations on the file systems we support.
                 _logger.WritingDataToFile(finalFilename);
 
-                // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
-                File.Copy(tempFilename, finalFilename);
+                try
+                {
+                    // Prefer the atomic move operation to avoid multi-process startup issues
+                    File.Move(tempFilename, finalFilename);
+                }
+                catch (IOException)
+                {
+                    // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
+                    // See https://github.com/dotnet/aspnetcore/issues/2941 for more context
+                    File.Copy(tempFilename, finalFilename);
+                }
             }
             finally
             {

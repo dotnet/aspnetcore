@@ -24,27 +24,28 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23394")] // Failure on OSX https://dev.azure.com/dnceng/public/_build/results?buildId=706059&view=ms.vss-test-web.build-test-results-tab
         public async Task ConsoleCancelKey()
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp1.0")
+                .WithTargetFrameworks("net6.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();
 
-            var stdout = new StringBuilder();
-            _console.Out = new StringWriter(stdout);
-            var program = new Program(_console, _tempDir.Root)
-                .RunAsync(new[] { "run" });
+            using (var app = new Program(_console, _tempDir.Root))
+            {
+                var run = app.RunAsync(new[] { "run" });
 
-            await _console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
-            _console.ConsoleCancelKey();
+                await _console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
+                _console.ConsoleCancelKey();
 
-            var exitCode = await program.TimeoutAfter(TimeSpan.FromSeconds(30));
+                var exitCode = await run.TimeoutAfter(TimeSpan.FromSeconds(30));
 
-            Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", stdout.ToString());
-            Assert.Equal(0, exitCode);
+                Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", _console.GetOutput());
+                Assert.Equal(0, exitCode);
+            }
         }
 
         public void Dispose()

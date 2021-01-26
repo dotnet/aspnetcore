@@ -11,52 +11,107 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// An opinionated abstraction for implementing <see cref="IAuthenticationHandler"/>.
+    /// </summary>
+    /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
     public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationSchemeOptions, new()
     {
-        private Task<AuthenticateResult> _authenticateTask;
+        private Task<AuthenticateResult>? _authenticateTask;
 
-        public AuthenticationScheme Scheme { get; private set; }
-        public TOptions Options { get; private set; }
-        protected HttpContext Context { get; private set; }
+        /// <summary>
+        /// Gets or sets the <see cref="AuthenticationScheme"/> asssociated with this authentication handler.
+        /// </summary>
+        public AuthenticationScheme Scheme { get; private set; } = default!;
 
+        /// <summary>
+        /// Gets or sets the options associated with this authentication handler.
+        /// </summary>
+        public TOptions Options { get; private set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the <see cref="HttpContext"/>.
+        /// </summary>
+        protected HttpContext Context { get; private set; } = default!;
+
+        /// <summary>
+        /// Gets the <see cref="HttpRequest"/> associated with the current request.
+        /// </summary>
         protected HttpRequest Request
         {
             get => Context.Request;
         }
 
+        /// <summary>
+        /// Gets the <see cref="HttpResponse" /> associated with the current request.
+        /// </summary>
         protected HttpResponse Response
         {
             get => Context.Response;
         }
 
+        /// <summary>
+        /// Gets the path as seen by the authentication middleware.
+        /// </summary>
         protected PathString OriginalPath => Context.Features.Get<IAuthenticationFeature>()?.OriginalPath ?? Request.Path;
 
+        /// <summary>
+        /// Gets the path base as seen by the authentication middleware.
+        /// </summary>
         protected PathString OriginalPathBase => Context.Features.Get<IAuthenticationFeature>()?.OriginalPathBase ?? Request.PathBase;
 
+        /// <summary>
+        /// Gets the <see cref="ILogger"/>.
+        /// </summary>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the <see cref="UrlEncoder"/>.
+        /// </summary>
         protected UrlEncoder UrlEncoder { get; }
 
+        /// <summary>
+        /// Gets the <see cref="ISystemClock"/>.
+        /// </summary>
         protected ISystemClock Clock { get; }
 
+        /// <summary>
+        /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options.
+        /// </summary>
         protected IOptionsMonitor<TOptions> OptionsMonitor { get; }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
-        protected virtual object Events { get; set; }
+        protected virtual object? Events { get; set; }
 
+        /// <summary>
+        /// Gets the issuer that should be used when any claims are issued.
+        /// </summary>
+        /// <value>
+        /// The <c>ClaimsIssuer</c> configured in <typeparamref name="TOptions"/>, if configured, otherwise <see cref="AuthenticationScheme.Name"/>.
+        /// </value>
         protected virtual string ClaimsIssuer => Options.ClaimsIssuer ?? Scheme.Name;
 
+        /// <summary>
+        /// Gets the absolute current url.
+        /// </summary>
         protected string CurrentUri
         {
-            get => Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
+            get => Request.Scheme + Uri.SchemeDelimiter + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthenticationHandler{TOptions}"/>.
+        /// </summary>
+        /// <param name="options">The monitor for the options instance.</param>
+        /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
+        /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         {
-            Logger = logger.CreateLogger(this.GetType().FullName);
+            Logger = logger.CreateLogger(this.GetType().FullName!);
             UrlEncoder = encoder;
             Clock = clock;
             OptionsMonitor = options;
@@ -82,8 +137,7 @@ namespace Microsoft.AspNetCore.Authentication
             Scheme = scheme;
             Context = context;
 
-            Options = OptionsMonitor.Get(Scheme.Name) ?? new TOptions();
-            Options.Validate(Scheme.Name);
+            Options = OptionsMonitor.Get(Scheme.Name);
 
             await InitializeEventsAsync();
             await InitializeHandlerAsync();
@@ -114,10 +168,20 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>A task</returns>
         protected virtual Task InitializeHandlerAsync() => Task.CompletedTask;
 
+        /// <summary>
+        /// Constructs an absolute url for the specified <paramref name="targetPath"/>.
+        /// </summary>
+        /// <param name="targetPath">The path.</param>
+        /// <returns>The absolute url.</returns>
         protected string BuildRedirectUri(string targetPath)
-            => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
+            => Request.Scheme + Uri.SchemeDelimiter + Request.Host + OriginalPathBase + targetPath;
 
-        protected virtual string ResolveTarget(string scheme)
+        /// <summary>
+        /// Resolves the scheme that this authentication operation is forwarded to.
+        /// </summary>
+        /// <param name="scheme">The scheme to forward. One of ForwardAuthenticate, ForwardChallenge, ForwardForbid, ForwardSignIn, or ForwardSignOut.</param>
+        /// <returns>The forwarded scheme or <see langword="null"/>.</returns>
+        protected virtual string? ResolveTarget(string? scheme)
         {
             var target = scheme ?? Options.ForwardDefaultSelector?.Invoke(Context) ?? Options.ForwardDefault;
 
@@ -127,6 +191,7 @@ namespace Microsoft.AspNetCore.Authentication
                 : target;
         }
 
+        /// <inheritdoc />
         public async Task<AuthenticateResult> AuthenticateAsync()
         {
             var target = ResolveTarget(Options.ForwardAuthenticate);
@@ -136,10 +201,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             // Calling Authenticate more than once should always return the original value.
-            var result = await HandleAuthenticateOnceAsync();
-            if (result?.Failure == null)
+            var result = await HandleAuthenticateOnceAsync() ?? AuthenticateResult.NoResult();
+            if (result.Failure == null)
             {
-                var ticket = result?.Ticket;
+                var ticket = result.Ticket;
                 if (ticket?.Principal != null)
                 {
                     Logger.AuthenticationSchemeAuthenticated(Scheme.Name);
@@ -187,6 +252,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <summary>
+        /// Allows derived types to handle authentication.
+        /// </summary>
+        /// <returns>The <see cref="AuthenticateResult"/>.</returns>
         protected abstract Task<AuthenticateResult> HandleAuthenticateAsync();
 
         /// <summary>
@@ -213,7 +282,8 @@ namespace Microsoft.AspNetCore.Authentication
             return Task.CompletedTask;
         }
 
-        public async Task ChallengeAsync(AuthenticationProperties properties)
+        /// <inheritdoc />
+        public async Task ChallengeAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardChallenge);
             if (target != null)
@@ -222,12 +292,13 @@ namespace Microsoft.AspNetCore.Authentication
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
             await HandleChallengeAsync(properties);
             Logger.AuthenticationSchemeChallenged(Scheme.Name);
         }
 
-        public async Task ForbidAsync(AuthenticationProperties properties)
+        /// <inheritdoc />
+        public async Task ForbidAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardForbid);
             if (target != null)
@@ -236,7 +307,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
             await HandleForbiddenAsync(properties);
             Logger.AuthenticationSchemeForbidden(Scheme.Name);
         }

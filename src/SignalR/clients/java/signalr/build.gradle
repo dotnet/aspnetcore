@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.14.0"
+    classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
+  }
+}
+
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+allprojects {
+    apply plugin: "java-library"
+    apply plugin: "com.diffplug.gradle.spotless"
+
+    // If we're run from outside MSBuild, just assign a bogus dev version.
+    version project.findProperty('packageVersion') ?: "99.99.99-dev"
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+spotless {
+    java {
+        licenseHeader '// Copyright (c) .NET Foundation. All rights reserved.\n' +
+                '// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\n\n' // License header
+
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''   // A sequence of package names
+
+        replace      'Not enough space after if', 'if(', 'if ('
+        replace      'Not enough space after else', 'else{', 'else {'
+        replace      'Not enough space before else', '}else', '} else '
+        replace      'Not enough space after try', 'try{', 'try {'
+        replace      'Not enough space before finally', '}finally', '} finally'
+        replace      'Not enough space after finally', 'finally{', 'finally {'
+        replace      'Not enough space after )', '){', ') {'
+        replace      'Not enough space after for', 'for(', 'for ('
+        replace      'Not enough space after while', 'while (', 'while ('
+        replace      'Not enough space after switch', 'switch(', 'switch ('
+        replace      'Not enough space after do', 'do{', 'do {'
+        replaceRegex 'Too much space after if', 'if +\\(', 'if ('
+        trimTrailingWhitespace()
+        indentWithSpaces(4)
+        removeUnusedImports() // removes any unused imports
+    }
+}

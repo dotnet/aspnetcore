@@ -1,23 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Support for writing functional tests for MVC applications.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="build\**\*.targets" Pack="true" PackagePath="%(Identity)" />
+    <Reference
+        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
+        Targets="Build"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+  </ItemGroup>
 </Project>

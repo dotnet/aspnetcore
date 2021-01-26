@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                     await StartWorker(worker.Id, targetAddress, transportType, connectionsPerWorker);
                 }
 
-                await Runner.LogAgentAsync("Agent started listening to worker {0} ({1} of {2}).", worker.Id, index, numberOfWorkers);
+                await Runner.LogAgentAsync("Agent started listening to worker {0} ({1} of {2}).", worker.Id, index + 1, numberOfWorkers);
             }
 
             var workerTasks = new Task<AgentWorker>[numberOfWorkers];

@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <SignAssembly>false</SignAssembly>
-    <PublicSign>false</PublicSign>
-    <!-- Mitigation for long path issues -->
     <AssemblyName>Diagnostics.FunctionalTests</AssemblyName>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
+    <SkipHelixQueues>Windows.10.Amd64.Server20H1.Open</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>

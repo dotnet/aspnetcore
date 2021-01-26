@@ -3,14 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -18,30 +20,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBinder
     {
-        public static async Task BindAsync(IServerAddressesFeature addresses,
-            KestrelServerOptions serverOptions,
-            ILogger logger,
-            Func<ListenOptions, Task> createBinding)
+        public static async Task BindAsync(IEnumerable<ListenOptions> listenOptions, AddressBindContext context)
         {
-            var listenOptions = serverOptions.ListenOptions;
             var strategy = CreateStrategy(
                 listenOptions.ToArray(),
-                addresses.Addresses.ToArray(),
-                addresses.PreferHostingUrls);
-
-            var context = new AddressBindContext
-            {
-                Addresses = addresses.Addresses,
-                ListenOptions = listenOptions,
-                ServerOptions = serverOptions,
-                Logger = logger,
-                CreateBinding = createBinding
-            };
+                context.Addresses.ToArray(),
+                context.ServerAddressesFeature.PreferHostingUrls);
 
             // reset options. The actual used options and addresses will be populated
             // by the address binding feature
-            listenOptions.Clear();
-            addresses.Addresses.Clear();
+            context.ServerOptions.OptionsInUse.Clear();
+            context.Addresses.Clear();
 
             await strategy.BindAsync(context).ConfigureAwait(false);
         }
@@ -85,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         /// Returns an <see cref="IPEndPoint"/> for the given host an port.
         /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.
         /// </summary>
-        protected internal static bool TryCreateIPEndPoint(ServerAddress address, out IPEndPoint endpoint)
+        protected internal static bool TryCreateIPEndPoint(BindingAddress address, [NotNullWhen(true)] out IPEndPoint? endpoint)
         {
             if (!IPAddress.TryParse(address.Host, out var ip))
             {
@@ -108,12 +97,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 throw new IOException(CoreStrings.FormatEndpointAlreadyInUse(endpoint), ex);
             }
 
-            context.ListenOptions.Add(endpoint);
+            context.ServerOptions.OptionsInUse.Add(endpoint);
         }
 
         internal static ListenOptions ParseAddress(string address, out bool https)
         {
-            var parsedAddress = ServerAddress.FromUrl(address);
+            var parsedAddress = BindingAddress.Parse(address);
             https = false;
 
             if (parsedAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
@@ -130,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 throw new InvalidOperationException(CoreStrings.FormatConfigurePathBaseFromMethodCall($"{nameof(IApplicationBuilder)}.UsePathBase()"));
             }
 
-            ListenOptions options = null;
+            ListenOptions? options = null;
             if (parsedAddress.IsUnixPipe)
             {
                 options = new ListenOptions(parsedAddress.UnixPipePath);
@@ -162,16 +151,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             public async Task BindAsync(AddressBindContext context)
             {
-                var httpDefault = ParseAddress(Constants.DefaultServerAddress, out var https);
+                var httpDefault = ParseAddress(Constants.DefaultServerAddress, out _);
                 context.ServerOptions.ApplyEndpointDefaults(httpDefault);
                 await httpDefault.BindAsync(context).ConfigureAwait(false);
 
                 // Conditional https default, only if a cert is available
-                var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out https);
+                var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out _);
                 context.ServerOptions.ApplyEndpointDefaults(httpsDefault);
 
-                if (httpsDefault.ConnectionAdapters.Any(f => f.IsHttps)
-                    || httpsDefault.TryUseHttps())
+                if (httpsDefault.IsTls || httpsDefault.TryUseHttps())
                 {
                     await httpsDefault.BindAsync(context).ConfigureAwait(false);
                     context.Logger.LogDebug(CoreStrings.BindingToDefaultAddresses,
@@ -214,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public override Task BindAsync(AddressBindContext context)
             {
                 var joined = string.Join(", ", _originalAddresses);
-                context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined, "UseKestrel()");
+                context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined);
 
                 return base.BindAsync(context);
             }
@@ -254,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     var options = ParseAddress(address, out var https);
                     context.ServerOptions.ApplyEndpointDefaults(options);
 
-                    if (https && !options.ConnectionAdapters.Any(f => f.IsHttps))
+                    if (https && !options.IsTls)
                     {
                         options.UseHttps();
                     }

@@ -1,27 +1,22 @@
-﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 namespace OpenIdConnect.AzureAdSample
 {
     public static class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory =>
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webHostBuilder =>
                 {
-                    factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                    webHostBuilder
+                        .UseStartup<Startup>();
                 })
-                .UseKestrel()
-                .UseUrls("http://localhost:42023")
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

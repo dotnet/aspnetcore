@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
+
+  <PropertyGroup>
+    <!--
+      When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
+      This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
+    -->
+    <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+  </PropertyGroup>
+
+  <Import Project="..\targets\Helix.Common.props" />
+  <Import Project="..\Build.props" />
+
+  <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
+  <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
+    <IsExternal>true</IsExternal>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+    <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+
+    <!-- Copied from Microsoft.NET.DefaultOutputPaths.targets in the .NET SDK. The Helix SDK contains nothing similar. -->
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
+    <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' == 'AnyCPU'">$(BaseOutputPath)$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+    <HelixType>ci</HelixType>
+    <!-- Creator is not valid for internal queues -->
+    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <EnableXUnitReporter>true</EnableXUnitReporter>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
+    <HelixType>dev</HelixType>
+    <!-- Creator is not valid for internal queues -->
+    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+  </PropertyGroup>
+
+  <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
+  <ItemGroup>
+    <HelixProperties Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" Condition="'$(BUILD_BUILDNUMBER)' != ''" />
+    <HelixProperties Include="buildId" Value="$(BUILD_BUILDID)" Condition="'$(BUILD_BUILDID)' != ''" />
+    <HelixProperties Include="azdoProject" Value="$(SYSTEM_TEAMPROJECT)" Condition="'$(SYSTEM_TEAMPROJECT)' != ''" />
+    <HelixProperties Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" Condition="'$(BUILD_DEFINITIONNAME)' != ''" />
+    <HelixProperties Include="commitSha" Value="$(BUILD_SOURCEVERSION)" Condition="'$(BUILD_SOURCEVERSION)' != ''" />
+    <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" Condition="'$(BUILD_SOURCEBRANCH)' != ''" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
+  </ItemGroup>
+
+  <Target Name="Gather" BeforeTargets="Build">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+</Project>

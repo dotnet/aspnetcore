@@ -12,7 +12,8 @@ namespace ConsoleApplication
         public static void Main(string[] args)
         {
             Console.WriteLine("Started");
-            Console.WriteLine($"PID = " + Process.GetCurrentProcess().Id);
+            // Process ID is insufficient because PID's may be reused.
+            Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
             if (args.Length > 0 && args[0] == "--no-exit")
             {
                 Thread.Sleep(Timeout.Infinite);

@@ -1,13 +1,48 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>HttpSys.FunctionalTests</TestGroupName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
+    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
+    <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
+    <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
+    <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="System.Net.Http.WinHttpHandler" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!--Imitate IIS Express so we can use it's cert bindings-->
+    <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
+      <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

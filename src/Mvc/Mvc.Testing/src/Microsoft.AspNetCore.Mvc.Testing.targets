@@ -1,0 +1,71 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_MvcTestingTasksAssembly Condition="$(_MvcTestingTasksAssembly) == ''">$(MSBuildThisFileDirectory)..\tasks\Microsoft.AspNetCore.Mvc.Testing.dll</_MvcTestingTasksAssembly>
+  </PropertyGroup>
+  <UsingTask TaskName="GenerateMvcTestManifestTask" AssemblyFile="$(_MvcTestingTasksAssembly)"/>
+
+  <!--
+    Work around https://github.com/NuGet/Home/issues/4412. MVC uses DependencyContext.Load() which looks next to a .dll
+    for a .deps.json. Information isn't available elsewhere. Need the .deps.json file for all web site applications.
+  -->
+  <PropertyGroup>
+    <!--
+      The functional tests act as the host application for all test websites. Since the CLI copies all reference
+      assembly dependencies in websites to their corresponding bin/{config}/refs folder we need to re-calculate
+      reference assemblies for this project so there's a corresponding refs folder in our output. Without it
+      our websites deps files will fail to find their assembly references.
+    -->
+
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+    <Target Name="_ResolveMvcTestProjectReferences" DependsOnTargets="ResolveReferences">
+      <ItemGroup>
+        <_ContentRootProjectReferences
+          Include="@(ReferencePath)"
+          Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' and '%(ReferencePath.TargetFrameworkIdentifier)' != '.NETStandard'" />
+      </ItemGroup>
+    </Target>
+
+  <Target Name="_AddContentRootForProjectReferences" BeforeTargets="PrepareResources" DependsOnTargets="_ResolveMvcTestProjectReferences">
+    <ItemGroup>
+      <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
+        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
+      </_ManifestProjects>
+    </ItemGroup>
+
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
+
+    <ItemGroup>
+      <ContentWithTargetPath Include="$(IntermediateOutputPath)MvcTestingAppManifest.json"
+        TargetPath="MvcTestingAppManifest.json"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="Never"/>
+      <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+    <ItemGroup>
+      <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
+        <ContentRoot>~</ContentRoot>
+      </_PublishManifestProjects>
+      <_DepsFileToPublish Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))" />
+    </ItemGroup>
+
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
+    <Copy SourceFiles="%(_DepsFileToPublish.FullPath)" DestinationFolder="$(PublishDir)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
+  </Target>
+
+  <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
+    <ItemGroup>
+      <DepsFilePaths
+        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
+        Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.ResolvedFrom)', '.deps.json'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutDir)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+  </Target>
+
+</Project>

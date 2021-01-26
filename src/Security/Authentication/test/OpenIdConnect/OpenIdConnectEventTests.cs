@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -784,6 +785,52 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
+        public async Task OnAccessDenied_Skip_NoMoreEventsRun()
+        {
+            var events = new ExpectedOidcEvents()
+            {
+                ExpectMessageReceived = true,
+                ExpectAccessDenied = true
+            };
+            events.OnAccessDenied = context =>
+            {
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
+
+            var response = await PostAsync(server, "signin-oidc", "error=access_denied&state=protected_state");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
+            events.ValidateExpectations();
+        }
+
+        [Fact]
+        public async Task OnAccessDenied_Handled_NoMoreEventsRun()
+        {
+            var events = new ExpectedOidcEvents()
+            {
+                ExpectMessageReceived = true,
+                ExpectAccessDenied = true
+            };
+            events.OnAccessDenied = context =>
+            {
+                Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
+
+            var response = await PostAsync(server, "signin-oidc", "error=access_denied&state=protected_state");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.Equal("", await response.Content.ReadAsStringAsync());
+            events.ValidateExpectations();
+        }
+
+        [Fact]
         public async Task OnRemoteFailure_Skip_NoMoreEventsRun()
         {
             var events = new ExpectedOidcEvents()
@@ -1099,6 +1146,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             public bool ExpectTokenValidated { get; set; }
             public bool InvokedTokenValidated { get; set; }
 
+            public bool ExpectAccessDenied { get; set; }
+            public bool InvokedAccessDenied { get; set; }
+
             public bool ExpectRemoteFailure { get; set; }
             public bool InvokedRemoteFailure { get; set; }
 
@@ -1168,6 +1218,12 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return base.TicketReceived(context);
             }
 
+            public override Task AccessDenied(AccessDeniedContext context)
+            {
+                InvokedAccessDenied = true;
+                return base.AccessDenied(context);
+            }
+
             public override Task RemoteFailure(RemoteFailureContext context)
             {
                 InvokedRemoteFailure = true;
@@ -1201,6 +1257,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 Assert.Equal(ExpectUserInfoReceived, InvokedUserInfoReceived);
                 Assert.Equal(ExpectAuthenticationFailed, InvokeAuthenticationFailed);
                 Assert.Equal(ExpectTicketReceived, InvokedTicketReceived);
+                Assert.Equal(ExpectAccessDenied, InvokedAccessDenied);
                 Assert.Equal(ExpectRemoteFailure, InvokedRemoteFailure);
                 Assert.Equal(ExpectRedirectForSignOut, InvokedRedirectForSignOut);
                 Assert.Equal(ExpectRemoteSignOut, InvokedRemoteSignOut);
@@ -1210,45 +1267,49 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddAuthentication(auth =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        auth.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        auth.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                    })
-                        .AddCookie()
-                        .AddOpenIdConnect(o =>
-                    {
-                        o.Events = events;
-                        o.ClientId = "ClientId";
-                        o.GetClaimsFromUserInfoEndpoint = true;
-                        o.Configuration = new OpenIdConnectConfiguration()
+                        services.AddAuthentication(auth =>
                         {
-                            TokenEndpoint = "http://testhost/tokens",
-                            UserInfoEndpoint = "http://testhost/user",
-                            EndSessionEndpoint = "http://testhost/end"
-                        };
-                        o.StateDataFormat = new TestStateDataFormat();
-                        o.SecurityTokenValidator = new TestTokenValidator();
-                        o.ProtocolValidator = new TestProtocolValidator();
-                        o.BackchannelHttpHandler = new TestBackchannel();
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Run(appCode);
-                });
+                            auth.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                            auth.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                        })
+                            .AddCookie()
+                            .AddOpenIdConnect(o =>
+                        {
+                            o.Events = events;
+                            o.ClientId = "ClientId";
+                            o.GetClaimsFromUserInfoEndpoint = true;
+                            o.Configuration = new OpenIdConnectConfiguration()
+                            {
+                                TokenEndpoint = "http://testhost/tokens",
+                                UserInfoEndpoint = "http://testhost/user",
+                                EndSessionEndpoint = "http://testhost/end"
+                            };
+                            o.StateDataFormat = new TestStateDataFormat();
+                            o.SecurityTokenValidator = new TestTokenValidator();
+                            o.ProtocolValidator = new TestProtocolValidator();
+                            o.BackchannelHttpHandler = new TestBackchannel();
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseAuthentication();
+                        app.Run(appCode);
+                    }))
+                .Build();
 
-            return new TestServer(builder);
+            host.Start();
+            return host.GetTestServer();
         }
 
         private Task<HttpResponseMessage> PostAsync(TestServer server, string path, string form)
         {
             var client = server.CreateClient();
-            var cookie = ".AspNetCore.Correlation." + OpenIdConnectDefaults.AuthenticationScheme + ".corrilationId=N";
+            var cookie = ".AspNetCore.Correlation.correlationId=N";
             client.DefaultRequestHeaders.Add("Cookie", cookie);
             return client.PostAsync("signin-oidc",
                 new StringContent(form, Encoding.ASCII, "application/x-www-form-urlencoded"));
@@ -1273,7 +1334,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 Assert.Equal("protected_state", protectedText);
                 var properties = new AuthenticationProperties(new Dictionary<string, string>()
                 {
-                    { ".xsrf", "corrilationId" },
+                    { ".xsrf", "correlationId" },
                     { OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, "redirect_uri" },
                     { "testkey", "testvalue" }
                 });

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public static class ConversionResultProvider
     {
         public static ConversionResult ConvertTo(object value, Type typeToConvertTo)
@@ -39,7 +43,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var targetType = typeToConvertTo;
             if (value == null)
             {
-                return new ConversionResult(IsNullableType(typeToConvertTo), null);
+                return new ConversionResult(canBeConverted: true, convertedInstance: null);
             }
             else if (typeToConvertTo.IsAssignableFrom(value.GetType()))
             {
@@ -59,11 +63,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private static bool IsNullableType(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsValueType)
+            if (type.IsValueType)
             {
                 // value types are only nullable if they are Nullable<T>
-                return typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
             }
             else
             {

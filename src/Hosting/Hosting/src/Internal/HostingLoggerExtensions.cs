@@ -9,13 +9,13 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string correlationId)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
-            return logger.BeginScope(new HostingLogScope(httpContext, correlationId));
+            return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
                 {
-                    message = message + Environment.NewLine + ex.Message;
+                    if (ex != null)
+                    {
+                        message = message + Environment.NewLine + ex.Message;
+                    }
                 }
             }
 
@@ -94,16 +97,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
-            private readonly HttpContext _httpContext;
-            private readonly string _correlationId;
+            private readonly string _path;
+            private readonly string _traceIdentifier;
 
-            private string _cachedToString;
+            private string? _cachedToString;
 
             public int Count
             {
                 get
                 {
-                    return 3;
+                    return 2;
                 }
             }
 
@@ -113,25 +116,23 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     if (index == 0)
                     {
-                        return new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier);
+                        return new KeyValuePair<string, object>("RequestId", _traceIdentifier);
                     }
                     else if (index == 1)
                     {
-                        return new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString());
-                    }
-                    else if (index == 2)
-                    {
-                        return new KeyValuePair<string, object>("CorrelationId", _correlationId);
+                        return new KeyValuePair<string, object>("RequestPath", _path);
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext, string correlationId)
+            public HostingLogScope(HttpContext httpContext)
             {
-                _httpContext = httpContext;
-                _correlationId = correlationId;
+                _traceIdentifier = httpContext.TraceIdentifier;
+                _path = (httpContext.Request.PathBase.HasValue 
+                         ? httpContext.Request.PathBase + httpContext.Request.Path 
+                         : httpContext.Request.Path).ToString();
             }
 
             public override string ToString()
@@ -140,9 +141,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
-                        "RequestId:{0} RequestPath:{1}",
-                        _httpContext.TraceIdentifier,
-                        _httpContext.Request.Path);
+                        "RequestPath:{0} RequestId:{1}",
+                        _path,
+                        _traceIdentifier);
                 }
 
                 return _cachedToString;

@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Session
 {
+    /// <inheritdoc />
     public class SessionFeature : ISessionFeature
     {
-        public ISession Session { get; set; }
+        /// <inheritdoc />
+        public ISession Session { get; set; } = default!;
     }
 }

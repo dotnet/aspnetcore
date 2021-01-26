@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -39,8 +40,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         private RequestDelegate SameSiteCookieAppends = context =>
         {
             context.Response.Cookies.Append("A", "A");
-            context.Response.Cookies.Append("B", "B", new CookieOptions { SameSite = Http.SameSiteMode.None });
-            context.Response.Cookies.Append("C", "C", new CookieOptions());
+            context.Response.Cookies.Append("B", "B", new CookieOptions());
+            context.Response.Cookies.Append("C", "C", new CookieOptions { SameSite = Http.SameSiteMode.None });
             context.Response.Cookies.Append("D", "D", new CookieOptions { SameSite = Http.SameSiteMode.Lax });
             context.Response.Cookies.Append("E", "E", new CookieOptions { SameSite = Http.SameSiteMode.Strict });
             context.Response.Cookies.Append("F", "F", new CookieOptions { SameSite = (Http.SameSiteMode)(-1) });
@@ -60,10 +61,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; secure; samesite=lax", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; secure; samesite=lax", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; secure; samesite=lax", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; secure", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; secure", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; secure", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure", transaction.SetCookie[3]);
                     }));
         }
 
@@ -80,10 +81,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure", transaction.SetCookie[3]);
                     }));
         }
 
@@ -100,19 +101,19 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure", transaction.SetCookie[3]);
                     }),
                 new RequestTest("https://example.com/secureSame",
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; secure; samesite=lax", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; secure; samesite=lax", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; secure; samesite=lax", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; secure", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; secure", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; secure", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure", transaction.SetCookie[3]);
                     }));
         }
 
@@ -129,10 +130,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; samesite=lax; httponly", transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; samesite=lax; httponly", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=lax; httponly", transaction.SetCookie[2]);
-                    Assert.Equal("D=D; path=/; samesite=lax; httponly", transaction.SetCookie[3]);
+                    Assert.Equal("A=A; path=/; httponly", transaction.SetCookie[0]);
+                    Assert.Equal("B=B; path=/; httponly", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/; httponly", transaction.SetCookie[2]);
+                    Assert.Equal("D=D; path=/; httponly", transaction.SetCookie[3]);
                 }));
         }
 
@@ -149,10 +150,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
-                    Assert.Equal("D=D; path=/; samesite=lax; httponly", transaction.SetCookie[3]);
+                    Assert.Equal("A=A; path=/", transaction.SetCookie[0]);
+                    Assert.Equal("B=B; path=/", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/", transaction.SetCookie[2]);
+                    Assert.Equal("D=D; path=/; httponly", transaction.SetCookie[3]);
                 }));
         }
 
@@ -211,12 +212,11 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
+                    Assert.Equal("A=A; path=/; samesite=none", transaction.SetCookie[0]);
                     Assert.Equal("B=B; path=/; samesite=none", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
+                    Assert.Equal("C=C; path=/; samesite=none", transaction.SetCookie[2]);
                     Assert.Equal("D=D; path=/; samesite=lax", transaction.SetCookie[3]);
                     Assert.Equal("E=E; path=/; samesite=strict", transaction.SetCookie[4]);
-                    Assert.Equal("F=F; path=/; samesite=none", transaction.SetCookie[5]);
                 }));
         }
 
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             await RunTest("/sameSiteNone",
                 new CookiePolicyOptions
                 {
-                    MinimumSameSitePolicy = (Http.SameSiteMode)(-1)
+                    MinimumSameSitePolicy = Http.SameSiteMode.Unspecified
                 },
                 SameSiteCookieAppends,
                 new RequestTest("http://example.com/sameSiteNone",
@@ -234,8 +234,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 {
                     Assert.NotNull(transaction.SetCookie);
                     Assert.Equal("A=A; path=/", transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; samesite=none", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
+                    Assert.Equal("B=B; path=/", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/; samesite=none", transaction.SetCookie[2]);
                     Assert.Equal("D=D; path=/; samesite=lax", transaction.SetCookie[3]);
                     Assert.Equal("E=E; path=/; samesite=strict", transaction.SetCookie[4]);
                     Assert.Equal("F=F; path=/", transaction.SetCookie[5]);
@@ -245,86 +245,113 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackAppend()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao"
-                    });
-                    app.Run(context =>
-                    {
-                        context.Response.Cookies.Append("A", "A");
-                        context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
-                        context.Response.Cookies.Append("C", "C", new CookieOptions());
-                        context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao"
+                            });
+                            app.Run(context =>
+                            {
+                                context.Response.Cookies.Append("A", "A");
+                                context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
+                                context.Response.Cookies.Append("C", "C", new CookieOptions() { SameSite = Http.SameSiteMode.Strict });
+                                context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
+                                return Task.FromResult(0);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
-            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[0]);
-            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[1]);
-            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[2]);
-            Assert.Equal("Hao=Hao; path=/; secure; samesite=lax", transaction.SetCookie[3]);
+            Assert.Equal("Hao=Hao; path=/", transaction.SetCookie[0]);
+            Assert.Equal("Hao=Hao; path=/", transaction.SetCookie[1]);
+            Assert.Equal("Hao=Hao; path=/; samesite=strict", transaction.SetCookie[2]);
+            Assert.Equal("Hao=Hao; path=/; secure", transaction.SetCookie[3]);
         }
 
         [Fact]
         public async Task CookiePolicyCanHijackDelete()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-            {
-                app.UseCookiePolicy(new CookiePolicyOptions
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    OnDeleteCookie = ctx => ctx.CookieName = "A"
-                });
-                app.Run(context =>
-                {
-                    context.Response.Cookies.Delete("A");
-                    context.Response.Cookies.Delete("B", new CookieOptions { Secure = false });
-                    context.Response.Cookies.Delete("C", new CookieOptions());
-                    context.Response.Cookies.Delete("D", new CookieOptions { Secure = true });
-                    return Task.FromResult(0);
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnDeleteCookie = ctx => ctx.CookieName = "A"
+                            });
+                            app.Run(context =>
+                            {
+                                context.Response.Cookies.Delete("A");
+                                context.Response.Cookies.Delete("B", new CookieOptions { Secure = false });
+                                context.Response.Cookies.Delete("C", new CookieOptions());
+                                context.Response.Cookies.Delete("D", new CookieOptions { Secure = true });
+                                return Task.FromResult(0);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
             Assert.Equal(1, transaction.SetCookie.Count);
-            Assert.Equal("A=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax", transaction.SetCookie[0]);
+            Assert.Equal("A=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure", transaction.SetCookie[0]);
         }
 
         [Fact]
         public async Task CookiePolicyCallsCookieFeature()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-            {
-                app.Use(next => context =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    context.Features.Set<IResponseCookiesFeature>(new TestCookieFeature());
-                    return next(context);
-                });
-                app.UseCookiePolicy(new CookiePolicyOptions
-                {
-                    OnDeleteCookie = ctx => ctx.CookieName = "A"
-                });
-                app.Run(context =>
-                {
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A"));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A", new CookieOptions()));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A"));
-                    Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A", new CookieOptions()));
-                    return context.Response.WriteAsync("Done");
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.Use(next => context =>
+                            {
+                                context.Features.Set<IResponseCookiesFeature>(new TestCookieFeature());
+                                return next(context);
+                            });
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                OnDeleteCookie = ctx => ctx.CookieName = "A"
+                            });
+                            app.Run(context =>
+                            {
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A"));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A", new CookieOptions()));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A"));
+                                Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Append("A", "A", new CookieOptions()));
+                                return context.Response.WriteAsync("Done");
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal("Done", transaction.ResponseText);
@@ -333,7 +360,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuth()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                HttpOnly = HttpOnlyPolicy.Always,
+                                Secure = CookieSecurePolicy.Always,
+                            });
+                            app.UseAuthentication();
+                            app.Run(context =>
+                            {
+                                return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication().AddCookie(o =>
@@ -343,21 +389,11 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        HttpOnly = HttpOnlyPolicy.Always,
-                        Secure = CookieSecurePolicy.Always,
-                    });
-                    app.UseAuthentication();
-                    app.Run(context =>
-                    {
-                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -373,7 +409,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuthChunks()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy(new CookiePolicyOptions
+                            {
+                                HttpOnly = HttpOnlyPolicy.Always,
+                                Secure = CookieSecurePolicy.Always,
+                            });
+                            app.UseAuthentication();
+                            app.Run(context =>
+                            {
+                                return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication().AddCookie(o =>
@@ -383,21 +438,11 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy(new CookiePolicyOptions
-                    {
-                        HttpOnly = HttpOnlyPolicy.Always,
-                        Secure = CookieSecurePolicy.Always,
-                    });
-                    app.UseAuthentication();
-                    app.Run(context =>
-                    {
-                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -476,16 +521,26 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Map(path, map =>
-                    {
-                        map.UseCookiePolicy(cookiePolicy);
-                        map.Run(configureSetup);
-                    });
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.Map(path, map =>
+                            {
+                                map.UseCookiePolicy(cookiePolicy);
+                                map.Run(configureSetup);
+                            });
+                        })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
+
             foreach (var test in tests)
             {
                 await test.Execute(server);

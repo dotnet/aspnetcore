@@ -45,24 +45,5 @@ namespace Microsoft.AspNetCore.CookiePolicy
             }
             return transaction;
         }
-
-        public static void Describe(this HttpResponse res, ClaimsPrincipal principal)
-        {
-            res.StatusCode = 200;
-            res.ContentType = "text/xml";
-            var xml = new XElement("xml");
-            if (principal != null)
-            {
-                foreach (var identity in principal.Identities)
-                {
-                    xml.Add(identity.Claims.Select(claim => 
-                        new XElement("claim", new XAttribute("type", claim.Type), 
-                        new XAttribute("value", claim.Value), 
-                        new XAttribute("issuer", claim.Issuer))));
-                }
-            }
-            var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
-            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
-        }
     }
 }

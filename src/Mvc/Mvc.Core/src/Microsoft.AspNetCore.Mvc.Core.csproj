@@ -10,41 +10,46 @@ Microsoft.AspNetCore.Mvc.FromBodyAttribute
 Microsoft.AspNetCore.Mvc.FromFormAttribute
 Microsoft.AspNetCore.Mvc.RequireHttpsAttribute
 Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyActivator\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Compile Include="..\..\..\Http\Routing\src\DataSourceDependentCache.cs" Link="Routing\DataSourceDependentCache.cs" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup Label="Sources packages">
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
   </ItemGroup>
 
 </Project>

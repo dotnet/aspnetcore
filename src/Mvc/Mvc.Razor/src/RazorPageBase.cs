@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,8 +37,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
         private IUrlHelper _urlHelper;
 
+        /// <inheritdoc/>
         public virtual ViewContext ViewContext { get; set; }
 
+        /// <inheritdoc/>
         public string Layout { get; set; }
 
         /// <summary>
@@ -51,13 +53,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             get
             {
-                if (ViewContext == null)
+                var viewContext = ViewContext;
+                if (viewContext == null)
                 {
-                    var message = Resources.FormatViewContextMustBeSet("ViewContext", "Output");
-                    throw new InvalidOperationException(message);
+                    throw new InvalidOperationException(Resources.FormatViewContextMustBeSet(nameof(ViewContext), nameof(Output)));
                 }
 
-                return ViewContext.Writer;
+                return viewContext.Writer;
             }
         }
 
@@ -136,6 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <inheritdoc/>
         public abstract Task ExecuteAsync();
 
         /// <summary>
@@ -183,8 +186,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
+            var viewContext = ViewContext;
             var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
-            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, ViewContext.Writer));
+            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, viewContext.Writer));
 
             // If passed an HtmlEncoder, override the property.
             if (encoder != null)
@@ -194,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = new ViewBufferTextWriter(buffer, ViewContext.Writer.Encoding);
+            viewContext.Writer = new ViewBufferTextWriter(buffer, viewContext.Writer.Encoding);
         }
 
         /// <summary>
@@ -238,7 +242,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(Resources.RazorPage_NestingAttributeWritingScopesNotSupported);
             }
 
-            _pageWriter = ViewContext.Writer;
+            var viewContext = ViewContext;
+            _pageWriter = viewContext.Writer;
 
             if (_valueBuffer == null)
             {
@@ -247,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = _valueBuffer;
+            viewContext.Writer = _valueBuffer;
 
         }
 
@@ -276,6 +281,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return content;
         }
 
+        /// <summary>
+        /// Puts a text writer on the stack.
+        /// </summary>
+        /// <param name="writer"></param>
         // Internal for unit testing.
         protected internal virtual void PushWriter(TextWriter writer)
         {
@@ -284,17 +293,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            _textWriterStack.Push(ViewContext.Writer);
-            ViewContext.Writer = writer;
+            var viewContext = ViewContext;
+            _textWriterStack.Push(viewContext.Writer);
+            viewContext.Writer = writer;
         }
 
+        /// <summary>
+        /// Return a text writer from the stack.
+        /// </summary>
+        /// <returns>The text writer.</returns>
         // Internal for unit testing.
         protected internal virtual TextWriter PopWriter()
         {
-            ViewContext.Writer = _textWriterStack.Pop();
-            return ViewContext.Writer;
+            var viewContext = ViewContext;
+            var writer = _textWriterStack.Pop();
+            viewContext.Writer = writer;
+            return writer;
         }
 
+        /// <summary>
+        /// Returns a href for the given content path.
+        /// </summary>
+        /// <param name="contentPath">The content path.</param>
+        /// <returns>The href for the contentPath.</returns>
         public virtual string Href(string contentPath)
         {
             if (contentPath == null)
@@ -304,9 +325,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             if (_urlHelper == null)
             {
-                var services = ViewContext?.HttpContext.RequestServices;
+                var viewContext = ViewContext;
+                var services = viewContext?.HttpContext.RequestServices;
                 var factory = services.GetRequiredService<IUrlHelperFactory>();
-                _urlHelper = factory.GetUrlHelper(ViewContext);
+                _urlHelper = factory.GetUrlHelper(viewContext);
             }
 
             return _urlHelper.Content(contentPath);
@@ -364,12 +386,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var encoder = HtmlEncoder;
             if (value is IHtmlContent htmlContent)
             {
-                var bufferedWriter = writer as ViewBufferTextWriter;
-                if (bufferedWriter == null || !bufferedWriter.IsBuffering)
-                {
-                    htmlContent.WriteTo(writer, encoder);
-                }
-                else
+                if (writer is ViewBufferTextWriter bufferedWriter)
                 {
                     if (value is IHtmlContentContainer htmlContentContainer)
                     {
@@ -382,6 +399,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                         // for writing character by character.
                         bufferedWriter.Buffer.AppendHtml(htmlContent);
                     }
+                }
+                else
+                {
+                    htmlContent.WriteTo(writer, encoder);
                 }
 
                 return;
@@ -433,6 +454,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins writing out an attribute.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="suffixOffset">The suffix offset.</param>
+        /// <param name="attributeValuesCount">The attribute values count.</param>
         public virtual void BeginWriteAttribute(
             string name,
             string prefix,
@@ -461,6 +491,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Writes out an attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void WriteAttributeValue(
             string prefix,
             int prefixOffset,
@@ -506,6 +545,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends writing an attribute.
+        /// </summary>
         public virtual void EndWriteAttribute()
         {
             if (!_attributeInfo.Suppressed)
@@ -514,6 +556,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Begins adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
+        /// <param name="attributeName">The name of the attribute.</param>
+        /// <param name="attributeValuesCount">The number of attribute values.</param>
+        /// <param name="attributeValueStyle">The <see cref="HtmlAttributeValueStyle"/>.</param>
         public void BeginAddHtmlAttributeValues(
             TagHelperExecutionContext executionContext,
             string attributeName,
@@ -527,6 +576,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 attributeValueStyle);
         }
 
+        /// <summary>
+        /// Add an html attribute value.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="prefixOffset">The prefix offset.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <param name="valueOffset">The value offset.</param>
+        /// <param name="valueLength">The value length.</param>
+        /// <param name="isLiteral">Whether the attribute is a literal.</param>
         public void AddHtmlAttributeValue(
             string prefix,
             int prefixOffset,
@@ -582,6 +640,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Ends adding html attribute values.
+        /// </summary>
+        /// <param name="executionContext">The <see cref="TagHelperExecutionContext"/>.</param>
         public void EndAddHtmlAttributeValues(TagHelperExecutionContext executionContext)
         {
             if (!_tagHelperAttributeInfo.Suppressed)
@@ -637,9 +699,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// before <see cref="RazorPageBase.FlushAsync"/> flushes the headers. </remarks>
         public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
-            var antiforgery = ViewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(ViewContext?.HttpContext);
-
+            var viewContext = ViewContext;
+            if (viewContext != null)
+            {
+                var antiforgery = viewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+                antiforgery.SetCookieTokenAndHeader(viewContext.HttpContext);
+            }
             return HtmlString.Empty;
         }
 
@@ -673,8 +738,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             EndContext();
         }
 
+        /// <inheritdoc />
         public abstract void BeginContext(int position, int length, bool isLiteral);
 
+        /// <inheritdoc />
         public abstract void EndContext();
 
         private bool IsBoolFalseOrNullValue(string prefix, object value)
@@ -691,6 +758,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 (value is bool && (bool)value);
         }
 
+        /// <inheritdoc />
         public abstract void EnsureRenderedBodyOrSections();
 
         private struct AttributeInfo
@@ -755,7 +823,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public bool Suppressed { get; set; }
         }
 
-        private struct TagHelperScopeInfo
+        private readonly struct TagHelperScopeInfo
         {
             public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
             {

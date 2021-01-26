@@ -6,9 +6,11 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
         private static readonly ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
@@ -51,7 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             SetKnownMethod(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
             SetKnownMethod(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
             FillKnownMethodsGaps();
-            InitializeHostCharValidity();
             _methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
             _methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
             _methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;

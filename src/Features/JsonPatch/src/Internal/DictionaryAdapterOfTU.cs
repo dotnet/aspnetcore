@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,9 +8,13 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class DictionaryAdapter<TKey, TValue> : IAdapter
     {
-        public bool TryAdd(
+        public virtual bool TryAdd(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -37,7 +41,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryGet(
+        public virtual bool TryGet(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -66,7 +70,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryRemove(
+        public virtual bool TryRemove(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -94,7 +98,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryReplace(
+        public virtual bool TryReplace(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -128,7 +132,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTest(
+        public virtual bool TryTest(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -159,7 +163,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var currentValue = dictionary[convertedKey];
 
             // The target segment does not have an assigned value to compare the test value with
-            if (currentValue == null || string.IsNullOrEmpty(currentValue.ToString()))
+            if (currentValue == null)
             {
                 errorMessage = Resources.FormatValueForTargetSegmentCannotBeNullOrEmpty(segment);
                 return false;
@@ -177,7 +181,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public bool TryTraverse(
+        public virtual bool TryTraverse(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -208,7 +212,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
+        protected virtual bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(key, typeof(TKey));
             if (conversionResult.CanBeConverted)
@@ -225,7 +229,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
+        protected virtual bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue));
             if (conversionResult.CanBeConverted)

@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// Creates a new <see cref="ViewLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IHostingEnvironment hostingEnvironment)
+        /// <param name="hostingEnvironment">The <see cref="IWebHostEnvironment"/>.</param>
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IWebHostEnvironment hostingEnvironment)
         {
             if (localizerFactory == null)
             {
@@ -78,9 +78,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
 
         /// <inheritdoc />
         public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
-
-        /// <inheritdoc />
-        public IHtmlLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
 
         /// <inheritdoc />
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>

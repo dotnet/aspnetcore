@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +15,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that returns a Accepted (202) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class AcceptedAtActionResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status202Accepted;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AcceptedAtActionResult"/> with the values
         /// provided.
@@ -28,13 +32,13 @@ namespace Microsoft.AspNetCore.Mvc
             string actionName,
             string controllerName,
             object routeValues,
-            object value)
+            [ActionResultObjectValue] object value)
             : base(value)
         {
             ActionName = actionName;
             ControllerName = controllerName;
             RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
-            StatusCode = StatusCodes.Status202Accepted;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>

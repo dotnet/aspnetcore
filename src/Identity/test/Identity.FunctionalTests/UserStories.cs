@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await register.SubmitRegisterFormForValidUserAsync(userName, password);
         }
 
+        internal static async Task<RegisterConfirmation> RegisterNewUserAsyncWithConfirmation(HttpClient client, string userName = null, string password = null, bool hasRealEmailSender = false)
+        {
+            userName = userName ?? $"{Guid.NewGuid()}@example.com";
+            password = password ?? $"!Test.Password1$";
+
+            var index = await Index.CreateAsync(client);
+            var register = await index.ClickRegisterLinkAsync();
+
+            return await register.SubmitRegisterFormWithConfirmation(userName, password, hasRealEmailSender);
+        }
+
+
         internal static async Task<Index> LoginExistingUserAsync(HttpClient client, string userName, string password)
         {
             var index = await Index.CreateAsync(client);
@@ -54,6 +66,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login.LockoutUserAsync(userName, password);
         }
 
+        // This is via login page
         internal static async Task<Index> RegisterNewUserWithSocialLoginAsync(HttpClient client, string userName, string email)
         {
             var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
@@ -67,16 +80,44 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await externalLogin.SendEmailAsync(email);
         }
 
-        internal static async Task<Account.Manage.Index> SendEmailConfirmationLinkAsync(Index index)
+        internal static async Task<RegisterConfirmation> RegisterNewUserWithSocialLoginWithConfirmationAsync(HttpClient client, string userName, string email, bool hasRealEmailSender = false)
         {
-            var manage = await index.ClickManageLinkAsync();
-            return await manage.SendConfirmationEmailAsync();
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailWithConfirmationAsync(email, hasRealEmailSender);
         }
 
-        internal static async Task<Account.Manage.Index> SendUpdateProfileAsync(Index index, string newEmail)
+        internal static async Task<Index> RegisterNewUserWithSocialLoginAsyncViaRegisterPage(HttpClient client, string userName, string email)
+        {
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
+
+            var register = await index.ClickRegisterLinkAsync();
+
+            var contosoLogin = await register.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailAsync(email);
+        }
+
+        internal static async Task<Email> SendEmailConfirmationLinkAsync(Index index)
         {
             var manage = await index.ClickManageLinkAsync();
-            return await manage.SendUpdateProfileAsync(newEmail);
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendConfirmationEmailAsync();
+        }
+
+        internal static async Task<Email> SendUpdateEmailAsync(Index index, string newEmail)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendUpdateEmailAsync(newEmail);
         }
 
         internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)
@@ -105,12 +146,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login2Fa.Send2FACodeAsync(twoFactorKey);
         }
 
-        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(Index index)
+        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(Index index, bool consent = true)
         {
             var manage = await index.ClickManageLinkAsync();
-            var twoFactor = await manage.ClickTwoFactorLinkAsync();
-            var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
-            return await enableAuthenticator.SendValidCodeAsync();
+            var twoFactor = await manage.ClickTwoFactorLinkAsync(consent);
+            if (consent)
+            {
+                var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
+                return await enableAuthenticator.SendValidCodeAsync();
+            }
+            return null;
         }
 
         internal static async Task<ResetAuthenticator> ResetAuthenticator(Index index)
@@ -147,6 +192,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .WithAuthenticatedUser()
                 .WithExistingUser()
                 .WithConfirmedEmail());
+        }
+
+        internal static async Task ResendConfirmEmailAsync(HttpClient client, string email)
+        {
+            var index = await Index.CreateAsync(client);
+            var login = await index.ClickLoginLinkAsync();
+            var reconfirm = await login.ClickReconfirmEmailLinkAsync();
+            var response = await reconfirm.ResendAsync(email);
+            ResponseAssert.IsOK(response);
+            Assert.Contains("Verification email sent.", await response.Content.ReadAsStringAsync());
         }
 
         internal static async Task<ForgotPasswordConfirmation> ForgotPasswordAsync(HttpClient client, string userName)
@@ -219,5 +274,11 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             ResponseAssert.IsOK(download);
             return JsonConvert.DeserializeObject<JObject>(await download.Content.ReadAsStringAsync());
         }
+
+        internal static async Task AcceptCookiePolicy(HttpClient client)
+        {
+            var goToPrivacy = await client.GetAsync("/Privacy");
+        }
+
     }
 }

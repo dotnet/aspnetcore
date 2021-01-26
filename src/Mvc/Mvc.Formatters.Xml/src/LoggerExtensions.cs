@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
-    public static class LoggerExtensions
+    internal static class LoggerExtensions
     {
         private static readonly Action<ILogger, string, Exception> _failedToCreateXmlSerializer;
         private static readonly Action<ILogger, string, Exception> _failedToCreateDataContractSerializer;
@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         {
             _failedToCreateXmlSerializer = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                1,
+                new EventId(1, "FailedToCreateXmlSerializer"),
                 "An error occurred while trying to create an XmlSerializer for the type '{Type}'.");
 
             _failedToCreateDataContractSerializer = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                2,
+                new EventId(2, "FailedToCreateDataContractSerializer"),
                 "An error occurred while trying to create a DataContractSerializer for the type '{Type}'.");
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         {
             _failedToCreateXmlSerializer(logger, typeName, exception);
         }
-        
+
         public static void FailedToCreateDataContractSerializer(this ILogger logger, string typeName, Exception exception)
         {
             _failedToCreateDataContractSerializer(logger, typeName, exception);

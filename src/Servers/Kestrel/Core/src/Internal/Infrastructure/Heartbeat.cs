@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class Heartbeat : IDisposable
+    internal class Heartbeat : IDisposable
     {
         public static readonly TimeSpan Interval = TimeSpan.FromSeconds(1);
 
@@ -16,68 +16,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IDebugger _debugger;
         private readonly IKestrelTrace _trace;
         private readonly TimeSpan _interval;
-        private Timer _timer;
-        private int _executingOnHeartbeat;
+        private readonly Thread _timerThread;
+        private volatile bool _stopped;
 
-        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace): this(callbacks, systemClock, debugger, trace, Interval)
-        {
-
-        }
-
-        internal Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace, TimeSpan interval)
+        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
             _callbacks = callbacks;
             _systemClock = systemClock;
             _debugger = debugger;
             _trace = trace;
-            _interval = interval;
+            _interval = Interval;
+            _timerThread = new Thread(state => ((Heartbeat)state!).TimerLoop())
+            {
+                Name = "Kestrel Timer",
+                IsBackground = true
+            };
         }
 
         public void Start()
         {
-            _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
+            OnHeartbeat();
+            _timerThread.Start(this);
         }
 
-        private static void OnHeartbeat(object state)
-        {
-            ((Heartbeat)state).OnHeartbeat();
-        }
-
-        // Called by the Timer (background) thread
         internal void OnHeartbeat()
         {
             var now = _systemClock.UtcNow;
 
-            if (Interlocked.Exchange(ref _executingOnHeartbeat, 1) == 0)
+            try
             {
-                try
+                foreach (var callback in _callbacks)
                 {
-                    foreach (var callback in _callbacks)
-                    {
-                        callback.OnHeartbeat(now);
-                    }
+                    callback.OnHeartbeat(now);
                 }
-                catch (Exception ex)
-                {
-                    _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
-                }
-                finally
-                {
-                    Interlocked.Exchange(ref _executingOnHeartbeat, 0);
-                }
-            }
-            else
-            {
+
                 if (!_debugger.IsAttached)
                 {
-                    _trace.HeartbeatSlow(_interval, now);
+                    var after = _systemClock.UtcNow;
+
+                    var duration = TimeSpan.FromTicks(after.Ticks - now.Ticks);
+
+                    if (duration > _interval)
+                    {
+                        _trace.HeartbeatSlow(duration, _interval, now);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
+            }
+        }
+
+        private void TimerLoop()
+        {
+            while (!_stopped)
+            {
+                Thread.Sleep(_interval);
+
+                OnHeartbeat();
             }
         }
 
         public void Dispose()
         {
-            _timer?.Dispose();
+            _stopped = true;
+            // Don't block waiting for the thread to exit
         }
     }
 }

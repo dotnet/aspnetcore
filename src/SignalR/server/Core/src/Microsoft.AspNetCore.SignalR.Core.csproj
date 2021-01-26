@@ -1,24 +1,37 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Real-time communication framework for ASP.NET Core.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemClock.cs" Link="Internal\SystemClock.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="System.Reflection.Emit" />
-    <Reference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
   </ItemGroup>
 
 </Project>

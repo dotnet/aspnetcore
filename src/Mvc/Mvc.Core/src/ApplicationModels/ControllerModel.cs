@@ -12,9 +12,17 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// A model for configuring controllers.
+    /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ControllerModel"/>.
+        /// </summary>
+        /// <param name="controllerType">The type of the controller.</param>
+        /// <param name="attributes">The attributes.</param>
         public ControllerModel(
             TypeInfo controllerType,
             IReadOnlyList<object> attributes)
@@ -41,6 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ControllerModel"/>.
+        /// </summary>
+        /// <param name="other">The other controller model.</param>
         public ControllerModel(ControllerModel other)
         {
             if (other == null)
@@ -68,6 +80,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
+        /// <summary>
+        /// The actions on this controller.
+        /// </summary>
         public IList<ActionModel> Actions { get; }
 
         /// <summary>
@@ -82,20 +97,38 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ApplicationModel"/> of this controller.
+        /// </summary>
         public ApplicationModel Application { get; set; }
 
+        /// <summary>
+        /// The attributes of this controller.
+        /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
         MemberInfo ICommonModel.MemberInfo => ControllerType;
 
         string ICommonModel.Name => ControllerName;
 
+        /// <summary>
+        /// Gets or sets the name of this controller.
+        /// </summary>
         public string ControllerName { get; set; }
 
+        /// <summary>
+        /// The type of this controller.
+        /// </summary>
         public TypeInfo ControllerType { get; }
 
+        /// <summary>
+        /// The properties of this controller.
+        /// </summary>
         public IList<PropertyModel> ControllerProperties { get; }
 
+        /// <summary>
+        /// The filter metadata of this controller.
+        /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
@@ -118,8 +151,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public IDictionary<object, object> Properties { get; }
 
+        /// <summary>
+        /// The selector models of this controller..
+        /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
+        /// <summary>
+        /// The DisplayName of this controller.
+        /// </summary>
         public string DisplayName
         {
             get

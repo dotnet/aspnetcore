@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -185,7 +187,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (_completedSegments != null)
             {
-                // Copy full segments                
+                // Copy full segments
                 var count = _completedSegments.Count;
                 for (var i = 0; i < count; i++)
                 {
@@ -293,7 +295,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         public override void Write(ReadOnlySpan<byte> span)
         {
             if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan(_position)))

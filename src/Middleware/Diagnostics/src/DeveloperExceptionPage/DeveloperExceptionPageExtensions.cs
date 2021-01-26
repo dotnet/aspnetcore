@@ -17,6 +17,9 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
+        /// <remarks>
+        /// This should only be enabled in the Development environment. 
+        /// </remarks>
         public static IApplicationBuilder UseDeveloperExceptionPage(this IApplicationBuilder app)
         {
             if (app == null)
@@ -33,6 +36,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="options">A <see cref="DeveloperExceptionPageOptions"/> that specifies options for the middleware.</param>
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
+        /// <remarks>
+        /// This should only be enabled in the Development environment. 
+        /// </remarks>
         public static IApplicationBuilder UseDeveloperExceptionPage(
             this IApplicationBuilder app,
             DeveloperExceptionPageOptions options)

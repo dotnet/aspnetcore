@@ -16,9 +16,13 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             return SendAsync(server, url, cookieHeader: null);
         }
 
-        public static async Task<TestTransaction> SendAsync(this TestServer server, string uri, string cookieHeader)
+        public static Task<TestTransaction> SendAsync(this TestServer server, string url, string cookieHeader)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            return SendAsync(server, new HttpRequestMessage(HttpMethod.Get, url), cookieHeader);
+        }
+
+        public static async Task<TestTransaction> SendAsync(this TestServer server, HttpRequestMessage request, string cookieHeader)
+        {
             if (!string.IsNullOrEmpty(cookieHeader))
             {
                 request.Headers.Add("Cookie", cookieHeader);

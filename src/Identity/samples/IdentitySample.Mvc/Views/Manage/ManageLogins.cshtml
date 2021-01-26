@@ -1,10 +1,10 @@
-@model ManageLoginsViewModel
+﻿@model ManageLoginsViewModel
 @using Microsoft.AspNetCore.Authentication
 @{
     ViewData["Title"] = "Manage your external logins";
 }
 
-<h2>@ViewData["Title"].</h2>
+<h1>@ViewData["Title"].</h1>
 
 <p class="text-success">@ViewData["StatusMessage"]</p>
 @if (Model.CurrentLogins.Count > 0)
@@ -15,7 +15,7 @@
             @for (var index = 0; index < Model.CurrentLogins.Count; index++)
             {
                 <tr>
-                    <td>@Model.CurrentLogins[index].LoginProvider</td>
+                    <td>@Model.CurrentLogins[index].ProviderDisplayName</td>
                     <td>
                         @if ((bool)ViewData["ShowRemoveButton"])
                         {
@@ -23,7 +23,7 @@
                                 <div>
                                     <input asp-for="@Model.CurrentLogins[index].LoginProvider" name="LoginProvider" type="hidden"/>
                                     <input asp-for="@Model.CurrentLogins[index].ProviderKey" name="ProviderKey" type="hidden"/>
-                                    <input type="submit" class="btn btn-default" value="Remove" title="Remove this @Model.CurrentLogins[index].LoginProvider login from your account" />
+                                    <input type="submit" class="btn btn-default" value="Remove" title="Remove this @Model.CurrentLogins[index].ProviderDisplayName login from your account" />
                                 </div>
                             </form>
                         }

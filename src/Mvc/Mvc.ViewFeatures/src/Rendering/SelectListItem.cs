@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents an item in a <see cref="SelectList"/> or <see cref="MultiSelectList"/>.
-    /// This class is typically rendered as an HTML <code>&lt;option&gt;</code> element with the specified
+    /// This class is typically rendered as an HTML <c>&lt;option&gt;</c> element with the specified
     /// attribute values.
     /// </summary>
     public class SelectListItem
@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         /// <summary>
         /// Gets or sets a value that indicates whether this <see cref="SelectListItem"/> is disabled.
-        /// This property is typically rendered as a <code>disabled="disabled"</code> attribute in the HTML
-        /// <code>&lt;option&gt;</code> element.
+        /// This property is typically rendered as a <c>disabled="disabled"</c> attribute in the HTML
+        /// <c>&lt;option&gt;</c> element.
         /// </summary>
         public bool Disabled { get; set; }
 
@@ -68,21 +68,21 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         /// <summary>
         /// Gets or sets a value that indicates whether this <see cref="SelectListItem"/> is selected.
-        /// This property is typically rendered as a <code>selected="selected"</code> attribute in the HTML
-        /// <code>&lt;option&gt;</code> element.
+        /// This property is typically rendered as a <c>selected="selected"</c> attribute in the HTML
+        /// <c>&lt;option&gt;</c> element.
         /// </summary>
         public bool Selected { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates the display text of this <see cref="SelectListItem"/>.
-        /// This property is typically rendered as the inner HTML in the HTML <code>&lt;option&gt;</code> element.
+        /// This property is typically rendered as the inner HTML in the HTML <c>&lt;option&gt;</c> element.
         /// </summary>
         public string Text { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates the value of this <see cref="SelectListItem"/>.
-        /// This property is typically rendered as a <code>value="..."</code> attribute in the HTML
-        /// <code>&lt;option&gt;</code> element.
+        /// This property is typically rendered as a <c>value="..."</c> attribute in the HTML
+        /// <c>&lt;option&gt;</c> element.
         /// </summary>
         public string Value { get; set; }
     }

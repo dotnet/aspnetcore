@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,88 +16,76 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// <summary>
     /// Abstract base class of all deployers with implementation of some of the common helpers.
     /// </summary>
-    public abstract class ApplicationDeployer : IApplicationDeployer
+    public abstract class ApplicationDeployer : IDisposable
     {
         public static readonly string DotnetCommandName = "dotnet";
 
-        // This is the argument that separates the dotnet arguments for the args being passed to the
-        // app being run when running dotnet run
-        public static readonly string DotnetArgumentSeparator = "--";
-
         private readonly Stopwatch _stopwatch = new Stopwatch();
+
+        private PublishedApplication _publishedApplication;
 
         public ApplicationDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
             DeploymentParameters = deploymentParameters;
             LoggerFactory = loggerFactory;
             Logger = LoggerFactory.CreateLogger(GetType().FullName);
+
+            ValidateParameters();
+        }
+
+        private void ValidateParameters()
+        {
+            if (DeploymentParameters.ServerType == ServerType.None)
+            {
+                throw new ArgumentException($"Invalid ServerType '{DeploymentParameters.ServerType}'.");
+            }
+
+            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.None && !string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
+            {
+                DeploymentParameters.RuntimeFlavor = GetRuntimeFlavor(DeploymentParameters.TargetFramework);
+            }
+
+            if (DeploymentParameters.ApplicationPublisher == null)
+            {
+                if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
+                {
+                    throw new ArgumentException("ApplicationPath cannot be null.");
+                }
+
+                if (!Directory.Exists(DeploymentParameters.ApplicationPath))
+                {
+                    throw new DirectoryNotFoundException($"Application path {DeploymentParameters.ApplicationPath} does not exist.");
+                }
+
+                if (string.IsNullOrEmpty(DeploymentParameters.ApplicationName))
+                {
+                    DeploymentParameters.ApplicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+                }
+            }
+        }
+
+        private RuntimeFlavor GetRuntimeFlavor(string tfm)
+        {
+            if (Tfm.Matches(Tfm.Net461, tfm))
+            {
+                return RuntimeFlavor.Clr;
+            }
+            return RuntimeFlavor.CoreClr;
         }
 
         protected DeploymentParameters DeploymentParameters { get; }
 
         protected ILoggerFactory LoggerFactory { get; }
+
         protected ILogger Logger { get; }
 
         public abstract Task<DeploymentResult> DeployAsync();
 
         protected void DotnetPublish(string publishRoot = null)
         {
-            using (Logger.BeginScope("dotnet-publish"))
-            {
-                if (string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
-                {
-                    throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
-                }
-
-                DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-                var parameters = $"publish "
-                    + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
-                    + $" --framework {DeploymentParameters.TargetFramework}"
-                    + $" --configuration {DeploymentParameters.Configuration}"
-                    + (DeploymentParameters.RestoreOnPublish 
-                        ? string.Empty
-                        : " --no-restore -p:VerifyMatchingImplicitPackageVersion=false");
-                        // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
-                        // This verification doesn't matter if we are skipping restore during tests.
-
-                if (DeploymentParameters.ApplicationType == ApplicationType.Standalone)
-                {
-                    parameters += $" --runtime {GetRuntimeIdentifier()}";
-                }
-
-                parameters += $" {DeploymentParameters.AdditionalPublishParameters}";
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = DotnetCommandName,
-                    Arguments = parameters,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    WorkingDirectory = DeploymentParameters.ApplicationPath,
-                };
-
-                AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
-
-                var hostProcess = new Process() { StartInfo = startInfo };
-
-                Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
-
-                hostProcess.StartAndCaptureOutAndErrToLogger("dotnet-publish", Logger);
-
-                hostProcess.WaitForExit();
-
-                if (hostProcess.ExitCode != 0)
-                {
-                    var message = $"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}";
-                    Logger.LogError(message);
-                    throw new Exception(message);
-                }
-
-                Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
-            }
+            var publisher = DeploymentParameters.ApplicationPublisher ?? new ApplicationPublisher(DeploymentParameters.ApplicationPath);
+            _publishedApplication = publisher.Publish(DeploymentParameters, Logger).GetAwaiter().GetResult();
+            DeploymentParameters.PublishedApplicationRootPath = _publishedApplication.Path;
         }
 
         protected void CleanPublishedOutput()
@@ -112,13 +100,25 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    RetryHelper.RetryOperation(
-                        () => Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true),
-                        e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
-                        retryCount: 3,
-                        retryDelayMilliseconds: 100);
+                    _publishedApplication?.Dispose();
                 }
             }
+        }
+
+        protected string GetDotNetExeForArchitecture()
+        {
+            var executableName = DotnetCommandName;
+            // We expect x64 dotnet.exe to be on the path but we have to go searching for the x86 version.
+            if (DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+            {
+                executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
+                if (!File.Exists(executableName))
+                {
+                    throw new Exception($"Unable to find '{executableName}'.'");
+                }
+            }
+
+            return executableName;
         }
 
         protected void ShutDownIfAnyHostProcess(Process hostProcess)
@@ -147,26 +147,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, IDictionary<string, string> environmentVariables)
         {
             var environment = startInfo.Environment;
-            SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);
-
-            foreach (var environmentVariable in environmentVariables)
-            {
-                SetEnvironmentVariable(environment, environmentVariable.Key, environmentVariable.Value);
-            }
-        }
-
-        protected void SetEnvironmentVariable(IDictionary<string, string> environment, string name, string value)
-        {
-            if (value == null)
-            {
-                Logger.LogInformation("Removing environment variable {name}", name);
-                environment.Remove(name);
-            }
-            else
-            {
-                Logger.LogInformation("SET {name}={value}", name, value);
-                environment[name] = value;
-            }
+            ProcessHelpers.SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName, Logger);
+            ProcessHelpers.AddEnvironmentVariablesToProcess(startInfo, environmentVariables, Logger);
         }
 
         protected void InvokeUserApplicationCleanup()
@@ -214,39 +196,5 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
 
         public abstract void Dispose();
-
-        private string GetRuntimeIdentifier()
-        {
-            var architecture = GetArchitecture();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "win7-" + architecture;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "linux-" + architecture;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "osx-" + architecture;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unrecognized operation system platform");
-            }
-        }
-
-        private string GetArchitecture()
-        {
-            switch (RuntimeInformation.OSArchitecture)
-            {
-                case Architecture.X86:
-                    return "x86";
-                case Architecture.X64:
-                    return "x64";
-                default:
-                    throw new NotSupportedException($"Unsupported architecture: {RuntimeInformation.OSArchitecture}");
-            }
-        }
     }
 }

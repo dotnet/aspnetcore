@@ -7,7 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         protected override void SetupIdentityServices(IServiceCollection services, object context)
         {
             services.AddHttpContextAccessor();
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
             services.AddIdentity<TUser, TRole>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -129,10 +130,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCreateRoleTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var roleName = "create" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -169,10 +166,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task BadValidatorBlocksCreateRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             manager.RoleValidators.Clear();
             manager.RoleValidators.Add(new AlwaysBadValidator());
@@ -189,10 +182,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChainRoleValidators()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             manager.RoleValidators.Clear();
             manager.RoleValidators.Add(new AlwaysBadValidator());
@@ -211,10 +200,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task BadValidatorBlocksRoleUpdate()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var role = CreateTestRole("poorguy");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
@@ -232,10 +217,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanDeleteRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var roleName = "delete" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -253,10 +234,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanAddRemoveRoleClaim()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var role = CreateTestRole("ClaimsAddRemove");
             var roleSafe = CreateTestRole("ClaimsAdd");
@@ -296,10 +273,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanRoleFindById()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var role = CreateTestRole("FindByIdAsync");
             Assert.Null(await manager.FindByIdAsync(await manager.GetRoleIdAsync(role)));
@@ -314,10 +287,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanRoleFindByName()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var roleName = "FindByNameAsync" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -334,10 +303,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanUpdateRoleName()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var roleName = "update" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -357,10 +322,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanQueryableRoles()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             if (manager.SupportsQueryableRoles)
             {
@@ -384,10 +345,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CreateRoleFailsIfExists()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateRoleManager();
             var roleName = "dupeRole" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -405,10 +362,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanAddUsersToRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var manager = CreateManager(context);
             var roleManager = CreateRoleManager(context);
@@ -434,11 +387,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGetRolesForUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-
             var context = CreateTestContext();
             var userManager = CreateManager(context);
             var roleManager = CreateRoleManager(context);
@@ -477,10 +425,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task RemoveUserFromRoleWithMultipleRoles()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var userManager = CreateManager(context);
             var roleManager = CreateRoleManager(context);
@@ -504,10 +448,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanRemoveUsersFromRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var userManager = CreateManager(context);
             var roleManager = CreateRoleManager(context);
@@ -538,10 +478,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task RemoveUserNotInRoleFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var userMgr = CreateManager(context);
             var roleMgr = CreateRoleManager(context);
@@ -552,7 +488,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             var result = await userMgr.RemoveFromRoleAsync(user, roleName);
             IdentityResultAssert.IsFailure(result, _errorDescriber.UserNotInRole(roleName));
-            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is not in role {roleName}.");
+            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User is not in role {roleName}.");
         }
 
         /// <summary>
@@ -562,10 +498,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddUserToRoleFailsIfAlreadyInRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var userMgr = CreateManager(context);
             var roleMgr = CreateRoleManager(context);
@@ -577,7 +509,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
             Assert.True(await userMgr.IsInRoleAsync(user, roleName));
             IdentityResultAssert.IsFailure(await userMgr.AddToRoleAsync(user, roleName), _errorDescriber.UserAlreadyInRole(roleName));
-            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is already in role {roleName}.");
+            IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User is already in role {roleName}.");
         }
 
         /// <summary>
@@ -587,10 +519,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddUserToRolesIgnoresDuplicates()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var userMgr = CreateManager(context);
             var roleMgr = CreateRoleManager(context);
@@ -611,10 +539,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanFindRoleByNameWithManager()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var roleMgr = CreateRoleManager();
             var roleName = "findRoleByNameTest" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -629,10 +553,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanFindRoleWithManager()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var roleMgr = CreateRoleManager();
             var roleName = "findRoleTest" + Guid.NewGuid().ToString();
             var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
@@ -647,10 +567,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGetUsersInRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var context = CreateTestContext();
             var manager = CreateManager(context);
             var roleManager = CreateRoleManager(context);

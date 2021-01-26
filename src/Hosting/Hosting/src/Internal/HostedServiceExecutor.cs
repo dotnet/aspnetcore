@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class HostedServiceExecutor
+    internal class HostedServiceExecutor
     {
         private readonly IEnumerable<IHostedService> _services;
         private readonly ILogger<HostedServiceExecutor> _logger;
@@ -21,33 +21,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _services = services;
         }
 
-        public async Task StartAsync(CancellationToken token)
+        public Task StartAsync(CancellationToken token)
         {
-            try
-            {
-                await ExecuteAsync(service => service.StartAsync(token));
-            }
-            catch (Exception ex)
-            {
-                _logger.ApplicationError(LoggerEventIds.HostedServiceStartException, "An error occurred starting the application", ex);
-            }
+            return ExecuteAsync(service => service.StartAsync(token));
         }
 
-        public async Task StopAsync(CancellationToken token)
+        public Task StopAsync(CancellationToken token)
         {
-            try
-            {
-                await ExecuteAsync(service => service.StopAsync(token));
-            }
-            catch (Exception ex)
-            {
-                _logger.ApplicationError(LoggerEventIds.HostedServiceStopException, "An error occurred stopping the application", ex);
-            }
+            return ExecuteAsync(service => service.StopAsync(token), throwOnFirstFailure: false);
         }
 
-        private async Task ExecuteAsync(Func<IHostedService, Task> callback)
+        private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnFirstFailure = true)
         {
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
 
             foreach (var service in _services)
             {
@@ -57,6 +43,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
                 catch (Exception ex)
                 {
+                    if (throwOnFirstFailure)
+                    {
+                        throw;
+                    }
+
                     if (exceptions == null)
                     {
                         exceptions = new List<Exception>();

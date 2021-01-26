@@ -12,6 +12,12 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// <summary>
         /// The name of this instance of <see cref="IAuthorizationRequirement"/>.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"{nameof(OperationAuthorizationRequirement)}:Name={Name}";
+        }
     }
 }

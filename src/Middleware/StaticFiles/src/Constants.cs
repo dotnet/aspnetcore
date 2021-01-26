@@ -10,11 +10,5 @@ namespace Microsoft.AspNetCore.StaticFiles
         internal const string ServerCapabilitiesKey = "server.Capabilities";
         internal const string SendFileVersionKey = "sendfile.Version";
         internal const string SendFileVersion = "1.0";
-
-        internal const int Status200Ok = 200;
-        internal const int Status206PartialContent = 206;
-        internal const int Status304NotModified = 304;
-        internal const int Status412PreconditionFailed = 412;
-        internal const int Status416RangeNotSatisfiable = 416;
     }
 }

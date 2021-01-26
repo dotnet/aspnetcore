@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -50,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null)
+        public static IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null, ILoggerFactory loggerFactory = null)
         {
             var services = new ServiceCollection();
             services.AddOptions()
@@ -61,12 +64,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             addServices?.Invoke(services);
 
+            if (loggerFactory != null)
+            {
+                services.AddSingleton(loggerFactory);
+            }
+
             return services.BuildServiceProvider();
         }
 
-        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType)
+        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, ILoggerFactory loggerFactory = null, Action<ServiceCollection> addServices = null)
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = CreateServiceProvider(addServices, loggerFactory);
             return (Connections.ConnectionHandler)serviceProvider.GetService(GetConnectionHandlerType(hubType));
         }
     }
@@ -83,5 +91,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class TrackDispose
     {
         public int DisposeCount = 0;
+    }
+
+    public class AsyncDisposable : IAsyncDisposable
+    {
+        private readonly TrackDispose _trackDispose;
+
+        public AsyncDisposable(TrackDispose trackDispose)
+        {
+            _trackDispose = trackDispose;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _trackDispose.DisposeCount++;
+            return default;
+        }
     }
 }

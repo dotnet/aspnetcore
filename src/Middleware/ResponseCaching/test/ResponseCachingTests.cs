@@ -1,13 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -19,13 +16,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesCachedContent_IfAvailable(string method)
+        public async Task ServesCachedContent_IfAvailable(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
@@ -39,13 +40,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_IfNotAvailable(string method)
+        public async Task ServesFreshContent_IfNotAvailable(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
@@ -57,13 +62,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Post()
+        public async Task ServesFreshContent_Post()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.PostAsync("", new StringContent(string.Empty));
@@ -75,13 +84,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Head_Get()
+        public async Task ServesFreshContent_Head_Get()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var subsequentResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, ""));
@@ -93,13 +106,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Get_Head()
+        public async Task ServesFreshContent_Get_Head()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
@@ -113,13 +130,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_CacheControlNoCache(string method)
+        public async Task ServesFreshContent_If_CacheControlNoCache(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
 
@@ -142,13 +163,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_PragmaNoCache(string method)
+        public async Task ServesFreshContent_If_PragmaNoCache(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
 
@@ -171,13 +196,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesCachedContent_If_PathCasingDiffers(string method)
+        public async Task ServesCachedContent_If_PathCasingDiffers(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, "path"));
@@ -191,13 +220,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_ResponseExpired(string method)
+        public async Task ServesFreshContent_If_ResponseExpired(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, "?Expires=0"));
@@ -211,13 +244,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_Authorization_HeaderExists(string method)
+        public async Task ServesFreshContent_If_Authorization_HeaderExists(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("abc");
@@ -230,13 +267,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryHeader_Matches()
+        public async Task ServesCachedContent_IfVaryHeader_Matches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.From = "user@example.com";
@@ -249,13 +290,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryHeader_Mismatches()
+        public async Task ServesFreshContent_IfVaryHeader_Mismatches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.From = "user@example.com";
@@ -269,13 +314,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeys_Matches()
+        public async Task ServesCachedContent_IfVaryQueryKeys_Matches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?query=value");
@@ -287,13 +336,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "queryb" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
@@ -305,13 +358,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
@@ -323,13 +380,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryB", "QueryA" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
@@ -341,13 +402,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
@@ -359,13 +424,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKey_Mismatches()
+        public async Task ServesFreshContent_IfVaryQueryKey_Mismatches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?query=value");
@@ -377,13 +446,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
+        public async Task ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "QueryB" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
@@ -395,13 +468,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
+        public async Task ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
@@ -413,13 +490,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfRequestRequirements_NotMet()
+        public async Task ServesFreshContent_IfRequestRequirements_NotMet()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -435,13 +516,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves504_IfOnlyIfCachedHeader_IsSpecified()
+        public async Task Serves504_IfOnlyIfCachedHeader_IsSpecified()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -458,13 +543,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfSetCookie_IsSpecified()
+        public async Task ServesFreshContent_IfSetCookie_IsSpecified()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue");
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -476,65 +565,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
-        {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(app =>
-            {
-                app.Use(async (context, next) =>
-                {
-                    context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                    await next.Invoke();
-                });
-            });
-
-            foreach (var builder in builders)
-            {
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
-                    var subsequentResponse = await client.GetAsync("");
-
-                    await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-                }
-            }
-        }
-
-        [Fact]
-        public async void ServesFreshContent_IfIHttpSendFileFeature_Used()
-        {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(
-                app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                        await next.Invoke();
-                    });
-                },
-                contextAction: async context => await context.Features.Get<IHttpSendFileFeature>().SendFileAsync("dummy", 0, 0, CancellationToken.None));
-
-            foreach (var builder in builders)
-            {
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
-                    var subsequentResponse = await client.GetAsync("");
-
-                    await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-                }
-            }
-        }
-
-        [Fact]
-        public async void ServesCachedContent_IfSubsequentRequestContainsNoStore()
+        public async Task ServesCachedContent_IfSubsequentRequestContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -550,13 +591,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfInitialRequestContainsNoStore()
+        public async Task ServesFreshContent_IfInitialRequestContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
@@ -572,13 +617,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfInitialResponseContainsNoStore()
+        public async Task ServesFreshContent_IfInitialResponseContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.CacheControl] = CacheControlHeaderValue.NoStoreString);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -590,33 +639,47 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves304_IfIfModifiedSince_Satisfied()
+        public async Task Serves304_IfIfModifiedSince_Satisfied()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching();
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
+            {
+                context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
+                context.Response.Headers[HeaderNames.ContentLocation] = "/";
+                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+            });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
+                    var initialResponse = await client.GetAsync("?Expires=90");
                     client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MaxValue;
                     var subsequentResponse = await client.GetAsync("");
 
                     initialResponse.EnsureSuccessStatusCode();
                     Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+                    Assert304Headers(initialResponse, subsequentResponse);
                 }
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIfModifiedSince_NotSatisfied()
+        public async Task ServesCachedContent_IfIfModifiedSince_NotSatisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -629,33 +692,47 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves304_IfIfNoneMatch_Satisfied()
+        public async Task Serves304_IfIfNoneMatch_Satisfied()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
+            var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
+            {
+                context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
+                context.Response.Headers[HeaderNames.ContentLocation] = "/";
+                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+            });
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
+                    var initialResponse = await client.GetAsync("?Expires=90");
                     client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E1\""));
                     var subsequentResponse = await client.GetAsync("");
 
                     initialResponse.EnsureSuccessStatusCode();
                     Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+                    Assert304Headers(initialResponse, subsequentResponse);
                 }
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIfNoneMatch_NotSatisfied()
+        public async Task ServesCachedContent_IfIfNoneMatch_NotSatisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -668,7 +745,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfBodySize_IsCacheable()
+        public async Task ServesCachedContent_IfBodySize_IsCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -677,7 +754,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -689,7 +770,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfBodySize_IsNotCacheable()
+        public async Task ServesFreshContent_IfBodySize_IsNotCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -698,7 +779,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("");
@@ -710,7 +795,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
+        public async Task ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -719,7 +804,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     var initialResponse = await client.GetAsync("/path");
@@ -731,13 +820,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
+        public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.From = "user@example.com";
@@ -753,13 +846,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
+        public async Task ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.From = "user@example.com";
@@ -784,13 +881,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
+        public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
 
             foreach (var builder in builders)
             {
-                using (var server = new TestServer(builder))
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
                 {
                     var client = server.CreateClient();
                     client.DefaultRequestHeaders.From = "user@example.com";
@@ -812,6 +913,44 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
             }
+        }
+
+        [Fact]
+        public async Task ServesCachedContent_IfAvailable_UsingHead_WithContentLength()
+        {
+            var builders = TestUtils.CreateBuildersWithResponseCaching();
+
+            foreach (var builder in builders)
+            {
+                using var host = builder.Build();
+
+                await host.StartAsync();
+
+                using (var server = host.GetTestServer())
+                {
+                    var client = server.CreateClient();
+                    var initialResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
+                    var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
+
+                    await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+                }
+            }
+        }
+
+        private static void Assert304Headers(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
+        {
+            // https://tools.ietf.org/html/rfc7232#section-4.1
+            // The server generating a 304 response MUST generate any of the
+            // following header fields that would have been sent in a 200 (OK)
+            // response to the same request: Cache-Control, Content-Location, Date,
+            // ETag, Expires, and Vary.
+
+            Assert.Equal(initialResponse.Headers.CacheControl, subsequentResponse.Headers.CacheControl);
+            Assert.Equal(initialResponse.Content.Headers.ContentLocation, subsequentResponse.Content.Headers.ContentLocation);
+            Assert.Equal(initialResponse.Headers.Date, subsequentResponse.Headers.Date);
+            Assert.Equal(initialResponse.Headers.ETag, subsequentResponse.Headers.ETag);
+            Assert.Equal(initialResponse.Content.Headers.Expires, subsequentResponse.Content.Headers.Expires);
+            Assert.Equal(initialResponse.Headers.Vary, subsequentResponse.Headers.Vary);
         }
 
         private static async Task AssertCachedResponseAsync(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)

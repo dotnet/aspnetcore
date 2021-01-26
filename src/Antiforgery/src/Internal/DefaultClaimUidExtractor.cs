@@ -5,14 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Default implementation of <see cref="IClaimUidExtractor"/>.
     /// </summary>
-    public class DefaultClaimUidExtractor : IClaimUidExtractor
+    internal class DefaultClaimUidExtractor : IClaimUidExtractor
     {
         private readonly ObjectPool<AntiforgerySerializationContext> _pool;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         /// <inheritdoc />
-        public string ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
+        public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
         {
             Debug.Assert(claimsPrincipal != null);
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             return Convert.ToBase64String(claimUidBytes);
         }
 
-        public static IList<string> GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+        public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
         {
             var identitiesList = claimsIdentities as List<ClaimsIdentity>;
             if (identitiesList == null)
@@ -134,9 +135,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
                 writer.Flush();
 
-                var sha256 = serializationContext.Sha256;
-                var stream = serializationContext.Stream;
-                var bytes = sha256.ComputeHash(stream.ToArray(), 0, checked((int)stream.Length));
+                bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
+                if (!success)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                var bytes = SHA256.HashData(buffer);
 
                 return bytes;
             }

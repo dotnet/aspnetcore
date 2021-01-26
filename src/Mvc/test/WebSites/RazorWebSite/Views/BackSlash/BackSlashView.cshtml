@@ -1,6 +1,6 @@
-@{
+﻿@{
   ViewData["back-slash"] = "true";
   Layout = "_Layout";
 }
 Page
-@Html.Partial("_BackSlashPartial")
+@(await Html.PartialAsync("_BackSlashPartial"))

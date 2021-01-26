@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
+    /// <summary>
+    /// Provider for <see cref="IActionConstraint"/>.
+    /// </summary>
     public interface IActionConstraintProvider
     {
         /// <summary>
@@ -26,8 +29,19 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// </remarks>
         int Order { get; }
 
+        /// <summary>
+        /// Called to execute the provider. 
+        /// <see cref="Order"/> for details on the order of execution of <see cref="OnProvidersExecuting(ActionConstraintProviderContext)"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionConstraintProviderContext"/>.</param>
         void OnProvidersExecuting(ActionConstraintProviderContext context);
 
+        /// <summary>
+        /// Called to execute the provider, after the <see cref="OnProvidersExecuting"/> methods of all providers,
+        /// have been called.
+        /// <see cref="Order"/> for details on the order of execution of <see cref="OnProvidersExecuted(ActionConstraintProviderContext)"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionConstraintProviderContext"/>.</param>
         void OnProvidersExecuted(ActionConstraintProviderContext context);
     }
 }

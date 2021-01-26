@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     [Flags]
-    public enum ConnectionOptions
+    internal enum ConnectionOptions
     {
         None = 0,
         Close = 1,

@@ -2,21 +2,18 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
-    <VersionPrefix Condition="'$(ExperimentalVersionPrefix)' != ''">$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VersionSuffix Condition="'$(ExperimentalVersionSuffix)' != ''">$(ExperimentalVersionSuffix)</VersionSuffix>
-    <VerifyVersion Condition="'$(ExperimentalVersionPrefix)' != ''">false</VerifyVersion>
-    <PackageVersion Condition="'$(ExperimentalPackageVersion)' != ''">$(ExperimentalPackageVersion)</PackageVersion>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
-    <UseLatestPackageReferences>true</UseLatestPackageReferences>
-    <IsPackable>false</IsPackable>
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Process\*.cs" />
+    <EmbeddedResource Include="Http.config" />
     <EmbeddedResource Include="Deployers\RemoteWindowsDeployer\RemotePSSessionHelper.ps1;Deployers\RemoteWindowsDeployer\StartServer.ps1;Deployers\RemoteWindowsDeployer\StopServer.ps1" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
 
@@ -25,7 +22,6 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Serilog.Extensions.Logging" />
     <Reference Include="Serilog.Sinks.File" />

@@ -80,11 +80,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static TheoryData<IList<CookieHeaderValue>, string[]> ListOfCookieHeaderDataSet
+        public static TheoryData<IList<CookieHeaderValue>, string?[]> ListOfCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<CookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<CookieHeaderValue>, string?[]>();
                 var header1 = new CookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3");
                 var string1 = "name1=n1=v1&n2=v2&n3=v3";
 
@@ -99,7 +99,7 @@ namespace Microsoft.Net.Http.Headers
 
                 dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
-                dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, null, "", " ", ";", " , ", string1 });
+                dataset.Add(new[] { header1, header1 }.ToList(), new [] { string1, null, "", " ", ";", " , ", string1 });
                 dataset.Add(new[] { header2 }.ToList(), new[] { string2 });
                 dataset.Add(new[] { header1, header2 }.ToList(), new[] { string1, string2 });
                 dataset.Add(new[] { header1, header2 }.ToList(), new[] { string1 + ", " + string2 });
@@ -112,11 +112,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static TheoryData<IList<CookieHeaderValue>, string[]> ListWithInvalidCookieHeaderDataSet
+        public static TheoryData<IList<CookieHeaderValue>?, string?[]> ListWithInvalidCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<CookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<CookieHeaderValue>?, string?[]>();
                 var header1 = new CookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3");
                 var validString1 = "name1=n1=v1&n2=v2&n3=v3";
 
@@ -226,7 +226,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.True(CookieHeaderValue.TryParse(expectedValue, out var header));
 
             Assert.Equal(cookie, header);
-            Assert.Equal(expectedValue, header.ToString());
+            Assert.Equal(expectedValue, header!.ToString());
         }
 
         [Theory]
@@ -286,7 +286,7 @@ namespace Microsoft.Net.Http.Headers
         public void CookieHeaderValue_ParseList_ExcludesInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
         {
             var results = CookieHeaderValue.ParseList(input);
-            // ParseList aways returns a list, even if empty. TryParseList may return null (via out).
+            // ParseList always returns a list, even if empty. TryParseList may return null (via out).
             Assert.Equal(cookies ?? new List<CookieHeaderValue>(), results);
         }
 

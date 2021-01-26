@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="TestFiles\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+
+    <!--
+        These tests include startup code for most parts of our stack. This list will grow as we add more.
+    -->
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+  </ItemGroup>
+
+</Project>

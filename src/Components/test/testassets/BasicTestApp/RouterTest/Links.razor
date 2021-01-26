@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
+<style type="text/css">
+    a.active {
+        background-color: yellow;
+        font-weight: bold;
+    }
+</style>
+<ul>
+    <li><NavLink href="/subdir/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
+    <li><NavLink href="" Match=NavLinkMatch.All>Default with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/?abc=123">Default with query</NavLink></li>
+    <li><NavLink href="/subdir/#blah">Default with hash</NavLink></li>
+    <li><NavLink href="/subdir/Default.html">With extension</NavLink></li>
+    <li><NavLink href="/subdir/Other">Other</NavLink></li>
+    <li><NavLink href="Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/other?abc=123">Other with query</NavLink></li>
+    <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/name/Abc">With parameters</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
+    <li><NavLink href="/subdir/LongPage1">Long page 1</NavLink></li>
+    <li><NavLink href="/subdir/LongPage2">Long page 2</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyAssembly" id="with-lazy-assembly">With lazy assembly</NavLink></li>
+    <li><NavLink href="/subdir/WithLazyLoadedRoutes" id="with-lazy-routes">With lazy loaded routes</NavLink></li>
+    <li><NavLink href="PreventDefaultCases">preventDefault cases</NavLink></li>
+    <li><a href="/subdir/images/blazor_logo_1000x.png" download>Download Me</a></li>
+    <li><NavLink>Null href never matches</NavLink></li>
+    <li><custom-link-with-shadow-root target-url="Other"></custom-link-with-shadow-root></li>
+</ul>
+
+<button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>
+    Programmatic navigation
+</button>
+
+<button id="do-navigation-forced" @onclick=@(x => NavigationManager.NavigateTo("Other", true))>
+    Programmatic navigation with force-load
+</button>
+
+<a id="anchor-with-no-href">
+    Anchor tag with no href attribute
+</a>
+
+<a href="/" target="_blank">Target (_blank)</a>
+
+<a href="/subdir/NotAComponent.html">Not a component</a>
+<a href="/subdir/routeablecomponentfrompackage.html">Cannot route to me</a>

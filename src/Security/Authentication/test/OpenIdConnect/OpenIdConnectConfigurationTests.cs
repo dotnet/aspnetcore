@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
@@ -436,7 +437,22 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task MetadataAddressIsGeneratedFromAuthorityWhenMissing()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseAuthentication();
+                            app.Run(async context =>
+                            {
+                                var resolver = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+                                var handler = await resolver.GetHandlerAsync(context, OpenIdConnectDefaults.AuthenticationScheme) as OpenIdConnectHandler;
+                                Assert.Equal($"{TestServerBuilder.DefaultAuthority}/.well-known/openid-configuration", handler.Options.MetadataAddress);
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication()
@@ -448,17 +464,11 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                         o.SignInScheme = Guid.NewGuid().ToString();
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Run(async context =>
-                    {
-                        var resolver = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-                        var handler = await resolver.GetHandlerAsync(context, OpenIdConnectDefaults.AuthenticationScheme) as OpenIdConnectHandler;
-                        Assert.Equal($"{TestServerBuilder.DefaultAuthority}/.well-known/openid-configuration", handler.Options.MetadataAddress);
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
             var transaction = await server.SendAsync(@"https://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -550,16 +560,19 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private TestServer BuildTestServer(Action<OpenIdConnectOptions> options)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddAuthentication()
-                        .AddCookie()
-                        .AddOpenIdConnect(options);
-                })
-                .Configure(app => app.UseAuthentication());
-
-            return new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddAuthentication()
+                            .AddCookie()
+                            .AddOpenIdConnect(options);
+                    })
+                    .Configure(app => app.UseAuthentication()))
+                .Build();
+            host.Start();
+            return host.GetTestServer();
         }
 
         private async Task TestConfigurationException<T>(

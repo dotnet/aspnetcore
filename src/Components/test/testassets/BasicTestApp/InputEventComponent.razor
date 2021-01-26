@@ -1,0 +1,9 @@
+﻿<input @bind-value=inputText @bind-value:event="oninput" />
+
+<p>The text below should update automatically as you type in the text field above</p>
+
+<p id="test-result">@inputText</p>
+
+@code {
+    string inputText { get; set; }
+}

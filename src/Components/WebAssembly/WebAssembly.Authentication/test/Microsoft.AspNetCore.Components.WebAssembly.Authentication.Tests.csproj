@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <NoWarn>$(NoWarn);BL0005;BL0006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\WebAssembly\test\TestJSUnmarshalledRuntime.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,14 @@ namespace Microsoft.AspNetCore.Testing
         // Application errors are logged using 13 as the eventId.
         private const int ApplicationErrorEventId = 13;
 
+        private Func<LogMessage, bool> _messageFilter;
+        private TaskCompletionSource<LogMessage> _messageFilterTcs;
+
         public List<Type> IgnoredExceptions { get; } = new List<Type>();
 
         public bool ThrowOnCriticalErrors { get; set; } = true;
+
+        public bool ThrowOnUngracefulShutdown { get; set; } = true;
 
         public ConcurrentQueue<LogMessage> Messages { get; } = new ConcurrentQueue<LogMessage>();
 
@@ -29,6 +35,19 @@ namespace Microsoft.AspNetCore.Testing
         public int CriticalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Critical);
 
         public int ApplicationErrorsLogged => Messages.Count(message => message.EventId.Id == ApplicationErrorEventId);
+
+        public Task<LogMessage> WaitForMessage(Func<LogMessage, bool> messageFilter)
+        {
+            if (_messageFilterTcs != null)
+            {
+                throw new InvalidOperationException($"{nameof(WaitForMessage)} cannot be called concurrently.");
+            }
+
+            _messageFilterTcs = new TaskCompletionSource<LogMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _messageFilter = messageFilter;
+
+            return _messageFilterTcs.Task;
+        }
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -44,34 +63,55 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-#if true
-            if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
-#endif
+            var exceptionIsIgnored = IgnoredExceptions.Contains(exception?.GetType());
+
+            if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors && !exceptionIsIgnored)
             {
                 var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
 
                 Console.WriteLine(log);
 
-                if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors && !IgnoredExceptions.Contains(exception.GetType()))
+                if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors && !exceptionIsIgnored)
                 {
                     throw new Exception($"Unexpected critical error. {log}", exception);
                 }
             }
 
             // Fail tests where not all the connections close during server shutdown.
-            if (eventId.Id == 21 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsAborted))
+            if (ThrowOnUngracefulShutdown &&
+                ((eventId.Id == 16 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsClosedGracefully)) ||
+                 (eventId.Id == 21 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsAborted))))
             {
-                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
                 throw new Exception($"Shutdown failure. {log}");
             }
 
-            Messages.Enqueue(new LogMessage
+            // We don't use nameof here because this is logged by the transports and we don't know which one is
+            // referenced in this shared source file.
+            if (eventId.Id == 14 && eventId.Name == "ConnectionError")
+            {
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
+                throw new Exception($"Unexpected connection error. {log}");
+            }
+
+            var logMessage = new LogMessage
             {
                 LogLevel = logLevel,
                 EventId = eventId,
                 Exception = exception,
                 Message = formatter(state, exception)
-            });
+            };
+
+            Messages.Enqueue(logMessage);
+
+            if (_messageFilter?.Invoke(logMessage) == true)
+            {
+                var localTcs = _messageFilterTcs;
+                // need to set tcs to null before calling TrySetResult
+                // to prevent the next WaitForMessage possibly throwing for a non-null tcs
+                _messageFilterTcs = null;
+                localTcs.TrySetResult(logMessage);
+            }
         }
 
         public class LogMessage

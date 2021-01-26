@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
     /// Default implementation for <see cref="IControllerFactory"/>.
     /// </summary>
-    public class DefaultControllerFactory : IControllerFactory
+    internal class DefaultControllerFactory : IControllerFactory
     {
         private readonly IControllerActivator _controllerActivator;
         private readonly IControllerPropertyActivator[] _propertyActivators;
@@ -45,13 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             _propertyActivators = propertyActivators.ToArray();
         }
 
-        /// <summary>
-        /// The <see cref="IControllerActivator"/> used to create a controller.
-        /// </summary>
-        protected IControllerActivator ControllerActivator => _controllerActivator;
-
         /// <inheritdoc />
-        public virtual object CreateController(ControllerContext context)
+        public object CreateController(ControllerContext context)
         {
             if (context == null)
             {
@@ -75,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual void ReleaseController(ControllerContext context, object controller)
+        public void ReleaseController(ControllerContext context, object controller)
         {
             if (context == null)
             {
@@ -88,6 +83,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             _controllerActivator.Release(context, controller);
+        }
+
+        public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
+            return _controllerActivator.ReleaseAsync(context, controller);
         }
     }
 }

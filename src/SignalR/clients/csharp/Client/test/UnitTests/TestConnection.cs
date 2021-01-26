@@ -10,26 +10,28 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    internal class TestConnection : ConnectionContext
+    internal class TestConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
     {
         private readonly bool _autoHandshake;
-        private readonly TaskCompletionSource<object> _started = new TaskCompletionSource<object>();
-        private readonly TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource _started = new TaskCompletionSource();
+        private readonly TaskCompletionSource _disposed = new TaskCompletionSource();
 
         private int _disposeCount = 0;
-
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
 
         private readonly Func<Task> _onStart;
         private readonly Func<Task> _onDispose;
+        private readonly bool _hasInherentKeepAlive;
 
         public override string ConnectionId { get; set; }
 
@@ -41,11 +43,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
 
-        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true)
+        bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
+
+        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true, bool hasInherentKeepAlive = false)
         {
             _autoHandshake = autoHandshake;
             _onStart = onStart ?? (() => Task.CompletedTask);
             _onDispose = onDispose ?? (() => Task.CompletedTask);
+            _hasInherentKeepAlive = hasInherentKeepAlive;
 
             var options = new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
@@ -53,18 +58,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application = pair.Application;
             Transport = pair.Transport;
 
-            Application.Input.OnWriterCompleted((ex, _) =>
-            {
-                Application.Output.Complete();
-            }, 
-            null);
+            Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
-        public Task DisposeAsync() => DisposeCoreAsync();
+        public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
-        public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
+        public async ValueTask<ConnectionContext> StartAsync()
         {
-            _started.TrySetResult(null);
+            _started.TrySetResult();
 
             await _onStart();
 
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return this;
         }
 
-        public async Task<string> ReadHandshakeAndSendResponseAsync()
+        public async Task<string> ReadHandshakeAndSendResponseAsync(int minorVersion = 0)
         {
             var s = await ReadSentTextMessageAsync();
 
@@ -118,9 +119,30 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return Application.Output.WriteAsync(bytes).AsTask();
         }
 
-        public async Task<string> ReadSentTextMessageAsync()
+        public async Task<string> ReadSentTextMessageAsync(bool ignorePings = true)
         {
             // Read a single text message from the Application Input pipe
+
+            while (true)
+            {
+                var result = await ReadSentTextMessageAsyncInner();
+                if (result == null)
+                {
+                    return null;
+                }
+
+                var receivedMessageType = (int?)JObject.Parse(result)["type"];
+
+                if (ignorePings && receivedMessageType == HubProtocolConstants.PingMessageType)
+                {
+                    continue;
+                }
+                return result;
+            }
+        }
+
+        private async Task<string> ReadSentTextMessageAsyncInner()
+        {
             while (true)
             {
                 var result = await Application.Input.ReadAsync();
@@ -136,7 +158,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (result.IsCompleted)
                     {
-                        throw new InvalidOperationException("Out of data!");
+                        await Application.Output.CompleteAsync();
+                        return null;
                     }
                 }
                 finally
@@ -146,15 +169,42 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        public async Task<JObject> ReadSentJsonAsync()
+        {
+            return JObject.Parse(await ReadSentTextMessageAsync());
+        }
+
+        public async Task<IList<string>> ReadAllSentMessagesAsync(bool ignorePings = true)
+        {
+            if (!Disposed.IsCompleted)
+            {
+                throw new InvalidOperationException("The connection must be stopped before this method can be used.");
+            }
+
+            var results = new List<string>();
+
+            while (true)
+            {
+                var message = await ReadSentTextMessageAsync(ignorePings);
+                if (message == null)
+                {
+                    break;
+                }
+                results.Add(message);
+            }
+
+            return results;
+        }
+
         public void CompleteFromTransport(Exception ex = null)
         {
             Application.Output.Complete(ex);
         }
 
-        private async Task DisposeCoreAsync(Exception ex = null)
+        private async ValueTask DisposeCoreAsync(Exception ex = null)
         {
             Interlocked.Increment(ref _disposeCount);
-            _disposed.TrySetResult(null);
+            _disposed.TrySetResult();
             await _onDispose();
 
             // Simulate HttpConnection's behavior by Completing the Transport pipe.

@@ -8,14 +8,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,7 +21,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
     ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
     /// </summary>
-    public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>
+    public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>
     {
         private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();
 
@@ -37,8 +33,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 ContextType = contextType;
             }
 
-            public Exception Exception { get; private set; }
-            public Type ContextType { get; private set; }
+            public Exception? Exception { get; private set; }
+            public Type? ContextType { get; private set; }
         }
 
         private readonly RequestDelegate _next;
@@ -54,6 +50,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         ///     consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
+        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
         public DatabaseErrorPageMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -99,7 +96,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             {
                 // Because CallContext is cloned at each async operation we cannot
                 // lazily create the error object when an error is encountered, otherwise
-                // it will not be available to code outside of the current async context. 
+                // it will not be available to code outside of the current async context.
                 // We create it ahead of time so that any cloning just clones the reference
                 // to the object that will hold any errors.
 
@@ -113,54 +110,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 {
                     if (ShouldDisplayErrorPage(exception))
                     {
-                        var contextType = _localDiagnostic.Value.ContextType;
-                        var context = (DbContext)httpContext.RequestServices.GetService(contextType);
+                        var contextType = _localDiagnostic.Value!.ContextType;
+                        var details = await httpContext.GetContextDetailsAsync(contextType!, _logger);
 
-                        if (context == null)
+                        if (details != null && (details.PendingModelChanges || details.PendingMigrations.Count() > 0))
                         {
-                            _logger.ContextNotRegisteredDatabaseErrorPageMiddleware(contextType.FullName);
-                        }
-                        else
-                        {
-                            var relationalDatabaseCreator = context.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
-                            if (relationalDatabaseCreator == null)
+                            var page = new DatabaseErrorPage
                             {
-                                _logger.NotRelationalDatabase();
-                            }
-                            else
-                            {
-                                var databaseExists = await relationalDatabaseCreator.ExistsAsync();
+                                Model = new DatabaseErrorPageModel(exception, new DatabaseContextDetails[] { details }, _options, httpContext.Request.PathBase)
+                            };
 
-                                var migrationsAssembly = context.GetService<IMigrationsAssembly>();
-                                var modelDiffer = context.GetService<IMigrationsModelDiffer>();
+                            await page.ExecuteAsync(httpContext);
 
-                                // HasDifferences will return true if there is no model snapshot, but if there is an existing database
-                                // and no model snapshot then we don't want to show the error page since they are most likely targeting
-                                // and existing database and have just misconfigured their model
-
-                                var pendingModelChanges
-                                    = (!databaseExists || migrationsAssembly.ModelSnapshot != null)
-                                      && modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, context.Model);
-
-                                var pendingMigrations
-                                    = (databaseExists
-                                        ? await context.Database.GetPendingMigrationsAsync()
-                                        : context.Database.GetMigrations())
-                                    .ToArray();
-
-                                if (pendingModelChanges || pendingMigrations.Any())
-                                {
-                                    var page = new DatabaseErrorPage
-                                    {
-                                        Model = new DatabaseErrorPageModel(
-                                            contextType, exception, databaseExists, pendingModelChanges, pendingMigrations, _options)
-                                    };
-
-                                    await page.ExecuteAsync(httpContext);
-
-                                    return;
-                                }
-                            }
+                            return;
                         }
                     }
                 }
@@ -177,7 +139,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             _logger.AttemptingToMatchException(exception.GetType());
 
-            var lastRecordedException = _localDiagnostic.Value.Exception;
+            var lastRecordedException = _localDiagnostic.Value!.Exception;
 
             if (lastRecordedException == null)
             {
@@ -213,7 +175,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             }
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnNext(KeyValuePair<string, object> keyValuePair)
+        void IObserver<KeyValuePair<string, object?>>.OnNext(KeyValuePair<string, object?> keyValuePair)
         {
             switch (keyValuePair.Value)
             {
@@ -242,11 +204,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnCompleted()
+        void IObserver<KeyValuePair<string, object?>>.OnCompleted()
         {
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnError(Exception error)
+        void IObserver<KeyValuePair<string, object?>>.OnError(Exception error)
         {
         }
     }

@@ -5,12 +5,16 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ProjectIdResolver
     {
         private const string DefaultConfig = "Debug";
@@ -49,27 +53,58 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                     "/p:Configuration=" + configuration,
                     "/p:CustomAfterMicrosoftCommonTargets=" + _targetsFile,
                     "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + _targetsFile,
+                    "-verbosity:detailed",
                 };
                 var psi = new ProcessStartInfo
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
                     Arguments = ArgumentEscaper.EscapeAndConcatenate(args),
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
                 };
 
 #if DEBUG
                 _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
 #endif
 
-                var process = Process.Start(psi);
+                using var process = new Process()
+                {
+                    StartInfo = psi,
+                };
+
+                var outputBuilder = new StringBuilder();
+                var errorBuilder = new StringBuilder();
+                process.OutputDataReceived += (_, d) =>
+                {
+                    if (!string.IsNullOrEmpty(d.Data))
+                    {
+                        outputBuilder.AppendLine(d.Data);
+                    }
+                };
+                process.ErrorDataReceived += (_, d) =>
+                {
+                    if (!string.IsNullOrEmpty(d.Data))
+                    {
+                        errorBuilder.AppendLine(d.Data);
+                    }
+                };
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)
                 {
-                    _reporter.Verbose(process.StandardOutput.ReadToEnd());
-                    _reporter.Verbose(process.StandardError.ReadToEnd());
+                    _reporter.Verbose(outputBuilder.ToString());
+                    _reporter.Verbose(errorBuilder.ToString());
+                    _reporter.Error($"Exit code: {process.ExitCode}");
                     throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                }
+
+                if (!File.Exists(outputFile))
+                {
+                    throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
                 }
 
                 var id = File.ReadAllText(outputFile)?.Trim();

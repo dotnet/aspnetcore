@@ -15,7 +15,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(new EntityTagHeaderValue("\"x\""), rangeCondition.EntityTag);
             Assert.Null(rangeCondition.LastModified);
 
-            EntityTagHeaderValue input = null;
+            EntityTagHeaderValue input = null!;
             Assert.Throws<ArgumentNullException>(() => new RangeConditionHeaderValue(input));
         }
 
@@ -26,7 +26,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(new EntityTagHeaderValue("\"y\""), rangeCondition.EntityTag);
             Assert.Null(rangeCondition.LastModified);
 
-            Assert.Throws<ArgumentException>(() => new RangeConditionHeaderValue((string)null));
+            Assert.Throws<ArgumentException>(() => new RangeConditionHeaderValue((string?)null));
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ToString_UseDifferentrangeConditions_AllSerializedCorrectly()
+        public void ToString_UseDifferentRangeConditions_AllSerializedCorrectly()
         {
             var rangeCondition = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"x\""));
             Assert.Equal("\"x\"", rangeCondition.ToString());
@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void GetHashCode_UseSameAndDifferentrangeConditions_SameOrDifferentHashCodes()
+        public void GetHashCode_UseSameAndDifferentRangeConditions_SameOrDifferentHashCodes()
         {
             var rangeCondition1 = new RangeConditionHeaderValue("\"x\"");
             var rangeCondition2 = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"x\""));
@@ -84,7 +84,7 @@ namespace Microsoft.Net.Http.Headers
                 new EntityTagHeaderValue("\"x\"", true));
 
             Assert.False(rangeCondition1.Equals(null), "\"x\" vs. <null>");
-            Assert.True(rangeCondition1.Equals(rangeCondition2), "\"x\" vs. \"x\"");
+            Assert.True(rangeCondition1!.Equals(rangeCondition2), "\"x\" vs. \"x\"");
             Assert.False(rangeCondition1.Equals(rangeCondition3), "\"x\" vs. date");
             Assert.False(rangeCondition3.Equals(rangeCondition1), "date vs. \"x\"");
             Assert.False(rangeCondition3.Equals(rangeCondition4), "date vs. different date");
@@ -149,8 +149,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("Wed 09 Nov 1994 08:49:37 GMT,")]
         public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string input)
         {
-            RangeConditionHeaderValue result = null;
-            Assert.False(RangeConditionHeaderValue.TryParse(input, out result));
+            Assert.False(RangeConditionHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 
@@ -164,8 +163,7 @@ namespace Microsoft.Net.Http.Headers
 
         private void CheckValidTryParse(string input, RangeConditionHeaderValue expectedResult)
         {
-            RangeConditionHeaderValue result = null;
-            Assert.True(RangeConditionHeaderValue.TryParse(input, out result));
+            Assert.True(RangeConditionHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 

@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Owin
         }
 
         [Fact]
-        public void OwinEnvironmentImpelmentsGetEnumerator()
+        public void OwinEnvironmentImplementsGetEnumerator()
         {
             var owinEnvironment = new OwinEnvironment(CreateContext());
 

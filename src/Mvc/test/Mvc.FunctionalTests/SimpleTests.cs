@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public async Task JsonSerializeFormated()
+        public async Task JsonSerializeFormatted()
         {
             // Arrange
             var expected = "{" + Environment.NewLine

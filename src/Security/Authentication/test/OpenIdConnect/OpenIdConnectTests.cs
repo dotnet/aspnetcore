@@ -3,8 +3,10 @@
 
 using System;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
             Assert.Contains("path=/signin-oidc", nonce);
         }
 
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
             Assert.Contains("path=/", nonce);
         }
 
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/signin-oidc", correlation);
         }
 
@@ -154,7 +156,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
             var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
-            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
             Assert.Contains("path=/", correlation);
         }
 
@@ -294,6 +296,98 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal("Cannot redirect to the end session endpoint, the configuration may be missing or invalid.", exception.Message);
         }
 
+        [Fact]
+        public async Task RemoteSignOut_WithMissingIssuer()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer(handler: async context =>
+            {
+                var claimsIdentity = new ClaimsIdentity("Cookies");
+                claimsIdentity.AddClaim(new Claim("iss", "test"));
+                await context.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            });
+
+            var signInTransaction = await server.SendAsync(DefaultHost);
+
+            var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc", signInTransaction.AuthenticationCookieValue);
+            Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
+            Assert.DoesNotContain(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
+
+        }
+
+        [Fact]
+        public async Task RemoteSignOut_WithInvalidIssuer()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer(handler: async context =>
+            {
+                var claimsIdentity = new ClaimsIdentity("Cookies");
+                claimsIdentity.AddClaim(new Claim("iss", "test"));
+                await context.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            });
+
+            var signInTransaction = await server.SendAsync(DefaultHost);
+
+            var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc?iss=invalid", signInTransaction.AuthenticationCookieValue);
+            Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
+            Assert.DoesNotContain(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
+        }
+
+        [Fact]
+        public async Task RemoteSignOut_Get_Successful()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer(handler: async context =>
+            {
+                var claimsIdentity = new ClaimsIdentity("Cookies");
+                claimsIdentity.AddClaim(new Claim("iss", "test"));
+                claimsIdentity.AddClaim(new Claim("sid", "something"));
+                await context.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            });
+
+            var signInTransaction = await server.SendAsync(DefaultHost);
+
+            var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc?iss=test&sid=something", signInTransaction.AuthenticationCookieValue);
+            Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
+            Assert.Contains(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
+        }
+
+        [Fact]
+        public void MapInboundClaimsDefaultsToTrue()
+        {
+            var options = new OpenIdConnectOptions();
+            Assert.True(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.True(jwtHandler.MapInboundClaims);
+        }
+
+        [Fact]
+        public void MapInboundClaimsCanBeSetToFalse()
+        {
+            var options = new OpenIdConnectOptions();
+            options.MapInboundClaims = false;
+            Assert.False(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.False(jwtHandler.MapInboundClaims);
+        }
+        
         // Test Cases for calculating the expiration time of cookie from cookie name
         [Fact]
         public void NonceCookieExpirationTime()

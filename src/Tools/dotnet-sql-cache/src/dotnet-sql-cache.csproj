@@ -1,30 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <!-- This is a requirement for Microsoft tool packages only. -->
-    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
-    <Reference Include="System.Data.SqlClient" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- These files should be signed by corefx -->
-    <ExcludePackageFileFromSigning Include="sni.dll"  />
-    <ExcludePackageFileFromSigning Include="System.Data.SqlClient.dll" />
-    <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
-    <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
+    <Reference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

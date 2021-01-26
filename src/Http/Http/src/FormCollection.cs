@@ -4,19 +4,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Contains the parsed form values.
+    /// Contains the parsed HTTP form values.
     /// </summary>
     public class FormCollection : IFormCollection
     {
+        /// <summary>
+        /// An empty <see cref="FormCollection"/>.
+        /// </summary>
         public static readonly FormCollection Empty = new FormCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
@@ -24,36 +25,42 @@ namespace Microsoft.AspNetCore.Http
 
         private static IFormFileCollection EmptyFiles = new FormFileCollection();
 
-        private IFormFileCollection _files;
+        private IFormFileCollection? _files;
 
         private FormCollection()
         {
             // For static Empty
         }
 
-        public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files = null)
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormCollection"/>.
+        /// </summary>
+        /// <param name="fields">The backing fields.</param>
+        /// <param name="files">The files associated with the form.</param>
+        public FormCollection(Dictionary<string, StringValues>? fields, IFormFileCollection? files = null)
         {
             // can be null
             Store = fields;
             _files = files;
         }
 
+        /// <summary>
+        /// Gets the files associated with the HTTP form.
+        /// </summary>
         public IFormFileCollection Files
         {
-            get
-            {
-                return _files ?? EmptyFiles;
-            }
-            private set { _files = value; }
+            get => _files ?? EmptyFiles;
+            private set => _files = value;
         }
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.
         /// </summary>
         /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>
+        /// <returns>the associated value from the collection as a <see cref="StringValues"/>
+        /// or <see cref="StringValues.Empty"/> if the key is not present.</returns>
         public StringValues this[string key]
         {
             get
@@ -63,8 +70,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                StringValues value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out StringValues value))
                 {
                     return value;
                 }
@@ -72,10 +78,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        /// <summary>
-        /// Gets the number of elements contained in the <see cref="HeaderDictionary" />;.
-        /// </summary>
-        /// <returns>The number of elements contained in the <see cref="HeaderDictionary" />.</returns>
+        /// <inheritdoc />
         public int Count
         {
             get
@@ -84,6 +87,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        /// <inheritdoc />
         public ICollection<string> Keys
         {
             get
@@ -96,11 +100,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        /// <summary>
-        /// Determines whether the <see cref="HeaderDictionary" /> contains a specific key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
+        /// <inheritdoc />
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -110,12 +110,7 @@ namespace Microsoft.AspNetCore.Http
             return Store.ContainsKey(key);
         }
 
-        /// <summary>
-        /// Retrieves a value from the dictionary.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="HeaderDictionary" /> contains the key; otherwise, false.</returns>
+        /// <inheritdoc />
         public bool TryGetValue(string key, out StringValues value)
         {
             if (Store == null)
@@ -127,7 +122,8 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="IFormCollection" /> interface.
+        /// Returns an struct enumerator that iterates through a collection without boxing and
+        /// is also used via the <see cref="IFormCollection" /> interface.
         /// </summary>
         /// <returns>An <see cref="Enumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
@@ -171,6 +167,9 @@ namespace Microsoft.AspNetCore.Http
             return Store.GetEnumerator();
         }
 
+        /// <summary>
+        /// Enumerates a <see cref="FormCollection"/>.
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             // Do NOT make this readonly, or MoveNext will not work
@@ -183,6 +182,11 @@ namespace Microsoft.AspNetCore.Http
                 _notEmpty = true;
             }
 
+            /// <summary>
+            /// Advances the enumerator to the next element of the <see cref="FormCollection"/>.
+            /// </summary>
+            /// <returns><see langword="true"/> if the enumerator was successfully advanced to the next element;
+            /// <see langword="false"/> if the enumerator has passed the end of the collection.</returns>
             public bool MoveNext()
             {
                 if (_notEmpty)
@@ -192,6 +196,9 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
             public KeyValuePair<string, StringValues> Current
             {
                 get
@@ -200,10 +207,11 @@ namespace Microsoft.AspNetCore.Http
                     {
                         return _dictionaryEnumerator.Current;
                     }
-                    return default(KeyValuePair<string, StringValues>);
+                    return default;
                 }
             }
 
+            /// <inheritdoc />
             public void Dispose()
             {
             }

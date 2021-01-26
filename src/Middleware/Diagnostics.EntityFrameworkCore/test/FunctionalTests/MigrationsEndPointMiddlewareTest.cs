@@ -12,12 +12,13 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpe
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
@@ -27,10 +28,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Non_migration_requests_pass_thru()
         {
-            var builder = new WebHostBuilder().Configure(app => app
-                .UseMigrationsEndPoint()
-                .UseMiddleware<SuccessMiddleware>());
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app
+                    .UseMigrationsEndPoint()
+                    .UseMiddleware<SuccessMiddleware>());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -68,14 +78,18 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
         private async Task Migration_request(bool useCustomPath)
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 var optionsBuilder = new DbContextOptionsBuilder();
-                optionsBuilder.UseSqlServer(database.ConnectionString);
+                optionsBuilder.UseSqlite(database.ConnectionString);
 
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
-                var builder = new WebHostBuilder()
+                using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
                     .Configure(app =>
                     {
                         if (useCustomPath)
@@ -94,10 +108,14 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         services.AddDbContext<BloggingContextWithMigrations>(options =>
                         {
-                            options.UseSqlServer(database.ConnectionString);
+                            options.UseSqlite(database.ConnectionString);
                         });
                     });
-                var server = new TestServer(builder);
+                }).Build();
+
+                await host.StartAsync();
+
+                var server = host.GetTestServer();
 
                 using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
                 {
@@ -128,12 +146,20 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Context_type_not_specified()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseMigrationsEndPoint();
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseMigrationsEndPoint();
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>());
 
@@ -141,19 +167,27 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_NoContextType"), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("MigrationsEndPointMiddleware_NoContextType"), content);
             Assert.True(content.Length > 512);
         }
 
         [Fact]
         public async Task Invalid_context_type_specified()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseMigrationsEndPoint();
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseMigrationsEndPoint();
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var typeName = "You won't find this type ;)";
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
@@ -165,17 +199,25 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_InvalidContextType", typeName), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_ContextNotRegistered", typeName), content);
             Assert.True(content.Length > 512);
         }
 
         [Fact]
         public async Task Context_not_registered_in_services()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app => app.UseMigrationsEndPoint())
-                .ConfigureServices(services => services.AddEntityFrameworkSqlServer());
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.UseMigrationsEndPoint())
+                    .ConfigureServices(services => services.AddEntityFrameworkSqlite());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                 {
@@ -186,7 +228,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_ContextNotRegistered", typeof(BloggingContext)), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_ContextNotRegistered", typeof(BloggingContext).AssemblyQualifiedName), content);
             Assert.True(content.Length > 512);
         }
 
@@ -195,18 +237,26 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Exception_while_applying_migrations()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
-                var builder = new WebHostBuilder()
+                using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
                     .Configure(app => app.UseMigrationsEndPoint())
                     .ConfigureServices(services =>
                     {
                         services.AddDbContext<BloggingContextWithSnapshotThatThrows>(optionsBuilder =>
                         {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                            optionsBuilder.UseSqlite(database.ConnectionString);
                         });
                     });
-                var server = new TestServer(builder);
+                }).Build();
+
+                await host.StartAsync();
+
+                var server = host.GetTestServer();
 
                 var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                     {

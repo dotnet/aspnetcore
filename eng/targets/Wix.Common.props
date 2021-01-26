@@ -3,19 +3,21 @@
 
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProductVersion>3.11</ProductVersion>
-    <WixVersion>3.11.1</WixVersion>
+    <ProductVersion>3.14</ProductVersion>
+    <WixVersion>3.14.0-dotnet</WixVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Required to make NuGet happy -->
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworkMoniker>Native,Version=v0.0</TargetFrameworkMoniker>
+
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
     <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
-    <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildExtensionsPath)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets</NuGetRestoreTargets>
+    <!-- IsRunningFromVisualStudio may be true even when running msbuild.exe from command line. This generally means that MSBUild is Visual Studio installation and therefore we need to find NuGet.targets in a different location.  -->
+    <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'=='' and '$([MSBuild]::IsRunningFromVisualStudio())'=='true'">$(MSBuildToolsPath32)\..\..\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets</NuGetRestoreTargets>
+    <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildToolsPath)\NuGet.targets</NuGetRestoreTargets>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" />
+  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition="'$(_ProjectExtensionsWereImported)' != 'true'" />
 
   <ItemGroup>
     <PackageReference Include="Wix" Version="$(WixVersion)" />

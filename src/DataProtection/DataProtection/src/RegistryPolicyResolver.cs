@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Internal;
@@ -17,9 +18,10 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// A type which allows reading policy from the system registry.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     internal sealed class RegistryPolicyResolver: IRegistryPolicyResolver
     {
-        private readonly Func<RegistryKey> _getPolicyRegKey;
+        private readonly Func<RegistryKey?> _getPolicyRegKey;
         private readonly IActivator _activator;
 
         public RegistryPolicyResolver(IActivator activator)
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection
                         }
                         else if (propInfo.PropertyType == typeof(Type))
                         {
-                            propInfo.SetValue(options, Type.GetType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture), throwOnError: true));
+                            propInfo.SetValue(options, Type.GetType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!, throwOnError: true));
                         }
                         else
                         {
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             // The format of this key is "type1; type2; ...".
             // We call Type.GetType to perform an eager check that the type exists.
-            var sinksFromRegistry = (string)key.GetValue("KeyEscrowSinks");
+            var sinksFromRegistry = (string?)key.GetValue("KeyEscrowSinks");
             if (sinksFromRegistry != null)
             {
                 foreach (string sinkFromRegistry in sinksFromRegistry.Split(';'))
@@ -79,7 +81,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     var candidate = sinkFromRegistry.Trim();
                     if (!String.IsNullOrEmpty(candidate))
                     {
-                        typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(candidate, throwOnError: true));
+                        typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(candidate, throwOnError: true)!);
                         sinks.Add(candidate);
                     }
                 }
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return sinks;
         }
 
-        public RegistryPolicy ResolvePolicy()
+        public RegistryPolicy? ResolvePolicy()
         {
             using (var registryKey = _getPolicyRegKey())
             {
@@ -96,7 +98,7 @@ namespace Microsoft.AspNetCore.DataProtection
             }
         }
 
-        private RegistryPolicy ResolvePolicyCore(RegistryKey policyRegKey)
+        private RegistryPolicy? ResolvePolicyCore(RegistryKey? policyRegKey)
         {
             if (policyRegKey == null)
             {
@@ -104,9 +106,9 @@ namespace Microsoft.AspNetCore.DataProtection
             }
 
             // Read the encryption options type: CNG-CBC, CNG-GCM, Managed
-            AlgorithmConfiguration configuration = null;
+            AlgorithmConfiguration? configuration = null;
 
-            var encryptionType = (string)policyRegKey.GetValue("EncryptionType");
+            var encryptionType = (string?)policyRegKey.GetValue("EncryptionType");
             if (String.Equals(encryptionType, "CNG-CBC", StringComparison.OrdinalIgnoreCase))
             {
                 configuration = new CngCbcAuthenticatedEncryptorConfiguration();

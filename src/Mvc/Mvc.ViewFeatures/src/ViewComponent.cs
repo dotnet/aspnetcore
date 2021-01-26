@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -102,6 +101,9 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ViewComponentContext"/>.
+        /// </summary>
         [ViewComponentContext]
         public ViewComponentContext ViewComponentContext
         {

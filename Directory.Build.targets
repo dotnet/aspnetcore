@@ -1,31 +1,92 @@
-<Project>
+﻿<Project>
+
+  <PropertyGroup>
+    <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
+    <!-- Analyzer package are needed in source build for WebSDK -->
+    <ExcludeFromSourceBuild
+        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+
+    <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
+     suppress all targets for TestProjects using ExcludeFromBuild. -->
+    <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
+        '$(SkipTestBuild)' == 'true' and
+        ('$(IsTestProject)' == 'true' or
+         '$(IsUnitTestProject)' == 'true' or
+         '$(IsTestAssetProject)' == 'true' or
+         '$(IsBenchmarkProject)' == 'true' or
+         '$(IsSampleProject)' == 'true' or
+         '$(IsSpecificationTestProject)' == 'true')">true</ExcludeFromBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Ignore API doc requirements for test assets -->
+    <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Resx settings">
+    <GenerateResxSource Condition="$(GenerateResxSource) == ''">true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods Condition="$(GenerateResxSourceEmitFormatMethods) == ''">true</GenerateResxSourceEmitFormatMethods>
+  </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <!-- Properties which should be set after the project has been evaluated -->
-  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj'">
+
+  <PropertyGroup Label="Versioning settings">
+    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
+    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(VersionSuffix)</BrandingVersionSuffix>
+    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
+
+    <SiteExtensionVersion>$(VersionPrefix)</SiteExtensionVersion>
+    <SiteExtensionVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionVersion>
+
+    <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
+
+    <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
+    <SharedFxVersion Condition=" '$(StabilizePackageVersion)' == 'true' ">$(VersionPrefix)</SharedFxVersion>
+    <SharedFxProductName>$(Product) $(SharedFxVersion) Shared Framework</SharedFxProductName>
+
+    <TargetingPackVersion>$(SharedFxVersion)</TargetingPackVersion>
+    <TargetingPackVersion Condition=" ! $(IsTargetingPackBuilding) ">$(TargetingPackVersionPrefix)</TargetingPackVersion>
+
+    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionVersion)</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Analyzers package are special. In general, they should not have dependencies in the nuspec. Analyzer assemblies are not meant to be used for compilation or runtime. -->
+    <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == '' AND '$(IsAnalyzersProject)' == 'true'">true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
-    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+    <IsPackable
+        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
-    <!-- Always include framework metapackages in patch updates. -->
-    <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true' OR '$(IsSharedSourcePackage)' == 'true' ">true</IsPackageInThisPatch>
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
-    
-    <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
-    <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Used to distinguish between packages building -->
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
-    <!-- Suppress creation of .nupkg for servicing builds. -->
+    <!-- Suppress creation of .nupkg for servicing builds of non-shipping projects. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' ">
+  <PropertyGroup>
+    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
+    <!-- Keep this below where we set "IsPackageInThisPatch" -->
+    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
     <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
-    <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
+    <AssemblyVersion Condition="$(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion.Substring(0, $(BaselinePackageVersion.IndexOf('-')))).0</AssemblyVersion>
+    <AssemblyVersion Condition="! $(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion).0</AssemblyVersion>
     <!--
       Ideally, we would also set the project version to match the baseline in case NuGet turns a ProjectReference into a nuspec depenendency, but
       NuGet does not currently handle conflicts between packages and projects which have the same package id/version.
@@ -35,31 +96,101 @@
     -->
     <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
     <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
+
+    <!-- For servicing builds, we want to resolve baseline versions of project packages that aren't building, always -->
+    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND
+        '$(IsAnalyzersProject)' != 'true' AND
+        '$(IsBenchmarkProject)' != 'true' AND
+        '$(IsSampleProject)' != 'true' AND
+        '$(IsSpecificationTestProject)' != 'true' AND
+        '$(IsTestAssetProject)' != 'true' AND
+        '$(IsTestProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
-    <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
+    <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND
+        ( '$(IsImplementationProject)' == 'true' OR '$(IsSpecificationTestProject)' == 'true' ) ">true</IsProjectReferenceProvider>
 
-    <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
-    <VerifyVersion>false</VerifyVersion>
+    <HasReferenceAssembly
+        Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
+    <ProduceReferenceAssembly>$(HasReferenceAssembly)</ProduceReferenceAssembly>
 
-    <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
-    <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
+    <!-- Duplicate setting from Microsoft.Common.CurrentVersion.targets because this is imported after that file. -->
+    <TargetRefPath
+        Condition=" '$(TargetRefPath)' == '' and $(ProduceReferenceAssembly) ">$([MSBuild]::NormalizePath($(TargetDir), 'ref', $(TargetFileName)))</TargetRefPath>
+
+    <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreApp21PackageVersion)</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
-  <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <PropertyGroup>
+    <PackageThirdPartyNoticesFile Condition="'$(PackageThirdPartyNoticesFile)' == ''">$(RepoRoot)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(PackageThirdPartyNoticesFile)" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <!--
+    If assembly is in shared framework and not net4*, assembly version should remain fixed for an entire
+    major.minor release even in servicing.
+  -->
+  <PropertyGroup Condition=" '$(IsAspNetCoreApp)' == 'true' AND
+      '$(Language)' == 'C#' AND
+      '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <KnownAppHostPackOrFrameworkReferenceTfm>$(DefaultNetCoreTargetFramework)</KnownAppHostPackOrFrameworkReferenceTfm>
+    <_DefaultTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(DefaultNetCoreTargetFramework)'))</_DefaultTargetFrameworkIdentifier>
+    <_DefaultTargetFrameworkVersionNoV>$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))</_DefaultTargetFrameworkVersionNoV>
+    <KnownAppHostPackOrFrameworkReferenceTfm Condition=" '$(_DefaultTargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(_DefaultTargetFrameworkVersionNoV)', '5.0')) ">netcoreapp$(_DefaultTargetFrameworkVersionNoV)</KnownAppHostPackOrFrameworkReferenceTfm>
+
+    <!-- Do not update the Microsoft.AspNetCore.App KnownFrameworkReference item unless requested. -->
+    <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
+    <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
+      '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' ">true</UpdateAspNetCoreKnownFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
+    <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">
+    <BuildDependsOn>$(BuildDependsOn);_CopySymbolsToArtifacts</BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_CopySymbolsToArtifacts">
+    <Copy SourceFiles="$([System.IO.Path]::ChangeExtension('$(TargetPath)', 'pdb'))"
+        DestinationFolder="$(SymbolsOutputPath)$(TargetFramework)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+  </Target>
+
+  <Import Project="eng\Workarounds.targets" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
+  <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
+  <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
-  <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
-  <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
+  <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\targets\Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
+  <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
+  <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />
+
 </Project>

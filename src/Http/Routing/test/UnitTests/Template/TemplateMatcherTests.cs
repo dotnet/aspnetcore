@@ -1136,7 +1136,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor);
+            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.Equal("/basepath/SomePath?SomeQuery", requestInfo.RawTarget);
                     Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
+                    Assert.False(httpContext.Request.CanHaveBody());
                     var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
                     Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.RemotePort);
@@ -274,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // GET http://localhost:5001 HTTP/1.1
                 var response = await SendSocketRequestAsync(root, root);
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
-                Assert.Equal(StatusCodes.Status200OK.ToString(), responseStatusCode);
+                Assert.Equal(StatusCodes.Status200OK.ToString(CultureInfo.InvariantCulture), responseStatusCode);
             }
         }
 
@@ -291,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Should return a 400 as it is a client error
                 var response = await SendSocketRequestAsync(root, root + "?query=value/1/2");
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
-                Assert.Equal(StatusCodes.Status400BadRequest.ToString(), responseStatusCode);
+                Assert.Equal(StatusCodes.Status400BadRequest.ToString(CultureInfo.InvariantCulture), responseStatusCode);
             }
         }
 
@@ -346,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             for (var i = 32; i < 127; i++)
             {
                 stringBuilder.Append("%");
-                stringBuilder.Append(i.ToString("X2"));
+                stringBuilder.Append(i.ToString("X2", CultureInfo.InvariantCulture));
             }
             var rawPath = stringBuilder.ToString();
             string root;
@@ -443,7 +445,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     if (i == 9 || i == 10) continue; // \t and \r are allowed by Http.Sys.
                     var response = await SendSocketRequestAsync(root, "/" + (char)i);
                     var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
-                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2"));
+                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2", CultureInfo.InvariantCulture));
                 }
             }
         }
@@ -459,9 +461,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 for (var i = 0; i < 32; i++)
                 {
-                    var response = await SendSocketRequestAsync(root, "/%" + i.ToString("X2"));
+                    var response = await SendSocketRequestAsync(root, "/%" + i.ToString("X2", CultureInfo.InvariantCulture));
                     var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
-                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2"));
+                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2", CultureInfo.InvariantCulture));
                 }
             }
         }

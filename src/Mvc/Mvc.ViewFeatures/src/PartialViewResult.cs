@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that renders a partial view to the response.
     /// </summary>
-    public class PartialViewResult : ActionResult
+    public class PartialViewResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -65,7 +65,15 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<IActionResultExecutor<PartialViewResult>>();
+            var executor = services.GetService<IActionResultExecutor<PartialViewResult>>();
+            if (executor == null)
+            {
+                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddControllersWithViews()",
+                    "ConfigureServices(...)"));
+            }
+
             return executor.ExecuteAsync(context, this);
         }
     }

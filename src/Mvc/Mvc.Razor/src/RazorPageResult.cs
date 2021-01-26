@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Result of locating a <see cref="IRazorPage"/>.
     /// </summary>
-    public struct RazorPageResult
+    public readonly struct RazorPageResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageResult"/> for a successful discovery.

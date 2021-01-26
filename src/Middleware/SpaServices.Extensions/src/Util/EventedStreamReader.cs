@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.NodeServices.Util
         public delegate void OnReceivedLineHandler(string line);
         public delegate void OnStreamClosedHandler();
 
-        public event OnReceivedChunkHandler OnReceivedChunk;
-        public event OnReceivedLineHandler OnReceivedLine;
-        public event OnStreamClosedHandler OnStreamClosed;
+        public event OnReceivedChunkHandler? OnReceivedChunk;
+        public event OnReceivedLineHandler? OnReceivedLine;
+        public event OnStreamClosedHandler? OnStreamClosed;
 
         private readonly StreamReader _streamReader;
         private readonly StringBuilder _linesBuffer;
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.NodeServices.Util
             var tcs = new TaskCompletionSource<Match>();
             var completionLock = new object();
 
-            OnReceivedLineHandler onReceivedLineHandler = null;
-            OnStreamClosedHandler onStreamClosedHandler = null;
+            OnReceivedLineHandler? onReceivedLineHandler = null;
+            OnStreamClosedHandler? onStreamClosedHandler = null;
 
             void ResolveIfStillPending(Action applyResolution)
             {
@@ -83,23 +83,35 @@ namespace Microsoft.AspNetCore.NodeServices.Util
                 var chunkLength = await _streamReader.ReadAsync(buf, 0, buf.Length);
                 if (chunkLength == 0)
                 {
+                    if (_linesBuffer.Length > 0)
+                    {
+                        OnCompleteLine(_linesBuffer.ToString());
+                        _linesBuffer.Clear();
+                    }
+
                     OnClosed();
                     break;
                 }
 
                 OnChunk(new ArraySegment<char>(buf, 0, chunkLength));
 
-                var lineBreakPos = Array.IndexOf(buf, '\n', 0, chunkLength);
-                if (lineBreakPos < 0)
+                int lineBreakPos = -1;
+                int startPos = 0;
+
+                // get all the newlines
+                while ((lineBreakPos = Array.IndexOf(buf, '\n', startPos, chunkLength - startPos)) >= 0 && startPos < chunkLength)
                 {
-                    _linesBuffer.Append(buf, 0, chunkLength);
-                }
-                else
-                {
-                    _linesBuffer.Append(buf, 0, lineBreakPos + 1);
+                    var length = (lineBreakPos + 1) - startPos;
+                    _linesBuffer.Append(buf, startPos, length);
                     OnCompleteLine(_linesBuffer.ToString());
                     _linesBuffer.Clear();
-                    _linesBuffer.Append(buf, lineBreakPos + 1, chunkLength - (lineBreakPos + 1));
+                    startPos = lineBreakPos + 1;
+                }
+
+                // get the rest
+                if (lineBreakPos < 0 && startPos < chunkLength)
+                {
+                    _linesBuffer.Append(buf, startPos, chunkLength - startPos);
                 }
             }
         }

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class LinkGenerationTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class LinkGenerationTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(LinkGenerationTests).GetTypeInfo().Assembly;
 
-        public LinkGenerationTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public LinkGenerationTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }
@@ -77,11 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
     }
 }

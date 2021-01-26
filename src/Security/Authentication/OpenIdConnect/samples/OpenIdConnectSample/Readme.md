@@ -1,6 +1,6 @@
 # How to set up the sample locally
 
-The OpenIdConnect sample supports multilpe authentication providers. In these instruction, we will explore how to set up this sample with both Azure Active Directory and Google Identity Platform.
+The OpenIdConnect sample supports multiple authentication providers. In these instruction, we will explore how to set up this sample with both Azure Active Directory and Google Identity Platform.
 
 ## Determine your development environment and a few key variables
 
@@ -14,19 +14,21 @@ If the application is run from command line or terminal, environment variable AS
 
 1. Set up a new Azure Active Directory (AAD) in your Azure Subscription.
 2. Open the newly created AAD in Azure web portal.
-3. Navigate to the Applications tab.
+3. Navigate to the App registrations tab.
 4. Add a new Application to the AAD. Set the "Sign-on URL" to sample application's URL.
-5. Naigate to the Application, and click the Configure tab.
+5. Navigate to the Application, and click the Configure tab.
 6. Find and save the "Client Id".
 7. Add a new key in the "Keys" section. Save value of the key, which is the "Client Secret".
 8. Click the "View Endpoints" on the drawer, a dialog will shows six endpoint URLs. Copy the "OAuth 2.0 Authorization Endpoint" to a text editor and remove the "/oauth2/authorize" from the string. The remaining part is the __authority URL__. It looks like `https://login.microsoftonline.com/<guid>`.
+9. Click the Authentication tab and check (i.e. enable) the ID tokens option under "Implicit grant".
+10. On the Authentication tab, ensure the "Redirect URIs" is set to `https://localhost:44318/signin-oidc` (i.e. the sample application's URI appended with "/signin-oidc")
 
-### Configure with Google Identity Platform 
+### Configure with Google Identity Platform
 
 1. Create a new project through [Google APIs](https://console.developers.google.com).
 2. In the sidebar choose "Credentials".
 3. Navigate to "OAuth consent screen" tab, fill in the project name and save.
-4. Navigate to "Credentials" tab. Click "Create credentials". Choose "OAuth client ID". 
+4. Navigate to "Credentials" tab. Click "Create credentials". Choose "OAuth client ID".
 5. Select "Web application" as the application type. Fill in the "Authorized redirect URIs" with `https://localhost:44318/signin-oidc`.
 6. Save the "Client ID" and "Client Secret" shown in the dialog.
 7. The "Authority URL" for Google Authentication is `https://accounts.google.com/`.
@@ -41,4 +43,4 @@ dotnet user-secrets set oidc:clientid <Client Id>
 dotnet user-secrets set oidc:clientsecret <Client Secret>
 dotnet user-secrets set oidc:authority <Authority URL>
 ```
-
+3. Update the call to `AddOpenIdConnect()` in `ConfigureServices` to use the configuration values from user secrets.

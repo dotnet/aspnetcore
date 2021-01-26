@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public static bool IsNegotiateRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Post &&
-                   new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
+                   new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate", StringComparison.Ordinal);
         }
 
         public static bool IsLongPollRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Get &&
-                   !IsServerSentEventsRequest(request) && 
+                   !IsServerSentEventsRequest(request) &&
                    (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
-            HttpTransportType? transportTypes = null)
+            HttpTransportType? transportTypes = null, string connectionToken = "connection-token", int negotiateVersion = 0)
         {
             var availableTransports = new List<object>();
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
             }
 
-            return JsonConvert.SerializeObject(new { connectionId, availableTransports });
+            return JsonConvert.SerializeObject(new { connectionId, availableTransports, connectionToken, negotiateVersion });
         }
     }
 }

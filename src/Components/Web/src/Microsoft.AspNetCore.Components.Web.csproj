@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Description>Support for rendering ASP.NET Core components for browsers.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.JSInterop" />
+    <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+</Project>

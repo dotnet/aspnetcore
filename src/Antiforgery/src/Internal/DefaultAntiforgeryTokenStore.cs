@@ -3,14 +3,15 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
+    internal class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
     {
         private readonly AntiforgeryOptions _options;
 
@@ -24,11 +25,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             _options = optionsAccessor.Value;
         }
 
-        public string GetCookieToken(HttpContext httpContext)
+        public string? GetCookieToken(HttpContext httpContext)
         {
             Debug.Assert(httpContext != null);
 
-            var requestCookie = httpContext.Request.Cookies[_options.Cookie.Name];
+            var requestCookie = httpContext.Request.Cookies[_options.Cookie.Name!];
             if (string.IsNullOrEmpty(requestCookie))
             {
                 // unable to find the cookie.
@@ -42,11 +43,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             Debug.Assert(httpContext != null);
 
-            var cookieToken = httpContext.Request.Cookies[_options.Cookie.Name];
+            var cookieToken = httpContext.Request.Cookies[_options.Cookie.Name!];
 
             // We want to delay reading the form as much as possible, for example in case of large file uploads,
             // request token could be part of the header.
-            StringValues requestToken;
+            StringValues requestToken = default;
             if (_options.HeaderName != null)
             {
                 requestToken = httpContext.Request.Headers[_options.HeaderName];
@@ -57,7 +58,24 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 // Check the content-type before accessing the form collection to make sure
                 // we report errors gracefully.
-                var form = await httpContext.Request.ReadFormAsync();
+                IFormCollection form;
+                try
+                {
+                    form = await httpContext.Request.ReadFormAsync();
+                }
+                catch (InvalidDataException ex)
+                {
+                    // ReadFormAsync can throw InvalidDataException if the form content is malformed.
+                    // Wrap it in an AntiforgeryValidationException and allow the caller to handle it as just another antiforgery failure.
+                    throw new AntiforgeryValidationException(Resources.AntiforgeryToken_UnableToReadRequest, ex);
+                }
+                catch (IOException ex)
+                {
+                    // Reading the request body (which happens as part of ReadFromAsync) may throw an exception if a client disconnects.
+                    // Wrap it in an AntiforgeryValidationException and allow the caller to handle it as just another antiforgery failure.
+                    throw new AntiforgeryValidationException(Resources.AntiforgeryToken_UnableToReadRequest, ex);
+                }
+
                 requestToken = form[_options.FormFieldName];
             }
 
@@ -73,7 +91,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             if (_options.Cookie.Path != null)
             {
-                options.Path = _options.Cookie.Path.ToString();
+                options.Path = _options.Cookie.Path;
             }
             else
             {
@@ -84,7 +102,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 }
             }
 
-            httpContext.Response.Cookies.Append(_options.Cookie.Name, token, options);
+            httpContext.Response.Cookies.Append(_options.Cookie.Name!, token, options);
         }
     }
 }

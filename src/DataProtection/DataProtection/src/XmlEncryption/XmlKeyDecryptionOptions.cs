@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
@@ -12,16 +13,28 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     /// </summary>
     internal class XmlKeyDecryptionOptions
     {
-        private readonly Dictionary<string, X509Certificate2> _certs = new Dictionary<string, X509Certificate2>(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<X509Certificate2>> _certs = new Dictionary<string, List<X509Certificate2>>(StringComparer.Ordinal);
 
-        /// <summary>
-        /// A mapping of key thumbprint to the X509Certificate2
-        /// </summary>
-        public IReadOnlyDictionary<string, X509Certificate2> KeyDecryptionCertificates => _certs;
+        public int KeyDecryptionCertificateCount => _certs.Count;
+
+        public bool TryGetKeyDecryptionCertificates(X509Certificate2 certInfo, [NotNullWhen(true)] out IReadOnlyList<X509Certificate2>? keyDecryptionCerts)
+        {
+            var key = GetKey(certInfo);
+            var retVal = _certs.TryGetValue(key, out var keyDecryptionCertsRetVal);
+            keyDecryptionCerts = keyDecryptionCertsRetVal;
+            return retVal;
+        }
 
         public void AddKeyDecryptionCertificate(X509Certificate2 certificate)
         {
-            _certs[certificate.Thumbprint] = certificate;
+            var key = GetKey(certificate);
+            if (!_certs.TryGetValue(key, out var certificates))
+            {
+                certificates = _certs[key] = new List<X509Certificate2>();
+            }
+            certificates.Add(certificate);
         }
+
+        private string GetKey(X509Certificate2 cert) => cert.Thumbprint;
     }
 }

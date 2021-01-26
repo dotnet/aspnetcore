@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Identity
         public static readonly string DefaultProvider = "Default";
 
         /// <summary>
-        /// Default token provider name used by the email provider. />.
+        /// Default token provider name used by the email provider.
         /// </summary>
         public static readonly string DefaultEmailProvider = "Email";
 
         /// <summary>
-        /// Default token provider name used by the phone provider. />.
+        /// Default token provider name used by the phone provider.
         /// </summary>
         public static readonly string DefaultPhoneProvider = "Phone";
 
@@ -75,5 +75,10 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="AuthenticatorTokenProvider"/> used to validate two factor sign ins with an authenticator.
         /// </value>
         public string AuthenticatorTokenProvider { get; set; } = DefaultAuthenticatorProvider;
+
+        /// <summary>
+        /// Gets or sets the issuer used for the authenticator issuer.
+        /// </summary>
+        public string AuthenticatorIssuer { get; set; } = "Microsoft.AspNetCore.Identity.UI";
     }
 }

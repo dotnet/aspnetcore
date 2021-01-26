@@ -1,9 +1,14 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -13,6 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         private List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
         private RequestDelegate _app;
+        private readonly ILogger _logger;
 
         private List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
 
@@ -29,8 +35,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        public TestHttpMessageHandler(bool autoNegotiate = true, bool handleFirstPoll = true)
+        public TestHttpMessageHandler(ILoggerFactory loggerFactory, bool autoNegotiate = true, bool handleFirstPoll = true)
         {
+            _logger = loggerFactory?.CreateLogger<TestHttpMessageHandler>() ?? NullLoggerFactory.Instance.CreateLogger<TestHttpMessageHandler>();
+
             if (autoNegotiate)
             {
                 OnNegotiate((_, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent()));
@@ -41,6 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var firstPoll = true;
                 OnRequest(async (request, next, cancellationToken) =>
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (ResponseUtils.IsLongPollRequest(request) && firstPoll)
                     {
                         firstPoll = false;
@@ -54,6 +63,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        public TestHttpMessageHandler(bool autoNegotiate = true, bool handleFirstPoll = true)
+            : this(NullLoggerFactory.Instance, autoNegotiate, handleFirstPoll)
+        {
+        }
+
         protected override void Dispose(bool disposing)
         {
             Disposed = true;
@@ -62,6 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Calling handlers for a '{Method}' going to '{Url}'.", request.Method, request.RequestUri);
             await Task.Yield();
 
             lock (_receivedRequests)
@@ -96,8 +111,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deleteCts.Token);
 
                 // Just block until canceled
-                var tcs = new TaskCompletionSource<object>();
-                using (cts.Token.Register(() => tcs.TrySetResult(null)))
+                var tcs = new TaskCompletionSource();
+                using (cts.Token.Register(() => tcs.TrySetResult()))
                 {
                     await tcs.Task;
                 }
@@ -105,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             });
             testHttpMessageHandler.OnRequest((request, next, cancellationToken) =>
             {
-                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.StartsWith("/?id="))
+                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.Contains("id="))
                 {
                     deleteCts.Cancel();
                     return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
@@ -145,6 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             OnRequest((request, next, cancellationToken) =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (request.Method.Equals(method) && string.Equals(request.RequestUri.PathAndQuery, pathAndQuery))
                 {
                     return handler(request, cancellationToken);

@@ -1,23 +1,45 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>9.0</LangVersion>
 
-    <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
-    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <!-- Required to exist in the NuGet package cache to enable code-signing. -->
+    <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
+    <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(RepoRoot)eng\AllRulesDisabled.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
-    <Reference Include="xunit" />
-    <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
+    <Reference Include="NETStandard.Library" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
+
+  <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <Content>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemDefinitionGroup>
+
+  <!-- Properties to control how we handle warnings when using the tasks provided by the Yarn MSBuild SDK -->
+  <PropertyGroup>
+    <IgnoreYarnWarnings>false</IgnoreYarnWarnings>
+    <IgnoreYarnWarnings Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</IgnoreYarnWarnings>
+  </PropertyGroup>
 
 </Project>

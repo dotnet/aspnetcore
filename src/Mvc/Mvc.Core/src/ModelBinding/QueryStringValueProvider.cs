@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -14,9 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class QueryStringValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
-        private readonly CultureInfo _culture;
         private readonly IQueryCollection _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a value provider for <see cref="IQueryCollection"/>.
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public QueryStringValueProvider(
             BindingSource bindingSource,
             IQueryCollection values,
-            CultureInfo culture)
+            CultureInfo? culture)
             : base(bindingSource)
         {
             if (bindingSource == null)
@@ -41,11 +41,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             _values = values;
-            _culture = culture;
+            Culture = culture;
         }
 
-        public CultureInfo Culture => _culture;
+        /// <summary>
+        /// The culture for the provider.
+        /// </summary>
+        public CultureInfo? Culture { get; }
 
+        /// <summary>
+        /// The <see cref="PrefixContainer"/>.
+        /// </summary>
         protected PrefixContainer PrefixContainer
         {
             get
@@ -84,6 +90,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (key.Length == 0)
+            {
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a query string
+                // parameter with a empty key (e.g. /User?=test) which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
+            }
+
             var values = _values[key];
             if (values.Count == 0)
             {
@@ -91,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else
             {
-                return new ValueProviderResult(values, _culture);
+                return new ValueProviderResult(values, Culture);
             }
         }
     }

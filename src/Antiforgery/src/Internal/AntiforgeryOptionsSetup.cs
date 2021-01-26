@@ -1,38 +1,42 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
+using System;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class AntiforgeryOptionsSetup : ConfigureOptions<AntiforgeryOptions>
+    internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
     {
-        public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptionsAccessor)
-            : base((options) => ConfigureOptions(options, dataProtectionOptionsAccessor.Value))
+        private readonly DataProtectionOptions _dataProtectionOptions;
+
+        public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptions)
         {
+            _dataProtectionOptions = dataProtectionOptions.Value;
         }
 
-        public static void ConfigureOptions(AntiforgeryOptions options, DataProtectionOptions dataProtectionOptions)
+        public void Configure(AntiforgeryOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (options.Cookie.Name == null)
             {
-                var applicationId = dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
+                var applicationId = _dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
                 options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
             }
         }
 
         private static string ComputeCookieName(string applicationId)
         {
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
-            {
-                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(applicationId));
-                var subHash = hash.Take(8).ToArray();
-                return WebEncoders.Base64UrlEncode(subHash);
-            }
+            byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(applicationId));
+            return WebEncoders.Base64UrlEncode(fullHash, 0, 8);
         }
     }
 }

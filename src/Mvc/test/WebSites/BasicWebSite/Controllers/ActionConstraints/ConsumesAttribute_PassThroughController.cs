@@ -14,5 +14,17 @@ namespace BasicWebSite.Controllers.ActionConstraints
         {
             return Content("ConsumesAttribute_PassThrough_Product_Json");
         }
+
+        [Consumes("application/json")]
+        public IActionResult CreateProductMultiple(Product_Json jsonInput)
+        {
+            return Content("ConsumesAttribute_PassThrough_Product_Json");
+        }
+
+        [Consumes("application/xml")]
+        public IActionResult CreateProductMultiple(Product_Xml jsonInput)
+        {
+            return Content("ConsumesAttribute_PassThrough_Product_Xml");
+        }
     }
 }

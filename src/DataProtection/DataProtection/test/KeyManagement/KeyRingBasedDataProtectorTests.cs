@@ -2,17 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -222,6 +225,162 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Act & assert
             var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(protectedData));
             Assert.Equal(Error.Common_KeyNotFound(notFoundKeyId).Message, ex.Message);
+        }
+
+        private static DateTime StringToDateTime(string input)
+        {
+            return DateTimeOffset.ParseExact(input, "u", CultureInfo.InvariantCulture).UtcDateTime;
+        }
+
+        private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider cacheableKeyRingProvider)
+        {
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            var options = new KeyManagementOptions();
+            options.AuthenticatedEncryptorFactories.Add(mockEncryptorFactory.Object);
+
+            return new KeyRingProvider(
+                keyManager: null,
+                keyManagementOptions: Options.Create(options),
+                defaultKeyResolver: null,
+                loggerFactory: NullLoggerFactory.Instance)
+            {
+                CacheableKeyRingProvider = cacheableKeyRingProvider
+            };
+        }
+
+        [Fact]
+        public void Unprotect_KeyNotFound_RefreshOnce_ThrowsKeyNotFound()
+        {
+            // Arrange
+            Guid notFoundKeyId = new Guid("654057ab-2491-4471-a72a-b3b114afda38");
+            byte[] protectedData = BuildProtectedDataFromCiphertext(
+                keyId: notFoundKeyId,
+                ciphertext: new byte[0]);
+
+            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+
+            // the keyring has only one key
+            Key key = new Key(Guid.Empty, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new CacheableKeyRing(CancellationToken.None, DateTimeOffset.MaxValue, key, new[] { key });
+
+            var keyRingProvider = CreateKeyRingProvider(new TestKeyRingProvider(keyRing));
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: keyRingProvider,
+                logger: GetLogger(),
+                originalPurposes: null,
+                newPurpose: "purpose");
+
+            // Act & assert
+            var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(protectedData));
+            Assert.Equal(Error.Common_KeyNotFound(notFoundKeyId).Message, ex.Message);
+        }
+
+        [Fact]
+        public void Unprotect_KeyNotFound_WontRefreshOnce_AfterTooLong()
+        {
+            // Arrange
+            Guid notFoundKeyId = new Guid("654057ab-2491-4471-a72a-b3b114afda38");
+            byte[] protectedData = BuildProtectedDataFromCiphertext(
+                keyId: notFoundKeyId,
+                ciphertext: new byte[0]);
+
+            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+
+            // the keyring has only one key
+            Key key = new Key(Guid.Empty, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new CacheableKeyRing(CancellationToken.None, DateTimeOffset.MaxValue, key, new[] { key });
+
+            // the refresh keyring has the notfound key
+            Key key2 = new Key(notFoundKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing2 = new CacheableKeyRing(CancellationToken.None, DateTimeOffset.MaxValue, key, new[] { key2 });
+
+            var keyRingProvider = CreateKeyRingProvider(new RefreshTestKeyRingProvider(keyRing, keyRing2));
+            keyRingProvider.AutoRefreshWindowEnd = DateTime.UtcNow;
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: keyRingProvider,
+                logger: GetLogger(),
+                originalPurposes: null,
+                newPurpose: "purpose");
+
+            // Act & assert
+            var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(protectedData));
+            Assert.Equal(Error.Common_KeyNotFound(notFoundKeyId).Message, ex.Message);
+        }
+
+        [Fact]
+        public void Unprotect_KeyNotFound_RefreshOnce_CanFindKey()
+        {
+            // Arrange
+            Guid notFoundKeyId = new Guid("654057ab-2491-4471-a72a-b3b114afda38");
+            byte[] protectedData = BuildProtectedDataFromCiphertext(
+                keyId: notFoundKeyId,
+                ciphertext: new byte[0]);
+
+            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+
+            // the keyring has only one key
+            Key key = new Key(Guid.Empty, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new CacheableKeyRing(CancellationToken.None, DateTimeOffset.MaxValue, key, new[] { key });
+
+            // the refresh keyring has the notfound key
+            Key key2 = new Key(notFoundKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing2 = new CacheableKeyRing(CancellationToken.None, DateTimeOffset.MaxValue, key, new[] { key2 });
+
+            var keyRingProvider = CreateKeyRingProvider(new RefreshTestKeyRingProvider(keyRing, keyRing2));
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: keyRingProvider,
+                logger: GetLogger(),
+                originalPurposes: null,
+                newPurpose: "purpose");
+
+            // Act & assert
+            var result = protector.Unprotect(protectedData);
+            Assert.Empty(result);
+        }
+
+        private class TestKeyRingProvider : ICacheableKeyRingProvider
+        {
+            private CacheableKeyRing _keyRing;
+
+            public TestKeyRingProvider(CacheableKeyRing keys) => _keyRing = keys;
+
+            public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now) => _keyRing;
+        }
+
+        private class RefreshTestKeyRingProvider : ICacheableKeyRingProvider
+        {
+            private CacheableKeyRing _keyRing;
+            private CacheableKeyRing _refreshKeyRing;
+            private bool _called;
+
+            public RefreshTestKeyRingProvider(CacheableKeyRing keys, CacheableKeyRing refreshKeys)
+            {
+                _keyRing = keys;
+                _refreshKeyRing = refreshKeys;
+            }
+
+            public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now)
+            {
+                if (!_called)
+                {
+                    _called = true;
+                    return _keyRing;
+                }
+                return _refreshKeyRing;
+            }
         }
 
         [Fact]

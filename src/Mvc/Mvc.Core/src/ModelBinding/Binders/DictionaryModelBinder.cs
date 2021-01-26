@@ -1,16 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -19,23 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     /// <typeparam name="TKey">Type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">Type of values in the dictionary.</typeparam>
-    public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue>>
+    public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue?>> where TKey : notnull
     {
         private readonly IModelBinder _valueBinder;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.</para>
-        /// </summary>
-        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
-        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
-            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
@@ -45,6 +30,85 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
             : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
+        {
+            if (valueBinder == null)
+            {
+                throw new ArgumentNullException(nameof(valueBinder));
+            }
+
+            _valueBinder = valueBinder;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <remarks>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always
+        /// <see langword="false"/> in <see cref="DictionaryModelBinder{TKey, TValue}"/>. This class ignores that
+        /// property and unconditionally checks for unbound top-level models with
+        /// <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </remarks>
+        public DictionaryModelBinder(
+            IModelBinder keyBinder,
+            IModelBinder valueBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes)
+            : base(
+                new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory),
+                loggerFactory,
+                // CollectionModelBinder should not check IsRequired, done in this model binder.
+                allowValidatingTopLevelNodes: false)
+        {
+            if (valueBinder == null)
+            {
+                throw new ArgumentNullException(nameof(valueBinder));
+            }
+
+            _valueBinder = valueBinder;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <remarks>
+        /// <para>This is the preferred <see cref="DictionaryModelBinder{TKey, TValue}"/> constructor.</para>
+        /// <para>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always
+        /// <see langword="false"/> in <see cref="DictionaryModelBinder{TKey, TValue}"/>. This class ignores that
+        /// property and unconditionally checks for unbound top-level models with
+        /// <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </para>
+        /// </remarks>
+        public DictionaryModelBinder(
+            IModelBinder keyBinder,
+            IModelBinder valueBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes,
+            MvcOptions mvcOptions)
+            : base(
+                  new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory),
+                  loggerFactory,
+                  allowValidatingTopLevelNodes: false,
+                  mvcOptions)
         {
             if (valueBinder == null)
             {
@@ -72,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = bindingContext.Result;
 
             Debug.Assert(result.Model != null);
-            var model = (IDictionary<TKey, TValue>)result.Model;
+            var model = (IDictionary<TKey, TValue?>)result.Model;
             if (model.Count != 0)
             {
                 // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
@@ -81,10 +145,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             Logger.NoKeyValueFormatForDictionaryModelBinder(bindingContext);
 
-            if (!(bindingContext.ValueProvider is IEnumerableValueProvider enumerableValueProvider))
+            if (bindingContext.ValueProvider is not IEnumerableValueProvider enumerableValueProvider)
             {
                 // No IEnumerableValueProvider available for the fallback approach. For example the user may have
                 // replaced the ValueProvider with something other than a CompositeValueProvider.
+                if (bindingContext.IsTopLevelObject)
+                {
+                    AddErrorIfBindingRequired(bindingContext);
+                }
+
                 return;
             }
 
@@ -94,12 +163,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (keys.Count == 0)
             {
                 // No entries with the expected keys.
+                if (bindingContext.IsTopLevelObject)
+                {
+                    AddErrorIfBindingRequired(bindingContext);
+                }
+
                 return;
             }
 
             // Update the existing successful but empty ModelBindingResult.
-            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
-            var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)];
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
+            var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)]!;
 
             var keyMappings = new Dictionary<string, TKey>(StringComparer.Ordinal);
             foreach (var kvp in keys)
@@ -124,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         // again in case this scope is binding a complex type and rewriting
                         // landed on ".key.propertyName" or in case this scope is binding another collection and an
                         // IKeyRewriterValueProvider implementation was first (hiding the original "[key][next key]").
-                        if (kvp.Value.EndsWith("]"))
+                        if (kvp.Value.EndsWith(']'))
                         {
                             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, kvp.Key);
                         }
@@ -145,21 +219,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry()
             {
-                Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue>(keyMappings, valueMetadata),
+                Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue?>(keyMappings, valueMetadata),
             });
         }
 
         /// <inheritdoc />
-        protected override object ConvertToCollectionType(
+        protected override object? ConvertToCollectionType(
             Type targetType,
-            IEnumerable<KeyValuePair<TKey, TValue>> collection)
+            IEnumerable<KeyValuePair<TKey, TValue?>> collection)
         {
             if (collection == null)
             {
                 return null;
             }
 
-            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))
+            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue?>)))
             {
                 // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
                 return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -180,6 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return base.CreateEmptyCollection(targetType);
         }
 
+        /// <inheritdoc/>
         public override bool CanCreateInstance(Type targetType)
         {
             if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))

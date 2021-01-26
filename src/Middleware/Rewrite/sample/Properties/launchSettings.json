@@ -8,15 +8,15 @@
     }
   },
   "profiles": {
+    "RewriteSample": {
+      "commandName": "Project"
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "RewriteSample": {
-      "commandName": "Project"
     }
   }
 }

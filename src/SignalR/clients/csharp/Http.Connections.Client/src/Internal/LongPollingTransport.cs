@@ -5,15 +5,17 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using static Microsoft.AspNetCore.Http.Connections.Client.Internal.Utils;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class LongPollingTransport : ITransport
+    internal partial class LongPollingTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             // Make initial long polling request
             // Server uses first long polling request to finish initializing connection and it returns without data
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using (var response = await _httpClient.SendAsync(request))
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 response.EnsureSuccessStatusCode();
             }
@@ -161,7 +163,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         // just want to start a new poll.
                         continue;
                     }
-                    catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+                    catch (WebException ex) when (!OperatingSystem.IsBrowser() && ex.Status == WebExceptionStatus.RequestCanceled)
                     {
                         // SendAsync on .NET Framework doesn't reliably throw OperationCanceledException.
                         // Catch the WebException and test it.
@@ -221,8 +223,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 Log.SendingDeleteRequest(_logger, url);
                 var response = await _httpClient.DeleteAsync(url);
-                response.EnsureSuccessStatusCode();
-                Log.DeleteRequestAccepted(_logger, url);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Log.ConnectionAlreadyClosedSendingDeleteRequest(_logger, url);
+                }
+                else
+                {
+                    // Check for non-404 errors
+                    response.EnsureSuccessStatusCode();
+                    Log.DeleteRequestAccepted(_logger, url);
+                }
             }
             catch (Exception ex)
             {

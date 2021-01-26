@@ -12,7 +12,6 @@ namespace System.Threading.Tasks
             await new NoThrowAwaiter(task);
         }
     }
-
     internal readonly struct NoThrowAwaiter : ICriticalNotifyCompletion
     {
         private readonly Task _task;
@@ -22,6 +21,6 @@ namespace System.Threading.Tasks
         // Observe exception
         public void GetResult() { _ = _task.Exception; }
         public void OnCompleted(Action continuation) => _task.GetAwaiter().OnCompleted(continuation);
-        public void UnsafeOnCompleted(Action continuation) => OnCompleted(continuation);
+        public void UnsafeOnCompleted(Action continuation) => _task.GetAwaiter().UnsafeOnCompleted(continuation);
     }
 }

@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Test
+namespace Microsoft.AspNetCore.Mvc
 {
     public class ProducesAttributeTests
     {
@@ -128,9 +127,8 @@ namespace Microsoft.AspNetCore.Mvc.Test
                        () => new ProducesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                string.Format("The argument '{0}' is invalid. " +
-                              "Media types which match all types or match all subtypes are not supported.",
-                              invalidContentType),
+                $"The argument '{invalidContentType}' is invalid. " +
+                "Media types which match all types or match all subtypes are not supported.",
                 ex.Message);
         }
 

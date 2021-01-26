@@ -14,10 +14,29 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     public static class FilterScope
     {
+        /// <summary>
+        /// First filter scope.
+        /// </summary>
         public static readonly int First = 0;
+
+        /// <summary>
+        /// Global filter scope.
+        /// </summary>
         public static readonly int Global = 10;
+
+        /// <summary>
+        /// Controller filter scope.
+        /// </summary>
         public static readonly int Controller = 20;
+
+        /// <summary>
+        /// Action filter scope.
+        /// </summary>
         public static readonly int Action = 30;
+
+        /// <summary>
+        /// Last filter scope.
+        /// </summary>
         public static readonly int Last = 100;
     }
 }

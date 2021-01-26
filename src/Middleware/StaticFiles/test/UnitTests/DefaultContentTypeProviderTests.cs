@@ -16,11 +16,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         }
 
         [Fact]
-        public void KnownExtensionsReturnTrye()
+        public void KnownExtensionsReturnType()
         {
             var provider = new FileExtensionContentTypeProvider();
-            string contentType;
-            Assert.True(provider.TryGetContentType("known.txt", out contentType));
+            Assert.True(provider.TryGetContentType("known.txt", out var contentType));
             Assert.Equal("text/plain", contentType);
         }
 
@@ -36,8 +35,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public void DashedExtensionsShouldBeMatched()
         {
             var provider = new FileExtensionContentTypeProvider();
-            string contentType;
-            Assert.True(provider.TryGetContentType("known.dvr-ms", out contentType));
+            Assert.True(provider.TryGetContentType("known.dvr-ms", out var contentType));
             Assert.Equal("video/x-ms-dvr", contentType);
         }
 
@@ -45,8 +43,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public void BothSlashFormatsAreUnderstood()
         {
             var provider = new FileExtensionContentTypeProvider();
-            string contentType;
-            Assert.True(provider.TryGetContentType(@"/first/example.txt", out contentType));
+            Assert.True(provider.TryGetContentType(@"/first/example.txt", out var contentType));
             Assert.Equal("text/plain", contentType);
             Assert.True(provider.TryGetContentType(@"\second\example.txt", out contentType));
             Assert.Equal("text/plain", contentType);
@@ -56,8 +53,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public void DotsInDirectoryAreIgnored()
         {
             var provider = new FileExtensionContentTypeProvider();
-            string contentType;
-            Assert.True(provider.TryGetContentType(@"/first.css/example.txt", out contentType));
+            Assert.True(provider.TryGetContentType(@"/first.css/example.txt", out var contentType));
             Assert.Equal("text/plain", contentType);
             Assert.True(provider.TryGetContentType(@"\second.css\example.txt", out contentType));
             Assert.Equal("text/plain", contentType);

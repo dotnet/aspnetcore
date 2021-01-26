@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -225,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var controller = new TestabilityController();
             var model = new MyModel() { Property1 = "Property_1" };
-            var serializerSettings = new JsonSerializerSettings();
+            var serializerSettings = new object();
 
             // Act
             var result = controller.JsonWithSerializerSettings_Action(model, serializerSettings);
@@ -374,7 +373,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(routeName, acceptedAtRouteResult.RouteName);
             Assert.Single(acceptedAtRouteResult.RouteValues);
             Assert.Equal("sample", acceptedAtRouteResult.RouteValues["route"]);
-            Assert.Same(value,acceptedAtRouteResult.Value);
+            Assert.Same(value, acceptedAtRouteResult.Value);
 
             // Arrange
             controller = new TestabilityController();
@@ -683,6 +682,42 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(new { Arg1 = "Hi", Arg2 = "There" }, result.Arguments);
         }
 
+        [Fact]
+        public void Problem_Works()
+        {
+            // Arrange
+            var detail = "Some random error";
+            var controller = new TestabilityController();
+
+            // Act
+            var result = controller.Problem(detail);
+
+            // Assert
+            var badRequest = Assert.IsType<ObjectResult>(result);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequest.Value);
+            Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ValidationProblem_Works()
+        {
+            // Arrange
+            var detail = "Some random error";
+            var controller = new TestabilityController();
+
+            // Act
+            controller.ModelState.AddModelError("some-key", "some-error");
+            var result = controller.ValidationProblem(detail);
+
+            // Assert
+            var badRequest = Assert.IsType<ObjectResult>(result);
+            var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
+            Assert.Equal(detail, validationProblemDetails.Detail);
+            var error = Assert.Single(validationProblemDetails.Errors);
+            Assert.Equal("some-key", error.Key);
+            Assert.Equal(new[] { "some-error" }, error.Value);
+        }
+
         public static IEnumerable<object[]> TestabilityViewTestData
         {
             get
@@ -745,7 +780,7 @@ namespace Microsoft.AspNetCore.Mvc
                 return Json(data);
             }
 
-            public IActionResult JsonWithSerializerSettings_Action(object data, JsonSerializerSettings serializerSettings)
+            public IActionResult JsonWithSerializerSettings_Action(object data, object serializerSettings)
             {
                 return Json(data, serializerSettings);
             }

@@ -2,17 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFOnlyUsersTest : UserManagerSpecificationTestBase<IdentityUser, string>
+    public class InMemoryEFOnlyUsersTest
+        : UserManagerSpecificationTestBase<IdentityUser, string>,
+            IClassFixture<InMemoryDatabaseFixture>
     {
+        private readonly InMemoryDatabaseFixture _fixture;
+
+        public InMemoryEFOnlyUsersTest(InMemoryDatabaseFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         protected override object CreateTestContext()
-            => new InMemoryContext<IdentityUser>(new DbContextOptionsBuilder().Options);
+            => InMemoryContext<IdentityUser>.Create(_fixture.Connection);
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
             => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContext<IdentityUser>)context, new IdentityErrorDescriber()));
@@ -22,7 +33,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         {
             return new IdentityUser
             {
-                UserName = useNamePrefixAsUserName ? namePrefix : string.Format("{0}{1}", namePrefix, Guid.NewGuid()),
+                UserName = useNamePrefixAsUserName ? namePrefix : string.Format(CultureInfo.InvariantCulture, "{0}{1}", namePrefix, Guid.NewGuid()),
                 Email = email,
                 PhoneNumber = phoneNumber,
                 LockoutEnabled = lockoutEnabled,
@@ -37,6 +48,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
         protected override Expression<Func<IdentityUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
 
+#pragma warning disable CA1310 // Specify StringComparison for correctness
         protected override Expression<Func<IdentityUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+#pragma warning restore CA1310 // Specify StringComparison for correctness
     }
 }

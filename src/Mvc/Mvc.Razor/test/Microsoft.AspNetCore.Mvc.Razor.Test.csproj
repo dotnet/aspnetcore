@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants>$(DefineConstants);SOME_TEST_DEFINE</DefineConstants>
   </PropertyGroup>
@@ -13,12 +13,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TestCommon" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" />
-
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <ProjectReference Include="..\..\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
   </ItemGroup>
 
 </Project>

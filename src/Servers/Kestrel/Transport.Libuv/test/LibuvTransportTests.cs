@@ -1,13 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -15,78 +19,160 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class LibuvTransportTests
     {
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
-        {
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
-        };
-
         public static IEnumerable<object[]> OneToTen => Enumerable.Range(1, 10).Select(i => new object[] { i });
 
         [Fact]
         public async Task TransportCanBindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvTransport(transportContext,
-                new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             // The transport can no longer start threads without binding to an endpoint.
             await transport.BindAsync();
-            await transport.StopAsync();
+            await transport.DisposeAsync();
         }
 
-        [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
-        public async Task TransportCanBindUnbindAndStop(ListenOptions listenOptions)
+        [Fact]
+        public async Task TransportCanBindUnbindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvTransport(transportContext, listenOptions);
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
             await transport.UnbindAsync();
-            await transport.StopAsync();
+            await transport.DisposeAsync();
         }
 
-        [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
-        public async Task ConnectionCanReadAndWrite(ListenOptions listenOptions)
+        [Fact]
+        public async Task ConnectionCanReadAndWrite()
         {
-            var serviceContext = new TestServiceContext();
-            listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp), HttpProtocols.Http1);
-
-            var transportContext = new TestLibuvTransportContext()
-            {
-                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
-            };
-
-            var transport = new LibuvTransport(transportContext, listenOptions);
+            var transportContext = new TestLibuvTransportContext();
+            await using var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
+            var endpoint = (IPEndPoint)transport.EndPoint;
 
-            using (var socket = TestConnection.CreateConnectedLoopbackSocket(listenOptions.IPEndPoint.Port))
+            async Task EchoServerAsync()
             {
-                var data = "Hello World";
-                socket.Send(Encoding.ASCII.GetBytes($"POST / HTTP/1.0\r\nContent-Length: 11\r\n\r\n{data}"));
+                while (true)
+                {
+                    await using var connection = await transport.AcceptAsync();
+
+                    if (connection == null)
+                    {
+                        break;
+                    }
+
+                    while (true)
+                    {
+                        var result = await connection.Transport.Input.ReadAsync();
+
+                        if (result.IsCompleted)
+                        {
+                            break;
+                        }
+                        await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
+
+                        connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                    }
+                }
+            }
+
+            var serverTask = EchoServerAsync();
+
+            using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
+            {
+                var data = Encoding.ASCII.GetBytes("Hello World");
+                await socket.SendAsync(data, SocketFlags.None);
+
                 var buffer = new byte[data.Length];
                 var read = 0;
                 while (read < data.Length)
                 {
-                    read += socket.Receive(buffer, read, buffer.Length - read, SocketFlags.None);
+                    read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None);
                 }
+
+                Assert.Equal(data, buffer);
             }
 
             await transport.UnbindAsync();
-            await transport.StopAsync();
+
+            await serverTask.DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task UnacceptedConnectionsAreAborted()
+        {
+            var transportContext = new TestLibuvTransportContext();
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+
+            await transport.BindAsync();
+            var endpoint = (IPEndPoint)transport.EndPoint;
+
+            async Task ConnectAsync()
+            {
+                using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
+                {
+                    try
+                    {
+                        var read = await socket.ReceiveAsync(new byte[10], SocketFlags.None);
+                        Assert.Equal(0, read);
+                    }
+                    catch (SocketException)
+                    {
+                        // The connection can be reset sometimes
+                    }
+                }
+            }
+
+            var connectTask = ConnectAsync();
+
+            await transport.UnbindAsync();
+            await transport.DisposeAsync();
+
+            // The connection was accepted because libuv eagerly accepts connections
+            // they sit in a queue in each listener, we want to make sure that resources
+            // are cleaned up if they are never accepted by the caller
+
+            await connectTask.DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task CallingAcceptAfterDisposeAsyncThrows()
+        {
+            var transportContext = new TestLibuvTransportContext();
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+
+            await transport.BindAsync();
+            var endpoint = (IPEndPoint)transport.EndPoint;
+
+            await transport.UnbindAsync();
+            await transport.DisposeAsync();
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => transport.AcceptAsync().AsTask());
+        }
+
+        [Fact]
+        public async Task CallingDisposeAsyncWillYieldPendingAccepts()
+        {
+            var transportContext = new TestLibuvTransportContext();
+            await using var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+
+            await transport.BindAsync();
+
+            var acceptTask = transport.AcceptAsync();
+
+            await transport.UnbindAsync();
+
+            var connection = await acceptTask.DefaultTimeout();
+
+            Assert.Null(connection);
         }
 
         [ConditionalTheory]
@@ -101,17 +187,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return context.Response.WriteAsync("Hello World");
             });
 
-            listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, testApplication, HttpProtocols.Http1);
+            listenOptions.UseHttpServer(serviceContext, testApplication, Core.HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext()
+            var transportContext = new TestLibuvTransportContext
             {
-                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build()),
+#pragma warning disable CS0618
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
+#pragma warning restore CS0618
             };
 
-            var transport = new LibuvTransport(transportContext, listenOptions);
-
+            await using var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
             await transport.BindAsync();
+            listenOptions.EndPoint = transport.EndPoint;
+
+            var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
+            var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, c => listenOptions.Build()(c), transportConnectionManager);
+            var acceptTask = dispatcher.StartAcceptingConnections(new GenericConnectionListener(transport));
 
             using (var client = new HttpClient())
             {
@@ -131,12 +222,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             await transport.UnbindAsync();
 
-            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default).ConfigureAwait(false))
+            await acceptTask;
+
+            if (!await transportConnectionManager.CloseAllConnectionsAsync(default))
             {
-                await serviceContext.ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false);
+                await transportConnectionManager.AbortAllConnectionsAsync();
+            }
+        }
+
+        private class GenericConnectionListener : IConnectionListener<ConnectionContext>
+        {
+            private readonly IConnectionListener _connectionListener;
+
+            public GenericConnectionListener(IConnectionListener connectionListener)
+            {
+                _connectionListener = connectionListener;
             }
 
-            await transport.StopAsync();
+            public EndPoint EndPoint => _connectionListener.EndPoint;
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+                 => _connectionListener.AcceptAsync(cancellationToken);
+
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+                => _connectionListener.UnbindAsync();
+
+            public ValueTask DisposeAsync()
+                => _connectionListener.DisposeAsync();
         }
     }
 }

@@ -9,26 +9,38 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents a byte range in a Range header value.
+    /// <para>
+    /// The <see cref="RangeItemHeaderValue"/> class provides support for a byte range in a <c>Range</c> as defined
+    /// in <see href="https://tools.ietf.org/html/rfc2616">RFC 2616</see>.
+    /// </para>
+    /// </summary>
     public class RangeItemHeaderValue
     {
         private long? _from;
         private long? _to;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RangeItemHeaderValue"/> class.
+        /// </summary>
+        /// <param name="from">The position at which to start sending data.</param>
+        /// <param name="to">The position at which to stop sending data.</param>
         public RangeItemHeaderValue(long? from, long? to)
         {
             if (!from.HasValue && !to.HasValue)
             {
                 throw new ArgumentException("Invalid header range.");
             }
-            if (from.HasValue && (from.Value < 0))
+            if (from.HasValue && (from.GetValueOrDefault() < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(from));
             }
-            if (to.HasValue && (to.Value < 0))
+            if (to.HasValue && (to.GetValueOrDefault() < 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(to));
             }
-            if (from.HasValue && to.HasValue && (from.Value > to.Value))
+            if (from.HasValue && to.HasValue && (from.GetValueOrDefault() > to.GetValueOrDefault()))
             {
                 throw new ArgumentOutOfRangeException(nameof(from));
             }
@@ -37,52 +49,55 @@ namespace Microsoft.Net.Http.Headers
             _to = to;
         }
 
+        /// <summary>
+        /// Gets the position at which to start sending data.
+        /// </summary>
         public long? From
         {
             get { return _from; }
         }
 
+        /// <summary>
+        /// Gets the position at which to stop sending data.
+        /// </summary>
         public long? To
         {
             get { return _to; }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             if (!_from.HasValue)
             {
-                return "-" + _to.Value.ToString(NumberFormatInfo.InvariantInfo);
+                return "-" + _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
             }
             else if (!_to.HasValue)
             {
-                return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-";
+                return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-";
             }
-            return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-" +
-                _to.Value.ToString(NumberFormatInfo.InvariantInfo);
+            return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-" +
+                _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
-            var other = obj as RangeItemHeaderValue;
-
-            if (other == null)
-            {
-                return false;
-            }
-            return ((_from == other._from) && (_to == other._to));
+            return obj is RangeItemHeaderValue other && ((_from == other._from) && (_to == other._to));
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             if (!_from.HasValue)
             {
-                return _to.GetHashCode();
+                return _to.GetValueOrDefault().GetHashCode();
             }
             else if (!_to.HasValue)
             {
-                return _from.GetHashCode();
+                return _from.GetValueOrDefault().GetHashCode();
             }
-            return _from.GetHashCode() ^ _to.GetHashCode();
+            return _from.GetValueOrDefault().GetHashCode() ^ _to.GetValueOrDefault().GetHashCode();
         }
 
         // Returns the length of a range list. E.g. "1-2, 3-4, 5-6" adds 3 ranges to 'rangeCollection'. Note that empty
@@ -92,7 +107,6 @@ namespace Microsoft.Net.Http.Headers
             int startIndex,
             ICollection<RangeItemHeaderValue> rangeCollection)
         {
-            Contract.Requires(rangeCollection != null);
             Contract.Requires(startIndex >= 0);
             Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection.Count > 0),
                 "If we can parse the string, then we expect to have at least one range item.");
@@ -103,8 +117,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Empty segments are allowed, so skip all delimiter-only segments (e.g. ", ,").
-            var separatorFound = false;
-            var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, out separatorFound);
+            var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, out var separatorFound);
             // It's OK if we didn't find leading separator characters. Ignore 'separatorFound'.
 
             if (current == input.Length)
@@ -112,17 +125,16 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            RangeItemHeaderValue range = null;
             while (true)
             {
-                var rangeLength = GetRangeItemLength(input, current, out range);
+                var rangeLength = GetRangeItemLength(input, current, out var range);
 
                 if (rangeLength == 0)
                 {
                     return 0;
                 }
 
-                rangeCollection.Add(range);
+                rangeCollection!.Add(range!);
 
                 current = current + rangeLength;
                 current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, current, true, out separatorFound);
@@ -141,7 +153,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static int GetRangeItemLength(StringSegment input, int startIndex, out RangeItemHeaderValue parsedValue)
+        internal static int GetRangeItemLength(StringSegment input, int startIndex, out RangeItemHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -169,7 +181,7 @@ namespace Microsoft.Net.Http.Headers
             current = current + fromLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
-            // Afer the first value, the '-' character must follow.
+            // After the first value, the '-' character must follow.
             if ((current == input.Length) || (input[current] != '-'))
             {
                 // We need a '-' character otherwise this can't be a valid range.

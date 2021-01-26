@@ -1,18 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -20,14 +17,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     public class ProjectToolScenario : IDisposable
     {
         private static readonly string TestProjectSourceRoot = Path.Combine(AppContext.BaseDirectory, "TestProjects");
-        private readonly ITestOutputHelper _logger;
+        private readonly ITestOutputHelper? _logger;
 
         public ProjectToolScenario()
             : this(null)
         {
         }
 
-        public ProjectToolScenario(ITestOutputHelper logger)
+        public ProjectToolScenario(ITestOutputHelper? logger)
         {
             WorkFolder = Path.Combine(AppContext.BaseDirectory, "tmp", Path.GetRandomFileName());
             DotNetWatchPath = Path.Combine(AppContext.BaseDirectory, "tool", "dotnet-watch.dll");
@@ -64,7 +61,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public Task RestoreAsync(string project)
         {
             _logger?.WriteLine($"Restoring msbuild project in {project}");
-            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore");
+            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore", "--ignore-failed-sources");
         }
 
         public Task BuildAsync(string project)
@@ -75,7 +72,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private async Task ExecuteCommandAsync(string project, TimeSpan timeout, params string[] arguments)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             project = Path.Combine(WorkFolder, project);
             _logger?.WriteLine($"Project directory: '{project}'");
 
@@ -99,10 +96,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             void OnData(object sender, DataReceivedEventArgs args)
               => _logger?.WriteLine(args.Data ?? string.Empty);
 
-            void OnExit(object sender, EventArgs args)
+            void OnExit(object? sender, EventArgs args)
             {
                 _logger?.WriteLine($"Process exited {process.Id}");
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
             }
 
             process.ErrorDataReceived += OnData;
@@ -147,26 +144,24 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             Directory.CreateDirectory(WorkFolder);
 
-            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
+            // On Helix, the Directory.Build.* files already exist in a parent folder.
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                var artifactsBinDirectory = typeof(ProjectToolScenario)
+                    .Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .Single(s => s.Key == "ArtifactsBinDir")
+                    .Value!;
+                var directoryBuildFilesDirectory = Path.Combine(artifactsBinDirectory, "GenerateFiles");
 
-            var restoreSources = GetMetadata("TestSettings:RestoreSources");
-            var frameworkVersion = GetMetadata("TestSettings:RuntimeFrameworkVersion");
-
-            var dbTargets = new XDocument(
-                new XElement("Project",
-                    new XElement("PropertyGroup",
-                        new XElement("RuntimeFrameworkVersion", frameworkVersion),
-                        new XElement("RestoreSources", restoreSources))));
-            dbTargets.Save(Path.Combine(WorkFolder, "Directory.Build.targets"));
-        }
-
-        private string GetMetadata(string key)
-        {
-            return typeof(ProjectToolScenario)
-                .Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(a => string.Equals(a.Key, key, StringComparison.Ordinal))
-                .Value;
+                foreach (var filename in new[] {"Directory.Build.props", "Directory.Build.targets"})
+                {
+                    File.Copy(
+                        Path.Combine(directoryBuildFilesDirectory, filename),
+                        Path.Combine(WorkFolder, filename),
+                        overwrite: true);
+                }
+            }
         }
 
         public void Dispose()

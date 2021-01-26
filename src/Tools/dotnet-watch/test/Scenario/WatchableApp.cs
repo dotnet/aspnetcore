@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -25,7 +26,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private string _appName;
         private bool _prepared;
 
-
         public WatchableApp(string appName, ITestOutputHelper logger)
         {
             _logger = logger;
@@ -37,31 +37,39 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public ProjectToolScenario Scenario { get; }
 
-        public AwaitableProcess Process { get; protected set; }
+        public AwaitableProcess? Process { get; protected set; }
+
+        public List<string> DotnetWatchArgs { get; } = new List<string>();
+
+        public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
 
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
-            => Process.GetOutputLineAsync(StartedMessage, DefaultMessageTimeOut);
+            => HasRestarted(DefaultMessageTimeOut);
+
+        public Task HasRestarted(TimeSpan timeout)
+            => Process!.GetOutputLineAsync(StartedMessage, timeout);
 
         public async Task HasExited()
         {
-            await Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
-            await Process.GetOutputLineAsync(WatchExitedMessage, DefaultMessageTimeOut);
+            await Process!.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
+            await Process.GetOutputLineStartsWithAsync(WatchExitedMessage, DefaultMessageTimeOut);
         }
 
-        public async Task IsWaitingForFileChange()
+        public Task IsWaitingForFileChange()
         {
-            await Process.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
+            return Process!.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
         }
 
         public bool UsePollingWatcher { get; set; }
 
-        public async Task<int> GetProcessId()
+        public async Task<string> GetProcessIdentifier()
         {
-            var line = await Process.GetOutputLineStartsWithAsync("PID =", DefaultMessageTimeOut);
-            var pid = line.Split('=').Last();
-            return int.Parse(pid);
+            // Process ID is insufficient because PID's may be reused. Process identifier also includes other info to distinguish
+            // between different process instances.
+            var line = await Process!.GetOutputLineStartsWithAsync("Process identifier =", DefaultMessageTimeOut);
+            return line.Split('=').Last();
         }
 
         public async Task PrepareAsync()
@@ -71,6 +79,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _prepared = true;
         }
 
+        [MemberNotNull(nameof(Process))]
         public void Start(IEnumerable<string> arguments, [CallerMemberName] string name = null)
         {
             if (!_prepared)
@@ -82,32 +91,56 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 Scenario.DotNetWatchPath,
             };
+            args.AddRange(DotnetWatchArgs);
             args.AddRange(arguments);
+
+            var dotnetPath = "dotnet";
+
+            // Fallback to embedded path to dotnet when not on helix
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                dotnetPath = typeof(WatchableApp).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .Single(s => s.Key == "DotnetPath").Value!;
+            }
 
             var spec = new ProcessSpec
             {
-                Executable = DotNetMuxer.MuxerPathOrDefault(),
+                Executable = dotnetPath,
                 Arguments = args,
                 WorkingDirectory = SourceDirectory,
                 EnvironmentVariables =
                 {
-                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
+                    ["__DOTNET_WATCH_RUNNING_AS_TEST"] = "true",
                 },
             };
+
+            foreach (var env in EnvironmentVariables)
+            {
+                spec.EnvironmentVariables.Add(env.Key, env.Value);
+            }
+
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                spec.EnvironmentVariables["DOTNET_ROOT"] = Directory.GetParent(dotnetPath)!.FullName;
+            }
 
             Process = new AwaitableProcess(spec, _logger);
             Process.Start();
         }
 
+        [MemberNotNull(nameof(Process))]
         public Task StartWatcherAsync([CallerMemberName] string name = null)
             => StartWatcherAsync(Array.Empty<string>(), name);
 
+        [MemberNotNull(nameof(Process))]
         public async Task StartWatcherAsync(string[] arguments, [CallerMemberName] string name = null)
         {
             if (!_prepared)
             {
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
                 await PrepareAsync();
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
             }
 
             var args = new[] { "run", "--" }.Concat(arguments);

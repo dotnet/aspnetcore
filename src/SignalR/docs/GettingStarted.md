@@ -16,7 +16,7 @@ If, after running `build.cmd` or `build.sh`, you did not get a successful build,
 Below are some tips for troubleshooting common issues.
 
 ### Project Load Failures in Visual Studio
-In order to property load several of the projects in the solution, it is necessary that `%USERPROFILE%\.dotnet\x64` be in your `PATH` variable. If you experience issues loading projects in Visual Studio, please ensure that your `PATH` is configured correctly.
+Use the `startvs.cmd` script to launch Visual Studio.
 
 ### NPM Errors
 Running `build.cmd` or `build.sh` immediately after installing NodeJS can cause an NPM error: `EPERM: operation not permitted, rename`. Executing the NPM command `npm cache clean` will fix this issue.

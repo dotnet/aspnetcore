@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using BasicWebSite.Models;
 
@@ -14,7 +15,8 @@ namespace BasicWebSite.Ares.Area2.Controllers
         [HttpGet]
         public IActionResult IsIdAvailable(RemoteAttributeUser user)
         {
-            return Json(data: string.Format(
+            return new JsonResult(value: string.Format(
+                CultureInfo.InvariantCulture,
                 "/Area2/RemoteAttribute_Verify/IsIdAvailable rejects '{0}' with '{1}', '{2}', and '{3}'.",
                 user.UserId4,
                 user.UserId1,

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection
         private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
 
         private readonly IDataProtector _innerProtector;
-        private IDataProtector _innerProtectorWithTimeLimitedPurpose; // created on-demand
+        private IDataProtector? _innerProtectorWithTimeLimitedPurpose; // created on-demand
 
         public TimeLimitedDataProtector(IDataProtector innerProtector)
         {

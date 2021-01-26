@@ -2,10 +2,15 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <PackageId>@aspnet/signalr</PackageId>
+    <PackageId>@microsoft/signalr</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\browser\signalr.js" />
+    <BuildOutputFiles Include="dist\webworker\signalr.js" />
+  </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

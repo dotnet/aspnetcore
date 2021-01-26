@@ -6,14 +6,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
-    internal class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
+    internal sealed class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
     {
         internal CookieHeaderParser(bool supportsMultipleValues)
             : base(supportsMultipleValues)
         {
         }
 
-        public sealed override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue parsedValue)
+        public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue? parsedValue)
         {
             parsedValue = null;
 
@@ -27,8 +27,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            var separatorFound = false;
-            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, SupportsMultipleValues, out separatorFound);
+            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, SupportsMultipleValues, out bool separatorFound);
 
             if (separatorFound && !SupportsMultipleValues)
             {
@@ -44,8 +43,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            CookieHeaderValue result = null;
-            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out result))
+            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out var result))
             {
                 return false;
             }
@@ -65,7 +63,6 @@ namespace Microsoft.Net.Http.Headers
 
         private static int GetNextNonEmptyOrWhitespaceIndex(StringSegment input, int startIndex, bool skipEmptyValues, out bool separatorFound)
         {
-            Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.
 
             separatorFound = false;

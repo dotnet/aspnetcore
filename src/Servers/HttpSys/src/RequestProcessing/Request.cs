@@ -2,22 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security;
+using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Request
     {
-        private NativeRequestContext _nativeRequestContext;
-
-        private X509Certificate2 _clientCert;
+        private X509Certificate2? _clientCert;
         // TODO: https://github.com/aspnet/HttpSysServer/issues/231
         // private byte[] _providedTokenBindingId;
         // private byte[] _referredTokenBindingId;
@@ -25,36 +28,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private BoundaryType _contentBoundaryType;
 
         private long? _contentLength;
-        private RequestStream _nativeStream;
+        private RequestStream? _nativeStream;
 
-        private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
-        private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress? _localEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress? _remoteEndPoint;
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
         private bool _isDisposed = false;
 
-        internal Request(RequestContext requestContext, NativeRequestContext nativeRequestContext)
+        internal Request(RequestContext requestContext)
         {
             // TODO: Verbose log
             RequestContext = requestContext;
-            _nativeRequestContext = nativeRequestContext;
             _contentBoundaryType = BoundaryType.None;
 
-            RequestId = nativeRequestContext.RequestId;
-            UConnectionId = nativeRequestContext.ConnectionId;
-            SslStatus = nativeRequestContext.SslStatus;
+            RequestId = requestContext.RequestId;
+            UConnectionId = requestContext.ConnectionId;
+            SslStatus = requestContext.SslStatus;
 
-            KnownMethod = nativeRequestContext.VerbId;
-            Method = _nativeRequestContext.GetVerb();
+            KnownMethod = requestContext.VerbId;
+            Method = requestContext.GetVerb()!;
 
-            RawUrl = nativeRequestContext.GetRawUrl();
+            RawUrl = requestContext.GetRawUrl()!;
 
-            var cookedUrl = nativeRequestContext.GetCookedUrl();
+            var cookedUrl = requestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
-            var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
+            var rawUrlInBytes = requestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
+
+            PathBase = string.Empty;
+            Path = originalPath;
 
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
@@ -62,31 +67,48 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            // These paths are both unescaped already.
-            else if (originalPath.Length == prefix.Path.Length - 1)
-            {
-                // They matched exactly except for the trailing slash.
-                PathBase = originalPath;
-                Path = string.Empty;
-            }
             else
             {
-                // url: /base/path, prefix: /base/, base: /base, path: /path
-                // url: /, prefix: /, base: , path: /
-                PathBase = originalPath.Substring(0, prefix.Path.Length - 1);
-                Path = originalPath.Substring(prefix.Path.Length - 1);
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
+                // Prefix may be null if the requested has been transfered to our queue
+                if (!(prefix is null))
+                {
+                    if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                    {
+                        // They matched exactly except for the trailing slash.
+                        PathBase = originalPath;
+                        Path = string.Empty;
+                    }
+                    else
+                    {
+                        // url: /base/path, prefix: /base/, base: /base, path: /path
+                        // url: /, prefix: /, base: , path: /
+                        PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                        Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                    }
+                }
+                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
+                {
+                    PathBase = pathBase;
+                    Path = path;
+                }
             }
 
-            ProtocolVersion = _nativeRequestContext.GetVersion();
+            ProtocolVersion = RequestContext.GetVersion();
 
-            Headers = new RequestHeaders(_nativeRequestContext);
+            Headers = new RequestHeaders(RequestContext);
 
-            User = _nativeRequestContext.GetUser();
+            User = RequestContext.GetUser();
+
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
             // Finished directly accessing the HTTP_REQUEST structure.
-            _nativeRequestContext.ReleasePins();
+            RequestContext.ReleasePins();
             // TODO: Verbose log parameters
         }
 
@@ -110,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_contentBoundaryType == BoundaryType.None)
                 {
+                    // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
                     string transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding];
                     if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
@@ -146,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Stream Body => EnsureRequestStream() ?? Stream.Null;
 
-        private RequestStream EnsureRequestStream()
+        private RequestStream? EnsureRequestStream()
         {
             if (_nativeStream == null && HasEntityBody)
             {
@@ -196,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = _nativeRequestContext.GetRemoteEndPoint();
+                    _remoteEndPoint = RequestContext.GetRemoteEndPoint()!;
                 }
 
                 return _remoteEndPoint;
@@ -209,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = _nativeRequestContext.GetLocalEndPoint();
+                    _localEndPoint = RequestContext.GetLocalEndPoint()!;
                 }
 
                 return _localEndPoint;
@@ -217,9 +240,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         // TODO: Lazy cache?
-        public IPAddress RemoteIpAddress => RemoteEndPoint.GetIPAddress();
+        public IPAddress? RemoteIpAddress => RemoteEndPoint.GetIPAddress();
 
-        public IPAddress LocalIpAddress => LocalEndPoint.GetIPAddress();
+        public IPAddress? LocalIpAddress => LocalEndPoint.GetIPAddress();
 
         public int RemotePort => RemoteEndPoint.GetPort();
 
@@ -228,14 +251,110 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Scheme => IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
 
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
-        internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
+        internal bool IsUpgradable => ProtocolVersion < HttpVersion.Version20 && !HasEntityBody && ComNetOS.IsWin8orLater;
 
         internal WindowsPrincipal User { get; }
+
+        public SslProtocols Protocol { get; private set; }
+
+        public CipherAlgorithmType CipherAlgorithm { get; private set; }
+
+        public int CipherStrength { get; private set; }
+
+        public HashAlgorithmType HashAlgorithm { get; private set; }
+
+        public int HashStrength { get; private set; }
+
+        public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+
+        public int KeyExchangeStrength { get; private set; }
+
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
+        {
+            get
+            {
+                if (_requestInfo == null)
+                {
+                    _requestInfo = RequestContext.GetRequestInfo();
+                }
+                return _requestInfo;
+            }
+        }
+
+        private void GetTlsHandshakeResults()
+        {
+            var handshake = RequestContext.GetTlsHandshake();
+
+            Protocol = handshake.Protocol;
+            // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
+            // We need to fill in the client bits so the enum shows the expected protocol.
+            // https://docs.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+            // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
+#pragma warning disable CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Ssl2) != 0)
+            {
+                Protocol |= SslProtocols.Ssl2;
+            }
+            if ((Protocol & SslProtocols.Ssl3) != 0)
+            {
+                Protocol |= SslProtocols.Ssl3;
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Tls) != 0)
+            {
+                Protocol |= SslProtocols.Tls;
+            }
+            if ((Protocol & SslProtocols.Tls11) != 0)
+            {
+                Protocol |= SslProtocols.Tls11;
+            }
+            if ((Protocol & SslProtocols.Tls12) != 0)
+            {
+                Protocol |= SslProtocols.Tls12;
+            }
+            if ((Protocol & SslProtocols.Tls13) != 0)
+            {
+                Protocol |= SslProtocols.Tls13;
+            }
+
+            CipherAlgorithm = handshake.CipherType;
+            CipherStrength = (int)handshake.CipherStrength;
+            HashAlgorithm = handshake.HashType;
+            HashStrength = (int)handshake.HashStrength;
+            KeyExchangeAlgorithm = handshake.KeyExchangeType;
+            KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+        }
+
+        public X509Certificate2? ClientCertificate
+        {
+            get
+            {
+                if (_clientCert == null && SslStatus == SslStatus.ClientCert)
+                {
+                    try
+                    {
+                        _clientCert = RequestContext.GetClientCertificate();
+                    }
+                    catch (CryptographicException ce)
+                    {
+                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
+                    }
+                    catch (SecurityException se)
+                    {
+                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, se, "An error occurred reading the client certificate.");
+                    }
+                }
+
+                return _clientCert;
+            }
+        }
+
+        public bool CanDelegate => !(HasRequestBodyStarted || RequestContext.Response.HasStarted);
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
-        public async Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (SslStatus == SslStatus.Insecure)
             {
@@ -252,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var certLoader = new ClientCertLoader(RequestContext, cancellationToken);
             try
             {
-                await certLoader.LoadClientCertificateAsync().SupressContext();
+                await certLoader.LoadClientCertificateAsync();
                 // Populate the environment.
                 if (certLoader.ClientCert != null)
                 {
@@ -308,27 +427,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         */
         internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
         {
-            return _nativeRequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
+            return RequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
         }
 
         // should only be called from RequestContext
         internal void Dispose()
         {
-            // TODO: Verbose log
-            _isDisposed = true;
-            _nativeRequestContext.Dispose();
-            (User?.Identity as WindowsIdentity)?.Dispose();
-            if (_nativeStream != null)
+            if (!_isDisposed)
             {
-                _nativeStream.Dispose();
-            }
-        }
-
-        private void CheckDisposed()
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                // TODO: Verbose log
+                _isDisposed = true;
+                RequestContext.Dispose();
+                (User?.Identity as WindowsIdentity)?.Dispose();
+                _nativeStream?.Dispose();
             }
         }
 

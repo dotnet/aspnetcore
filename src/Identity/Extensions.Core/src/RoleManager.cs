@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
         public virtual string NormalizeKey(string key)
         {
-            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
+            return (KeyNormalizer == null) ? key : KeyNormalizer.NormalizeName(key);
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (errors.Count > 0)
             {
-                Logger.LogWarning(0, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role), string.Join(";", errors.Select(e => e.Code)));
+                Logger.LogWarning(LoggerEventIds.RoleValidationFailed, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role), string.Join(";", errors.Select(e => e.Code)));
                 return IdentityResult.Failed(errors.ToArray());
             }
             return IdentityResult.Success;

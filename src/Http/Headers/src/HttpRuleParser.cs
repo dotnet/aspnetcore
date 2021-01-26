@@ -93,7 +93,6 @@ namespace Microsoft.Net.Http.Headers
         [Pure]
         internal static int GetTokenLength(StringSegment input, int startIndex)
         {
-            Contract.Requires(input != null);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
 
             if (startIndex >= input.Length)
@@ -116,7 +115,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static int GetWhitespaceLength(StringSegment input, int startIndex)
         {
-            Contract.Requires(input != null);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
 
             if (startIndex >= input.Length)
@@ -160,7 +158,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static int GetNumberLength(StringSegment input, int startIndex, bool allowDecimal)
         {
-            Contract.Requires(input != null);
             Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
 
@@ -213,7 +210,6 @@ namespace Microsoft.Net.Http.Headers
         // CHAR = <any US-ASCII character (octets 0 - 127)>
         internal static HttpParseResult GetQuotedPairLength(StringSegment input, int startIndex, out int length)
         {
-            Contract.Requires(input != null);
             Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
             Contract.Ensures((Contract.ValueAtReturn(out length) >= 0) &&
                 (Contract.ValueAtReturn(out length) <= (input.Length - startIndex)));
@@ -225,7 +221,7 @@ namespace Microsoft.Net.Http.Headers
                 return HttpParseResult.NotParsed;
             }
 
-            // Quoted-char has 2 characters. Check wheter there are 2 chars left ('\' + char)
+            // Quoted-char has 2 characters. Check whether there are 2 chars left ('\' + char)
             // If so, check whether the character is in the range 0-127. If not, it's an invalid value.
             if ((startIndex + 2 > input.Length) || (input[startIndex + 1] > 127))
             {

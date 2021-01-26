@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" PreferExactMatches="true">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>

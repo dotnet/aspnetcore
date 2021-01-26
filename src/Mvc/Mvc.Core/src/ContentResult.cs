@@ -4,12 +4,14 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class ContentResult : ActionResult
+    /// <summary>
+    /// A <see cref="ActionResult"/> that when executed will produce a response with content.
+    /// </summary>
+    public class ContentResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or set the content representing the body of the response.
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public int? StatusCode { get; set; }
 
+        /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)

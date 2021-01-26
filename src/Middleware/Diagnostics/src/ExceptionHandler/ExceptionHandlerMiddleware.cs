@@ -3,40 +3,51 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
+    /// <summary>
+    /// A middleware for handling exceptions in the application.
+    /// </summary>
     public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ExceptionHandlerOptions _options;
         private readonly ILogger _logger;
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
 
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="options">The options for configuring the middleware.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
         public ExceptionHandlerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<ExceptionHandlerOptions> options,
-            DiagnosticSource diagnosticSource)
+            DiagnosticListener diagnosticListener)
         {
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
             _clearCacheHeadersDelegate = ClearCacheHeaders;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             if (_options.ExceptionHandler == null)
             {
                 if (_options.ExceptionHandlingPath == null)
                 {
-                    throw new InvalidOperationException(Resources.FormatExceptionHandlerOptions_NotConfiguredCorrectly());
+                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }
                 else
                 {
@@ -45,70 +56,125 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
         }
 
-        public async Task Invoke(HttpContext context)
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
+        public Task Invoke(HttpContext context)
         {
+            ExceptionDispatchInfo edi;
             try
             {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                _logger.UnhandledException(ex);
-                // We can't do anything if the response has already started, just abort.
-                if (context.Response.HasStarted)
+                var task = _next(context);
+                if (!task.IsCompletedSuccessfully)
                 {
-                    _logger.ResponseStartedErrorHandler();
-                    throw;
+                    return Awaited(this, context, task);
                 }
 
-                PathString originalPath = context.Request.Path;
-                if (_options.ExceptionHandlingPath.HasValue)
-                {
-                    context.Request.Path = _options.ExceptionHandlingPath;
-                }
+                return Task.CompletedTask;
+            }
+            catch (Exception exception)
+            {
+                // Get the Exception, but don't continue processing in the catch block as its bad for stack usage.
+                edi = ExceptionDispatchInfo.Capture(exception);
+            }
+
+            return HandleException(context, edi);
+
+            static async Task Awaited(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
+            {
+                ExceptionDispatchInfo? edi = null;
                 try
                 {
-                    context.Response.Clear();
-                    var exceptionHandlerFeature = new ExceptionHandlerFeature()
-                    {
-                        Error = ex,
-                        Path = originalPath.Value,
-                    };
-                    context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
-                    context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-                    context.Response.StatusCode = 500;
-                    context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
-
-                    await _options.ExceptionHandler(context);
-
-                    if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
-                    {
-                        _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = ex });
-                    }
-
-                    // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
-                    return;
+                    await task;
                 }
-                catch (Exception ex2)
+                catch (Exception exception)
                 {
-                    // Suppress secondary exceptions, re-throw the original.
-                    _logger.ErrorHandlerException(ex2);
+                    // Get the Exception, but don't continue processing in the catch block as its bad for stack usage.
+                    edi = ExceptionDispatchInfo.Capture(exception);
                 }
-                finally
+
+                if (edi != null)
                 {
-                    context.Request.Path = originalPath;
+                    await middleware.HandleException(context, edi);
                 }
-                throw; // Re-throw the original if we couldn't handle it
             }
         }
 
-        private Task ClearCacheHeaders(object state)
+        private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
         {
-            var response = (HttpResponse)state;
-            response.Headers[HeaderNames.CacheControl] = "no-cache";
-            response.Headers[HeaderNames.Pragma] = "no-cache";
-            response.Headers[HeaderNames.Expires] = "-1";
-            response.Headers.Remove(HeaderNames.ETag);
+            _logger.UnhandledException(edi.SourceException);
+            // We can't do anything if the response has already started, just abort.
+            if (context.Response.HasStarted)
+            {
+                _logger.ResponseStartedErrorHandler();
+                edi.Throw();
+            }
+
+            PathString originalPath = context.Request.Path;
+            if (_options.ExceptionHandlingPath.HasValue)
+            {
+                context.Request.Path = _options.ExceptionHandlingPath;
+            }
+            try
+            {
+                ClearHttpContext(context);
+
+                var exceptionHandlerFeature = new ExceptionHandlerFeature()
+                {
+                    Error = edi.SourceException,
+                    Path = originalPath.Value!,
+                };
+                context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+                context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
+
+                await _options.ExceptionHandler!(context);
+
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+                {
+                    if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                    {
+                        _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    }
+
+                    return;
+                }
+
+                _logger.ErrorHandlerNotFound();
+            }
+            catch (Exception ex2)
+            {
+                // Suppress secondary exceptions, re-throw the original.
+                _logger.ErrorHandlerException(ex2);
+            }
+            finally
+            {
+                context.Request.Path = originalPath;
+            }
+
+            edi.Throw(); // Re-throw the original if we couldn't handle it
+        }
+
+        private static void ClearHttpContext(HttpContext context)
+        {
+            context.Response.Clear();
+
+            // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+            // the endpoint and route values to ensure things are re-calculated.
+            context.SetEndpoint(endpoint: null);
+            var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+            routeValuesFeature?.RouteValues?.Clear();
+        }
+
+        private static Task ClearCacheHeaders(object state)
+        {
+            var headers = ((HttpResponse)state).Headers;
+            headers[HeaderNames.CacheControl] = "no-cache,no-store";
+            headers[HeaderNames.Pragma] = "no-cache";
+            headers[HeaderNames.Expires] = "-1";
+            headers.Remove(HeaderNames.ETag);
             return Task.CompletedTask;
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public static Uri AppendPath(Uri url, string path)
         {
             var builder = new UriBuilder(url);
-            if (!builder.Path.EndsWith("/"))
+            if (!builder.Path.EndsWith("/", StringComparison.Ordinal))
             {
                 builder.Path += "/";
             }

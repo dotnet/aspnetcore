@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public sealed override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterCompilationStartAction(compilationContext =>
             {
                 var analyzerContext = new ViewFeaturesAnalyzerContext(compilationContext);

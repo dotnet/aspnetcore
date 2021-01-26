@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace System
 {
@@ -20,7 +21,7 @@ namespace System
         /// An <see cref="ILogger"/> instance, or null if <paramref name="services"/> is null or the
         /// <see cref="IServiceProvider"/> cannot produce an <see cref="ILoggerFactory"/>.
         /// </returns>
-        public static ILogger GetLogger<T>(this IServiceProvider services)
+        public static ILogger GetLogger<T>(this IServiceProvider? services)
         {
             return GetLogger(services, typeof(T));
         }
@@ -33,11 +34,11 @@ namespace System
         /// An <see cref="ILogger"/> instance, or null if <paramref name="services"/> is null or the
         /// <see cref="IServiceProvider"/> cannot produce an <see cref="ILoggerFactory"/>.
         /// </returns>
-        public static ILogger GetLogger(this IServiceProvider services, Type type)
+        public static ILogger GetLogger(this IServiceProvider? services, Type type)
         {
             // Compiler won't allow us to use static types as the type parameter
             // for the call to CreateLogger<T>, so we'll duplicate its logic here.
-            return services?.GetService<ILoggerFactory>()?.CreateLogger(type.FullName);
+            return services?.GetService<ILoggerFactory>()?.CreateLogger(type.FullName!) ?? NullLogger.Instance;
         }
     }
 }

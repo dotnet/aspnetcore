@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -11,6 +12,10 @@ namespace Microsoft.AspNetCore.StaticFiles
     /// </summary>
     public class FileExtensionContentTypeProvider : IContentTypeProvider
     {
+        // Notes:
+        // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
+        // - We only plan to add new entries where we expect them to be applicable to a majority of developers such as being
+        // used in the project templates.
         #region Extension mapping table
         /// <summary>
         /// Creates a new provider with a set of default mappings.
@@ -72,7 +77,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".crt", "application/x-x509-ca-cert" },
                 { ".csh", "application/x-csh" },
                 { ".css", "text/css" },
-                { ".csv", "application/octet-stream" },
+                { ".csv", "text/csv" }, // https://tools.ietf.org/html/rfc7111#section-5.1
                 { ".cur", "application/octet-stream" },
                 { ".dcr", "application/x-director" },
                 { ".deploy", "application/octet-stream" },
@@ -100,6 +105,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".eps", "application/postscript" },
                 { ".etx", "text/x-setext" },
                 { ".evy", "application/envoy" },
+                { ".exe", "application/vnd.microsoft.portable-executable" }, // https://www.iana.org/assignments/media-types/application/vnd.microsoft.portable-executable
                 { ".fdf", "application/vnd.fdf" },
                 { ".fif", "application/fractals" },
                 { ".fla", "application/octet-stream" },
@@ -331,13 +337,15 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".vsto", "application/x-ms-vsto" },
                 { ".vsw", "application/vnd.visio" },
                 { ".vsx", "application/vnd.visio" },
-                { ".vtx", "application/vnd.visio" },
+                { ".vtx", "application/vnd.visio" },                
+                { ".wasm", "application/wasm" },
                 { ".wav", "audio/wav" },
                 { ".wax", "audio/x-ms-wax" },
                 { ".wbmp", "image/vnd.wap.wbmp" },
                 { ".wcm", "application/vnd.ms-works" },
                 { ".wdb", "application/vnd.ms-works" },
                 { ".webm", "video/webm" },
+                { ".webmanifest", "application/manifest+json" }, // https://w3c.github.io/manifest/#media-type-registration
                 { ".webp", "image/webp" },
                 { ".wks", "application/vnd.ms-works" },
                 { ".wm", "video/x-ms-wm" },
@@ -425,9 +433,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <param name="subpath">A file path</param>
         /// <param name="contentType">The resulting MIME type</param>
         /// <returns>True if MIME type could be determined</returns>
-        public bool TryGetContentType(string subpath, out string contentType)
+        public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
         {
-            string extension = GetExtension(subpath);
+            var extension = GetExtension(subpath);
             if (extension == null)
             {
                 contentType = null;
@@ -436,7 +444,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             return Mappings.TryGetValue(extension, out contentType);
         }
 
-        private static string GetExtension(string path)
+        private static string? GetExtension(string path)
         {
             // Don't use Path.GetExtension as that may throw an exception if there are
             // invalid characters in the path. Invalid characters should be handled

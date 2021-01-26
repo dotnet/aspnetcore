@@ -14,7 +14,6 @@
     <ClCompile>
       <StringPooling>true</StringPooling>
       <Optimization>Disabled</Optimization>
-      <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -22,7 +21,6 @@
       <OptimizeReferences>false</OptimizeReferences>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>/JMC-</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
 
