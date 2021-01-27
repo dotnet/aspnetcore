@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var services = ViewContext.HttpContext.RequestServices;
             var manager = services.GetRequiredService<ComponentApplicationLifetime>();
+            var renderer = services.GetRequiredService<HtmlRenderer>();
             var store = PersistenceMode switch
             {
                 PersistenceMode.Server => new ProtectedPrerenderComponentApplicationStore(
@@ -62,8 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 _ => throw new InvalidOperationException("Invalid persistence mode.")
             };
 
-            await manager.PauseAsync();
-            await manager.PersistStateAsync(store);
+            await manager.PersistStateAsync(store, renderer);
 
             output.TagName = null;
             output.Content.SetHtmlContent(new PersistedStateContent(store.PersistedState));

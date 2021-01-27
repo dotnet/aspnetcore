@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -107,6 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var requestServices = ViewContext.HttpContext.RequestServices;
             var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
+            var htmlRenderer = requestServices.GetRequiredService<HtmlRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
             if (ViewContext.GetAutomaticComponentPersistencePreference() && (RenderMode == RenderMode.ServerPrerendered || RenderMode == RenderMode.WebAssemblyPrerendered))
@@ -116,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     new ProtectedPrerenderComponentApplicationStore(requestServices.GetRequiredService<IDataProtectionProvider>()) :
                     new PrerenderComponentApplicationStore();
 
-                await lifetime.PersistStateAsync(store);
+                await lifetime.PersistStateAsync(store, htmlRenderer);
                 result = new ComponentWithPersistedStateContent(result, new PersistedStateContent(store.PersistedState));
             }
 
