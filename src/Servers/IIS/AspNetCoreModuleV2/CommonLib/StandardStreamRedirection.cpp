@@ -162,13 +162,13 @@ StandardStreamRedirection::ReadStdErrHandle(
     LPVOID pContext
 )
 {
-    auto pLoggingProvider = static_cast<StandardStreamRedirection*>(pContext);
+    auto* pLoggingProvider = static_cast<StandardStreamRedirection*>(pContext);
     DBG_ASSERT(pLoggingProvider != NULL);
     pLoggingProvider->ReadStdErrHandleInternal();
 }
 
 void
-StandardStreamRedirection::ReadStdErrHandleInternal()
+StandardStreamRedirection::ReadStdErrHandleInternal() const
 {
     std::string tempBuffer;
     tempBuffer.resize(PIPE_READ_SIZE);

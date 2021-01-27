@@ -30,19 +30,16 @@ public:
 
     virtual
     ~IREQUEST_HANDLER(
-        VOID
     ) = 0 { }
 
     virtual
     VOID
     ReferenceRequestHandler(
-        VOID
     ) = 0;
 
     virtual
     VOID
     DereferenceRequestHandler(
-        VOID
     ) = 0;
 };
 

@@ -368,7 +368,6 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     HandleWrapper<InvalidHandleTraits>     hThread;
     CComBSTR            pwzDotnetName = NULL;
     DWORD               dwFilePointer;
-    BOOL                fIsCurrentProcess64Bit;
     DWORD               dwExitCode;
     STRU                struDotnetSubstring;
     STRU                struDotnetLocationsString;
@@ -460,9 +459,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
     LOG_INFOF(L"where.exe invocation returned: '%ls'", struDotnetLocationsString.QueryStr());
 
-    fIsCurrentProcess64Bit = Environment::IsRunning64BitProcess();
-
-    LOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
+    LOG_INFOF(L"Current process bitness type detected as isX64=%d", Environment::IsRunning64BitProcess());
 
     while (TRUE)
     {

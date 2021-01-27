@@ -127,7 +127,7 @@ FILE_UTILITY::EnsureDirectoryPathExist(
     }
     else if (struPath.IndexOf(L'?', 0) != -1)
     {
-        // sceanrio "\\?\"
+        // scenario "\\?\"
         dwPosition = 4;
     }
     while (!fDone)
@@ -139,20 +139,17 @@ FILE_UTILITY::EnsureDirectoryPathExist(
             fDone = TRUE;
             goto Finished;
         }
-        else if (dwPosition ==0)
+        if (dwPosition ==0)
         {
             hr = ERROR_INTERNAL_ERROR;
             goto Finished;
         }
-        else if (struPath.QueryStr()[dwPosition-1] == L':')
+        if (struPath.QueryStr()[dwPosition-1] == L':')
         {
             //  skip volume case
             continue;
         }
-        else
-        {
-            struPath.QueryStr()[dwPosition] = L'\0';
-        }
+        struPath.QueryStr()[dwPosition] = L'\0';
 
         if (!CreateDirectory(struPath.QueryStr(), NULL) &&
             ERROR_ALREADY_EXISTS != GetLastError())
@@ -180,7 +177,6 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
     {
         HRSRC rc = nullptr;
         HGLOBAL rcData = nullptr;
-        std::string data;
         const char* pTempData = nullptr;
 
         THROW_LAST_ERROR_IF_NULL(rc = FindResource(module, MAKEINTRESOURCE(page), RT_HTML));
@@ -188,7 +184,7 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
         auto const size = SizeofResource(module, rc);
         THROW_LAST_ERROR_IF(size == 0);
         THROW_LAST_ERROR_IF_NULL(pTempData = static_cast<const char*>(LockResource(rcData)));
-        data = std::string(pTempData, size);
+        auto data = std::string(pTempData, size);
 
         auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
         std::string additionalHtml;
@@ -214,7 +210,7 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
     }
     catch (...)
     {
-        OBSERVE_CAUGHT_EXCEPTION();
+        OBSERVE_CAUGHT_EXCEPTION()
         return "";
     }
 }

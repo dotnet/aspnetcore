@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "RedirectionOutput.h"
+
+#include <aspnetcore_msg.h>
 #include <filesystem>
 #include "exceptions.h"
 #include "EventLog.h"
@@ -63,7 +65,7 @@ FileRedirectionOutput::FileRedirectionOutput(const std::wstring& applicationPath
     }
     catch (...)
     {
-        OBSERVE_CAUGHT_EXCEPTION();
+        OBSERVE_CAUGHT_EXCEPTION()
         EventLog::Warn(
             ASPNETCORE_EVENT_GENERAL_WARNING,
             L"Could not start stdout file redirection to '%s' with application base '%s'. %s.",

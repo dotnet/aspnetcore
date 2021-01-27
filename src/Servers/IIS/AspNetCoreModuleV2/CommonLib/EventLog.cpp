@@ -70,7 +70,7 @@ EventLog::LogEventF(
         pstrMsg,
         argsList)))
     {
-        EventLog::LogEvent(
+        LogEvent(
             dwEventInfoType,
             dwEventId,
             strEventMsg.QueryStr());

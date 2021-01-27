@@ -56,7 +56,7 @@ std::vector<std::pair<std::wstring, std::wstring>> ConfigurationSection::GetKeyV
 {
     std::vector<std::pair<std::wstring, std::wstring>> pairs;
 
-    for (auto const element : GetRequiredSection(name)->GetCollection())
+    for (auto const& element : GetRequiredSection(name)->GetCollection())
     {
         pairs.emplace_back(element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_NAME),
                            element->GetString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE).value_or(L""));
@@ -68,7 +68,7 @@ std::map<std::wstring, std::wstring, ignore_case_comparer> ConfigurationSection:
 {
     std::map<std::wstring, std::wstring, ignore_case_comparer> pairs;
 
-    for (auto const element : GetRequiredSection(name)->GetCollection())
+    for (auto const& element : GetRequiredSection(name)->GetCollection())
     {
         pairs.insert_or_assign(element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_NAME), element->GetString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE).value_or(L""));
     }

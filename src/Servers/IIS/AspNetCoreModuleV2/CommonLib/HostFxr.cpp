@@ -3,8 +3,12 @@
 
 #include "HostFxr.h"
 
+#include <aspnetcore_msg.h>
+
+
 #include "ModuleHelpers.h"
 #include "EventLog.h"
+#include "resources.h"
 
 HostFxrErrorRedirector::HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput* writeFunction) noexcept
     : m_setErrorWriter(setErrorWriterFn)
@@ -98,10 +102,7 @@ int HostFxr::Main(DWORD argc, const PCWSTR* argv) const noexcept(false)
     {
         return m_hostfxr_run_app_fn(m_host_context_handle);
     }
-    else
-    {
-        return m_hostfxr_main_fn(argc, argv);
-    }
+    return m_hostfxr_main_fn(argc, argv);
 }
 
 int HostFxr::GetNativeSearchDirectories(INT argc, const PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size) const noexcept

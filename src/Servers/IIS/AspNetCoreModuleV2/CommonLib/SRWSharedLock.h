@@ -8,7 +8,7 @@
 class SRWSharedLock
 {
 public:
-	SRWSharedLock(const SRWLOCK& lock);
+    explicit SRWSharedLock(const SRWLOCK& lock);
 	~SRWSharedLock();
 private:
     const SRWLOCK& m_lock;

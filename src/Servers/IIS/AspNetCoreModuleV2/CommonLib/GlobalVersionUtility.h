@@ -19,7 +19,7 @@ public:
 
     static
         std::wstring
-        RemoveFileNameFromFolderPath(std::wstring fileName);
+        RemoveFileNameFromFolderPath(const std::wstring& fileName);
 
     static
         std::vector<fx_ver_t>

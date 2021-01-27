@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    void WriteResponse()
+    void WriteResponse() const
     {
         if (m_disableStartupPage)
         {

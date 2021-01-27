@@ -3,13 +3,13 @@
 
 #pragma once
 
+#include <dbgutil.h>
 #include <exception>
 #include <system_error>
 
 #include "debugutil.h"
 #include "StringHelpers.h"
 #include "InvalidOperationException.h"
-#include "ntassert.h"
 #include "NonCopyable.h"
 #include "EventTracing.h"
 

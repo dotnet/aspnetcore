@@ -69,7 +69,7 @@ private:
         STRU strHandlerName;
         STRU strHandlerValue;
 
-        // backwards complatibility with systems not having schema for handlerSettings
+        // backwards compatibility with systems not having schema for handlerSettings
         if (FAILED_LOG(GetElementChildByName(pElement, CS_ASPNETCORE_HANDLER_SETTINGS, &pHandlerSettings)))
         {
             return S_OK;
