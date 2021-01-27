@@ -19,7 +19,7 @@ SetElementProperty(
     if( !bstrPropName )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
@@ -27,14 +27,14 @@ SetElementProperty(
                                       &pPropElement );
     if( FAILED(hr) )
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pPropElement->put_Value( *varPropValue );
     if( FAILED(hr) )
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
@@ -56,15 +56,14 @@ SetElementStringProperty(
     IN          CONST WCHAR *       szPropValue
     )
 {
-    HRESULT hr;
     VARIANT varPropValue;
     VariantInit(&varPropValue);
 
-    hr = VariantAssign(&varPropValue, szPropValue);
+    HRESULT hr = VariantAssign(&varPropValue, szPropValue);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -72,7 +71,7 @@ SetElementStringProperty(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -98,21 +97,21 @@ GetElementStringProperty(
     if (!bstrPropName)
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pElement->GetPropertyByName( bstrPropName, &pProperty );
     if (FAILED(hr))
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pProperty->get_StringValue( pbstrPropValue );
     if (FAILED(hr))
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
@@ -147,28 +146,28 @@ GetElementStringProperty(
     if (!bstrPropName)
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pElement->GetPropertyByName( bstrPropName, &pProperty );
     if (FAILED(hr))
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pProperty->get_StringValue( &bstrPropValue );
     if (FAILED(hr))
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = pstrPropValue->Copy(bstrPropValue);
     if (FAILED(hr))
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
@@ -236,17 +235,16 @@ GetElementBoolProperty(
 )
 {
     HRESULT hr = S_OK;
-    BSTR    bstrPropertyName = NULL;
     IAppHostProperty * pProperty = NULL;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
-    bstrPropertyName = SysAllocString( pszPropertyName );
+    BSTR bstrPropertyName = SysAllocString(pszPropertyName);
     if ( bstrPropertyName == NULL )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -302,16 +300,15 @@ GetElementDWORDProperty(
 {
     HRESULT            hr = S_OK;
     IAppHostProperty * pProperty = NULL;
-    BSTR               bstrName = NULL;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
-    bstrName = SysAllocString( pwszName );
+    BSTR bstrName = SysAllocString(pwszName);
     if ( bstrName == NULL )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto error;
     }
 
@@ -365,16 +362,15 @@ GetElementLONGLONGProperty(
 {
     HRESULT            hr = S_OK;
     IAppHostProperty * pProperty = NULL;
-    BSTR               bstrName = NULL;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
-    bstrName = SysAllocString( pwszName );
+    BSTR bstrName = SysAllocString(pwszName);
     if ( bstrName == NULL )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto error;
     }
 
@@ -427,13 +423,12 @@ GetElementRawTimeSpanProperty(
 )
 {
     HRESULT hr = S_OK;
-    BSTR    bstrPropertyName = NULL;
     IAppHostProperty * pProperty = NULL;
     VARIANT            varValue;
 
     VariantInit( &varValue );
 
-    bstrPropertyName = SysAllocString( pszPropertyName );
+    BSTR bstrPropertyName = SysAllocString(pszPropertyName);
     if ( bstrPropertyName == NULL )
     {
         hr = HRESULT_FROM_WIN32( ERROR_NOT_ENOUGH_MEMORY );
@@ -511,7 +506,7 @@ DeleteElementFromCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -531,7 +526,7 @@ DeleteElementFromCollection(
 
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -573,7 +568,7 @@ DeleteAllElementsFromCollection(
 
         if (FAILED(hr))
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             break;
         }
 
@@ -646,14 +641,14 @@ FindElementInCollection(
     if( !bstrKeyName )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
     hr = pCollection->get_Count( &count );
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -666,7 +661,7 @@ FindElementInCollection(
                                     &pElement );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto tryNext;
         }
 
@@ -674,7 +669,7 @@ FindElementInCollection(
                                           &pKeyProperty );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto tryNext;
         }
 
@@ -682,7 +677,7 @@ FindElementInCollection(
 
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto tryNext;
         }
 
@@ -730,14 +725,14 @@ VariantAssign(
     if( !bstr )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
     hr = VariantClear( pv );
     if( FAILED(hr) )
     {
-        DBGERROR_HR( hr );
+        DBGERROR_HR( hr )
         goto exit;
     }
 
@@ -777,7 +772,7 @@ GetLocationFromFile(
 
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -789,7 +784,7 @@ GetLocationFromFile(
     hr = pLocationCollection->get_Count( &count );
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -802,14 +797,14 @@ GetLocationFromFile(
                                             &pLocation );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
         hr = pLocation->get_Path( &bstrLocationPath );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -860,7 +855,7 @@ GetSectionFromLocation(
     hr = pLocation->get_Count( &count );
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -874,14 +869,14 @@ GetSectionFromLocation(
                                   &pSectionElement );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
         hr = pSectionElement->get_Name( &bstrSectionName );
         if( FAILED(hr) )
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -915,16 +910,14 @@ GetAdminElement(
 )
 {
     HRESULT hr = S_OK;
-    BSTR bstrConfigPath = NULL;
-    BSTR bstrElementName = NULL;
 
-    bstrConfigPath = SysAllocString(szConfigPath);
-    bstrElementName = SysAllocString(szElementName);
+    BSTR bstrConfigPath = SysAllocString(szConfigPath);
+    BSTR bstrElementName = SysAllocString(szElementName);
 
     if (bstrConfigPath == NULL || bstrElementName == NULL)
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -934,7 +927,7 @@ GetAdminElement(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -962,15 +955,14 @@ ClearAdminElement(
     IN      CONST WCHAR *               szElementName
     )
 {
-    HRESULT hr;
     CComPtr<IAppHostElement> pElement;
 
-    hr = GetAdminElement(
-             pAdminMgr,
-             szConfigPath,
-             szElementName,
-             &pElement
-             );
+    HRESULT hr = GetAdminElement(
+        pAdminMgr,
+        szConfigPath,
+        szElementName,
+        &pElement
+    );
 
     if (FAILED(hr))
     {
@@ -980,7 +972,7 @@ ClearAdminElement(
         }
         else
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
         }
 
         goto exit;
@@ -990,7 +982,7 @@ ClearAdminElement(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1007,7 +999,6 @@ ClearElementFromAllSites(
     IN      CONST WCHAR *               szElementName
     )
 {
-    HRESULT hr;
     CComPtr<IAppHostElementCollection> pSitesCollection;
     CComPtr<IAppHostElement> pSiteElement;
     CComPtr<IAppHostChildElementCollection> pChildCollection;
@@ -1018,15 +1009,15 @@ ClearElementFromAllSites(
     // Enumerate the sites, remove the specified elements.
     //
 
-    hr = GetSitesCollection(
-             pAdminMgr,
-             szConfigPath,
-             &pSitesCollection
-             );
+    HRESULT hr = GetSitesCollection(
+        pAdminMgr,
+        szConfigPath,
+        &pSitesCollection
+    );
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1044,7 +1035,7 @@ ClearElementFromAllSites(
 
         if (FAILED(hr))
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -1058,7 +1049,7 @@ ClearElementFromAllSites(
 
             if (FAILED(hr))
             {
-                DBGERROR_HR(hr);
+                DBGERROR_HR(hr)
                 goto exit;
             }
         }
@@ -1080,7 +1071,6 @@ ClearElementFromAllLocations(
     IN      CONST WCHAR *               szElementName
     )
 {
-    HRESULT hr;
     CComPtr<IAppHostConfigLocationCollection> pLocationCollection;
     CComPtr<IAppHostConfigLocation> pLocation;
     CComPtr<IAppHostChildElementCollection> pChildCollection;
@@ -1090,15 +1080,15 @@ ClearElementFromAllLocations(
     // Enum the <location> tags, remove the specified elements.
     //
 
-    hr = GetLocationCollection(
-            pAdminMgr,
-            szConfigPath,
-            &pLocationCollection
-            );
+    HRESULT hr = GetLocationCollection(
+        pAdminMgr,
+        szConfigPath,
+        &pLocationCollection
+    );
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1116,7 +1106,7 @@ ClearElementFromAllLocations(
 
         if (FAILED(hr))
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -1154,7 +1144,7 @@ ClearLocationElements(
 
         if (FAILED(hr))
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -1178,16 +1168,15 @@ CompareElementName(
     OUT     BOOL *                      pMatched
     )
 {
-    HRESULT hr;
     BSTR bstrElementName = NULL;
 
     *pMatched = FALSE;  // until proven otherwise
 
-    hr = pElement->get_Name(&bstrElementName);
+    HRESULT hr = pElement->get_Name(&bstrElementName);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1231,7 +1220,7 @@ ClearChildElementsByName(
 
         if (FAILED(hr))
         {
-            DBGERROR_HR(hr);
+            DBGERROR_HR(hr)
             goto exit;
         }
 
@@ -1241,7 +1230,7 @@ ClearChildElementsByName(
 
             if (FAILED(hr))
             {
-                DBGERROR_HR(hr);
+                DBGERROR_HR(hr)
                 goto exit;
             }
 
@@ -1266,17 +1255,15 @@ GetSitesCollection(
 {
     HRESULT hr;
     CComPtr<IAppHostElement> pSitesElement;
-    BSTR bstrConfigPath;
-    BSTR bstrSitesSectionName;
 
-    bstrConfigPath = SysAllocString(szConfigPath);
-    bstrSitesSectionName = SysAllocString(L"system.applicationHost/sites");
+    BSTR bstrConfigPath = SysAllocString(szConfigPath);
+    BSTR bstrSitesSectionName = SysAllocString(L"system.applicationHost/sites");
     *pSitesCollection = NULL;
 
     if (bstrConfigPath == NULL || bstrSitesSectionName == NULL)
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1290,7 +1277,7 @@ GetSitesCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1298,7 +1285,7 @@ GetSitesCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1318,17 +1305,16 @@ GetLocationCollection(
     )
 {
     HRESULT hr;
-    BSTR bstrConfigPath;
     CComPtr<IAppHostConfigManager>      pConfigMgr;
     CComPtr<IAppHostConfigFile>         pConfigFile;
 
-    bstrConfigPath = SysAllocString(szConfigPath);
+    BSTR bstrConfigPath = SysAllocString(szConfigPath);
     *pLocationCollection = NULL;
 
     if (bstrConfigPath == NULL)
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1336,7 +1322,7 @@ GetLocationCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1344,7 +1330,7 @@ GetLocationCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1352,7 +1338,7 @@ GetLocationCollection(
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1370,13 +1356,11 @@ FindFirstElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
-    hr = pCollection->get_Count(&pIndex->Count);
+    HRESULT hr = pCollection->get_Count(&pIndex->Count);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         return hr;
     }
 
@@ -1394,8 +1378,6 @@ FindNextElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
     *pElement = NULL;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
@@ -1403,7 +1385,7 @@ FindNextElement(
         return S_FALSE;
     }
 
-    hr = pCollection->get_Item(pIndex->Index, pElement);
+    HRESULT hr = pCollection->get_Item(pIndex->Index, pElement);
 
     if (SUCCEEDED(hr))
     {
@@ -1420,13 +1402,11 @@ FindFirstChildElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
-    hr = pCollection->get_Count(&pIndex->Count);
+    HRESULT hr = pCollection->get_Count(&pIndex->Count);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         return hr;
     }
 
@@ -1444,8 +1424,6 @@ FindNextChildElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
     *pElement = NULL;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
@@ -1453,7 +1431,7 @@ FindNextChildElement(
         return S_FALSE;
     }
 
-    hr = pCollection->get_Item(pIndex->Index, pElement);
+    HRESULT hr = pCollection->get_Item(pIndex->Index, pElement);
 
     if (SUCCEEDED(hr))
     {
@@ -1470,13 +1448,11 @@ FindFirstLocation(
     OUT     IAppHostConfigLocation **           pLocation
     )
 {
-    HRESULT hr;
-
-    hr = pCollection->get_Count(&pIndex->Count);
+    HRESULT hr = pCollection->get_Count(&pIndex->Count);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         return hr;
     }
 
@@ -1494,8 +1470,6 @@ FindNextLocation(
     OUT     IAppHostConfigLocation **           pLocation
     )
 {
-    HRESULT hr;
-
     *pLocation = NULL;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
@@ -1503,7 +1477,7 @@ FindNextLocation(
         return S_FALSE;
     }
 
-    hr = pCollection->get_Item(pIndex->Index, pLocation);
+    HRESULT hr = pCollection->get_Item(pIndex->Index, pLocation);
 
     if (SUCCEEDED(hr))
     {
@@ -1520,13 +1494,11 @@ FindFirstLocationElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
-    hr = pLocation->get_Count(&pIndex->Count);
+    HRESULT hr = pLocation->get_Count(&pIndex->Count);
 
     if (FAILED(hr))
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         return hr;
     }
 
@@ -1544,8 +1516,6 @@ FindNextLocationElement(
     OUT     IAppHostElement **                  pElement
     )
 {
-    HRESULT hr;
-
     *pElement = NULL;
 
     if (pIndex->Index.ulVal >= pIndex->Count)
@@ -1553,7 +1523,7 @@ FindNextLocationElement(
         return S_FALSE;
     }
 
-    hr = pLocation->get_Item(pIndex->Index, pElement);
+    HRESULT hr = pLocation->get_Item(pIndex->Index, pElement);
 
     if (SUCCEEDED(hr))
     {
@@ -1584,18 +1554,17 @@ Return Value:
     HRESULT                 hr = S_OK;
     IAppHostAdminManager    *pAdminManager = NULL;
 
-    BSTR                    bstrSectionName = NULL;
     BSTR                    bstrConfigPath = NULL;
 
     IAppHostElement *       pConfigRedirSection = NULL;
 
 
-    bstrSectionName = SysAllocString( L"configurationRedirection" );
+    BSTR bstrSectionName = SysAllocString(L"configurationRedirection");
 
     if ( bstrSectionName == NULL )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1603,7 +1572,7 @@ Return Value:
     if ( bstrConfigPath == NULL )
     {
         hr = E_OUTOFMEMORY;
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1614,7 +1583,7 @@ Return Value:
                            (VOID **)&pAdminManager );
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1623,7 +1592,7 @@ Return Value:
                                          &pConfigRedirSection );
     if( FAILED(hr) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
@@ -1633,7 +1602,7 @@ Return Value:
 
     if ( FAILED( hr ) )
     {
-        DBGERROR_HR(hr);
+        DBGERROR_HR(hr)
         goto exit;
     }
 
