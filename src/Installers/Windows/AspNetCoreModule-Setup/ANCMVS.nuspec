@@ -16,7 +16,7 @@
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />
-        <!-- Reusing ASPNETCORE_CAB_FILE to add both IIS and IISExpress versions of ANCM. -->
+        <!-- Reusing ASPNETCORE_CAB_FILE as a second MSi for insertion both MSIs. -->
         <file src="$ASPNETCORE_CAB_FILE$" />
         <file src="$PackageIconFullPath$" target="$PackageIcon$" />
     </files>
