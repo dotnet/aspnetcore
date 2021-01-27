@@ -3,7 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -100,12 +105,43 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentException(Resources.FormatAttributeIsRequired(RenderModeName, TagHelperName), nameof(RenderMode));
             }
 
-            var componentRenderer = ViewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
+            var requestServices = ViewContext.HttpContext.RequestServices;
+            var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
+
+            if (ViewContext.GetAutomaticComponentPersistencePreference() && (RenderMode == RenderMode.ServerPrerendered || RenderMode == RenderMode.WebAssemblyPrerendered))
+            {
+                var lifetime = requestServices.GetRequiredService<ComponentApplicationLifetime>();
+                var store = RenderMode == RenderMode.ServerPrerendered ?
+                    new ProtectedPrerenderComponentApplicationStore(requestServices.GetRequiredService<IDataProtectionProvider>()) :
+                    new PrerenderComponentApplicationStore();
+
+                await lifetime.PersistStateAsync(store);
+                result = new ComponentWithPersistedStateContent(result, new PersistedStateContent(store.PersistedState));
+            }
 
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
             output.Content.SetHtmlContent(result);
+        }
+
+        private class ComponentWithPersistedStateContent : IHtmlContent
+        {
+            private IHtmlContent _component;
+            private IHtmlContent _persistedState;
+
+            public ComponentWithPersistedStateContent(IHtmlContent component, IHtmlContent persistedState)
+            {
+                _component = component;
+                _persistedState = persistedState;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                _component.WriteTo(writer, encoder);
+                writer.WriteLine();
+                _persistedState.WriteTo(writer, encoder);
+            }
         }
     }
 }

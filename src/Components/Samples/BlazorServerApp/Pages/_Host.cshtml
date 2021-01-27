@@ -2,6 +2,10 @@
 @namespace BlazorServerApp.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
+@{
+    ViewContext.DisableAutomaticComponentPersistence(); 
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +18,7 @@
 </head>
 <body>
     <app><component type="typeof(App)" render-mode="ServerPrerendered" /></app>
-    <save-component-state />
+    <persist-component-state save-mode=Server />
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         (function start() {

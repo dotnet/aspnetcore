@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components
     {
         private IDictionary<string, byte[]>? _existingState;
         private readonly IDictionary<string, byte[]> _currentState;
-        private readonly IDictionary<object, Func<Task>> _registeredCallbacks;
+        private readonly List<Func<Task>> _registeredCallbacks;
 
         internal ComponentApplicationState(
             IDictionary<string, byte[]> currentState,
-            IDictionary<object, Func<Task>> pauseCallbacks)
+            List<Func<Task>> pauseCallbacks)
         {
             _currentState = currentState;
             _registeredCallbacks = pauseCallbacks;
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Components
             _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
         }
 
-        public void RegisterOnPersistingCallback(Func<Task> callback, object instance)
+        public void RegisterOnPersistingCallback(Func<Task> callback)
         {
-            _registeredCallbacks.Add(instance, callback);
+            _registeredCallbacks.Add(callback);
         }
 
         public bool TryRetrievePersistedState(string key, [MaybeNullWhen(false)] out byte[] value)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components
     {
         private bool _stateIsPersisted;
         private bool _pauseInProgress;
-        private Dictionary<object, Func<Task>> _pauseCallbacks = new();
+        private List<Func<Task>> _pauseCallbacks = new();
         private readonly Dictionary<string, byte[]> _currentState = new();
 
         public ComponentApplicationLifetime()
@@ -75,27 +75,11 @@ namespace Microsoft.AspNetCore.Components
         public async Task PauseAsync()
         {
             _pauseInProgress = true;
-            foreach (var (instance, callback) in _pauseCallbacks)
+            foreach (var callback in _pauseCallbacks)
             {
                 await callback();
             }
             _pauseInProgress = false;
-        }
-
-        public async Task PauseAsync(object instance)
-        {
-            if (!_pauseCallbacks.TryGetValue(instance, out var callback))
-            {
-                return;
-            }
-            else
-            {
-                _pauseCallbacks.Remove(instance);
-
-                _pauseInProgress = true;
-                await callback();
-                _pauseInProgress = false;
-            }
         }
 
         public Task PersistStateAsync(IComponentApplicationStateStore store)
@@ -121,9 +105,9 @@ namespace Microsoft.AspNetCore.Components
             return store.PersistStateAsync(data);
         }
 
-        internal void AddRegistration(Func<Task> callback, object instance)
+        internal void AddRegistration(Func<Task> callback)
         {
-            _pauseCallbacks.Add(instance, callback);
+            _pauseCallbacks.Add(callback);
         }
     }
 
