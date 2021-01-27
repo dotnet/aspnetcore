@@ -4,16 +4,15 @@
 #pragma once
 
 #include <string>
-#include <utility>
 #include "requesthandler.h"
 
 class AppOfflineHandler: public REQUEST_HANDLER
 {
 public:
-    AppOfflineHandler(IHttpContext& pContext, std::string appOfflineContent)
+    AppOfflineHandler(IHttpContext& pContext, const std::string& appOfflineContent)
         : REQUEST_HANDLER(pContext),
           m_pContext(pContext),
-          m_strAppOfflineContent(std::move(appOfflineContent))
+          m_strAppOfflineContent(appOfflineContent)
     {
     }
 
