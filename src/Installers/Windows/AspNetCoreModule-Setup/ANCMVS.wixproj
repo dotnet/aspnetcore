@@ -12,6 +12,7 @@
     <IsShipping>true</IsShipping>
     <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
     <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
+    <NamespaceGuid>$(ProjectGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\AspNetCoreModule-Setup\ANCMVS.nuspec</ToolsetInstallerNuspecFile>
     <SkipCopyToArtifactsDirectory>true</SkipCopyToArtifactsDirectory>
