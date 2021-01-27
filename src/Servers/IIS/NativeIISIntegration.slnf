@@ -1,0 +1,15 @@
+{
+  "solution": {
+    "path": "..\\..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\AspNetCore\\AspNetCore.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLib\\CommonLib.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLibTests\\CommonLibTests.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\gtest\\gtest.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\IISLib\\IISLib.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\InProcessRequestHandler\\InProcessRequestHandler.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\OutOfProcessRequestHandler\\OutOfProcessRequestHandler.vcxproj",
+      "src\\Servers\\IIS\\AspNetCoreModuleV2\\RequestHandlerLib\\RequestHandlerLib.vcxproj",
+    ]
+  }
+}
