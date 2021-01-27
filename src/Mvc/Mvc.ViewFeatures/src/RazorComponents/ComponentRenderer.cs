@@ -55,10 +55,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 ParameterView.Empty :
                 ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
 
-            var manager = context.RequestServices.GetRequiredService<ComponentApplicationLifetime>();
-            var store = new PrerenderComponentApplicationStore();
-            await manager.RestoreStateAsync(store);
-
             return renderMode switch
             {
                 RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),

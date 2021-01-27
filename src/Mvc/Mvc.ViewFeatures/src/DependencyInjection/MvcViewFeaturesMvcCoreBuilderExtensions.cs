@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -232,6 +233,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddScoped<IComponentRenderer, ComponentRenderer>();
             services.TryAddScoped<StaticComponentRenderer>();
+            services.TryAddScoped<HtmlRenderer>();
             services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();

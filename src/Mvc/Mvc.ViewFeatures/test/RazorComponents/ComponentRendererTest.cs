@@ -32,7 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
-        private readonly ComponentRenderer renderer = GetComponentRenderer();
+        private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
+        private readonly ComponentRenderer renderer;
+
+        public ComponentRendererTest()
+        {
+             renderer = GetComponentRenderer();
+        }
 
         [Fact]
         public async Task CanRender_ParameterlessComponent_ClientMode()
@@ -792,24 +798,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private static ComponentRenderer GetComponentRenderer() =>
+        private ComponentRenderer GetComponentRenderer() =>
             new ComponentRenderer(
-                new StaticComponentRenderer(HtmlEncoder.Default),
+                new StaticComponentRenderer(new HtmlRenderer(_services, NullLoggerFactory.Instance, HtmlEncoder.Default)),
                 new ServerComponentSerializer(_dataprotectorProvider),
                 new WebAssemblyComponentSerializer());
 
-        private static ViewContext GetViewContext(HttpContext context = null, Action<IServiceCollection> configureServices = null)
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(_dataprotectorProvider);
-            services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
-            services.AddSingleton<NavigationManager, HttpNavigationManager>();
-            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-
-            configureServices?.Invoke(services);
-
+        private ViewContext GetViewContext(HttpContext context = null)
+        {           
             context ??= new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
+            context.RequestServices = _services;
             context.Request.Scheme = "http";
             context.Request.Host = new HostString("localhost");
             context.Request.PathBase = "/base";
@@ -817,6 +815,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             context.Request.QueryString = QueryString.FromUriComponent("?query=value");
 
             return new ViewContext { HttpContext = context };
+        }
+
+        private static ServiceCollection CreateDefaultServiceCollection()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton(_dataprotectorProvider);
+            services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.AddSingleton<NavigationManager, HttpNavigationManager>();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            services.AddSingleton<ComponentApplicationLifetime>();
+            services.AddSingleton(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            return services;
         }
 
         private class TestComponent : IComponent
