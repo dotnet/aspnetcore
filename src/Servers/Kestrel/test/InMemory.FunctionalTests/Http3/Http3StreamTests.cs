@@ -1727,5 +1727,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => readTrailersTcs.Task).DefaultTimeout();
             Assert.Equal("The request trailers are not available yet. They may not be available until the full request body is read.", ex.Message);
         }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.MaxPushId))]
+        [InlineData(nameof(Http3FrameType.Settings))]
+        [InlineData(nameof(Http3FrameType.CancelPush))]
+        [InlineData(nameof(Http3FrameType.GoAway))]
+        public async Task UnexpectedRequestFrame(string frameType)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await requestStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(frame.FormattedType));
+        }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.PushPromise))]
+        public async Task UnexpectedServerFrame(string frameType)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await requestStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(frame.FormattedType));
+        }
     }
 }

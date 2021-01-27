@@ -245,7 +245,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 case Http3FrameType.Data:
                 case Http3FrameType.Headers:
-                case Http3FrameType.DuplicatePush:
                 case Http3FrameType.PushPromise:
                     throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
                 case Http3FrameType.Settings:

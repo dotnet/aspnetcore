@@ -10,5 +10,17 @@ namespace System.Net.Http
             Length = 0;
             Type = Http3FrameType.Data;
         }
+
+        public string FormattedType => Type switch
+        {
+            Http3FrameType.Data => "DATA",
+            Http3FrameType.Headers => "HEADERS",
+            Http3FrameType.CancelPush => "CANCEL_PUSH",
+            Http3FrameType.Settings => "SETTINGS",
+            Http3FrameType.PushPromise => "PUSH_PROMISE",
+            Http3FrameType.GoAway => "GO_AWAY",
+            Http3FrameType.MaxPushId => "MAX_PUSH_ID",
+            _ => Type.ToString()
+        };
     }
 }

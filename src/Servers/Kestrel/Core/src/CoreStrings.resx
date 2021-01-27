@@ -659,4 +659,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3StreamErrorFrameReceivedAfterTrailers" xml:space="preserve">
     <value>The client sent a {frameType} frame after trailing HEADERS.</value>
   </data>
+  <data name="Http3ErrorUnsupportedFrameOnRequestStream" xml:space="preserve">
+    <value>The client sent a {frameType} frame to a request stream which isn't supported.</value>
+  </data>
+  <data name="Http3ErrorUnsupportedFrameOnServer" xml:space="preserve">
+    <value>The client sent a {frameType} frame to a the server which isn't supported.</value>
+  </data>
 </root>

@@ -369,24 +369,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
-                frame.Length = length;
-                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
-                Http3FrameWriter.WriteHeader(frame, outputWriter);
-                await SendAsync(buffer.Span.Slice(0, length));
 
-                if (endStream)
-                {
-                    await _pair.Application.Output.CompleteAsync();
-                }
+                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
+                await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
 
                 return done;
             }
 
             internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)
             {
-                var outputWriter = _pair.Application.Output;
                 var frame = new Http3RawFrame();
                 frame.PrepareData();
+                await SendFrameAsync(frame, data, endStream);
+            }
+
+            internal async Task SendFrameAsync(Http3RawFrame frame, Memory<byte> data, bool endStream = false)
+            {
+                var outputWriter = _pair.Application.Output;
                 frame.Length = data.Length;
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
                 await SendAsync(data.Span);

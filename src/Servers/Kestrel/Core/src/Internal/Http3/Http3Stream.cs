@@ -446,14 +446,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return ProcessDataFrameAsync(payload);
                 case Http3FrameType.Headers:
                     return ProcessHeadersFrameAsync(application, payload);
-                // need to be on control stream
-                case Http3FrameType.DuplicatePush:
-                case Http3FrameType.PushPromise:
                 case Http3FrameType.Settings:
-                case Http3FrameType.GoAway:
                 case Http3FrameType.CancelPush:
+                case Http3FrameType.GoAway:
                 case Http3FrameType.MaxPushId:
-                    throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+                    // These frames need to be on a control stream
+                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
+                case Http3FrameType.PushPromise:
+                    // The server should never receive push promise
+                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
                 default:
                     return ProcessUnknownFrameAsync();
             }
