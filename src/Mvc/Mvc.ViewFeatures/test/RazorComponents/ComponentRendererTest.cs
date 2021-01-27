@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -621,6 +622,39 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
+        public async Task DisposableComponents_GetDisposedAfterScopeCompletes()
+        {
+            // Arrange
+            var collection = CreateDefaultServiceCollection();
+            collection.TryAddScoped<ComponentRenderer>();
+            collection.TryAddScoped<StaticComponentRenderer>();
+            collection.TryAddScoped<HtmlRenderer>();
+            collection.TryAddSingleton(HtmlEncoder.Default);
+            collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            collection.TryAddSingleton<ServerComponentSerializer>();
+            collection.TryAddSingleton(_dataprotectorProvider);
+            collection.TryAddSingleton<WebAssemblyComponentSerializer>();
+
+            var provider = collection.BuildServiceProvider();
+            var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var scopedProvider = scope.ServiceProvider;
+            var context = new DefaultHttpContext() { RequestServices = scopedProvider };
+            var viewContext = GetViewContext(context);
+            var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+
+            // Act
+            var state = new AsyncDisposableState();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, new { state });
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(result);
+            Assert.Equal("<p>Hello</p>", content);
+            await ((IAsyncDisposable)scope).DisposeAsync();
+
+            Assert.True(state.AsyncDisposableRan);
+        }
+
+        [Fact]
         public async Task CanCatch_ComponentWithSynchronousException()
         {
             // Arrange
@@ -798,16 +832,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private ComponentRenderer GetComponentRenderer() =>
+        private ComponentRenderer GetComponentRenderer(IServiceProvider services = null) =>
             new ComponentRenderer(
-                new StaticComponentRenderer(new HtmlRenderer(_services, NullLoggerFactory.Instance, HtmlEncoder.Default)),
+                new StaticComponentRenderer(new HtmlRenderer(services ?? _services, NullLoggerFactory.Instance, HtmlEncoder.Default)),
                 new ServerComponentSerializer(_dataprotectorProvider),
                 new WebAssemblyComponentSerializer());
 
         private ViewContext GetViewContext(HttpContext context = null)
         {           
             context ??= new DefaultHttpContext();
-            context.RequestServices = _services;
+            context.RequestServices ??= _services;
             context.Request.Scheme = "http";
             context.Request.Host = new HostString("localhost");
             context.Request.PathBase = "/base";
@@ -910,6 +944,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private class OnAfterRenderState
         {
             public bool OnAfterRenderRan { get; set; }
+        }
+
+        private class AsyncDisposableComponent : ComponentBase, IAsyncDisposable
+        {
+            [Parameter] public AsyncDisposableState State { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddMarkupContent(0, "<p>Hello</p>");
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                State.AsyncDisposableRan = true;
+                return default;
+            }
+        }
+
+        private class AsyncDisposableState
+        {
+            public bool AsyncDisposableRan { get; set; }
         }
 
         private class GreetingComponent : ComponentBase
