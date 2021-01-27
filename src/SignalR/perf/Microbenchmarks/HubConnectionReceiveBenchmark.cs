@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
 
             hubConnectionBuilder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHubProtocol), hubProtocol));
+            hubConnectionBuilder.WithUrl("http://doesntmatter");
 
             _invocationMessageBytes = hubProtocol.GetMessageBytes(new InvocationMessage(MethodName, arguments));
 
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 return new ValueTask<ConnectionContext>(connection);
             });
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
 
             _hubConnection = hubConnectionBuilder.Build();
             _hubConnection.On(MethodName, arguments.Select(v => v.GetType()).ToArray(), OnInvoke);

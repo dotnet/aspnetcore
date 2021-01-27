@@ -97,6 +97,17 @@
     </When>
   </Choose>
 
+  <Target Name="ValidateBenchmarks" AfterTargets="Build" Condition="'$(IsBenchmarkProject)' == 'true' AND 'true' == 'false'">
+    <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
+    Importance="High" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" PropertyName="ExecPath" />
+    </MSBuild>
+
+    <Exec Command="dotnet $(ExecPath) -f * --validate-fast" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
+  </Target>
+
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
 

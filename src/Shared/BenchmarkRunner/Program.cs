@@ -62,12 +62,12 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 
         private static IConfig GetConfig()
         {
-#if NET5_0 || NET6_0
+#if NET5_0 || NETCOREAPP5_0
             return ManualConfig.CreateEmpty()
                 .AddJob(Job.Default
                     .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings
                     (
-                        // not using "net6.0", a workaround for https://github.com/dotnet/BenchmarkDotNet/pull/1479
+                        // not using "net5.0", a workaround for https://github.com/dotnet/BenchmarkDotNet/pull/1479
                         targetFrameworkMoniker: "netcoreapp5.0",
                         runtimeFrameworkVersion: default,
                         name: ".NET Core 5.0"
