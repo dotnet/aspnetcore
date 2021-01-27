@@ -35,6 +35,7 @@
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="Prerendering/WebAssemblyComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
   <ItemGroup>

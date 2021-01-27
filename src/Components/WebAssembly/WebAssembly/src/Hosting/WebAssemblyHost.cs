@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             await CultureProvider.LoadCurrentCultureResourcesAsync();
 
             var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
-            var store = _persistedState != null ?
+            var store = !string.IsNullOrEmpty(_persistedState) ?
                 new PrerenderComponentApplicationStore(_persistedState) :
                 new PrerenderComponentApplicationStore();
 
@@ -162,28 +162,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 }
 
                 await tcs.Task;
-            }
-        }
-
-        internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
-        {
-            private readonly Dictionary<string, byte []> _existingState;
-
-            public PrerenderComponentApplicationStore() { _existingState = new(); }
-
-            public PrerenderComponentApplicationStore(string existingState)
-            {
-                _existingState = JsonSerializer.Deserialize<Dictionary<string, byte []>>(Convert.FromBase64String(existingState)) ?? new();
-            }
-
-            public IDictionary<string, byte []> GetPersistedState()
-            {
-                return _existingState ?? throw new InvalidOperationException("The store was not initialized with any state.");
-            }
-
-            public Task PersistStateAsync(IReadOnlyDictionary<string, byte []> state)
-            {
-                return Task.CompletedTask;
             }
         }
     }

@@ -17,10 +17,11 @@ namespace Microsoft.AspNetCore.Components
 
         public PrerenderComponentApplicationStore(string existingState)
         {
-            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState));
+            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState)) ??
+                throw new ArgumentException(nameof(existingState));
         }
 
-        public string PersistedState { get; private set; }
+        public string? PersistedState { get; private set; }
 
         public Dictionary<string, byte[]> ExistingState { get; init; }
 
