@@ -238,7 +238,7 @@ namespace RunTests
 
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
+                        commonTestArgs,
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
