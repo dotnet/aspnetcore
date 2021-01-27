@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23856")]
         public void CanLazyLoadOnRouteChange()
         {
             // Navigate to a page without any lazy-loaded dependencies
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23856")]
         public void CanLazyLoadOnFirstVisit()
         {
             // Navigate to a page with lazy loaded assemblies for the first time
