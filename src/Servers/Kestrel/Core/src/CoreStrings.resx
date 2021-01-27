@@ -554,8 +554,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorStreamAborted" xml:space="preserve">
     <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
   </data>
-  <data name="Http2MinDataRateNotSupported" xml:space="preserve">
-    <value>This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.</value>
+  <data name="HttpMinDataRateNotSupported" xml:space="preserve">
+    <value>This feature is not supported for HTTP/2 and HTTP/3 requests except to disable it entirely by setting the rate to null.</value>
   </data>
   <data name="RequestTrailersNotAvailable" xml:space="preserve">
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
