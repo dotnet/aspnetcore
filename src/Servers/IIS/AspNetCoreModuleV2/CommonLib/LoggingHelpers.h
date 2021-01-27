@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "NonCopyable.h"
 #include "StandardStreamRedirection.h"
 
 class LoggingHelpers

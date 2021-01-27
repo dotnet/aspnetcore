@@ -189,10 +189,11 @@ public:
           _fUsingHighResolution( FALSE )
     {
         LARGE_INTEGER li;
+        BOOL          fResult;
 
         _dwInitTickCount = GetTickCount64();
 
-        BOOL fResult = QueryPerformanceFrequency(&li);
+        fResult = QueryPerformanceFrequency( &li );
 
         if ( !fResult )
         {

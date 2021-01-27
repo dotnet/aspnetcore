@@ -63,7 +63,7 @@ public:
 
     void Append(const std::wstring& text) override
     {
-        auto* const target = *m_target;
+        auto const target = *m_target;
         if (target)
         {
             target->Append(text);
@@ -81,7 +81,7 @@ public:
 
     void Append(const std::wstring& text) override;
 
-    [[nodiscard]] std::wstring GetOutput() const
+    std::wstring GetOutput() const
     {
         return m_output.str();
     }

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "resources.h"
+
 #define _va_start(ap, x) \
     __pragma(warning(push)) \
     __pragma(warning(disable:26481 26492)) /*Don't use pointer arithmetic. Don't use const_cast to cast away const.*/ \

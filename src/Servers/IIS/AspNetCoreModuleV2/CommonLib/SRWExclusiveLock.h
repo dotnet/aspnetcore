@@ -8,7 +8,7 @@
 class SRWExclusiveLock
 {
 public:
-    explicit SRWExclusiveLock(const SRWLOCK& lock) noexcept;
+	SRWExclusiveLock(const SRWLOCK& lock) noexcept;
 	~SRWExclusiveLock();
 private:
     const SRWLOCK& m_lock;

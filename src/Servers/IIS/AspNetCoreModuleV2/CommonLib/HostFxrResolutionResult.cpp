@@ -7,9 +7,6 @@
 #include "debugutil.h"
 #include "exceptions.h"
 #include "EventLog.h"
-#include <aspnetcore_msg.h>
-
-#include "resources.h"
 
 void HostFxrResolutionResult::GetArguments(DWORD& hostfxrArgc, std::unique_ptr<PCWSTR[]>& hostfxrArgv) const
 {
@@ -64,7 +61,7 @@ HRESULT HostFxrResolutionResult::Create(
             pcwzApplicationPhysicalPath.c_str(),
             ex.as_wstring().c_str());
 
-        RETURN_CAUGHT_EXCEPTION()
+        RETURN_CAUGHT_EXCEPTION();
     }
     catch (std::runtime_error &ex)
     {
@@ -74,9 +71,9 @@ HRESULT HostFxrResolutionResult::Create(
             pcwzApplicationPhysicalPath.c_str(),
             GetUnexpectedExceptionMessage(ex).c_str());
 
-        RETURN_CAUGHT_EXCEPTION()
+        RETURN_CAUGHT_EXCEPTION();
     }
-    CATCH_RETURN()
+    CATCH_RETURN();
 
     return S_OK;
 }

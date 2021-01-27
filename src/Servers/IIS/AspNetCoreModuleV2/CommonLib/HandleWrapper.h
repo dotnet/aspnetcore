@@ -44,7 +44,7 @@ class HandleWrapper
 public:
     using HandleType = typename traits::HandleType;
 
-    explicit HandleWrapper(HandleType handle = traits::DefaultHandle) noexcept : m_handle(handle) {}
+    HandleWrapper(HandleType handle = traits::DefaultHandle) noexcept : m_handle(handle) {}
     ~HandleWrapper()
     {
         if (m_handle != traits::DefaultHandle)
@@ -53,7 +53,7 @@ public:
         }
     }
 
-    explicit operator HandleType() noexcept { return m_handle; }
+    operator HandleType() noexcept { return m_handle; }
     HandleWrapper &operator=(HandleType value) noexcept
     {
         DBG_ASSERT(m_handle == traits::DefaultHandle);

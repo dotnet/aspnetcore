@@ -4,6 +4,8 @@
 #pragma once
 
 #include "stdafx.h"
+
+#include <httpserv.h>
 #include "stringu.h"
 
 class FILE_UTILITY

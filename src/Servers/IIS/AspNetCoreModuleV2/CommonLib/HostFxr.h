@@ -14,10 +14,10 @@ struct hostfxr_initialize_parameters
     PCWSTR dotnet_root;
 };
 
-constexpr auto DOTNETCORE_STARTUP_HOOK = L"STARTUP_HOOKS";
-constexpr auto DOTNETCORE_USE_ENTRYPOINT_FILTER = L"USE_ENTRYPOINT_FILTER";
-constexpr auto DOTNETCORE_STACK_SIZE = L"DEFAULT_STACK_SIZE";
-constexpr auto ASPNETCORE_STARTUP_ASSEMBLY = L"Microsoft.AspNetCore.Server.IIS";
+#define DOTNETCORE_STARTUP_HOOK  L"STARTUP_HOOKS"
+#define DOTNETCORE_USE_ENTRYPOINT_FILTER L"USE_ENTRYPOINT_FILTER"
+#define DOTNETCORE_STACK_SIZE L"DEFAULT_STACK_SIZE"
+#define ASPNETCORE_STARTUP_ASSEMBLY L"Microsoft.AspNetCore.Server.IIS"
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (DWORD argc, CONST PCWSTR argv[]);

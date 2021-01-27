@@ -45,12 +45,12 @@ private:
         }
         catch (...)
         {
-            OBSERVE_CAUGHT_EXCEPTION()
+            OBSERVE_CAUGHT_EXCEPTION();
         }
     }
 
     // Thread functions
-    void ReadStdErrHandleInternal() const;
+    void ReadStdErrHandleInternal();
     static void ReadStdErrHandle(LPVOID pContext);
 
     HANDLE                          m_hErrReadPipe;

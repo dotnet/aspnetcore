@@ -4,37 +4,36 @@
 #pragma once
 
 #include <string>
-#include <utility>
 #include "ConfigurationSource.h"
 #include "StringHelpers.h"
 #include "WebConfigConfigurationSource.h"
 
-constexpr auto CS_SITE_SECTION = L"system.applicationHost/sites";
-constexpr auto CS_SITE_NAME = L"name";
-constexpr auto CS_SITE_BINDINGS = L"bindings";
-constexpr auto CS_SITE_BINDING_INFORMATION = L"bindingInformation";
-constexpr auto CS_SITE_BINDING_INFORMATION_ALL_HOSTS = L"*";
-constexpr auto CS_SITE_BINDING_PROTOCOL = L"protocol";
-constexpr auto CS_SITE_BINDING_PROTOCOL_HTTPS = L"https";
-constexpr auto CS_SITE_BINDING_INFORMATION_DELIMITER = L':';
+#define CS_SITE_SECTION                         L"system.applicationHost/sites"
+#define CS_SITE_NAME                            L"name"
+#define CS_SITE_BINDINGS                        L"bindings"
+#define CS_SITE_BINDING_INFORMATION             L"bindingInformation"
+#define CS_SITE_BINDING_INFORMATION_ALL_HOSTS   L"*"
+#define CS_SITE_BINDING_PROTOCOL                L"protocol"
+#define CS_SITE_BINDING_PROTOCOL_HTTPS          L"https"
+#define CS_SITE_BINDING_INFORMATION_DELIMITER   L':'
 
 class BindingInformation
 {
 public:
     BindingInformation(std::wstring protocol, std::wstring host, std::wstring port)
     {
-        m_protocol = std::move(protocol);
-        m_host = std::move(host);
-        m_port = std::move(port);
+        m_protocol = protocol;
+        m_host = host;
+        m_port = port;
     }
 
-    BindingInformation(std::wstring protocol, const std::wstring& bindingInformation)
+    BindingInformation(std::wstring protocol, std::wstring bindingInformation)
     {
         // Expected format:
         // IP:PORT:HOST
         // where IP or HOST can be empty
 
-        m_protocol = std::move(protocol);
+        m_protocol = protocol;
 
         const auto portStart = bindingInformation.find(CS_SITE_BINDING_INFORMATION_DELIMITER) + 1;
         const auto lastColon = bindingInformation.find_last_of(CS_SITE_BINDING_INFORMATION_DELIMITER);

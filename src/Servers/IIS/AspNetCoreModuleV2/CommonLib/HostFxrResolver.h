@@ -11,7 +11,7 @@
 
 #include "ErrorContext.h"
 
-constexpr auto READ_BUFFER_SIZE = 4096;
+#define READ_BUFFER_SIZE 4096
 
 class HostFxrResolver
 {

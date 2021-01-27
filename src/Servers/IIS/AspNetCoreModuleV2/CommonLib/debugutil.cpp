@@ -3,6 +3,7 @@
 
 #include "debugutil.h"
 
+#include <array>
 #include <string>
 #include "dbgutil.h"
 #include "stringu.h"
@@ -60,13 +61,13 @@ GetVersionInfoString()
         RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path.c_str(), verHandle, verSize, verData.data()));
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\", &lpBuffer, &size));
 
-        auto verInfo = static_cast<VS_FIXEDFILEINFO *>(lpBuffer);
+        auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
         if (verInfo->dwSignature != VS_FFI_SIGNATURE)
         {
             RETURN_IF_FAILED(E_FAIL);
         }
 
-        LPVOID pvProductName = nullptr;
+        LPVOID pvProductName = NULL;
         unsigned int iProductNameLen = 0;
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
 
@@ -192,9 +193,9 @@ DebugInitialize(HMODULE hModule)
         cbData = sizeof(dwData);
         if ((RegQueryValueEx(hKey,
             L"DebugFlags",
-            nullptr,
+            NULL,
             &dwType,
-            reinterpret_cast<LPBYTE>(&dwData),
+            (LPBYTE)&dwData,
             &cbData) == NO_ERROR) &&
             (dwType == REG_DWORD))
         {
@@ -298,7 +299,7 @@ IsEnabled(
     return ( dwFlag & DEBUG_FLAGS_VAR );
 }
 
-void WriteFileEncoded(UINT codePage, HANDLE hFile, const LPCWSTR szString)
+void WriteFileEncoded(UINT codePage, HANDLE hFile, const LPCWSTR  szString)
 {
     DWORD nBytesWritten = 0;
     auto const encodedByteCount = WideCharToMultiByte(codePage, 0, szString, -1, nullptr, 0, nullptr, nullptr);

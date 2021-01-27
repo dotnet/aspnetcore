@@ -23,7 +23,7 @@ bool try_stou(const std::wstring& str, unsigned* num)
     {
         return false;
     }
-    *num = static_cast<unsigned>(std::stoul(str));
+    *num = (unsigned)std::stoul(str);
     return true;
 }
 
@@ -154,7 +154,7 @@ int fx_ver_t::compare(const fx_ver_t & a, const fx_ver_t & b)
     assert(a.m_pre[0] == TEXT('-'));
     assert(b.m_pre[0] == TEXT('-'));
 
-    // First identifier starts at position 1
+    // First idenitifier starts at position 1
     size_t idStart = 1;
     for (size_t i = idStart; true; ++i)
     {
@@ -163,13 +163,13 @@ int fx_ver_t::compare(const fx_ver_t & a, const fx_ver_t & b)
             // Found first character with a difference
             if (a.m_pre[i] == 0 && b.m_pre[i] == TEXT('.'))
             {
-                // identifiers both complete, b has an additional identifier
+                // identifiers both complete, b has an additional idenitifier
                 return -1;
             }
 
             if (b.m_pre[i] == 0 && a.m_pre[i] == TEXT('.'))
             {
-                // identifiers both complete, a has an additional identifier
+                // identifiers both complete, a has an additional idenitifier
                 return 1;
             }
 
@@ -187,7 +187,7 @@ int fx_ver_t::compare(const fx_ver_t & a, const fx_ver_t & b)
                 // Numeric comparison
                 return (idanum > idbnum) ? 1 : -1;
             }
-            if (idaIsNum || idbIsNum)
+            else if (idaIsNum || idbIsNum)
             {
                 // Mixed compare.  Spec: Number < Text
                 return idbIsNum ? 1 : -1;
@@ -195,15 +195,17 @@ int fx_ver_t::compare(const fx_ver_t & a, const fx_ver_t & b)
             // Ascii compare
             return ida.compare(idb);
         }
-
-        // a.m_pre[i] == b.m_pre[i]
-        if (a.m_pre[i] == 0)
+        else
         {
-            break;
-        }
-        if (a.m_pre[i] == TEXT('.'))
-        {
-            idStart = i + 1;
+            // a.m_pre[i] == b.m_pre[i]
+            if (a.m_pre[i] == 0)
+            {
+                break;
+            }
+            if (a.m_pre[i] == TEXT('.'))
+            {
+                idStart = i + 1;
+            }
         }
     }
 

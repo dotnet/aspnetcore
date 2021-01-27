@@ -45,9 +45,9 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
 
         throw std::system_error(GetLastError(), std::system_category(), "GetEnvironmentVariableW");
     }
-    if (requestedSize == 1)
+    else if (requestedSize == 1)
     {
-        // String just contains a null character, return nothing
+        // String just contains a nullcharacter, return nothing
         // GetEnvironmentVariableW has inconsistent behavior when returning size for an empty
         // environment variable.
         return std::nullopt;
@@ -110,7 +110,10 @@ std::wstring Environment::GetDllDirectoryValue()
         {
             throw std::system_error(GetLastError(), std::system_category(), "GetDllDirectory");
         }
-        return L"";
+        else
+        {
+            return L"";
+        }
     }
 
     std::wstring expandedStr;

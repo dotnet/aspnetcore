@@ -92,7 +92,7 @@ GlobalVersionUtility::FindHighestGlobalVersion(PCWSTR pwzAspNetCoreFolderPath)
 // Throws std::out_of_range if there is an index out of range
 // Throw invalid_argument if any argument is null
 std::wstring
-GlobalVersionUtility::RemoveFileNameFromFolderPath(const std::wstring& fileName)
+GlobalVersionUtility::RemoveFileNameFromFolderPath(std::wstring fileName)
 {
     fs::path path(fileName);
     return path.parent_path();
@@ -115,7 +115,7 @@ GlobalVersionUtility::GetModuleName(HMODULE hModuleName)
         {
             throw new std::runtime_error("GetModuleFileNameW returned 0.");
         }
-        if ((dwReturnedSize == dwSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+        else if ((dwReturnedSize == dwSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
         {
             dwSize *= 2;
             retVal.resize(dwSize); // smaller buffer. increase the buffer and retry
