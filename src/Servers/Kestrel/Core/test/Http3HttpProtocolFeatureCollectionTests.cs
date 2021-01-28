@@ -2,13 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -26,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var connection = new Http3Connection(TestContextFactory.CreateHttp3ConnectionContext());
 
-            var streamContext = TestContextFactory.CreateHttp3StreamContext();
+            var streamContext = TestContextFactory.CreateHttp3StreamContext(transport: DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application);
 
             var http3Stream = new TestHttp3Stream(connection, streamContext);
             http3Stream.Reset();

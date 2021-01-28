@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Testing
                 memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
-                transport: transport ?? DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application,
+                transport: transport,
                 streamContext: null,
                 settings: null
             );
