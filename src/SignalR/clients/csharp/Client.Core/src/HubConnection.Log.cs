@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, string, Exception?> _cancelingInvocationCompletion =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(19, "CancelingInvocationCompletion"), "Canceling dispatch of Completion message for Invocation {InvocationId}. The invocation was canceled.");
 
-            private static readonly Action<ILogger, string, string, int, Exception?> _releasingConnectionLock =
-                LoggerMessage.Define<string, string, int>(LogLevel.Trace, new EventId(20, "ReleasingConnectionLock"), "Releasing Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
+            private static readonly Action<ILogger, string?, string?, int, Exception?> _releasingConnectionLock =
+                LoggerMessage.Define<string?, string?, int>(LogLevel.Trace, new EventId(20, "ReleasingConnectionLock"), "Releasing Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
 
             private static readonly Action<ILogger, Exception?> _stopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(21, "Stopped"), "HubConnection stopped.");
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception?> _starting =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(41, "Starting"), "Starting HubConnection.");
 
-            private static readonly Action<ILogger, string, string, int, Exception?> _waitingOnConnectionLock =
-                LoggerMessage.Define<string, string, int>(LogLevel.Trace, new EventId(42, "WaitingOnConnectionLock"), "Waiting on Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
+            private static readonly Action<ILogger, string?, string?, int, Exception?> _waitingOnConnectionLock =
+                LoggerMessage.Define<string?, string?, int>(LogLevel.Trace, new EventId(42, "WaitingOnConnectionLock"), "Waiting on Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
 
             private static readonly Action<ILogger, Exception> _errorStartingConnection =
                 LoggerMessage.Define(LogLevel.Error, new EventId(43, "ErrorStartingConnection"), "Error starting connection.");
@@ -530,12 +530,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _processingMessage(logger, length, null);
             }
 
-            public static void WaitingOnConnectionLock(ILogger logger, string memberName, string filePath, int lineNumber)
+            public static void WaitingOnConnectionLock(ILogger logger, string? memberName, string? filePath, int lineNumber)
             {
                 _waitingOnConnectionLock(logger, memberName, filePath, lineNumber, null);
             }
 
-            public static void ReleasingConnectionLock(ILogger logger, string memberName, string filePath, int lineNumber)
+            public static void ReleasingConnectionLock(ILogger logger, string? memberName, string? filePath, int lineNumber)
             {
                 _releasingConnectionLock(logger, memberName, filePath, lineNumber, null);
             }

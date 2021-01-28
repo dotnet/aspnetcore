@@ -1985,7 +1985,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public Task WaitConnectionLockAsync(CancellationToken token, [CallerMemberName] string? memberName = null, [CallerFilePath] string? filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                Log.WaitingOnConnectionLock(_logger, memberName!, filePath!, lineNumber);
+                Log.WaitingOnConnectionLock(_logger, memberName, filePath, lineNumber);
                 return _connectionLock.WaitAsync(token);
             }
 
@@ -2015,7 +2015,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public void ReleaseConnectionLock([CallerMemberName] string? memberName = null,
                 [CallerFilePath] string? filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                Log.ReleasingConnectionLock(_logger, memberName!, filePath!, lineNumber);
+                Log.ReleasingConnectionLock(_logger, memberName, filePath, lineNumber);
                 _connectionLock.Release();
             }
         }
