@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
 
             var chainPolicy = BuildChainPolicy(clientCertificate);
-            var chain = new X509Chain
+            using var chain = new X509Chain
             {
                 ChainPolicy = chainPolicy
             };
