@@ -45,7 +45,8 @@ export function discoverPersistedState(node: Node): string {
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
     const result = discoverPersistedState(candidate);
-    if(result !== ''){
+    if(result && result !== ''){
+      node.removeChild(candidate);
       return result;
     }
   }
