@@ -92,11 +92,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   const persistedState = discoverPersistedState(document);
-  function getPersistedState() {
-    return BINDING.js_string_to_mono_string(persistedState);
-  };
-
-  window['Blazor']._internal.getPersistedState = getPersistedState;
+  window['Blazor']._internal.getPersistedState = () => BINDING.js_string_to_mono_string(persistedState);
 
   window['Blazor']._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
