@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -47,7 +48,7 @@ namespace AuthSamples.FunctionalTests
         public async Task MinimumAge10WorksIfOldEnough()
         {
             // Arrange & Act
-            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 20)).ToShortDateString());
+            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 20)).ToString(DateTimeFormatInfo.InvariantInfo.ShortDatePattern, CultureInfo.InvariantCulture));
             Assert.Equal(HttpStatusCode.OK, signIn.StatusCode);
 
             var response = await Client.GetAsync("/Home/MinimumAge10");
@@ -63,7 +64,7 @@ namespace AuthSamples.FunctionalTests
         public async Task MinimumAge10FailsIfNotOldEnough()
         {
             // Arrange & Act
-            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 5)).ToShortDateString());
+            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 5)).ToString(DateTimeFormatInfo.InvariantInfo.ShortDatePattern, CultureInfo.InvariantCulture));
             Assert.Equal(HttpStatusCode.OK, signIn.StatusCode);
 
             var response = await Client.GetAsync("/Home/MinimumAge10");
@@ -78,7 +79,7 @@ namespace AuthSamples.FunctionalTests
         public async Task MinimumAge50WorksIfOldEnough()
         {
             // Arrange & Act
-            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 55)).ToShortDateString());
+            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 55)).ToString(DateTimeFormatInfo.InvariantInfo.ShortDatePattern, CultureInfo.InvariantCulture));
             Assert.Equal(HttpStatusCode.OK, signIn.StatusCode);
 
             var response = await Client.GetAsync("/Home/MinimumAge50");
@@ -94,7 +95,7 @@ namespace AuthSamples.FunctionalTests
         public async Task MinimumAge50FailsIfNotOldEnough()
         {
             // Arrange & Act
-            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 20)).ToShortDateString());
+            var signIn = await SignIn(Client, "Dude", DateTime.Now.Subtract(TimeSpan.FromDays(365 * 20)).ToString(DateTimeFormatInfo.InvariantInfo.ShortDatePattern, CultureInfo.InvariantCulture));
             Assert.Equal(HttpStatusCode.OK, signIn.StatusCode);
 
             var response = await Client.GetAsync("/Home/MinimumAge50");
