@@ -3,10 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -70,6 +73,28 @@ namespace Microsoft.AspNetCore.Testing
             return context;
         }
 
+        public static Http3ConnectionContext CreateHttp3ConnectionContext(
+            MultiplexedConnectionContext connectionContext = null,
+            ServiceContext serviceContext = null,
+            IFeatureCollection connectionFeatures = null,
+            MemoryPool<byte> memoryPool = null,
+            IPEndPoint localEndPoint = null,
+            IPEndPoint remoteEndPoint = null,
+            ITimeoutControl timeoutControl = null)
+        {
+            var http3ConnectionContext = new Http3ConnectionContext(
+                "TestConnectionId",
+                connectionContext ?? new TestMultiplexedConnectionContext(),
+                serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
+                connectionFeatures ?? new FeatureCollection(),
+                memoryPool ?? SlabMemoryPoolFactory.Create(),
+                localEndPoint,
+                remoteEndPoint);
+            http3ConnectionContext.TimeoutControl = timeoutControl;
+
+            return http3ConnectionContext;
+        }
+
         public static AddressBindContext CreateAddressBindContext(
             ServerAddressesFeature serverAddressesFeature,
             KestrelServerOptions serverOptions,
@@ -121,6 +146,61 @@ namespace Microsoft.AspNetCore.Testing
             context.TimeoutControl = timeoutControl;
 
             return context;
+        }
+
+        public static Http3StreamContext CreateHttp3StreamContext(
+            string connectionId = null,
+            ConnectionContext connectionContext = null,
+            ServiceContext serviceContext = null,
+            IFeatureCollection connectionFeatures = null,
+            MemoryPool<byte> memoryPool = null,
+            IPEndPoint localEndPoint = null,
+            IPEndPoint remoteEndPoint = null,
+            IDuplexPipe transport = null,
+            ITimeoutControl timeoutControl = null)
+        {
+            var context = new Http3StreamContext
+            (
+                connectionId: connectionId ?? "TestConnectionId",
+                protocols: HttpProtocols.Http3,
+                connectionContext: connectionContext,
+                serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
+                connectionFeatures: connectionFeatures ?? new FeatureCollection(),
+                memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
+                localEndPoint: localEndPoint,
+                remoteEndPoint: remoteEndPoint,
+                transport: transport,
+                streamContext: null,
+                settings: null
+            );
+            context.TimeoutControl = timeoutControl;
+
+            return context;
+        }
+
+        private class TestMultiplexedConnectionContext : MultiplexedConnectionContext
+        {
+            public override string ConnectionId { get; set; }
+            public override IFeatureCollection Features { get; }
+            public override IDictionary<object, object> Items { get; set; }
+
+            public override void Abort()
+            {
+            }
+
+            public override void Abort(ConnectionAbortedException abortReason)
+            {
+            }
+
+            public override ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+            {
+                return default;
+            }
+
+            public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+            {
+                return default;
+            }
         }
     }
 }
