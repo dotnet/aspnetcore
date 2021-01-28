@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentException(nameof(existingState));
         }
 
+#nullable enable
         public string? PersistedState { get; private set; }
+#nullable disable
 
         public Dictionary<string, byte[]> ExistingState { get; init; }
 

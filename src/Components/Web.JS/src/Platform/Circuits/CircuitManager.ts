@@ -37,7 +37,7 @@ export class CircuitDescriptor {
       navigationManagerFunctions.getBaseURI(),
       navigationManagerFunctions.getLocationHref(),
       JSON.stringify(this.components.map(c => c.toRecord())),
-      this.applicationState
+      this.applicationState || ''
     );
 
     if (result) {

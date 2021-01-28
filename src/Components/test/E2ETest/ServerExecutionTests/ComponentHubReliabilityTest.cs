@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var descriptors = await Client.GetPrerenderDescriptors(uri);
 
             // Act
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors));
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors, null));
 
             // Assert
             var actualError = Assert.Single(Errors);

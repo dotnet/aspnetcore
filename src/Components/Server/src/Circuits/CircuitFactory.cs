@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
-            var store = new ProtectedPrerenderComponentApplicationStore(existingState, scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>());
+            var store = !string.IsNullOrEmpty(existingState) ?
+                new ProtectedPrerenderComponentApplicationStore(existingState, scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>()) :
+                new PrerenderComponentApplicationStore();
             await appLifetime.RestoreStateAsync(store);
 
             var renderer = new RemoteRenderer(
