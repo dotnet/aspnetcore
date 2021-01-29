@@ -147,14 +147,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
                 }
 
-                foreach (var childContent in node.ChildContents)
-                {
-                    foreach (var typeName in FindGenericTypeNames(childContent.BoundAttribute))
-                    {
-                        bindings.Remove(typeName);
-                    }
-                }
-
                 // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
                 // with a cascaded generic parameter that can cover this one
                 List<CascadingGenericTypeParameter> receivesCascadingGenericTypes = null;
@@ -210,6 +202,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     yield break;
                 }
+
+                // TODO: Avoid returning type parameters if the value for the associated expression
+                // is a type-inferred lambda (e.g., (a, b) => { ... }). Such values don't contribute
+                // to determining the generic types, and if those are all we have, we need not to
+                // remove the 'binding' entry because then we wouldn't receive anything cascaded
+                // from ancestors.
 
                 var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
                 if (typeParameters.Count == 0)
