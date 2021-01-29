@@ -113,7 +113,6 @@
     <SystemIOPipelinesVersion>6.0.0-preview.2.21079.2</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>6.0.0-preview.2.21079.2</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>6.0.0-preview.2.21079.2</SystemNetHttpWinHttpHandlerVersion>
-    <SystemNetWebSocketsWebSocketProtocolVersion>6.0.0-preview.2.21079.2</SystemNetWebSocketsWebSocketProtocolVersion>
     <SystemReflectionMetadataVersion>6.0.0-preview.2.21079.2</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>6.0.0-preview.2.21079.2</SystemResourcesExtensionsVersion>
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.2.21079.2</SystemRuntimeCompilerServicesUnsafeVersion>
