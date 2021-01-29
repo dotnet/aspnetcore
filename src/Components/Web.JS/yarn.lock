@@ -346,16 +346,22 @@
     "@types/yargs" "^13.0.0"
 
 "@microsoft/dotnet-js-interop@link:../../JSInterop/Microsoft.JSInterop.JS/src":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
 
 "@microsoft/signalr-protocol-msgpack@link:../../SignalR/clients/ts/signalr-protocol-msgpack":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
+  dependencies:
+    "@microsoft/signalr" "link:../../SignalR/clients/ts/signalr"
+    msgpack5 "^4.0.2"
 
 "@microsoft/signalr@link:../../SignalR/clients/ts/signalr":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
+  dependencies:
+    abort-controller "^3.0.0"
+    eventsource "^1.0.7"
+    fetch-cookie "^0.7.3"
+    node-fetch "^2.6.0"
+    ws "^6.0.0"
 
 "@types/babel__core@^7.1.0":
   version "7.1.7"
@@ -962,9 +968,9 @@ bluebird@^3.5.5:
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
 
 bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.1.1, bn.js@^4.4.0:
-  version "4.11.8"
-  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.8.tgz#2cde09eb5ee341f484746bb0309b3253b1b1442f"
-  integrity sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==
+  version "4.11.9"
+  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.9.tgz#26d556829458f9d1e81fc48952493d0ba3507828"
+  integrity sha512-E6QoYqCKZfgatHTdHzs1RRKP7ip4vvm+EyRUeE2RF0NblwVvb0p6jSVeNTOFxPn26QXN2o6SMfNxKp6kU8zQaw==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -1582,9 +1588,9 @@ ecc-jsbn@~0.1.1:
     safer-buffer "^2.1.0"
 
 elliptic@^6.0.0:
-  version "6.5.2"
-  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.2.tgz#05c5678d7173c049d8ca433552224a495d0e3762"
-  integrity sha512-f4x70okzZbIQl/NSRLkI/+tteV/9WqL98zx+SQ69KbXxmVrmjwsNUPn/gYJJ0sHvEak24cZgHIPegRePAtA/xw==
+  version "6.5.3"
+  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.3.tgz#cb59eb2efdaf73a0bd78ccd7015a62ad6e0f93d6"
+  integrity sha512-IMqzv5wNQf+E6aHeIqATs0tOLeOTwj1QKbRcS3jBbYkl5oLAserA8yJTT7/VyHUYG91PRmPyeQDObKLPpeS4dw==
   dependencies:
     bn.js "^4.4.0"
     brorand "^1.0.1"
