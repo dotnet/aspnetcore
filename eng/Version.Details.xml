@@ -221,10 +221,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>82bf84c67949ab91f248e940428cfbd5c09a9e2f</Sha>
     </Dependency>
-    <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="6.0.0-preview.2.21078.2">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>82bf84c67949ab91f248e940428cfbd5c09a9e2f</Sha>
-    </Dependency>
     <Dependency Name="System.Reflection.Metadata" Version="6.0.0-preview.2.21078.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>82bf84c67949ab91f248e940428cfbd5c09a9e2f</Sha>
