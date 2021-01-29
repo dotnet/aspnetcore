@@ -89,6 +89,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     var binding = bindings[typeArgumentNode.TypeParameterName];
                     binding.Node = typeArgumentNode;
                     binding.Content = GetContent(typeArgumentNode);
+
+                    // Offer this type argument to descendants too
+                    // TODO: Only offer type args that are explicitly opted-in to cascading
+                    node.ProvidesCascadingGenericTypes ??= new Dictionary<string, string>();
+                    node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = $"default({binding.Content})";
                 }
 
                 if (hasTypeArgumentSpecified)
@@ -151,32 +156,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             bindings.Remove(typeParameter.ToString());
                         }
                     }
+
+                    // TODO: Advertise the cascaded type args that we just found
                 }
 
-                // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them with
-                // a parameter that can cover this one
-                Dictionary<string, string> syntheticInferenceArguments = null;
+                // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
+                // with a cascaded generic parameter that can cover this one
+                Dictionary<string, string> receivesCascadingGenericTypes = null;
                 foreach (var uncoveredBindingKey in bindings.Keys.ToList())
                 {
                     var uncoveredBinding = bindings[uncoveredBindingKey];
                     foreach (var candidateAncestor in Ancestors.OfType<ComponentIntermediateNode>())
                     {
-                        // If the type argument is specified explicitly on the ancestor, use it
-                        // TODO: Only include type arguments that are explicitly opted into cascading
-                        var explicitTypeArgument = candidateAncestor.TypeArguments
-                            .FirstOrDefault(t => string.Equals(t.TypeParameterName, uncoveredBindingKey, StringComparison.Ordinal));
-                        if (explicitTypeArgument != null)
+                        if (candidateAncestor.ProvidesCascadingGenericTypes != null
+                            && candidateAncestor.ProvidesCascadingGenericTypes.TryGetValue(uncoveredBindingKey, out var receiveArg))
                         {
                             bindings.Remove(uncoveredBindingKey);
-
-                            syntheticInferenceArguments ??= new Dictionary<string, string>();
-                            syntheticInferenceArguments[uncoveredBindingKey] = $"default({GetContent(explicitTypeArgument)})";
-
-                            break;
+                            receivesCascadingGenericTypes ??= new Dictionary<string, string>();
+                            receivesCascadingGenericTypes[uncoveredBindingKey] = receiveArg;
                         }
-
-                        // TODO: If the type argument is *inferred* on the ancestor, set up a synthetic parameter
-                        // matching the value used for inference on the ancestor
                     }
                 }
 
@@ -197,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // contains all of the operations on the render tree building. Calling a method to operate on the builder
                 // will allow the C# compiler to perform type inference.
                 var documentNode = (DocumentIntermediateNode)Ancestors[Ancestors.Count - 1];
-                CreateTypeInferenceMethod(documentNode, node, syntheticInferenceArguments);
+                CreateTypeInferenceMethod(documentNode, node, receivesCascadingGenericTypes);
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
@@ -298,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, Dictionary<string, string> syntheticArguments)
+            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, Dictionary<string, string> receivesCascadingGenericTypes)
             {
                 var @namespace = documentNode.FindPrimaryNamespace().Content;
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
@@ -313,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     MethodName = $"Create{CSharpIdentifier.SanitizeIdentifier(node.TagName)}_{_id++}",
                     FullTypeName = @namespace + ".TypeInference",
 
-                    SyntheticArguments = syntheticArguments,
+                    ReceivesCascadingGenericTypes = receivesCascadingGenericTypes,
                 };
 
                 node.TypeInferenceNode = typeInferenceNode;

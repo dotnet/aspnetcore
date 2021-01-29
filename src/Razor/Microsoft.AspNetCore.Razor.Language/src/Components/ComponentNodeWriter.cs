@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             writer.Write(", ");
             writer.Write("int seq");
 
-            if (node.SyntheticArguments != null)
+            if (node.ReceivesCascadingGenericTypes != null)
             {
                 var i = 0;
-                foreach (var kvp in node.SyntheticArguments)
+                foreach (var kvp in node.ReceivesCascadingGenericTypes)
                 {
                     writer.Write(", ");
                     writer.Write(kvp.Key);

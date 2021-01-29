@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         /// Gets a dictionary (or null) describing additional arguments for type inference.
         /// These are populated from ancestor components that choose to cascade their type parameters.
         /// </summary>
-        public Dictionary<string, string> SyntheticArguments { get; set; }
+        public Dictionary<string, string> ReceivesCascadingGenericTypes { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

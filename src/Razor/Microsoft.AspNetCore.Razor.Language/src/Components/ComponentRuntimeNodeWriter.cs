@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var captures = node.Captures.ToList();
                 var setKeys = node.SetKeys.ToList();
                 var remaining = attributes.Count + childContents.Count + captures.Count + setKeys.Count
-                    + node.TypeInferenceNode.SyntheticArguments?.Count;
+                    + node.TypeInferenceNode.ReceivesCascadingGenericTypes?.Count;
 
                 context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
                 context.CodeWriter.Write(".");
@@ -432,9 +432,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                 context.CodeWriter.Write(", ");
 
-                if (node.TypeInferenceNode.SyntheticArguments != null)
+                if (node.TypeInferenceNode.ReceivesCascadingGenericTypes != null)
                 {
-                    foreach (var syntheticArg in node.TypeInferenceNode.SyntheticArguments.Values)
+                    foreach (var syntheticArg in node.TypeInferenceNode.ReceivesCascadingGenericTypes.Values)
                     {
                         context.CodeWriter.Write(syntheticArg);
 

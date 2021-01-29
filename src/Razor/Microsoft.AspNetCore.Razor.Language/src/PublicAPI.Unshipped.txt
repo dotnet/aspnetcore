@@ -1,3 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.SyntheticArguments.get -> System.Collections.Generic.Dictionary<string, string>
-~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.SyntheticArguments.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void

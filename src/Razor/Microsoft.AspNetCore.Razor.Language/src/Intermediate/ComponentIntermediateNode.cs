@@ -36,6 +36,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         // if this component call site requires type inference.
         public ComponentTypeInferenceMethodIntermediateNode TypeInferenceNode { get; set; }
 
+        /// <summary>
+        /// Gets a dictionary (or null) that advertises any type arguments that are available
+        /// for use by descendants within the same tree.
+        /// </summary>
+        public Dictionary<string, string> ProvidesCascadingGenericTypes { get; set; }
+
         public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
