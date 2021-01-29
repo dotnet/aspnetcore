@@ -38,10 +38,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
             _boundary = new MultipartBoundary(boundary ?? throw new ArgumentNullException(nameof(boundary)), false);
-
-            // This stream will drain any preamble data and remove the first boundary marker. 
-            // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary) { LengthLimit = HeadersLengthLimit };
         }
 
         /// <summary>
@@ -65,6 +61,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="cancellationToken"></param>
         public async Task<MultipartPipeSection?> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
+            if (_currentSectionReader == null) // first call.
+            {
+                // This section will drain any preamble data and remove the first boundary marker.
+                _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary) { LengthLimit = HeadersLengthLimit };
+            }
+
             await _currentSectionReader.DrainAsync(cancellationToken);
 
             if (_currentSectionReader.FinalBoundaryFound)
