@@ -126,12 +126,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
                 foreach (var attribute in node.Attributes)
                 {
-                    FindCoveredGenericParameters(bindings, attribute.BoundAttribute);
+                    foreach (var typeName in FindGenericTypeNames(attribute.BoundAttribute))
+                    {
+                        bindings.Remove(typeName);
+                    }
                 }
 
                 foreach (var childContent in node.ChildContents)
                 {
-                    FindCoveredGenericParameters(bindings, childContent.BoundAttribute);
+                    foreach (var typeName in FindGenericTypeNames(childContent.BoundAttribute))
+                    {
+                        bindings.Remove(typeName);
+                    }
                 }
 
                 // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
@@ -172,12 +178,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 CreateTypeInferenceMethod(documentNode, node, receivesCascadingGenericTypes);
             }
 
-            private void FindCoveredGenericParameters(Dictionary<string, Binding> bindings, BoundAttributeDescriptor boundAttribute)
+            private IEnumerable<string> FindGenericTypeNames(BoundAttributeDescriptor boundAttribute)
             {
                 if (boundAttribute == null)
                 {
                     // Will be null for attributes set on the component that don't match a declared component parameter
-                    return;
+                    yield break;
                 }
 
                 // Now we need to parse the type name and extract the generic parameters.
@@ -187,20 +193,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // 2. name contains type parameters like Dictionary<string, TItem>
                 if (!boundAttribute.IsGenericTypedProperty())
                 {
-                    return;
+                    yield break;
                 }
 
                 var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
                 if (typeParameters.Count == 0)
                 {
-                    bindings.Remove(boundAttribute.TypeName);
+                    yield return boundAttribute.TypeName;
                 }
                 else
                 {
                     for (var i = 0; i < typeParameters.Count; i++)
                     {
                         var typeParameter = typeParameters[i];
-                        bindings.Remove(typeParameter.ToString());
+                        yield return typeParameter.ToString();
                     }
                 }
             }
