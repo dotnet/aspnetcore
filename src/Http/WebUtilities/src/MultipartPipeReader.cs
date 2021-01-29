@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private readonly PipeReader _pipeReader;
         private readonly MultipartBoundary _boundary;
-        private MultipartSectionPipeReader _currentSectionReader;
+        private MultipartSectionPipeReader? _currentSectionReader;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
@@ -104,10 +104,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 try
                 {
                     var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
-                    if (headersLength > HeadersLengthLimit)
-                    {
-                        throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
-                    }
 
                     if (finishedParsing)
                     {
