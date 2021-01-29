@@ -28,15 +28,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.FullTypeName);
-            if (bindMethods == null)
+            if (compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName) is not INamedTypeSymbol eventHandlerAttribute)
             {
-                // If we can't find IComponent, then just bail. We won't be able to compile the
-                // generated code anyway.
+                // If we can't find EventHandlerAttribute, then just bail. We won't discover anything.
                 return;
             }
 
-            var eventHandlerData = GetEventHandlerData(compilation);
+            var eventHandlerData = GetEventHandlerData(context, compilation, eventHandlerAttribute);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
             {
@@ -44,27 +42,27 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private List<EventHandlerData> GetEventHandlerData(Compilation compilation)
+        private List<EventHandlerData> GetEventHandlerData(TagHelperDescriptorProviderContext context, Compilation compilation, INamedTypeSymbol eventHandlerAttribute)
         {
-            var eventHandlerAttribute = compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName);
-            if (eventHandlerAttribute == null)
-            {
-                // This won't likely happen, but just in case.
-                return new List<EventHandlerData>();
-            }
-
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
+            if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                visitor.Visit(compilation.Assembly);
+            }
+
+            if ((discoveryMode & TagHelperDiscoveryFilter.ReferenceAssemblies) == TagHelperDiscoveryFilter.ReferenceAssemblies)
+            {
+                foreach (var reference in compilation.References)
                 {
-                    visitor.Visit(assembly);
+                    // We ignore .netmodules here - there really isn't a case where they are used by user code
+                    // even though the Roslyn APIs all support them.
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly);
+                    }
                 }
             }
 
