@@ -450,7 +450,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     foreach (var syntheticArg in node.TypeInferenceNode.ReceivesCascadingGenericTypes)
                     {
-                        context.CodeWriter.Write(syntheticArg.ValueExpression);
+                        if (!string.IsNullOrEmpty(syntheticArg.ValueExpression))
+                        {
+                            context.CodeWriter.Write(syntheticArg.ValueExpression);
+                        }
+                        else
+                        {
+                            // TODO: Don't allow this case, since we should require that ValueExpression
+                            // was populated with the variable name
+                            WriteComponentAttributeInnards(context, syntheticArg.ValueSourceNode, canTypeCheck: false);
+                        }
 
                         remaining--;
                         if (remaining > 0)

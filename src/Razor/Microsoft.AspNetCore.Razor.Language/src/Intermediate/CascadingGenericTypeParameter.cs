@@ -11,12 +11,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public string GenericTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the value expression, e.g., IDictionary[TOther, TItem]
+        /// Gets or sets a <see cref="ComponentAttributeIntermediateNode"/> that supplies content for
+        /// <see cref="ValueExpression"/>. In the case of explicitly-specified generic parameters, this
+        /// will be null.
         /// </summary>
-        public string ValueExpressionType { get; set; }
+        public ComponentAttributeIntermediateNode ValueSourceNode { get; set; }
 
         /// <summary>
-        /// Gets or sets the value expression
+        /// Gets or sets the type of <see cref="ValueExpression"/>, e.g., List[TItem].
+        /// </summary>
+        public string ValueType { get; set; }
+
+        /// <summary>
+        /// Gets or sets an expression defining the type of the generic parameter. In the case of inferred
+        /// generic parameters, this will only be populated once a variable is emitted corresponding to
+        /// <see cref="ValueSourceNode"/>.
         /// </summary>
         public string ValueExpression { get; set; }
     }

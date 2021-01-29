@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 foreach (var cascadingGenericType in node.ReceivesCascadingGenericTypes)
                 {
                     writer.Write(", ");
-                    writer.Write(cascadingGenericType.ValueExpressionType);
+                    writer.Write(cascadingGenericType.ValueType);
                     writer.Write($" syntheticArg{i++}");
                 }
             }

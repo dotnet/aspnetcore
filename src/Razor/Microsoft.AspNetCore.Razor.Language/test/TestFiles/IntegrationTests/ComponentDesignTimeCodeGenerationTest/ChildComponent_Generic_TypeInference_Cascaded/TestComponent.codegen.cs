@@ -29,7 +29,15 @@ namespace Test
 #line hidden
 #nullable disable
             , -1, (__builder2) => {
-                __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, Array.Empty<DateTime>());
+                __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+               Array.Empty<DateTime>()
+
+#line default
+#line hidden
+#nullable disable
+                );
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);

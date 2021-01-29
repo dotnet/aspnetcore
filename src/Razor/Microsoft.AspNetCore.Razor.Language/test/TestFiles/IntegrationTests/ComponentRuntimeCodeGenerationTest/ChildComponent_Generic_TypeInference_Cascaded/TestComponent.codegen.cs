@@ -22,7 +22,15 @@ namespace Test
 #line hidden
 #nullable disable
             , 2, (__builder2) => {
-                __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, Array.Empty<DateTime>());
+                __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+               Array.Empty<DateTime>()
+
+#line default
+#line hidden
+#nullable disable
+                );
             }
             );
         }
