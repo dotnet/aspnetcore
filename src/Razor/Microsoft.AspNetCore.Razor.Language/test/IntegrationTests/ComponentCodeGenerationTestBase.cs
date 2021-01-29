@@ -3247,6 +3247,38 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_Generic_TypeInference_CascadedWithLambda()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem, TOutput> : ComponentBase
+    {
+        [Parameter] public System.Func<TItem, TOutput> SomeLambda { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column SomeLambda=""@(x => x.Year)"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_GenericWeaklyTypedAttribute()
         {
             // Arrange

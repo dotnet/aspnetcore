@@ -131,19 +131,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
                 foreach (var attribute in node.Attributes)
                 {
+                    bool? attributeValueIsLambda = null;
+
                     foreach (var typeName in FindGenericTypeNames(attribute.BoundAttribute))
                     {
-                        bindings.Remove(typeName);
-
-                        // Advertise that this particular generic type is available to descendants
-                        // TODO: Only include ones explicitly opted-in to cascading
-                        node.ProvidesCascadingGenericTypes ??= new();
-                        node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
+                        attributeValueIsLambda ??= _pass.TypeNameFeature.IsLambda(GetContent(attribute));
+                        if (attributeValueIsLambda.GetValueOrDefault())
                         {
-                            GenericTypeName = typeName,
-                            ValueType = attribute.BoundAttribute.TypeName,
-                            ValueSourceNode = attribute,
-                        };
+                            // For attributes whose values are lambdas:
+                            // [1] We don't know whether or not the value covers the generic type - it depends
+                            //     on the syntactical details of the lambda. For example, "() => 123" can cover
+                            //     a Func<T>, but "() => null" cannot. So we'll accept cascaded generic types
+                            //     from ancestors if they are compatible with the lambda, hence we don't remove
+                            //     it from the list of uncovered generic types, but just flag it.
+                            // [2] We can't use it as a supplier of generic types to descendants, because lambdas
+                            //     can't be assigned to implicit variables, and we need to create an implicit
+                            //     variable to avoid evaluating the expression multiple times.
+                            if (bindings.TryGetValue(typeName, out var binding))
+                            {
+                                binding.CoveredByLambda = true;
+                            }
+                        }
+                        else
+                        {
+                            bindings.Remove(typeName);
+
+                            // Advertise that this particular generic type is available to descendants
+                            // TODO: Only include ones explicitly opted-in to cascading
+                            node.ProvidesCascadingGenericTypes ??= new();
+                            node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
+                            {
+                                GenericTypeName = typeName,
+                                ValueType = attribute.BoundAttribute.TypeName,
+                                ValueSourceNode = attribute,
+                            };
+                        }
                     }
                 }
 
@@ -163,6 +185,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             receivesCascadingGenericTypes.Add(receiveArg);
                         }
                     }
+                }
+
+                foreach (var entryToRemove in bindings.Where(e => e.Value.CoveredByLambda).ToList())
+                {
+                    // Treat this binding as covered, because it's possible that the lambda does provide
+                    // enough info for type inference to succeed.
+                    bindings.Remove(entryToRemove.Key);
                 }
 
                 // If any bindings remain then this means we would never be able to infer the arguments of this
@@ -225,6 +254,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
+            {
+                return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
+            }
+
+            private string GetContent(ComponentAttributeIntermediateNode node)
             {
                 return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
             }
@@ -390,6 +424,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public string Content { get; set; }
 
             public ComponentTypeArgumentIntermediateNode Node { get; set; }
+
+            public bool CoveredByLambda { get; set; }
         }
     }
 }
