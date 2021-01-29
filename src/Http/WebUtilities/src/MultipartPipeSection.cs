@@ -16,7 +16,6 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-
     /// <summary>
     /// a Pipe Implementation of a Http Multipart Section
     /// </summary>

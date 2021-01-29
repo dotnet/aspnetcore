@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class MultipartReaderBenchmark
     {
-
         private const string Boundary = "9051914041544843365972754266";
         private const string OnePartBody =
     "--9051914041544843365972754266\r\n" +
