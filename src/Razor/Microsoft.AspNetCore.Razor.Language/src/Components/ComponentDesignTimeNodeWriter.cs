@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // we don't have to evaluate their expressions more than once
                 IDisposable typeInferenceVariablesScope = null;
                 List<string> typeInferenceVariablesToClear = null;
-                foreach (var cascadingGenericType in node.ProvidesInferredCascadingGenericTypes)
+                foreach (var cascadingGenericTypeGroup in node.ProvidesInferredCascadingGenericTypes.GroupBy(t => t.ValueSourceNode))
                 {
                     if (typeInferenceVariablesScope == null)
                     {
@@ -436,19 +436,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         typeInferenceVariablesToClear = new();
                     }
 
-                    // The (depth, typename) pair will be unique within lexical scope
-                    var variableName = $"typeInferenceArg_{_scopeStack.Depth}_{cascadingGenericType.GenericTypeName}";
+                    // The (depth, name) pair will be unique within lexical scope
+                    var variableName = $"typeInferenceArg_{_scopeStack.Depth}_{cascadingGenericTypeGroup.Key.BoundAttribute.GetPropertyName()}";
                     typeInferenceVariablesToClear.Add(variableName);
                     context.CodeWriter.WriteLine();
                     context.CodeWriter.WriteLine("#pragma warning disable 219 // Variable is assigned but its value is never used");
                     context.CodeWriter.Write("var ");
                     context.CodeWriter.Write(variableName);
                     context.CodeWriter.Write(" = ");
-                    WriteComponentAttributeInnards(context, cascadingGenericType.ValueSourceNode, canTypeCheck: false);
+                    WriteComponentAttributeInnards(context, cascadingGenericTypeGroup.Key, canTypeCheck: false);
                     context.CodeWriter.WriteLine(";");
                     context.CodeWriter.WriteLine("#pragma warning restore 219");
 
-                    cascadingGenericType.ValueExpression = variableName;
+                    foreach (var cascadingGenericType in cascadingGenericTypeGroup)
+                    {
+                        cascadingGenericType.ValueExpression = variableName;
+                    }
                 }
 
                 // Preserve order of attributes + splats
