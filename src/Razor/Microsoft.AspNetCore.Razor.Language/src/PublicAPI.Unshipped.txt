@@ -1,5 +1,13 @@
 #nullable enable
-~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, string>
+Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
+Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeName.get -> string
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeName.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.get -> string
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpressionType.get -> string
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpressionType.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.set -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void

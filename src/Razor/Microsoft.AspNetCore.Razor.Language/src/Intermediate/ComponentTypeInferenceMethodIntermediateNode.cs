@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public string MethodName { get; set; }
 
         /// <summary>
-        /// Gets a dictionary (or null) describing additional arguments for type inference.
+        /// Gets a list (or null) describing additional arguments for type inference.
         /// These are populated from ancestor components that choose to cascade their type parameters.
         /// </summary>
-        public Dictionary<string, string> ReceivesCascadingGenericTypes { get; set; }
+        public List<CascadingGenericTypeParameter> ReceivesCascadingGenericTypes { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

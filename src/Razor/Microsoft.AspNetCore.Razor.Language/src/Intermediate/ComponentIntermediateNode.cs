@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         /// Gets a dictionary (or null) that advertises any type arguments that are available
         /// for use by descendants within the same tree.
         /// </summary>
-        public Dictionary<string, string> ProvidesCascadingGenericTypes { get; set; }
+        public Dictionary<string, CascadingGenericTypeParameter> ProvidesCascadingGenericTypes { get; set; }
 
         public string TypeName { get; set; }
 

@@ -83,6 +83,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             writer.Write("public static void ");
             writer.Write(node.MethodName);
 
+            // TODO: Stop assuming this is the full set of generic type parameters. Since we're
+            // now also using synthetic args, they might include some additional unrelated generic
+            // type parameters. We need to find any unmatched ones, rewrite them to have unique names,
+            // and then include them in the list of type params on this method. Alternatively we could
+            // impose the simplifying rule that we only cascade generic type arguments that cover a
+            // single type parameter, not multiple.
             writer.Write("<");
             writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
             writer.Write(">");
@@ -98,10 +104,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             if (node.ReceivesCascadingGenericTypes != null)
             {
                 var i = 0;
-                foreach (var kvp in node.ReceivesCascadingGenericTypes)
+                foreach (var cascadingGenericType in node.ReceivesCascadingGenericTypes)
                 {
                     writer.Write(", ");
-                    writer.Write(kvp.Key);
+                    writer.Write(cascadingGenericType.ValueExpressionType);
                     writer.Write($" syntheticArg{i++}");
                 }
             }

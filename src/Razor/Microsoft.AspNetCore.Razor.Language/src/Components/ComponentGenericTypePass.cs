@@ -92,8 +92,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     // Offer this type argument to descendants too
                     // TODO: Only offer type args that are explicitly opted-in to cascading
-                    node.ProvidesCascadingGenericTypes ??= new Dictionary<string, string>();
-                    node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = $"default({binding.Content})";
+                    node.ProvidesCascadingGenericTypes ??= new();
+                    node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = new CascadingGenericTypeParameter
+                    {
+                        GenericTypeName = typeArgumentNode.TypeParameterName,
+                        ValueExpressionType = typeArgumentNode.TypeParameterName,
+                        ValueExpression = $"default({binding.Content})"
+                    };
                 }
 
                 if (hasTypeArgumentSpecified)
@@ -129,6 +134,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     foreach (var typeName in FindGenericTypeNames(attribute.BoundAttribute))
                     {
                         bindings.Remove(typeName);
+
+                        // Advertise that this particular generic type is available to descendants
+                        // TODO: Only include ones explicitly opted-in to cascading
+                        node.ProvidesCascadingGenericTypes ??= new();
+
+                        // TODO: Don't use GetContent(attribute), because that will result in
+                        // repeated evaluations. Instead somehow write out that expression into
+                        // some other variable and then use the variable name.
+                        node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
+                        {
+                            GenericTypeName = typeName,
+                            ValueExpressionType = attribute.BoundAttribute.TypeName,
+                            ValueExpression = GetContent(attribute)
+                        };
                     }
                 }
 
@@ -142,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
                 // with a cascaded generic parameter that can cover this one
-                Dictionary<string, string> receivesCascadingGenericTypes = null;
+                List<CascadingGenericTypeParameter> receivesCascadingGenericTypes = null;
                 foreach (var uncoveredBindingKey in bindings.Keys.ToList())
                 {
                     var uncoveredBinding = bindings[uncoveredBindingKey];
@@ -152,8 +171,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             && candidateAncestor.ProvidesCascadingGenericTypes.TryGetValue(uncoveredBindingKey, out var receiveArg))
                         {
                             bindings.Remove(uncoveredBindingKey);
-                            receivesCascadingGenericTypes ??= new Dictionary<string, string>();
-                            receivesCascadingGenericTypes[uncoveredBindingKey] = receiveArg;
+                            receivesCascadingGenericTypes ??= new();
+                            receivesCascadingGenericTypes.Add(receiveArg);
                         }
                     }
                 }
@@ -212,6 +231,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
+            {
+                return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
+            }
+
+            private string GetContent(ComponentAttributeIntermediateNode node)
             {
                 return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
             }
@@ -309,7 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, Dictionary<string, string> receivesCascadingGenericTypes)
+            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, List<CascadingGenericTypeParameter> receivesCascadingGenericTypes)
             {
                 var @namespace = documentNode.FindPrimaryNamespace().Content;
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
