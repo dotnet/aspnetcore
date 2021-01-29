@@ -20,7 +20,10 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, 
+            {
+
+                #pragma warning disable 219 // Variable is assigned but its value is never used
+                var typeInferenceArg_0_TItem = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                Array.Empty<DateTime>()
@@ -28,8 +31,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , -1, (__builder2) => {
-                __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, 
+                ;
+                #pragma warning restore 219
+                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                Array.Empty<DateTime>()
@@ -37,7 +41,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                );
+                , -1, (__builder2) => {
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, typeInferenceArg_0_TItem);
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);
@@ -45,8 +50,9 @@ __o = typeof(Column<>);
 #line default
 #line hidden
 #nullable disable
+                }
+                );
             }
-            );
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Grid<>);

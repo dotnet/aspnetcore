@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         /// </summary>
         public Dictionary<string, CascadingGenericTypeParameter> ProvidesCascadingGenericTypes { get; set; }
 
+        public IEnumerable<CascadingGenericTypeParameter> ProvidesInferredCascadingGenericTypes
+            => ProvidesCascadingGenericTypes == null
+            ? Enumerable.Empty<CascadingGenericTypeParameter>()
+            : ProvidesCascadingGenericTypes.Values.Where(t => t.ValueSourceNode != null);
+
         public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)

@@ -410,6 +410,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, ..., 2, ..., 3, ...);
 
+                // If we're cascading any of the inferred generic types, emit variables for them so that
+                // we don't have to evaluate their expressions more than once
+                IDisposable typeInferenceVariablesScope = null;
+                List<string> typeInferenceVariablesToClear = null;
+                foreach (var cascadingGenericType in node.ProvidesInferredCascadingGenericTypes)
+                {
+                    if (typeInferenceVariablesScope == null)
+                    {
+                        typeInferenceVariablesScope = context.CodeWriter.BuildScope();
+                        typeInferenceVariablesToClear = new();
+                    }
+
+                    // The (depth, typename) pair will be unique within lexical scope
+                    var variableName = $"typeInferenceArg_{_scopeStack.Depth}_{cascadingGenericType.GenericTypeName}";
+                    typeInferenceVariablesToClear.Add(variableName);
+                    context.CodeWriter.WriteLine();
+                    context.CodeWriter.WriteLine("#pragma warning disable 219 // Variable is assigned but its value is never used");
+                    context.CodeWriter.Write("var ");
+                    context.CodeWriter.Write(variableName);
+                    context.CodeWriter.Write(" = ");
+                    WriteComponentAttributeInnards(context, cascadingGenericType.ValueSourceNode, canTypeCheck: false);
+                    context.CodeWriter.WriteLine(";");
+                    context.CodeWriter.WriteLine("#pragma warning restore 219");
+
+                    cascadingGenericType.ValueExpression = variableName;
+                }
+
                 // Preserve order of attributes and splats
                 var attributes = node.Children.Where(n =>
                 {
@@ -436,16 +463,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     foreach (var syntheticArg in node.TypeInferenceNode.ReceivesCascadingGenericTypes)
                     {
-                        if (!string.IsNullOrEmpty(syntheticArg.ValueExpression))
-                        {
-                            context.CodeWriter.Write(syntheticArg.ValueExpression);
-                        }
-                        else
-                        {
-                            // TODO: Don't allow this case, since we should require that ValueExpression
-                            // was populated with the variable name
-                            WriteComponentAttributeInnards(context, syntheticArg.ValueSourceNode, canTypeCheck: false);
-                        }
+                        context.CodeWriter.Write(string.IsNullOrEmpty(syntheticArg.ValueExpression)
+                            ? "default" // This shouldn't be possible, but we don't want to kill the whole compilation if it is
+                            : syntheticArg.ValueExpression);
 
                         remaining--;
                         if (remaining > 0)
@@ -465,7 +485,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // a call to it.
                     if (attributes[i] is ComponentAttributeIntermediateNode attribute)
                     {
-                        WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
+                        var providedGenericType = node.ProvidesInferredCascadingGenericTypes
+                            .FirstOrDefault(t => t.ValueSourceNode == attributes[i] && !string.IsNullOrEmpty(t.ValueExpression));
+                        if (providedGenericType != null)
+                        {
+                            // We just made a variable to represent this for cascaded generic type inference,
+                            // so use that instead of evaluating the expression for a second time
+                            context.CodeWriter.Write(providedGenericType.ValueExpression);
+                        }
+                        else
+                        {
+                            WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
+                        }
                     }
                     else if (attributes[i] is SplatIntermediateNode splat)
                     {
@@ -523,6 +554,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
+
+                if (typeInferenceVariablesScope != null)
+                {
+                    // Clear any synthetic type inference variables to avoid affecting the GC lifetime of referenced objects
+                    foreach (var variableName in typeInferenceVariablesToClear)
+                    {
+                        context.CodeWriter.Write(variableName);
+                        context.CodeWriter.WriteLine(" = default;");
+                    }
+
+                    typeInferenceVariablesScope.Dispose();
+                }
             }
         }
 
