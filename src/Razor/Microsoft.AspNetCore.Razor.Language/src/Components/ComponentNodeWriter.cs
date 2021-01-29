@@ -95,6 +95,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             writer.Write(", ");
             writer.Write("int seq");
 
+            if (node.SyntheticArguments != null)
+            {
+                var i = 0;
+                foreach (var kvp in node.SyntheticArguments)
+                {
+                    writer.Write(", ");
+                    writer.Write(kvp.Key);
+                    writer.Write($" syntheticArg{i++}");
+                }
+            }
+
             if (parameters.Count > 0)
             {
                 writer.Write(", ");

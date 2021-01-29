@@ -1,1 +1,3 @@
 #nullable enable
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.SyntheticArguments.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.SyntheticArguments.set -> void

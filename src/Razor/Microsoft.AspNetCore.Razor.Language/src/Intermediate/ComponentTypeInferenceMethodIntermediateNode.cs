@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -26,6 +27,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         /// Gets the name of the generated method.
         /// </summary>
         public string MethodName { get; set; }
+
+        /// <summary>
+        /// Gets a dictionary (or null) describing additional arguments for type inference.
+        /// These are populated from ancestor components that choose to cascade their type parameters.
+        /// </summary>
+        public Dictionary<string, string> SyntheticArguments { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

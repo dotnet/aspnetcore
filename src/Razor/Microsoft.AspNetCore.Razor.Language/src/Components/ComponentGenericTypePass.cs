@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -152,6 +153,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
                 }
 
+                // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them with
+                // a parameter that can cover this one
+                Dictionary<string, string> syntheticInferenceArguments = null;
+                foreach (var uncoveredBindingKey in bindings.Keys.ToList())
+                {
+                    var uncoveredBinding = bindings[uncoveredBindingKey];
+                    foreach (var candidateAncestor in Ancestors.OfType<ComponentIntermediateNode>())
+                    {
+                        // If the type argument is specified explicitly on the ancestor, use it
+                        // TODO: Only include type arguments that are explicitly opted into cascading
+                        var explicitTypeArgument = candidateAncestor.TypeArguments
+                            .FirstOrDefault(t => string.Equals(t.TypeParameterName, uncoveredBindingKey, StringComparison.Ordinal));
+                        if (explicitTypeArgument != null)
+                        {
+                            bindings.Remove(uncoveredBindingKey);
+
+                            syntheticInferenceArguments ??= new Dictionary<string, string>();
+                            syntheticInferenceArguments[uncoveredBindingKey] = $"default({GetContent(explicitTypeArgument)})";
+
+                            break;
+                        }
+
+                        // TODO: If the type argument is *inferred* on the ancestor, set up a synthetic parameter
+                        // matching the value used for inference on the ancestor
+                    }
+                }
+
                 // If any bindings remain then this means we would never be able to infer the arguments of this
                 // component usage because the user hasn't set properties that include all of the types.
                 if (bindings.Count > 0)
@@ -169,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // contains all of the operations on the render tree building. Calling a method to operate on the builder
                 // will allow the C# compiler to perform type inference.
                 var documentNode = (DocumentIntermediateNode)Ancestors[Ancestors.Count - 1];
-                CreateTypeInferenceMethod(documentNode, node);
+                CreateTypeInferenceMethod(documentNode, node, syntheticInferenceArguments);
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
@@ -270,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node)
+            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node, Dictionary<string, string> syntheticArguments)
             {
                 var @namespace = documentNode.FindPrimaryNamespace().Content;
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
@@ -284,6 +312,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // component call site.
                     MethodName = $"Create{CSharpIdentifier.SanitizeIdentifier(node.TagName)}_{_id++}",
                     FullTypeName = @namespace + ".TypeInference",
+
+                    SyntheticArguments = syntheticArguments,
                 };
 
                 node.TypeInferenceNode = typeInferenceNode;
