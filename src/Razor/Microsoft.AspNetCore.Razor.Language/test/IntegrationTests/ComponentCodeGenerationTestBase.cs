@@ -3279,6 +3279,43 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_Generic_TypeInference_CascadedWithMultipleTypes()
+        {
+            
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Parent<TKey, TValue, TOther> : ComponentBase
+    {
+        [Parameter] public Dictionary<TKey, TValue> Data { get; set; }
+        [Parameter] public TOther Other { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TOther, TValue, TKey, TChildOnly> : ComponentBase
+    {
+        [Parameter] public ICollection<TChildOnly> ChildOnlyItems { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Parent Data=""@(new System.Collections.Generic.Dictionary<int, string>())"" Other=""@DateTime.MinValue"">
+    <Child ChildOnlyItems=""@(new[] { 'a', 'b', 'c' })"" />
+</Parent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_GenericWeaklyTypedAttribute()
         {
             // Arrange

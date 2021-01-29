@@ -16,7 +16,7 @@ namespace Test
             {
 
                 #pragma warning disable 219 // Variable is assigned but its value is never used
-                var typeInferenceArg_0_TItem = 
+                var typeInferenceArg_0_Items = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                Array.Empty<DateTime>()
@@ -26,8 +26,8 @@ namespace Test
 #nullable disable
                 ;
                 #pragma warning restore 219
-                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, 0, 1, typeInferenceArg_0_TItem, 2, (__builder2) => {
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, typeInferenceArg_0_TItem, 4, (context) => (__builder3) => {
+                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, 0, 1, typeInferenceArg_0_Items, 2, (__builder2) => {
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, typeInferenceArg_0_Items, 4, (context) => (__builder3) => {
                         __builder3.AddContent(5, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -41,7 +41,7 @@ namespace Test
                     );
                 }
                 );
-                typeInferenceArg_0_TItem = default;
+                typeInferenceArg_0_Items = default;
             }
         }
         #pragma warning restore 1998
