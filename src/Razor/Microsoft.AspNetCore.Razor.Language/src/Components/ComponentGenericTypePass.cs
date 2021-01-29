@@ -124,40 +124,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // For example, consider a repeater where the generic type is the 'item' type, but the developer has
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
-                var attributes = node.Attributes.Select(a => a.BoundAttribute).Concat(node.ChildContents.Select(c => c.BoundAttribute));
-                foreach (var attribute in attributes)
+                foreach (var attribute in node.Attributes)
                 {
-                    if (attribute == null)
-                    {
-                        // Will be null for attributes set on the component that don't match a declared component parameter
-                        continue;
-                    }
+                    FindCoveredGenericParameters(bindings, attribute.BoundAttribute);
+                }
 
-                    // Now we need to parse the type name and extract the generic parameters.
-                    //
-                    // Two cases;
-                    // 1. name is a simple identifier like TItem
-                    // 2. name contains type parameters like Dictionary<string, TItem>
-                    if (!attribute.IsGenericTypedProperty())
-                    {
-                        continue;
-                    }
-
-                    var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(attribute.TypeName);
-                    if (typeParameters.Count == 0)
-                    {
-                        bindings.Remove(attribute.TypeName);
-                    }
-                    else
-                    {
-                        for (var i = 0; i < typeParameters.Count; i++)
-                        {
-                            var typeParameter = typeParameters[i];
-                            bindings.Remove(typeParameter.ToString());
-                        }
-                    }
-
-                    // TODO: Advertise the cascaded type args that we just found
+                foreach (var childContent in node.ChildContents)
+                {
+                    FindCoveredGenericParameters(bindings, childContent.BoundAttribute);
                 }
 
                 // For any remaining bindings, scan up the hierarchy of ancestor components and try to match them
@@ -196,6 +170,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // will allow the C# compiler to perform type inference.
                 var documentNode = (DocumentIntermediateNode)Ancestors[Ancestors.Count - 1];
                 CreateTypeInferenceMethod(documentNode, node, receivesCascadingGenericTypes);
+            }
+
+            private void FindCoveredGenericParameters(Dictionary<string, Binding> bindings, BoundAttributeDescriptor boundAttribute)
+            {
+                if (boundAttribute == null)
+                {
+                    // Will be null for attributes set on the component that don't match a declared component parameter
+                    return;
+                }
+
+                // Now we need to parse the type name and extract the generic parameters.
+                //
+                // Two cases;
+                // 1. name is a simple identifier like TItem
+                // 2. name contains type parameters like Dictionary<string, TItem>
+                if (!boundAttribute.IsGenericTypedProperty())
+                {
+                    return;
+                }
+
+                var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
+                if (typeParameters.Count == 0)
+                {
+                    bindings.Remove(boundAttribute.TypeName);
+                }
+                else
+                {
+                    for (var i = 0; i < typeParameters.Count; i++)
+                    {
+                        var typeParameter = typeParameters[i];
+                        bindings.Remove(typeParameter.ToString());
+                    }
+                }
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
