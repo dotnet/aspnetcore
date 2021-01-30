@@ -517,25 +517,32 @@ public class HubConnection implements AutoCloseable {
         RuntimeException exception = null;
         this.state.lock();
         try {
+            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
+
+            if (connectionState == null)
+            {
+                this.logger.error("'stopConnection' called with a null ConnectionState. This is not expected, please file a bug. https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=&template=bug_report.md");
+                return;
+            }
+
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
-            if (this.state.getConnectionStateUnsynchronized(false).stopError != null) {
-                errorMessage = this.state.getConnectionStateUnsynchronized(false).stopError;
+            if (connectionState.stopError != null) {
+                errorMessage = connectionState.stopError;
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
 
-            ConnectionState connectionState = this.state.getConnectionStateUnsynchronized(true);
-            if (connectionState != null) {
-                connectionState.cancelOutstandingInvocations(exception);
-                connectionState.close();
-                this.state.setConnectionState(null);
-            }
+            this.state.setConnectionState(null);
+            connectionState.cancelOutstandingInvocations(exception);
+            connectionState.close();
 
             logger.info("HubConnection stopped.");
-            this.state.changeState(HubConnectionState.CONNECTED, HubConnectionState.DISCONNECTED);
+            // We can be in the CONNECTING or CONNECTED state here, depending on if the handshake response was received or not.
+            // connectionState.close() above will exit the Start call with an error if it's still running
+            this.state.changeState(HubConnectionState.DISCONNECTED);
         } finally {
             this.state.unlock();
         }
@@ -543,7 +550,11 @@ public class HubConnection implements AutoCloseable {
         // Do not run these callbacks inside the hubConnectionStateLock
         if (onClosedCallbackList != null) {
             for (OnClosedCallback callback : onClosedCallbackList) {
-                callback.invoke(exception);
+                try {
+                    callback.invoke(exception);
+                } catch (Exception ex) {
+                    logger.warn("Invoking 'onClosed' method failed:", ex);
+                }
             }
         }
     }
@@ -1513,6 +1524,16 @@ public class HubConnection implements AutoCloseable {
                         from, to, this.hubConnectionState));
                 }
 
+                this.hubConnectionState = to;
+            } finally {
+                this.lock.unlock();
+            }
+        }
+
+        public void changeState(HubConnectionState to) {
+            this.lock.lock();
+            try {
+                logger.debug("The HubConnection is transitioning from the {} state to the {} state.", this.hubConnectionState, to);
                 this.hubConnectionState = to;
             } finally {
                 this.lock.unlock();
