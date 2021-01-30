@@ -201,6 +201,11 @@ and are generated based on the last package release.
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)Version)</Version>
+      <RTMVersion>$(%(VersionName)V0Version)</RTMVersion>
+
+      <!-- Remove excess metadata. -->
+      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
+      <VersionName />
     </LatestPackageReference>
 
     <!--
