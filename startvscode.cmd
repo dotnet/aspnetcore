@@ -13,6 +13,9 @@ SET DOTNET_MULTILEVEL_LOOKUP=0
 :: Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
 SET PATH=%DOTNET_ROOT%;%PATH%
 
+:: Sets TFW for Visual Studio Code usage
+SET TARGET=net6.0
+
 SET folder=%~1
 
 IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
