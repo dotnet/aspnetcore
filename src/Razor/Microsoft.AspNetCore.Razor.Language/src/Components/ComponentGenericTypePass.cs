@@ -144,9 +144,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             //     a Func<T>, but "() => null" cannot. So we'll accept cascaded generic types
                             //     from ancestors if they are compatible with the lambda, hence we don't remove
                             //     it from the list of uncovered generic types, but just flag it.
-                            // [2] We can't use it as a supplier of generic types to descendants, because lambdas
-                            //     can't be assigned to implicit variables, and we need to create an implicit
-                            //     variable to avoid evaluating the expression multiple times.
                             if (bindings.TryGetValue(typeName, out var binding))
                             {
                                 binding.CoveredByLambda = true;
@@ -155,17 +152,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         else
                         {
                             bindings.Remove(typeName);
-
-                            // Advertise that this particular generic type is available to descendants
-                            // TODO: Only include ones explicitly opted-in to cascading
-                            node.ProvidesCascadingGenericTypes ??= new();
-                            node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
-                            {
-                                GenericTypeName = typeName,
-                                ValueType = attribute.BoundAttribute.TypeName,
-                                ValueSourceNode = attribute,
-                            };
                         }
+
+                        // Advertise that this particular generic type is available to descendants
+                        // TODO: Only include ones explicitly opted-in to cascading
+                        node.ProvidesCascadingGenericTypes ??= new();
+                        node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
+                        {
+                            GenericTypeName = typeName,
+                            ValueType = attribute.BoundAttribute.TypeName,
+                            ValueSourceNode = attribute,
+                        };
                     }
                 }
 
