@@ -868,6 +868,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTesting.IIS", "IntegrationTesting.IIS", "{036FB9FC-7F26-4982-B94E-2C32B4C836E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IntegrationTesting.IIS", "src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj", "{559F1CCF-7E01-4E27-AB45-2E3B6B4984E1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9E01AF6A-F748-4490-B45B-8558D1E701B4} = {9E01AF6A-F748-4490-B45B-8558D1E701B4}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "src\Middleware\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{AF964703-404B-4632-9D1F-8EEE646BBA37}"
 EndProject
