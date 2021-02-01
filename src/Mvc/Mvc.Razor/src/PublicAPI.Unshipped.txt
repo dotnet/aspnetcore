@@ -1,2 +1,1 @@
 #nullable enable
-~Microsoft.AspNetCore.Mvc.Razor.RazorPage.IgnoreSection(string sectionName, bool required) -> void
