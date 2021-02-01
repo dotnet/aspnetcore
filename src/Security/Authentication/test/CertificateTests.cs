@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
-        
+
         [Fact]
         public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(Expected, name.First().Value);
             count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
             Assert.Single(count);
-            var expected = cache ? "1" : "2"; 
+            var expected = cache ? "1" : "2";
             Assert.Equal(expected, count.First().Value);
         }
 
