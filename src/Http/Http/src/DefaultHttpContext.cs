@@ -38,9 +38,7 @@ namespace Microsoft.AspNetCore.Http
 
         // This is field exists to make analyzing memory dumps easier.
         // https://github.com/dotnet/aspnetcore/issues/29709
-#pragma warning disable CS0414
-        private bool _active;
-#pragma warning restore CS0414
+        internal bool _active;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
