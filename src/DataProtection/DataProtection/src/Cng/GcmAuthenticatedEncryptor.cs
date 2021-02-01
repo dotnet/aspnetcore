@@ -182,18 +182,16 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         CryptoUtil.Assert(cbDecryptedBytesWritten == cbPlaintext, "cbDecryptedBytesWritten == cbPlaintext");
                     }
 #else
-                    ReadOnlySpan<byte> nonce, key, encrypted, tag;
-                    Span<byte> plaintext;
                     unsafe
                     {
-                        nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
-                        key = new Span<byte>(pbSymmetricDecryptionSubkey, (int)_symmetricAlgorithmSubkeyLengthInBytes);
-                        tag = new Span<byte>(pbAuthTag, (int)TAG_SIZE_IN_BYTES);
-                        plaintext = new Span<byte>(retVal);
-                        encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintext);
+                        var nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
+                        var key = new Span<byte>(pbSymmetricDecryptionSubkey, (int)_symmetricAlgorithmSubkeyLengthInBytes);
+                        var tag = new Span<byte>(pbAuthTag, (int)TAG_SIZE_IN_BYTES);
+                        var plaintext = new Span<byte>(retVal);
+                        var encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintext);
+                        using var aes = new AesGcm(key);
+                        aes.Decrypt(nonce, encrypted, tag, plaintext);
                     }
-                    using var aes = new AesGcm(key);
-                    aes.Decrypt(nonce, encrypted, tag, plaintext);
 #endif
 
                     // At this point, retVal := { decryptedPayload }
@@ -247,17 +245,16 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 CryptoUtil.Assert(cbResult == cbPlaintextData, "cbResult == cbPlaintextData");
             }
 #else
-            Span<byte> nonce, key, plaintext, encrypted, tag;
             unsafe
             {
-                nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
-                key = new Span<byte>(pbKey, (int)cbKey);
-                tag = new Span<byte>(pbTag, (int)TAG_SIZE_IN_BYTES);
-                plaintext = new Span<byte>(pbPlaintextData, (int)cbPlaintextData);
-                encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintextData);
+                var nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
+                var key = new Span<byte>(pbKey, (int)cbKey);
+                var tag = new Span<byte>(pbTag, (int)TAG_SIZE_IN_BYTES);
+                var plaintext = new Span<byte>(pbPlaintextData, (int)cbPlaintextData);
+                var encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintextData);
+                using var aes = new AesGcm(key);
+                aes.Encrypt(nonce, plaintext, encrypted, tag);
             }
-            using var aes = new AesGcm(key);
-            aes.Encrypt(nonce, plaintext, encrypted, tag);
 #endif
         }
 
