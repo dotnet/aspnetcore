@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     binding.Node = typeArgumentNode;
                     binding.Content = GetContent(typeArgumentNode);
 
-                    // Offer this type argument to descendants too
+                    // Offer this explicit type argument to descendants too
                     if (supplyCascadingTypeParameters.Contains(typeArgumentNode.TypeParameterName))
                     {
                         node.ProvidesCascadingGenericTypes ??= new();
@@ -152,10 +152,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         {
                             if (supplyCascadingTypeParameters.Contains(typeName))
                             {
-                                // Advertise that this particular generic type is available to descendants
+                                // Advertise that this particular inferred generic type is available to descendants.
                                 // There might be multiple sources for each generic type, so pick the one that has the
                                 // fewest other generic types on it. For example if we could infer from either List<T>
-                                // of Dictionary<T, U>, we prefer List<T>.
+                                // or Dictionary<T, U>, we prefer List<T>.
                                 node.ProvidesCascadingGenericTypes ??= new();
                                 if (!node.ProvidesCascadingGenericTypes.TryGetValue(typeName, out var existingValue)
                                     || existingValue.GenericTypeNames.Count > typeParameters.Count)
