@@ -3284,6 +3284,43 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_Generic_TypeInference_MultiLayerCascaded()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadeTypeParam(nameof(TItem))]
+    public class Ancestor<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Passthrough : ComponentBase
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Ancestor Items=""@(Array.Empty<DateTime>())""><Passthrough><Child /></Passthrough></Ancestor>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_Generic_TypeInference_OverrideCascade()
         {
             // This test is to show that, even if an ancestor is trying to cascade its generic types,
