@@ -14,9 +14,10 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [75] x:\dir\subdir\Test\TestComponent.cshtml) - Grid
+                Component - (0:0,0 [85] x:\dir\subdir\Test\TestComponent.cshtml) - Grid
                     ComponentChildContent -  - ChildContent - context
                         Component - (58:0,58 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Column
+                        Component - (68:0,68 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Column
                     ComponentTypeArgument - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         LazyIntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - DateTime
                     ComponentAttribute - (30:0,30 [26] x:\dir\subdir\Test\TestComponent.cshtml) - Items - Items - AttributeStructure.DoubleQuotes
@@ -25,3 +26,4 @@ Document -
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateColumn_0
+            ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateColumn_1

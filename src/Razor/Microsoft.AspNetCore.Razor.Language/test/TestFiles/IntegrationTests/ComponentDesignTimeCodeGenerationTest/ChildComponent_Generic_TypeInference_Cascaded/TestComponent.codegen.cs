@@ -39,6 +39,14 @@ __o = typeof(Column<>);
 #line default
 #line hidden
 #nullable disable
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_2(__builder2, -1, __typeInferenceArg_0___arg0);
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(Column<>);
+
+#line default
+#line hidden
+#nullable disable
                 }
                 );
             }
@@ -71,6 +79,11 @@ namespace __Blazor.Test.TestComponent
             __arg0_out = __arg0;
         }
         public static void CreateColumn_1<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, System.Collections.Generic.IEnumerable<TItem> __syntheticArg0)
+        {
+        __builder.OpenComponent<global::Test.Column<TItem>>(seq);
+        __builder.CloseComponent();
+        }
+        public static void CreateColumn_2<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, System.Collections.Generic.IEnumerable<TItem> __syntheticArg0)
         {
         __builder.OpenComponent<global::Test.Column<TItem>>(seq);
         __builder.CloseComponent();

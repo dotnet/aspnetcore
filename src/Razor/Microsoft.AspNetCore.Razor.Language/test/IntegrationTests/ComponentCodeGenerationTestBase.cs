@@ -3176,7 +3176,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
+<Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3275,7 +3275,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<Grid Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
+<Grid Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
