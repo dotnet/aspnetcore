@@ -54,9 +54,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // This is ugly because CodeWriter doesn't allow us to erase, but we need to comma-delimit. So we have to
-            // materizalize something can iterate, or use string.Join. We'll need this multiple times, so materializing
-            // it.
             var parameters = GetTypeInferenceMethodParameters(node);
 
             // This is really similar to the code in WriteComponentAttribute and WriteComponentChildContent - except simpler because
@@ -205,6 +202,66 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             context.CodeWriter.WriteInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.CloseComponent);
 
+            writer.WriteLine("}");
+
+            // If this component cascades any generic parameters, we'll need to be able to capture its type inference
+            // args at the call site. The point of this is to ensure that:
+            //
+            // [1] We only evaluate each expression once
+            // [2] We evaluate them in the correct order matching the developer's source
+            // [3] We can even make variables for lambdas or other expressions that can't just be assigned to implicitly-typed vars.
+            //
+            // We do that by emitting a method like the following. It has exactly the same generic type inference
+            // characteristics as the regular CreateFoo_0 method emitted earlier
+            //
+            //  public static void CreateFoo_0_CaptureParameters<T1, T2>(T1 __arg0, out T1 __arg0_out, global::System.Collections.Generic.List<T2> __arg1, out global::System.Collections.Generic.List<T2> __arg1_out, int __seq2, string __arg2, out string __arg2_out)
+            //  {
+            //      __arg0_out = __arg0;
+            //      __arg1_out = __arg1;
+            //      __arg2_out = __arg2;
+            //  }
+            //
+            // TODO: Only emit this if there's at least one generic type parameter that opts into cascading
+            writer.WriteLine();
+            writer.Write("public static void ");
+            writer.Write(node.MethodName);
+            writer.Write("_CaptureParameters<");
+            writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
+            writer.Write(">");
+
+            writer.Write("(");
+            var isFirst = true;
+            foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+            {
+                if (isFirst)
+                {
+                    isFirst = false;
+                }
+                else
+                {
+                    writer.Write(", ");
+                }
+
+                writer.Write(parameter.TypeName);
+                writer.Write(" ");
+                writer.Write(parameter.ParameterName);
+                writer.Write(", out ");
+                writer.Write(parameter.TypeName);
+                writer.Write(" ");
+                writer.Write(parameter.ParameterName);
+                writer.Write("_out");
+            }
+
+            writer.WriteLine(")");
+            writer.WriteLine("{");
+            foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+            {
+                writer.Write("    ");
+                writer.Write(parameter.ParameterName);
+                writer.Write("_out = ");
+                writer.Write(parameter.ParameterName);
+                writer.WriteLine(";");
+            }
             writer.WriteLine("}");
         }
 
